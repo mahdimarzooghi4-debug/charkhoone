@@ -68,7 +68,7 @@ export default function RoleSelectionScreen() {
         </View>
       </ScrollView>
       <View style={styles.bottomAction}>
-        <AppButton onPress={() => router.replace("/(tenant)/home")}>تأیید نقش و ادامه</AppButton>
+        <AppButton onPress={() => router.replace("/(tenant)/financing-plans")}>تأیید نقش و ادامه</AppButton>
       </View>
     </SafeAreaView>
   );
