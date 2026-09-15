@@ -1,7 +1,8 @@
-import { Image, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AppButton } from "@/components/AppButton";
 import { AppHeader } from "@/components/AppHeader";
+import { FigmaSvg } from "@/components/FigmaSvg";
 import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts, radii } from "@/theme";
 
@@ -16,7 +17,7 @@ function StaticSlider({ label, value, max }: { label: string; value: string; max
       <View style={styles.trackWrap}>
         <View style={styles.track} />
         <View style={styles.trackFill} />
-        <Image source={{ uri: figmaAssets.sliderThumb }} style={styles.thumb} />
+        <View style={styles.thumb}><FigmaSvg uri={figmaAssets.sliderThumb} width={16} height={16} /></View>
       </View>
       <View style={styles.sliderLabels}><Text style={styles.sliderLabel}>۰</Text><Text style={styles.sliderLabel}>{max}</Text></View>
     </View>
