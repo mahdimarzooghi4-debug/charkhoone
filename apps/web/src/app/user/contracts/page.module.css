@@ -1,0 +1,434 @@
+.page {
+  min-height: 100svh;
+  display: flex;
+  align-items: stretch;
+  direction: ltr;
+  background: var(--ch-color-page);
+}
+
+.mainContent {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 32px;
+  direction: rtl;
+}
+
+.headerBar,
+.pageHeader,
+.filterRow,
+.contractHeader,
+.contractBottom,
+.navItem,
+.profile {
+  display: flex;
+  align-items: center;
+}
+
+.headerBar,
+.headerText,
+.pageTitle,
+.contractCard,
+.profileText {
+  display: flex;
+  flex-direction: column;
+}
+
+.headerBar { align-items: stretch; }
+.headerText { align-items: flex-end; gap: 4px; text-align: right; }
+
+.headerText h1,
+.headerText p,
+.pageTitle h2,
+.pageTitle p,
+.summaryCard p,
+.summaryCard small {
+  margin: 0;
+}
+
+.headerText h1 {
+  color: var(--ch-color-text);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: normal;
+}
+
+.headerText p {
+  color: var(--ch-color-muted);
+  font-size: 14px;
+}
+
+.pageHeader {
+  justify-content: space-between;
+  direction: ltr;
+}
+
+.pageTitle {
+  align-items: flex-end;
+  gap: 4px;
+  direction: rtl;
+  text-align: right;
+}
+
+.pageTitle h2 {
+  color: var(--ch-color-text);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.pageTitle p {
+  color: var(--ch-color-muted);
+  font-size: 13px;
+}
+
+.trackingButton,
+.reviewButton {
+  color: #fff;
+  background: var(--ch-color-primary);
+  border: 0;
+}
+
+.trackingButton {
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 12px;
+}
+
+.summaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  direction: rtl;
+}
+
+.summaryCard {
+  min-height: 127px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid var(--ch-color-border);
+  border-radius: 12px;
+  text-align: right;
+}
+
+.summaryCard p {
+  color: var(--ch-color-muted);
+  font-size: 13px;
+}
+
+.summaryCard strong {
+  color: var(--ch-color-text);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.summaryCard .primaryValue { color: var(--ch-color-primary); }
+.summaryCard .dangerValue { color: #ff383c; }
+
+.summaryCard small {
+  width: 100%;
+  color: var(--ch-color-muted);
+  font-size: 11px;
+  text-align: right;
+}
+
+.filterRow {
+  justify-content: space-between;
+  gap: 20px;
+  direction: ltr;
+}
+
+.filterGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  direction: rtl;
+}
+
+.filterPill {
+  padding: 8px 16px;
+  color: var(--ch-color-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  background: #fff;
+  border: 1px solid var(--ch-color-border);
+  border-radius: 99px;
+}
+
+.filterPillActive {
+  color: #fff;
+  background: var(--ch-color-primary);
+  border-color: var(--ch-color-primary);
+}
+
+.contractList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.contractCard {
+  gap: 12px;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid var(--ch-color-border);
+  border-radius: 16px;
+}
+
+.contractHeader,
+.contractBottom {
+  width: 100%;
+  justify-content: space-between;
+  gap: 16px;
+  direction: ltr;
+}
+
+.contractHeader > strong {
+  color: var(--ch-color-text);
+  font-size: 15px;
+  font-weight: 600;
+  direction: rtl;
+}
+
+.badgeRow,
+.contractActionRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.badgeRow { direction: rtl; }
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.badge_tenant,
+.badge_owner {
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 6px;
+}
+
+.badge_tenant { color: var(--ch-color-primary); background: rgb(13 59 54 / 10%); }
+.badge_owner { color: #0369a1; background: #e0f2fe; }
+
+.badge_active,
+.badge_attention,
+.badge_ended {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+.badge_active { color: var(--ch-color-primary); background: #e6f4e6; }
+.badge_attention { color: var(--ch-color-accent); background: #fff3e0; }
+.badge_ended { color: var(--ch-color-muted); background: var(--ch-color-page); }
+
+.divider {
+  width: 100%;
+  height: 1px;
+  background: var(--ch-color-border);
+}
+
+.contractActionRow {
+  min-width: 0;
+  flex: 1 1 auto;
+  gap: 16px;
+  direction: ltr;
+}
+
+.detailButton,
+.reviewButton {
+  flex: 0 0 auto;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.detailButton {
+  padding: 0;
+  color: var(--ch-color-primary);
+  background: transparent;
+  border: 0;
+}
+
+.reviewButton {
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.contractDetail {
+  min-width: 0;
+  color: var(--ch-color-primary);
+  font-size: 13px;
+  font-weight: 500;
+  direction: rtl;
+  text-align: left;
+}
+
+.period {
+  flex: 0 0 auto;
+  color: var(--ch-color-muted);
+  font-size: 13px;
+  direction: rtl;
+}
+
+.sidebar {
+  width: 260px;
+  flex: 0 0 260px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 40px 20px;
+  direction: rtl;
+  background: var(--ch-color-primary);
+}
+
+.sidebarTop {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.logoWrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.logoWrap img {
+  width: 127px;
+  height: 55px;
+  display: block;
+  object-fit: contain;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.navItem {
+  width: 100%;
+  gap: 12px;
+  padding: 12px 16px;
+  color: var(--ch-color-muted);
+  font-size: 14px;
+  font-weight: 400;
+  text-decoration: none;
+  border-radius: 12px;
+}
+
+.navItem > span:nth-child(2) {
+  min-width: 0;
+  flex: 1 1 auto;
+  text-align: right;
+}
+
+.navItem img {
+  width: 20px;
+  height: 20px;
+  display: block;
+  object-fit: contain;
+}
+
+.navSpacer { width: 20px; height: 1px; flex: 0 0 20px; }
+
+.navActive {
+  color: #fff;
+  font-weight: 600;
+  background: rgb(255 255 255 / 8%);
+}
+
+.alertBadge {
+  min-width: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 8px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--ch-color-accent);
+  border-radius: 99px;
+}
+
+.profile {
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgb(255 255 255 / 13%);
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  display: block;
+  object-fit: cover;
+  border-radius: 20px;
+}
+
+.profileText {
+  min-width: 0;
+  flex: 1 1 auto;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+.profileText strong { color: #fff; font-size: 14px; font-weight: 600; }
+.profileText span { color: var(--ch-color-muted); font-size: 11px; }
+
+button { cursor: pointer; }
+
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid rgb(255 138 0 / 30%);
+  outline-offset: 3px;
+}
+
+@media (max-width: 1100px) {
+  .filterRow { align-items: flex-start; flex-direction: column-reverse; }
+  .filterGroup { max-width: 100%; flex-wrap: wrap; }
+}
+
+@media (max-width: 920px) {
+  .page { flex-direction: column-reverse; }
+  .sidebar { width: 100%; flex-basis: auto; padding: 16px 20px; }
+  .sidebarTop { gap: 16px; }
+  .logoWrap { display: none; }
+  .nav { flex-direction: row; overflow-x: auto; }
+  .navItem { width: auto; flex: 0 0 auto; }
+  .profile { display: none; }
+  .mainContent { padding: 24px; }
+}
+
+@media (max-width: 720px) {
+  .mainContent { padding: 20px 16px; gap: 20px; }
+  .summaryGrid { grid-template-columns: 1fr; }
+  .pageHeader { align-items: stretch; flex-direction: column-reverse; gap: 16px; }
+  .trackingButton { width: 100%; }
+  .contractHeader { align-items: flex-start; flex-direction: column; direction: rtl; }
+  .contractBottom { align-items: flex-start; flex-direction: column; direction: rtl; }
+  .contractActionRow { width: 100%; align-items: flex-start; flex-direction: column; direction: rtl; }
+  .contractDetail { text-align: right; }
+}

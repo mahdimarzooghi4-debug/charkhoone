@@ -38,6 +38,7 @@ Landing coverage includes the Figma header, hero/ecosystem visual, audience card
 - OTP frame: `Web App / OTP Verification` (`167:175`), route `/otp-verification`
 - Identity frame: `Web App / Identity Verification` (`167:211`), route `/identity-verification`
 - Home frame: `Web App / Home` (`144:154`), route `/user/home`
+- Contracts frame: `Web App / Contracts` (`149:150`), route `/user/contracts`
 
 The login route covers the Figma split brand/auth layout, exact Persian copy, mobile-number field, confirmation-code action, legal copy and the login-specific exported logo. The login form performs frontend-only navigation to the OTP route.
 
@@ -47,13 +48,15 @@ The identity-verification route covers the Figma split layout, verified masked-m
 
 The User Web home route implements the Figma desktop dashboard shell: right sidebar and profile, overview cards, membership status, action-required cards, quick access, recent contracts, and the receive/pay activity table. Names, amounts, dates, contract counts, membership limits and statuses are presentation fixtures copied from Figma and are not business rules or API-backed values.
 
+The contracts route implements the Figma contracts screen: active sidebar state and alert badge, page CTA, three summary cards, role/status filter pills and four contract states (active tenant, active owner, owner action required, ended tenant). Contract filters and actions remain presentation-only until their target screens/state handling are implemented.
+
 ## Implementation notes
 
 - The repository remains Next.js + TypeScript with plain CSS; Tailwind has not been added.
 - Desktop dimensions, spacing, typography and colors are taken from the Figma design context. Responsive behavior below the provided desktop frames is a conservative implementation adaptation.
 - The Android download control is visual only because the Figma source does not provide an APK/download URL.
 - `/login` → `/otp-verification` → `/identity-verification` → `/user/home` navigation is frontend-only. Verification, identity validation, dashboard actions and post-login data loading are not connected to backend services yet.
-- Dashboard navigation/action controls whose target screens have not yet been implemented are intentionally visual-only rather than pointing to invented routes.
+- User Web routes implemented so far include `/user/home` and `/user/contracts`; the contracts sidebar links back to Home. Controls whose destination screen is not yet implemented remain visual-only rather than pointing to an unfinished route.
 - Figma-exported logo/icon/avatar asset URLs are currently referenced on the working branch. They are short-lived and must be vendored into the repository (exact exported bytes, no redrawing) before the final merge.
 
 No backend integration, database behavior or partner API behavior is introduced by these pages.
