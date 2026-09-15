@@ -398,10 +398,10 @@
 .profileText strong { color: #fff; font-size: 14px; font-weight: 600; }
 .profileText span { color: var(--ch-color-muted); font-size: 11px; }
 
-button { cursor: pointer; }
+.page button { cursor: pointer; }
 
-button:focus-visible,
-a:focus-visible {
+.page button:focus-visible,
+.page a:focus-visible {
   outline: 3px solid rgb(255 138 0 / 30%);
   outline-offset: 3px;
 }
