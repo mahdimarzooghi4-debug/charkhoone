@@ -23,13 +23,16 @@ Owner and tenant use one shared mobile application. Shared authentication, ident
 
 - `41:8` — Login / Mobile Number
 - `39:26` — OTP Verification
+- `47:10` — OTP Verification / Error
 - `48:14` — Identity Verification
+- `39:66` — Identity Verification / Error
 - `79:41` — Contract / Tracking Code
 - `66:382` — Contract Lookup Result / role selection
 
 ### Tenant financing lifecycle
 
 - `61:28` — Tenant Home / New User
+- `55:30` — Tenant Home / Contract Review
 - `65:55` — Calculator / Manual Estimate
 - `71:43` — Calculator / Result
 - `85:62` — Financing / Eligible Plans
@@ -87,7 +90,7 @@ Tenant financing flow:
 
 `eligible plans -> plan confirmation -> under review -> approved -> membership -> contribution -> final confirmation -> active contract`
 
-Explicit frontend-only routes also exist for rejected financing, payment success/failed/pending states, receipt display and terminated-contract states. These routes are fixtures for Figma coverage until backend state machines and payment callbacks are introduced.
+Explicit frontend-only routes also exist for authentication error states, contract-review home, rejected financing, payment success/failed/pending states, receipt display and terminated-contract states. These routes are fixtures for Figma coverage until backend state machines and payment callbacks are introduced.
 
 ## Asset handling
 
