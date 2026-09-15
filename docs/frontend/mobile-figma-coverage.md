@@ -2,11 +2,14 @@
 
 Source file: `charkhoone-platform` (`kIJQxlRhLRhjCCckMfcmsa`)
 
-Page: `03 - Tenant Mobile` (`41:2`)
+Pages:
+
+- `03 - Tenant Mobile` (`41:2`)
+- `04 - Owner Mobile` (`39:161`)
 
 ## Architecture rule
 
-Owner and tenant use one shared mobile application. Shared authentication, identity, contract lookup and role-selection live in the same app. After role resolution, navigation branches to role-specific flows. The owner branch is not implemented in this phase.
+Owner and tenant use one shared mobile application. Shared authentication, identity, contract lookup and role-selection live in the same app. After role resolution, navigation branches to role-specific flows. Both tenant and owner branches are now represented as frontend Figma fixtures in `apps/mobile`.
 
 ## Stack
 
@@ -28,6 +31,8 @@ Owner and tenant use one shared mobile application. Shared authentication, ident
 - `39:66` — Identity Verification / Error
 - `79:41` — Contract / Tracking Code
 - `66:382` — Contract Lookup Result / role selection
+
+Role selection is interactive and routes the selected role into the corresponding owner or tenant frontend flow.
 
 ### Tenant financing lifecycle
 
@@ -71,14 +76,25 @@ The payment-result family is implemented with a shared React Native component an
 - `106:197` — Account / Profile Photo Sheet
 - `106:211` — Account / Sign Out Modal
 
-### Termination states
+### Tenant termination states
 
 - `109:157` — Tenant Home / Contract Terminated
 - `109:261` — Payments / Overview / Terminated
 - `978:120` — Contract / Detail / Tenant / Terminated
 - `978:221` — Contracts / Overview / Terminated
 
-The screens use the Figma values only as presentation fixtures. Sample amounts, rates, identities, dates, bank names, rejection reasons and payment states are not business rules and are not wired to backend/domain logic.
+### Owner contract lifecycle
+
+- `112:16` — Owner / Contract Connected
+- `136:150` — Owner / Settlement Preference
+- `116:140` — Owner / Final Contract Confirmation
+- `118:154` — Owner / Contract Active
+- `118:251` — Owner / Receive & Pay Overview
+- `204:345` — Owner / Contract Terminated
+
+The owner settlement preference supports the two Figma choices as frontend selection state. Owner confirmation, active-contract, receive/pay and termination surfaces are implemented as Expo Router routes and reuse the shared mobile tokens/components where the Figma design matches them.
+
+The screens use the Figma values only as presentation fixtures. Sample amounts, rates, identities, dates, fees, statuses and termination amounts are not business rules and are not wired to backend/domain logic.
 
 ## Navigation implemented
 
@@ -88,14 +104,18 @@ Shared entry flow:
 
 Tenant financing flow:
 
-`eligible plans -> plan confirmation -> under review -> approved -> membership -> contribution -> final confirmation -> active contract`
+`role selection -> eligible plans -> plan confirmation -> under review -> approved -> membership -> contribution -> final confirmation -> active contract`
 
-Explicit frontend-only routes also exist for authentication error states, contract-review home, rejected financing, payment success/failed/pending states, receipt display and terminated-contract states. These routes are fixtures for Figma coverage until backend state machines and payment callbacks are introduced.
+Owner flow:
+
+`role selection -> contract connected -> settlement preference -> final contract confirmation -> active contract -> receive & pay`
+
+Explicit frontend-only routes also exist for authentication error states, contract-review home, rejected financing, payment success/failed/pending states, receipt display and terminated-contract states. These routes are fixtures for Figma coverage until backend state machines, settlement logic and payment callbacks are introduced.
 
 ## Asset handling
 
-Figma MCP asset URLs are currently isolated in `apps/mobile/src/figmaAssets.ts` where exported icons/images are needed, so no icon/logo is redrawn or substituted. SVG exports are rendered with `react-native-svg`. These URLs are short-lived. Before final merge, their exact exported bytes must be vendored into the repository and references changed to local assets.
+Figma MCP asset URLs are currently isolated in `apps/mobile/src/figmaAssets.ts` and `apps/mobile/src/ownerAssets.ts` where exported icons/images are needed, so no icon/logo is redrawn or substituted. SVG exports are rendered with `react-native-svg`. These URLs are short-lived. Before final merge, their exact exported bytes must be vendored into the repository and references changed to local assets.
 
 ## Open implementation boundary
 
-No bank, credit, fund, organization, payment-gateway or Khodnevis API is called by the mobile app yet. Navigation and screen state are frontend-only placeholders until the backend phase begins. Owner-specific mobile screens are still outside this tenant tranche and will be implemented in the same mobile application after tenant coverage and review are complete.
+No bank, credit, fund, organization, payment-gateway or Khodnevis API is called by the mobile app yet. Navigation and screen state are frontend-only placeholders until the backend phase begins. Owner bottom-navigation items reuse the existing shared profile/contracts surfaces where those destinations are already represented; no additional owner-only home/account/contracts screens were invented beyond the supplied `04 - Owner Mobile` source page.
