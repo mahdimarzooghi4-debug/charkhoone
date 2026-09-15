@@ -93,7 +93,7 @@ export default function ContractDetailPage() {
                   <span data-node-id="150:342">بابت قسط ماهانه تأمین مالی</span>
                 </div>
               </div>
-              <button type="button" className={styles.primaryAction} data-node-id="150:344">مشاهده در دریافت و پرداخت</button>
+              <Link href="/user/receive-pay" className={styles.primaryAction} data-node-id="150:344">مشاهده در دریافت و پرداخت</Link>
             </section>
 
             <section className={styles.card} data-node-id="150:346" data-name="Contract Information Card">
@@ -141,11 +141,11 @@ export default function ContractDetailPage() {
               <span>قراردادها</span>
               <img src={assets.contracts} alt="" width={20} height={20} />
             </Link>
-            <div className={styles.navItem} data-node-id="142:1965">
+            <Link href="/user/receive-pay" className={styles.navItem} data-node-id="142:1965">
               <span className={styles.navSpacer} />
               <span>دریافت و پرداخت</span>
               <img src={assets.payments} alt="" width={20} height={20} />
-            </div>
+            </Link>
             <div className={styles.navItem} data-node-id="142:1971">
               <span className={styles.navSpacer} />
               <span>حساب من</span>
