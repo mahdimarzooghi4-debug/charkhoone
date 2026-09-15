@@ -1,4 +1,5 @@
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AppButton } from "@/components/AppButton";
 import { BrandLogo } from "@/components/BrandLogo";
@@ -17,6 +18,7 @@ function KeyValue({ label, value, accent }: { label: string; value: string; acce
 
 export default function RoleSelectionScreen() {
   const router = useRouter();
+  const [selectedRole, setSelectedRole] = useState<"owner" | "tenant">("tenant");
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -26,22 +28,22 @@ export default function RoleSelectionScreen() {
           <Text style={styles.cardTitle}>نقش خود را در این قرارداد انتخاب کنید</Text>
           <Text style={styles.cardDescription}>اطلاعات طرفین از قرارداد ثبت‌شده در سامانه خودنویس دریافت شده است.</Text>
           <View style={styles.roles}>
-            <View style={styles.roleCard}>
+            <Pressable style={[styles.roleCard, selectedRole === "owner" && styles.roleCardSelected]} onPress={() => setSelectedRole("owner")}>
               <View style={styles.roleHeader}>
-                <Text style={styles.roleTitle}>مالک</Text>
-                <FigmaSvg uri={figmaAssets.roleUnselected} width={16} height={16} />
+                <Text style={[styles.roleTitle, selectedRole === "owner" && styles.onPrimary]}>مالک</Text>
+                <FigmaSvg uri={selectedRole === "owner" ? figmaAssets.roleSelected : figmaAssets.roleUnselected} width={16} height={16} />
               </View>
-              <Text style={styles.roleName}>محمد رضایی</Text>
-              <Text style={styles.roleCode}>کد ملی: ۰۰۲•••••۴۵۶</Text>
-            </View>
-            <View style={[styles.roleCard, styles.roleCardSelected]}>
+              <Text style={[styles.roleName, selectedRole === "owner" && styles.onPrimary]}>محمد رضایی</Text>
+              <Text style={[styles.roleCode, selectedRole === "owner" && styles.onPrimaryMuted]}>کد ملی: ۰۰۲•••••۴۵۶</Text>
+            </Pressable>
+            <Pressable style={[styles.roleCard, selectedRole === "tenant" && styles.roleCardSelected]} onPress={() => setSelectedRole("tenant")}>
               <View style={styles.roleHeader}>
-                <Text style={[styles.roleTitle, styles.onPrimary]}>مستأجر</Text>
-                <FigmaSvg uri={figmaAssets.roleSelected} width={16} height={16} />
+                <Text style={[styles.roleTitle, selectedRole === "tenant" && styles.onPrimary]}>مستأجر</Text>
+                <FigmaSvg uri={selectedRole === "tenant" ? figmaAssets.roleSelected : figmaAssets.roleUnselected} width={16} height={16} />
               </View>
-              <Text style={[styles.roleName, styles.onPrimary]}>علی رضایی</Text>
-              <Text style={[styles.roleCode, styles.onPrimaryMuted]}>کد ملی: ۰۰۱•••••۷۸۹</Text>
-            </View>
+              <Text style={[styles.roleName, selectedRole === "tenant" && styles.onPrimary]}>علی رضایی</Text>
+              <Text style={[styles.roleCode, selectedRole === "tenant" && styles.onPrimaryMuted]}>کد ملی: ۰۰۱•••••۷۸۹</Text>
+            </Pressable>
           </View>
         </View>
 
@@ -64,11 +66,11 @@ export default function RoleSelectionScreen() {
         </View>
 
         <View style={styles.notice}>
-          <Text style={styles.noticeText}>در مرحله بعد، طرح‌های تأمین مالی واجد شرایط این قرارداد نمایش داده می‌شوند.</Text>
+          <Text style={styles.noticeText}>{selectedRole === "owner" ? "در مرحله بعد، وضعیت قرارداد از دید مالک نمایش داده می‌شود." : "در مرحله بعد، طرح‌های تأمین مالی واجد شرایط این قرارداد نمایش داده می‌شوند."}</Text>
         </View>
       </ScrollView>
       <View style={styles.bottomAction}>
-        <AppButton onPress={() => router.replace("/(tenant)/financing-plans")}>تأیید نقش و ادامه</AppButton>
+        <AppButton onPress={() => router.replace(selectedRole === "owner" ? "/(owner)/contract-connected" : "/(tenant)/financing-plans")}>تأیید نقش و ادامه</AppButton>
       </View>
     </SafeAreaView>
   );
