@@ -1,6 +1,7 @@
-import { Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { BrandLogo } from "@/components/BrandLogo";
+import { FigmaSvg } from "@/components/FigmaSvg";
 import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts } from "@/theme";
 
@@ -13,7 +14,7 @@ export function AppHeader({ title }: AppHeaderProps) {
       <BrandLogo />
       <View style={styles.bar}>
         <Pressable accessibilityRole="button" accessibilityLabel="بازگشت" onPress={() => router.back()} style={styles.back}>
-          <Image source={{ uri: figmaAssets.back }} style={styles.backIcon} resizeMode="contain" />
+          <View style={styles.backIcon}><FigmaSvg uri={figmaAssets.back} width={24} height={40} /></View>
         </Pressable>
         <Text style={styles.title}>{title}</Text>
       </View>
