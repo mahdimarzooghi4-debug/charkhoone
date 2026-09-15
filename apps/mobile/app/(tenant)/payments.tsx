@@ -6,7 +6,7 @@ import { colors, fonts, radii } from "@/theme";
 function PaymentItem({ date, amount, status, pending }: { date: string; amount: string; status: string; pending?: boolean }) {
   return (
     <View style={styles.paymentItem}>
-      <View style={[styles.itemStatus, pending ? styles.pendingStatus : styles.futureStatus]}><Text style={[styles.itemStatusText, pending && styles.pendingStatusText]}>{status}</Text></View>
+      <View style={[styles.itemStatus, pending ? styles.itemPendingStatus : styles.futureStatus]}><Text style={[styles.itemStatusText, pending && styles.itemPendingStatusText]}>{status}</Text></View>
       <View style={styles.itemInfo}><Text style={styles.itemDate}>{date}</Text><Text style={styles.itemAmount}>{amount}</Text></View>
     </View>
   );
@@ -18,7 +18,7 @@ export default function PaymentsScreen() {
       <AppHeader title="دریافت و پرداخت" />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.nextCard}>
-          <View style={styles.nextHeader}><View style={styles.pendingStatus}><Text style={styles.pendingStatusText}>در انتظار پرداخت</Text></View><Text style={styles.nextTitle}>پرداخت بعدی</Text></View>
+          <View style={styles.nextHeader}><View style={styles.cardPendingStatus}><Text style={styles.cardPendingStatusText}>در انتظار پرداخت</Text></View><Text style={styles.nextTitle}>پرداخت بعدی</Text></View>
           <Text style={styles.nextAmount}>۱۸٬۵۰۰٬۰۰۰ تومان</Text>
           <Text style={styles.muted}>پرداخت ماهانه تأمین مالی</Text>
           <Text style={styles.muted}>سررسید: ۱۵ آبان ۱۴۰۵</Text>
@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
   nextTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 16, writingDirection: "rtl" },
   nextAmount: { color: colors.primary, fontFamily: fonts.bold, fontSize: 28, textAlign: "right", writingDirection: "rtl" },
   muted: { color: colors.muted, fontFamily: fonts.regular, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
-  pendingStatus: { backgroundColor: "#FFF3E0", borderRadius: radii.sm, paddingHorizontal: 12, paddingVertical: 6 },
-  pendingStatusText: { color: colors.accent, fontFamily: fonts.medium, fontSize: 12, writingDirection: "rtl" },
+  cardPendingStatus: { backgroundColor: "#FFF3E0", borderRadius: radii.sm, paddingHorizontal: 12, paddingVertical: 6 },
+  cardPendingStatusText: { color: colors.accent, fontFamily: fonts.medium, fontSize: 12, writingDirection: "rtl" },
   rentRow: { backgroundColor: colors.surface, borderRadius: radii.md, paddingHorizontal: 16, paddingVertical: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   rentValue: { color: colors.text, fontFamily: fonts.medium, fontSize: 14 },
   sectionTitle: { color: colors.page, fontFamily: fonts.semibold, fontSize: 15, textAlign: "right", writingDirection: "rtl", marginTop: 4 },
@@ -74,10 +74,10 @@ const styles = StyleSheet.create({
   list: { backgroundColor: colors.surface, borderRadius: radii.md, overflow: "hidden" },
   paymentItem: { minHeight: 69, paddingHorizontal: 16, paddingVertical: 14, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   itemStatus: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  pendingStatus: { backgroundColor: "#FFF3E0" },
+  itemPendingStatus: { backgroundColor: "#FFF3E0" },
   futureStatus: { backgroundColor: colors.page },
   itemStatusText: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, writingDirection: "rtl" },
-  pendingStatusText: { color: colors.accent },
+  itemPendingStatusText: { color: colors.accent },
   itemInfo: { flex: 1, alignItems: "flex-end", gap: 2 },
   itemDate: { color: colors.text, fontFamily: fonts.medium, fontSize: 13, writingDirection: "rtl" },
   itemAmount: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, writingDirection: "rtl" },
