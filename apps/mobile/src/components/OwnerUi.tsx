@@ -40,10 +40,10 @@ export function OwnerBadge({ children, tone = "success" }: PropsWithChildren<{ t
 export function OwnerBottomNav() {
   const router = useRouter();
   const items = [
-    { label: "حساب من", icon: ownerAssets.navUser, onPress: () => router.push("/(shared)/profile") },
-    { label: "قراردادها", icon: ownerAssets.navFileText, onPress: () => router.push("/(shared)/contracts") },
+    { label: "حساب من", icon: ownerAssets.navUser, active: false, onPress: () => router.push("/(shared)/profile") },
+    { label: "قراردادها", icon: ownerAssets.navFileText, active: false, onPress: () => router.push("/(shared)/contracts") },
     { label: "دریافت و پرداخت", icon: ownerAssets.navCreditCardActive, active: true, onPress: () => router.replace("/(owner)/receive-pay") },
-    { label: "خانه", icon: ownerAssets.navHome, onPress: () => router.replace("/(owner)/contract-active") },
+    { label: "خانه", icon: ownerAssets.navHome, active: false, onPress: () => router.replace("/(owner)/contract-active") },
   ] as const;
 
   return (
