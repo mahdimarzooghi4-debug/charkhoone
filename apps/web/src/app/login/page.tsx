@@ -40,9 +40,16 @@ export default function LoginPage() {
             <p data-node-id="163:186">برای ورود به حساب کاربری، شماره موبایل خود را وارد کنید.</p>
           </div>
 
-          <form className={styles.form} data-node-id="163:187" data-name="Input Section">
+          <form
+            className={styles.form}
+            action="/otp-verification"
+            method="get"
+            data-node-id="163:187"
+            data-name="Input Section"
+          >
             <TextField
               id="mobile"
+              name="mobile"
               label="شماره موبایل"
               type="tel"
               inputMode="numeric"

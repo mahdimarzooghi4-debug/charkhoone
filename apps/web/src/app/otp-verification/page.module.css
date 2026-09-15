@@ -1,0 +1,288 @@
+.page {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 120px;
+  background: var(--ch-color-primary);
+}
+
+.split {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  direction: ltr;
+}
+
+.showcase {
+  width: 711px;
+  flex: 0 0 711px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 24px;
+  direction: rtl;
+  text-align: right;
+}
+
+.brandName,
+.tagline,
+.description,
+.headers h2,
+.headers p {
+  margin: 0;
+}
+
+.brandName {
+  color: rgb(255 255 255 / 70%);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.tagline {
+  width: 100%;
+  color: var(--ch-color-accent);
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 60px;
+}
+
+.description {
+  width: 100%;
+  color: rgb(255 255 255 / 80%);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 30px;
+}
+
+.card {
+  width: 440px;
+  flex: 0 0 440px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  padding: 40px;
+  direction: rtl;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 16px 20px rgb(0 0 0 / 15%);
+}
+
+.logoHeader,
+.headers,
+.otpSection,
+.resend,
+.action,
+.changeMobile {
+  width: 100%;
+}
+
+.logoHeader {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ch-color-primary);
+  border-radius: 24px 24px 0 0;
+}
+
+.logo {
+  width: 140px;
+  height: 60px;
+  display: block;
+  object-fit: contain;
+}
+
+.headers {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: center;
+}
+
+.headers h2 {
+  width: 100%;
+  color: var(--ch-color-text);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: normal;
+}
+
+.headers p {
+  width: 100%;
+  color: var(--ch-color-muted);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.otpSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.digits {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  direction: rtl;
+}
+
+.digitBox {
+  width: 48px;
+  height: 56px;
+  flex: 0 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ch-color-text);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: normal;
+  background: #ffffff;
+  border: 1px solid var(--ch-color-border);
+  border-radius: 12px;
+}
+
+.resend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--ch-color-muted);
+  font-size: 13px;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+.resend strong {
+  color: var(--ch-color-primary);
+  font-weight: 500;
+}
+
+.action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.submit {
+  color: #ffffff;
+  font-size: 15px;
+  font-weight: 600;
+  background: var(--ch-color-accent);
+}
+
+.submit:hover:not(:disabled) {
+  filter: brightness(1.04);
+}
+
+.submit:focus-visible {
+  outline-color: rgb(255 138 0 / 35%);
+}
+
+.changeMobile {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  color: var(--ch-color-primary);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: normal;
+  text-decoration: underline;
+  text-underline-position: from-font;
+}
+
+.changeMobile:focus-visible {
+  outline: 3px solid rgb(13 59 54 / 18%);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+@media (max-width: 1240px) {
+  .page {
+    padding-inline: 64px;
+  }
+
+  .split {
+    gap: 48px;
+  }
+
+  .showcase {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+}
+
+@media (max-width: 960px) {
+  .page {
+    padding: 56px 32px;
+  }
+
+  .split {
+    max-width: 640px;
+    flex-direction: column-reverse;
+    justify-content: center;
+    gap: 48px;
+  }
+
+  .showcase,
+  .card {
+    width: 100%;
+    flex-basis: auto;
+  }
+
+  .showcase {
+    align-items: center;
+    text-align: center;
+  }
+}
+
+@media (max-width: 620px) {
+  .page {
+    align-items: flex-start;
+    padding: 24px 16px;
+  }
+
+  .split {
+    gap: 32px;
+  }
+
+  .card {
+    padding: 24px 20px;
+    gap: 24px;
+  }
+
+  .showcase {
+    gap: 12px;
+  }
+
+  .tagline {
+    font-size: 28px;
+    line-height: 1.55;
+  }
+
+  .description {
+    font-size: 14px;
+    line-height: 26px;
+  }
+
+  .digits {
+    gap: 8px;
+  }
+
+  .digitBox {
+    width: 44px;
+    flex-basis: 44px;
+  }
+
+  .resend {
+    white-space: normal;
+  }
+}
