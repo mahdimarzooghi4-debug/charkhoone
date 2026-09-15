@@ -1,0 +1,78 @@
+.page { min-height: 100svh; display: flex; align-items: stretch; direction: ltr; background: var(--ch-color-page); }
+.mainContent { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 24px; padding: 32px; direction: rtl; }
+.header { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.header h1, .header p, .settingsCard h2, .card h2, .hint { margin: 0; }
+.header h1 { color: var(--ch-color-text); font-size: 24px; font-weight: 700; }
+.header p { color: var(--ch-color-muted); font-size: 14px; }
+.columns { width: 100%; display: flex; align-items: flex-start; gap: 24px; direction: ltr; }
+.secondaryColumn { width: 420px; flex: 0 0 420px; display: flex; flex-direction: column; gap: 24px; direction: rtl; }
+.primaryColumn { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 24px; direction: rtl; }
+.settingsCard, .card { background: #fff; border: 1px solid var(--ch-color-border); border-radius: 16px; }
+.settingsCard { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding: 20px; }
+.settingsCard h2, .card h2 { color: var(--ch-color-text); font-size: 16px; font-weight: 600; text-align: right; }
+.settingsList { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+.settingsRow { width: 100%; min-height: 0; display: flex; align-items: center; justify-content: space-between; padding: 0; color: var(--ch-color-text); font-family: inherit; font-size: 14px; text-align: right; background: transparent; border: 0; }
+.settingsRow img { width: 20px; height: 20px; display: block; }
+.toggle { width: 40px; height: 24px; display: flex; align-items: center; justify-content: flex-end; padding: 2px; background: var(--ch-color-primary); border-radius: 12px; }
+.toggle i { width: 20px; height: 20px; display: block; background: #fff; border-radius: 10px; }
+.divider { width: 100%; height: 1px; background: var(--ch-color-border); }
+.logoutAction { width: 100%; min-height: 0; padding: 8px 0; color: #ff383c; font-family: inherit; font-size: 14px; font-weight: 600; background: transparent; border: 0; }
+.card { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; padding: 24px; }
+.profileCard { gap: 24px; padding: 32px; }
+.profileHeader { width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 16px; direction: rtl; }
+.initialAvatar { width: 80px; height: 80px; display: inline-flex; align-items: center; justify-content: center; color: var(--ch-color-text-secondary); font-size: 24px; font-weight: 700; background: var(--ch-color-page); border-radius: 40px; }
+.profileName { display: flex; flex-direction: column; align-items: flex-end; }
+.nameRow { display: flex; align-items: center; gap: 8px; }
+.nameRow strong { color: var(--ch-color-text); font-size: 20px; font-weight: 700; }
+.verifiedBadge { display: inline-flex; align-items: center; justify-content: center; padding: 6px 12px; color: var(--ch-color-primary); font-size: 12px; font-weight: 500; background: #e6f4e6; border-radius: 8px; }
+.textAction, .membershipLink { min-height: 0; padding: 8px 0; color: var(--ch-color-primary); font-family: inherit; font-size: 14px; font-weight: 600; background: transparent; border: 0; }
+.textAction { width: 100%; text-align: right; }
+.cardHeader { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
+.cardHeader h2 { direction: rtl; }
+.outlineButton { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; color: var(--ch-color-primary); font-family: inherit; font-size: 14px; font-weight: 500; background: #fff; border: 1.5px solid var(--ch-color-primary); border-radius: 12px; }
+.valueRow { width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 8px; direction: ltr; }
+.valueRow strong { color: var(--ch-color-text); font-size: 18px; font-weight: 600; direction: rtl; }
+.neutralBadge { padding: 6px 12px; color: var(--ch-color-text-subtle); font-size: 12px; font-weight: 500; background: #f2f5f5; border-radius: 8px; }
+.hint { width: 100%; color: var(--ch-color-muted); font-size: 13px; text-align: right; }
+.identityList, .membershipList { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+.identityRow, .membershipRow { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
+.identityRow strong, .membershipRow strong { color: var(--ch-color-text); font-size: 15px; font-weight: 600; direction: rtl; }
+.identityRow span, .membershipRow > span:first-child { color: var(--ch-color-text-secondary); font-size: 14px; direction: rtl; }
+.membershipCard { border-radius: 12px; }
+.activeBadge { padding: 4px 10px; color: #268c4d; font-size: 13px; font-weight: 600; background: #e0f5e5; border-radius: 6px; }
+.membershipLink { color: #336699; text-align: right; }
+.sidebar { width: 260px; flex: 0 0 260px; display: flex; flex-direction: column; justify-content: space-between; padding: 40px 20px; direction: rtl; background: var(--ch-color-primary); }
+.sidebarTop { display: flex; flex-direction: column; gap: 32px; }
+.logoWrap { width: 100%; display: flex; justify-content: center; }
+.logoWrap img { width: 127px; height: 55px; display: block; object-fit: contain; }
+.nav { display: flex; flex-direction: column; gap: 6px; }
+.navItem { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--ch-color-muted); font-size: 14px; text-decoration: none; border-radius: 12px; }
+.navItem > span:first-child { min-width: 0; flex: 1 1 auto; text-align: right; }
+.navItem img { width: 20px; height: 20px; display: block; object-fit: contain; }
+.navActive { color: #fff; font-weight: 600; background: rgb(255 255 255 / 8%); }
+.sidebarProfile { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid rgb(255 255 255 / 13%); }
+.avatar { width: 40px; height: 40px; display: block; object-fit: cover; border-radius: 20px; }
+.sidebarProfileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.sidebarProfileText strong { color: #fff; font-size: 14px; font-weight: 600; }
+.sidebarProfileText span { color: var(--ch-color-muted); font-size: 11px; }
+.page button:focus-visible, .page a:focus-visible { outline: 3px solid rgb(255 138 0 / 30%); outline-offset: 3px; }
+@media (max-width: 1120px) { .secondaryColumn { width: 340px; flex-basis: 340px; } }
+@media (max-width: 920px) {
+  .page { flex-direction: column-reverse; }
+  .sidebar { width: 100%; flex-basis: auto; padding: 16px 20px; }
+  .sidebarTop { gap: 16px; }
+  .logoWrap, .sidebarProfile { display: none; }
+  .nav { flex-direction: row; overflow-x: auto; }
+  .navItem { width: auto; flex: 0 0 auto; }
+  .mainContent { padding: 24px; }
+  .columns { flex-direction: column-reverse; }
+  .secondaryColumn, .primaryColumn { width: 100%; flex-basis: auto; }
+}
+@media (max-width: 640px) {
+  .mainContent { padding: 20px 16px; gap: 20px; }
+  .profileCard { padding: 24px 20px; }
+  .card { padding: 20px 16px; }
+  .cardHeader { align-items: flex-start; flex-direction: column-reverse; direction: rtl; }
+  .outlineButton { width: 100%; }
+  .identityRow, .membershipRow { align-items: flex-start; flex-direction: column; gap: 6px; direction: rtl; }
+}
