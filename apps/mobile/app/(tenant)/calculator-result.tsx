@@ -1,7 +1,8 @@
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AppButton } from "@/components/AppButton";
 import { AppHeader } from "@/components/AppHeader";
+import { FigmaSvg } from "@/components/FigmaSvg";
 import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts, radii } from "@/theme";
 
@@ -21,7 +22,7 @@ export default function CalculatorResultScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <AppHeader title="نتیجه محاسبه" />
         <View style={styles.gaugeWrap}>
-          <Image source={{ uri: figmaAssets.gauge }} style={styles.gauge} resizeMode="contain" />
+          <FigmaSvg uri={figmaAssets.gauge} width={240} height={120} />
           <View style={styles.gaugeText}>
             <Text style={styles.gaugeLabel}>محدوده قابل تأمین</Text>
             <Text style={styles.gaugeValue}>تا ۴۵۰٬۰۰۰٬۰۰۰ تومان</Text>
@@ -56,7 +57,6 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.primary },
   scroll: { paddingBottom: 16 },
   gaugeWrap: { height: 192, alignItems: "center", justifyContent: "center", position: "relative", paddingTop: 12 },
-  gauge: { width: 240, height: 120 },
   gaugeText: { position: "absolute", top: 86, alignItems: "center", gap: 4 },
   gaugeLabel: { color: colors.page, fontFamily: fonts.medium, fontSize: 13, writingDirection: "rtl" },
   gaugeValue: { color: colors.page, fontFamily: fonts.bold, fontSize: 22, writingDirection: "rtl" },
