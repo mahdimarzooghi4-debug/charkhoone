@@ -1,3 +1,4 @@
+using System.Globalization;
 using Charkhoone.Domain.Finance;
 
 namespace Charkhoone.Domain.Tests.Finance;
@@ -24,7 +25,8 @@ public sealed class FinancialRulesTests
     [InlineData("E2", "0.30")]
     public void CreditGrade_UsesApprovedGroupRatio(string subGrade, string expectedRatio)
     {
-        Assert.Equal(decimal.Parse(expectedRatio), CreditGradePolicy.GetLoanRatio(subGrade));
+        var ratio = decimal.Parse(expectedRatio, CultureInfo.InvariantCulture);
+        Assert.Equal(ratio, CreditGradePolicy.GetLoanRatio(subGrade));
     }
 
     [Fact]
