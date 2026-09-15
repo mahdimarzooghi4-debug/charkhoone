@@ -75,11 +75,17 @@ export default function OtpVerificationPage() {
             <strong data-node-id="167:202">ارسال مجدد تا ۰۰:۵۹</strong>
           </div>
 
-          <div className={styles.action} data-node-id="167:203" data-name="Action Wrapper">
-            <Button type="button" className={styles.submit} data-node-id="167:204">
+          <form
+            className={styles.action}
+            action="/identity-verification"
+            method="get"
+            data-node-id="167:203"
+            data-name="Action Wrapper"
+          >
+            <Button type="submit" className={styles.submit} data-node-id="167:204">
               تأیید و ورود
             </Button>
-          </div>
+          </form>
 
           <Link
             href="/login"
