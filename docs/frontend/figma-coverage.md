@@ -42,6 +42,8 @@ Landing coverage includes the Figma header, hero/ecosystem visual, audience card
 - Contract-detail frame: `Web App / Contract Detail` (`150:277`), route `/user/contracts/123456789012`
 - Receive & Pay frame: `Web App / Receive & Pay` (`150:412`), route `/user/receive-pay`
 - Properties frame: `Web App / Properties` (`173:379`), route `/user/properties`
+- Payment-return frame: `Web App / Payment Return` (`173:639`), route `/user/receive-pay/result`
+- Receipt frame: `Web App / Receipt` (`173:542`), route `/user/receive-pay/receipt`
 
 The login route covers the Figma split brand/auth layout, exact Persian copy, mobile-number field, confirmation-code action, legal copy and the login-specific exported logo. The login form performs frontend-only navigation to the OTP route.
 
@@ -55,9 +57,13 @@ The contracts route implements the Figma summary row, role/status filters and fo
 
 The contract-detail route implements the Figma breadcrumb/header, contract role/status, property and party information, active-contract status, next-payment card, main contract data and completed financing-plan card. The tracking code in the route and page content is a Figma fixture only. Its payment CTA links frontend-only to `/user/receive-pay`; the property-detail action remains visual-only because that destination screen is distinct from the Properties overview and has not been implemented yet.
 
-The receive/pay route implements the Figma header, four overview cards, terminated-contract warning, type/status filters and five financial-history rows covering overdue/pending payments, future settlement and completed payment/settlement states. The amounts, dates, the displayed ۰٫۵٪ service-fee copy, overdue count and termination explanation are presentation fixtures copied from Figma and are not implemented business rules. Payment, receipt and terminated-contract actions remain visual-only until their specific destination screens are implemented.
+The receive/pay route implements the Figma header, four overview cards, terminated-contract warning, type/status filters and five financial-history rows covering overdue/pending payments, future settlement and completed payment/settlement states. The Figma waiting-payment fixture links frontend-only to `/user/receive-pay/result`, and the completed Saadatabad payment fixture links to `/user/receive-pay/receipt`. Other transaction/termination actions remain visual-only until their exact destination frames are implemented. The amounts, dates, displayed ۰٫۵٪ service-fee copy, overdue count and termination explanation remain presentation fixtures rather than business rules.
 
 The properties route implements the Figma header/notification control, tenant-owner-total summary pills, three property cards (active tenant, active owner and owner in-progress states) and the inline empty state. The Saadatabad property links to the already implemented contract-detail route. The Poonak/Vanak actions and `ثبت کد رهگیری` remain visual-only until their exact destination frames are implemented. Addresses, postal codes, dates and amounts are Figma fixtures only.
+
+The payment-return route implements the Figma successful-payment result card, amount, transaction details, installment/contract context and navigation back to Receive & Pay. Its `مشاهده رسید` CTA links frontend-only to the implemented receipt route and its contract context links to the Saadatabad detail fixture.
+
+The receipt route implements the Figma transaction receipt, paid/payment badges, transaction metadata and contract context. `چاپ رسید`, `ذخیره تصویر رسید` and `اشتراک‌گذاری رسید` remain visual-only controls because no print/download/share behavior is specified or integrated yet.
 
 ## Implementation notes
 
