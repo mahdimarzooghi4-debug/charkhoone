@@ -1,0 +1,31 @@
+# .NET
+**/bin/
+**/obj/
+*.user
+*.suo
+
+# Node / Next.js
+**/node_modules/
+**/.next/
+**/out/
+**/.turbo/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs / coverage
+*.log
+coverage/
+TestResults/
+
+# Local infrastructure data
+.data/
