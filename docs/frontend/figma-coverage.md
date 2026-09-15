@@ -41,6 +41,7 @@ Landing coverage includes the Figma header, hero/ecosystem visual, audience card
 - Contracts frame: `Web App / Contracts` (`149:150`), route `/user/contracts`
 - Contract-detail frame: `Web App / Contract Detail` (`150:277`), route `/user/contracts/123456789012`
 - Receive & Pay frame: `Web App / Receive & Pay` (`150:412`), route `/user/receive-pay`
+- Properties frame: `Web App / Properties` (`173:379`), route `/user/properties`
 
 The login route covers the Figma split brand/auth layout, exact Persian copy, mobile-number field, confirmation-code action, legal copy and the login-specific exported logo. The login form performs frontend-only navigation to the OTP route.
 
@@ -48,13 +49,15 @@ The OTP route covers the corresponding split layout, exact masked-mobile copy, f
 
 The identity-verification route covers the Figma split layout, verified masked-mobile row and badge, national-ID input, confirmation action and the screen-specific exported logo. The masked mobile and example national ID remain presentation fixtures. Its CTA performs frontend-only navigation to `/user/home`.
 
-The User Web home route implements the Figma desktop dashboard shell: right sidebar and profile, overview cards, membership status, action-required cards, quick access, recent contracts, and the receive/pay activity table. Names, amounts, dates, contract counts, membership limits and statuses are presentation fixtures copied from Figma and are not business rules or API-backed values.
+The User Web home route implements the Figma desktop dashboard shell: right sidebar and profile, overview cards, membership status, action-required cards, quick access, recent contracts, and the receive/pay activity table. Names, amounts, dates, contract counts, membership limits and statuses are presentation fixtures copied from Figma and are not business rules or API-backed values. The existing `املاک من` quick-access item now links frontend-only to `/user/properties`.
 
 The contracts route implements the Figma summary row, role/status filters and four contract states. Only the Saadatabad fixture links to the implemented contract-detail screen; actions for other contracts remain visual-only until their corresponding Figma destination screens are implemented.
 
-The contract-detail route implements the Figma breadcrumb/header, contract role/status, property and party information, active-contract status, next-payment card, main contract data and completed financing-plan card. The tracking code in the route and page content is a Figma fixture only. Its payment CTA now links frontend-only to `/user/receive-pay`; the property-detail action remains visual-only because that destination screen has not been implemented yet.
+The contract-detail route implements the Figma breadcrumb/header, contract role/status, property and party information, active-contract status, next-payment card, main contract data and completed financing-plan card. The tracking code in the route and page content is a Figma fixture only. Its payment CTA links frontend-only to `/user/receive-pay`; the property-detail action remains visual-only because that destination screen is distinct from the Properties overview and has not been implemented yet.
 
 The receive/pay route implements the Figma header, four overview cards, terminated-contract warning, type/status filters and five financial-history rows covering overdue/pending payments, future settlement and completed payment/settlement states. The amounts, dates, the displayed ۰٫۵٪ service-fee copy, overdue count and termination explanation are presentation fixtures copied from Figma and are not implemented business rules. Payment, receipt and terminated-contract actions remain visual-only until their specific destination screens are implemented.
+
+The properties route implements the Figma header/notification control, tenant-owner-total summary pills, three property cards (active tenant, active owner and owner in-progress states) and the inline empty state. The Saadatabad property links to the already implemented contract-detail route. The Poonak/Vanak actions and `ثبت کد رهگیری` remain visual-only until their exact destination frames are implemented. Addresses, postal codes, dates and amounts are Figma fixtures only.
 
 ## Implementation notes
 
