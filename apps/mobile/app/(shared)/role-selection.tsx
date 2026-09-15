@@ -1,7 +1,8 @@
-import { Image, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AppButton } from "@/components/AppButton";
 import { BrandLogo } from "@/components/BrandLogo";
+import { FigmaSvg } from "@/components/FigmaSvg";
 import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts, radii } from "@/theme";
 
@@ -28,7 +29,7 @@ export default function RoleSelectionScreen() {
             <View style={styles.roleCard}>
               <View style={styles.roleHeader}>
                 <Text style={styles.roleTitle}>مالک</Text>
-                <Image source={{ uri: figmaAssets.roleUnselected }} style={styles.roleIcon} />
+                <FigmaSvg uri={figmaAssets.roleUnselected} width={16} height={16} />
               </View>
               <Text style={styles.roleName}>محمد رضایی</Text>
               <Text style={styles.roleCode}>کد ملی: ۰۰۲•••••۴۵۶</Text>
@@ -36,7 +37,7 @@ export default function RoleSelectionScreen() {
             <View style={[styles.roleCard, styles.roleCardSelected]}>
               <View style={styles.roleHeader}>
                 <Text style={[styles.roleTitle, styles.onPrimary]}>مستأجر</Text>
-                <Image source={{ uri: figmaAssets.roleSelected }} style={styles.roleIcon} />
+                <FigmaSvg uri={figmaAssets.roleSelected} width={16} height={16} />
               </View>
               <Text style={[styles.roleName, styles.onPrimary]}>علی رضایی</Text>
               <Text style={[styles.roleCode, styles.onPrimaryMuted]}>کد ملی: ۰۰۱•••••۷۸۹</Text>
@@ -84,7 +85,6 @@ const styles = StyleSheet.create({
   roleCardSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
   roleHeader: { width: "100%", flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8 },
   roleTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 14, writingDirection: "rtl" },
-  roleIcon: { width: 16, height: 16 },
   roleName: { width: "100%", color: colors.text, fontFamily: fonts.semibold, fontSize: 14, textAlign: "right", writingDirection: "rtl" },
   roleCode: { width: "100%", color: colors.muted, fontFamily: fonts.regular, fontSize: 12, textAlign: "right", writingDirection: "rtl" },
   onPrimary: { color: colors.surface },
