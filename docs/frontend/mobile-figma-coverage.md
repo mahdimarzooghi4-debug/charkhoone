@@ -17,7 +17,7 @@ Owner and tenant use one shared mobile application. Shared authentication, ident
 - `react-native-svg` for exact exported SVG assets
 - React Native `StyleSheet`; Tailwind is not used
 
-## Implemented from Figma in this tranche
+## Implemented from Figma
 
 - `41:8` — Login / Mobile Number
 - `39:26` — OTP Verification
@@ -27,14 +27,17 @@ Owner and tenant use one shared mobile application. Shared authentication, ident
 - `61:28` — Tenant Home / New User
 - `65:55` — Calculator / Manual Estimate
 - `71:43` — Calculator / Result
+- `85:62` — Financing / Eligible Plans
+- `90:52` — Financing / Plan Confirmation
+- `91:53` — Financing / Under Review
 
-The screens use the Figma values only as presentation fixtures. Sample amounts, rates and identities in these frames are not business rules and are not wired to backend/domain logic.
+The screens use the Figma values only as presentation fixtures. Sample amounts, rates, identities and dates in these frames are not business rules and are not wired to backend/domain logic.
 
 ## Navigation implemented
 
-`login -> otp -> identity -> contract tracking -> role selection -> tenant home`
+`login -> otp -> identity -> contract tracking -> role selection -> eligible plans -> plan confirmation -> under review`
 
-Tenant home links to the calculator and contract tracking flows. Other tenant sections visible in Figma (payments, contracts, profile, financing lifecycle, membership and termination states) are intentionally left for the next frontend tranche.
+Tenant home is also implemented as the new-user dashboard and links to the calculator and contract-tracking flows. The next tenant tranche will continue with approved financing, membership, contribution payment, final confirmation, active contract, payments, contracts, profile and termination states.
 
 ## Asset handling
 
