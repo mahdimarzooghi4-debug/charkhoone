@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 import { TextField } from "@/components/ui/TextField";
 import styles from "./page.module.css";
 
@@ -77,9 +77,13 @@ export default function IdentityVerificationPage() {
           </div>
 
           <div className={styles.action} data-node-id="167:234" data-name="Action Wrapper">
-            <Button type="button" className={styles.submit} data-node-id="167:235">
+            <Link
+              href="/user/home"
+              className={`ch-button ${styles.submit}`}
+              data-node-id="167:235"
+            >
               تأیید هویت
-            </Button>
+            </Link>
           </div>
         </section>
       </div>
