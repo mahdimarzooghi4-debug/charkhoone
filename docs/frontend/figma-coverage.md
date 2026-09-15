@@ -36,17 +36,20 @@ Landing coverage includes the Figma header, hero/ecosystem visual, audience card
 - This is one unified User Web application; tenant/owner states are screens and flows inside the same web app, not separate web apps.
 - Login frame: `Web App / Login` (`163:165`), route `/login`
 - OTP frame: `Web App / OTP Verification` (`167:175`), route `/otp-verification`
+- Identity frame: `Web App / Identity Verification` (`167:211`), route `/identity-verification`
 
-The login route covers the Figma split brand/auth layout, exact Persian copy, mobile-number field, confirmation-code action, legal copy and the login-specific exported logo. The login form now performs frontend-only navigation to the OTP route.
+The login route covers the Figma split brand/auth layout, exact Persian copy, mobile-number field, confirmation-code action, legal copy and the login-specific exported logo. The login form performs frontend-only navigation to the OTP route.
 
-The OTP route covers the corresponding split layout, exact masked-mobile copy, five Figma digit boxes, resend countdown state, confirmation action, change-mobile link and its screen-specific exported logo. The OTP digits and countdown are Figma fixture state only; no verification service, timer logic or backend behavior is introduced yet.
+The OTP route covers the corresponding split layout, exact masked-mobile copy, five Figma digit boxes, resend countdown state, confirmation action, change-mobile link and its screen-specific exported logo. Its confirmation action now performs frontend-only navigation to the identity-verification route. The OTP digits and countdown are Figma fixture state only; no verification service or timer logic is introduced yet.
+
+The identity-verification route covers the Figma split layout, verified masked-mobile row and badge, national-ID input, confirmation action and the screen-specific exported logo. The masked mobile and example national ID remain presentation fixtures; no identity service or backend validation is introduced in the frontend phase.
 
 ## Implementation notes
 
 - The repository remains Next.js + TypeScript with plain CSS; Tailwind has not been added.
 - Desktop dimensions, spacing, typography and colors are taken from the Figma design context. Responsive behavior below the provided 1440px frames is a conservative implementation adaptation.
 - The Android download control is visual only because the Figma source does not provide an APK/download URL.
-- `/login` → `/otp-verification` navigation is frontend-only. OTP verification, resend behavior and the post-verification transition remain unimplemented until their Figma states and later backend phase are covered.
+- `/login` → `/otp-verification` → `/identity-verification` navigation is frontend-only. Verification and later post-identity transitions remain unimplemented until their Figma screens and later backend phase are covered.
 - Figma-exported logo/icon asset URLs are currently referenced on the working branch. They are short-lived and must be vendored into the repository (exact exported bytes, no redrawing) before the final merge.
 
 No backend integration, database behavior or partner API behavior is introduced by these pages.
