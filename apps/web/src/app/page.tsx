@@ -1,9 +1,9 @@
+import { LeaseRegistrationPanel } from "../components/ui/LeaseRegistrationPanel";
+
 export default function HomePage() {
   return (
-    <main>
-      <h1>پلتفرم ملی چارخونه</h1>
-      <p>اسکلت فنی اولیه سامانه آماده است.</p>
-      <p>پیاده‌سازی رابط نهایی در مرحله بعد بر اساس Figma انجام می‌شود.</p>
+    <main className="ch-demo-page" data-figma-source="35:195">
+      <LeaseRegistrationPanel />
     </main>
   );
 }
