@@ -28,7 +28,7 @@ export default function ProfileScreen() {
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Text style={styles.screenTitle}>حساب من</Text>
-        <View style={styles.profileHeader}>
+        <Pressable style={styles.profileHeader} onPress={() => router.push("/(shared)/profile-photo")}>
           <View style={styles.avatarWrap}>
             <View style={styles.avatar}><Text style={styles.avatarText}>عر</Text></View>
             <View style={styles.cameraBadge}><FigmaSvg uri={figmaAssets.profileCamera} width={12} height={12} /></View>
@@ -36,7 +36,7 @@ export default function ProfileScreen() {
           <Text style={styles.name}>علی رضایی</Text>
           <Text style={styles.phone}>۰۹۱۲•••••۶۷</Text>
           <Text style={styles.changePhoto}>تغییر تصویر</Text>
-        </View>
+        </Pressable>
 
         <View style={styles.card}>
           <Text style={styles.cardEyebrow}>اطلاعات حساب</Text>
@@ -65,7 +65,7 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.card}><View style={styles.legalRow}><Text style={styles.chevron}>‹</Text><Text style={styles.rowLabel}>قوانین و شرایط استفاده</Text></View><View style={styles.legalRow}><Text style={styles.chevron}>‹</Text><Text style={styles.rowLabel}>حریم خصوصی</Text></View></View>
-        <Pressable style={styles.signOut}><Text style={styles.signOutText}>خروج از حساب</Text></Pressable>
+        <Pressable style={styles.signOut} onPress={() => router.push("/(shared)/sign-out")}><Text style={styles.signOutText}>خروج از حساب</Text></Pressable>
       </ScrollView>
       <View style={styles.bottomNav}>
         <NavItem icon={figmaAssets.profileUser} label="حساب من" active />
