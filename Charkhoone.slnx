@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="src/Charkhoone.Domain/Charkhoone.Domain.csproj" />
+  <Project Path="src/Charkhoone.Application/Charkhoone.Application.csproj" />
+  <Project Path="src/Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj" />
+  <Project Path="src/Charkhoone.Api/Charkhoone.Api.csproj" />
+  <Project Path="src/Charkhoone.Worker/Charkhoone.Worker.csproj" />
+  <Project Path="tests/Charkhoone.Domain.Tests/Charkhoone.Domain.Tests.csproj" />
+</Solution>

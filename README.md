@@ -1,38 +1,62 @@
 # پلتفرم ملی چارخونه
 
-این مخزن کد پلتفرم ملی چارخونه است.
+Bootstrap اولیه مخزن بر اساس سند فنی نسخه ۳.
 
-## وضعیت
-
-Bootstrap اولیه پروژه بر اساس سند فنی نسخه ۳ انجام می‌شود. قواعد مالی و دامنه باید مطابق سند فنی مصوب پیاده‌سازی شوند و هیچ API شریک بیرونی تا زمان دریافت قرارداد واقعی، عملیاتی فرض نمی‌شود.
-
-## معماری هدف
+## پشته فنی
 
 - Web: Next.js + TypeScript
 - Backend: ASP.NET Core روی .NET 10 LTS
 - Data: PostgreSQL + EF Core + Npgsql
 - Architecture: Modular Monolith با API و Worker مستقل
-- Background jobs/events: RabbitMQ
-- Identity: OIDC/Keycloak (پیشنهادی؛ اتصال واقعی در فاز مربوطه)
-- Documents: Private Object Storage
-- Deployment: Linux + Docker + Nginx
+- Background: RabbitMQ
+- Identity: OIDC/Keycloak به‌عنوان پیشنهاد فعلی؛ هنوز اتصال عملیاتی نشده است
+- Deployment target: Linux + Docker + Nginx
 
-## ساختار مخزن
+## ساختار
 
 ```text
-apps/
-  web/          رابط کاربری Next.js
-src/
-  Charkhoone.Api/
-  Charkhoone.Worker/
-  Charkhoone.Domain/
-  Charkhoone.Application/
-  Charkhoone.Infrastructure/
-tests/
-  Charkhoone.Domain.Tests/
-  Charkhoone.Api.Tests/
-docs/
-  architecture/
+apps/web/                    Next.js
+src/Charkhoone.Domain/       قواعد قطعی دامنه
+src/Charkhoone.Application/  use caseها و قراردادهای داخلی
+src/Charkhoone.Infrastructure/ PostgreSQL/EF و adapterها
+src/Charkhoone.Api/          REST API
+src/Charkhoone.Worker/       پردازش پس‌زمینه
+tests/                       آزمون‌ها
+docs/architecture/           تصمیم‌ها و قواعد فنی
 ```
 
-> این مخزن در مرحله bootstrap است؛ اتصال بانک، صندوق، خودنویس و اعتبارسنجی تا دریافت API واقعی فقط با قرارداد داخلی و adapter آزمایشی در محیط توسعه انجام خواهد شد.
+## اجرای زیرساخت محلی
+
+```bash
+docker compose up -d
+```
+
+## Backend
+
+نیازمند .NET 10 SDK:
+
+```bash
+dotnet restore Charkhoone.slnx
+dotnet build Charkhoone.slnx
+dotnet test Charkhoone.slnx
+dotnet run --project src/Charkhoone.Api
+```
+
+پس از اجرا:
+
+- `GET /health`
+- `GET /api/v1`
+
+## Web
+
+نیازمند Node.js 22+:
+
+```bash
+cd apps/web
+npm install
+npm run dev
+```
+
+## نکته مهم دامنه
+
+قواعد مالی مصوب در `docs/architecture/domain-rules.md` ثبت شده‌اند. رتبه اعتباری از سرویس بیرونی دریافت می‌شود؛ چارخونه رتبه تولید نمی‌کند. API شرکای واقعی هنوز در اختیار پروژه نیست و هیچ mock توسعه‌ای نباید به‌عنوان اتصال عملیاتی استفاده شود.
