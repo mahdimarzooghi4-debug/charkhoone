@@ -42,11 +42,11 @@ export default function AccountPage() {
                 <div className={styles.profileName}><div className={styles.nameRow}><VerifiedBadge /><strong data-node-id="163:224">علی رضایی</strong></div></div>
                 <span className={styles.initialAvatar} data-node-id="163:218">ع ر</span>
               </div>
-              <button type="button" className={styles.textAction} data-node-id="163:226">تغییر تصویر</button>
+              <Link href="/user/account/profile-image" className={styles.textAction} data-node-id="163:226">تغییر تصویر</Link>
             </section>
 
             <section className={styles.card} data-node-id="163:228">
-              <div className={styles.cardHeader}><button type="button" className={styles.outlineButton} data-node-id="163:230">تغییر شماره موبایل</button><h2 data-node-id="163:235">شماره موبایل</h2></div>
+              <div className={styles.cardHeader}><Link href="/user/account/change-mobile" className={styles.outlineButton} data-node-id="163:230">تغییر شماره موبایل</Link><h2 data-node-id="163:235">شماره موبایل</h2></div>
               <div className={styles.valueRow}><strong data-node-id="163:237">۰۹۱۲•••••۶۷</strong><VerifiedBadge /></div>
               <p className={styles.hint} data-node-id="163:240">برای تغییر شماره، شماره جدید باید با کد تأیید ثبت شود.</p>
             </section>
