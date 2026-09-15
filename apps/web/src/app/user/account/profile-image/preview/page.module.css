@@ -1,0 +1,20 @@
+.modal { width: min(460px, 100%); display: flex; flex-direction: column; gap: 24px; padding: 24px; background: #fff; border-radius: 24px; box-shadow: 0 8px 12px rgb(0 0 0 / 12%); }
+.modalHeader { display: flex; align-items: center; justify-content: space-between; direction: ltr; }
+.modalHeader h1, .modalBody p { margin: 0; }
+.modalHeader h1 { color: var(--ch-color-text); font-size: 18px; font-weight: 700; direction: rtl; }
+.closeButton { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: var(--ch-color-text); font-size: 16px; font-weight: 600; text-decoration: none; border: 1px solid var(--ch-color-border); border-radius: 12px; }
+.modalBody { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.modalBody > p { width: 100%; color: var(--ch-color-text-secondary); font-size: 14px; line-height: 22px; text-align: right; }
+.avatarPreview { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.photoFrame { width: 130px; height: 130px; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 65px; }
+.photoFrame img { width: 130px; height: 130px; display: block; object-fit: cover; }
+.previewCaption { color: var(--ch-color-muted); font-size: 13px; text-align: center; }
+.divider { width: 100%; height: 1px; background: var(--ch-color-border); }
+.actions { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.primaryAction, .outlineAction, .cancelAction { width: 100%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; text-decoration: none; border-radius: 12px; }
+.primaryAction, .outlineAction { min-height: 48px; padding: 0 24px; }
+.primaryAction { color: #fff; background: var(--ch-color-primary); }
+.outlineAction { color: var(--ch-color-primary); background: #fff; border: 1.5px solid var(--ch-color-primary); }
+.cancelAction { min-height: 0; padding: 8px; color: var(--ch-color-text-secondary); font-weight: 500; }
+.modal a:focus-visible { outline: 3px solid rgb(255 138 0 / 30%); outline-offset: 3px; }
+@media (max-width: 520px) { .modal { padding: 20px 16px; } }
