@@ -30,12 +30,21 @@ Covered tokens/components:
 
 Landing coverage includes the Figma header, hero/ecosystem visual, audience cards, four-step flow, "چرا چارخونه؟" cards, final CTA and footer. The app-download route covers the Figma header, phone mockup, Android option and iOS coming-soon state.
 
+### User Web App
+
+- Page: `05 - User Web App` (`144:14`)
+- This is one unified User Web application; tenant/owner states are screens and flows inside the same web app, not separate web apps.
+- Login frame: `Web App / Login` (`163:165`)
+- Route: `/login`
+
+The login route covers the Figma split brand/auth layout, exact Persian copy, mobile-number field, confirmation-code action, legal copy and the login-specific exported logo.
+
 ## Implementation notes
 
 - The repository remains Next.js + TypeScript with plain CSS; Tailwind has not been added.
-- Desktop dimensions, spacing, typography and colors are taken from the Figma design context. Responsive behavior below the provided 1440px frames is a conservative implementation adaptation because no mobile frame was present under `636:2`.
+- Desktop dimensions, spacing, typography and colors are taken from the Figma design context. Responsive behavior below the provided 1440px frames is a conservative implementation adaptation.
 - The Android download control is visual only because the Figma source does not provide an APK/download URL.
-- Login CTAs point to `/login`; the login screen itself is not claimed as implemented by this page coverage.
+- The `/login` confirmation action is frontend-only at this stage; OTP/backend behavior is not introduced until the corresponding Figma screens and later backend phase are implemented.
 - Figma-exported logo/icon asset URLs are currently referenced on the working branch. They are short-lived and must be vendored into the repository (exact exported bytes, no redrawing) before the final merge.
 
 No backend integration, database behavior or partner API behavior is introduced by these pages.
