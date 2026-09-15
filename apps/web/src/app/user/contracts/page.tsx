@@ -27,6 +27,7 @@ const contracts = [
     detail: "پرداخت بعدی: ۱۸٬۵۰۰٬۰۰۰ تومان — ۱۵ آبان ۱۴۰۵",
     period: "۱۵ مهر ۱۴۰۵ تا ۱۵ مهر ۱۴۰۶",
     action: "مشاهده قرارداد",
+    href: "/user/contracts/123456789012",
   },
   {
     nodeId: "149:209",
@@ -38,6 +39,7 @@ const contracts = [
     detail: "دریافتی بعدی: ۱۴٬۹۲۵٬۰۰۰ تومان — ۱ آذر ۱۴۰۵",
     period: "۱ آبان ۱۴۰۵ تا ۱ آبان ۱۴۰۶",
     action: "مشاهده قرارداد",
+    href: null,
   },
   {
     nodeId: "149:223",
@@ -49,6 +51,7 @@ const contracts = [
     detail: "در انتظار تأیید نهایی شما",
     period: "۲۰ مهر ۱۴۰۵ تا ۲۰ مهر ۱۴۰۶",
     action: "بررسی و تأیید",
+    href: null,
   },
   {
     nodeId: "149:238",
@@ -60,6 +63,7 @@ const contracts = [
     detail: "قرارداد به پایان رسیده است",
     period: "۱ فروردین ۱۴۰۴ تا ۱ فروردین ۱۴۰۵",
     action: "مشاهده قرارداد",
+    href: null,
   },
 ];
 
@@ -130,12 +134,16 @@ export default function ContractsPage() {
               <div className={styles.divider} />
               <div className={styles.contractBottom}>
                 <div className={styles.contractActionRow}>
-                  <button
-                    type="button"
-                    className={contract.statusTone === "attention" ? styles.reviewButton : styles.detailButton}
-                  >
-                    {contract.action}
-                  </button>
+                  {contract.href ? (
+                    <Link href={contract.href} className={styles.detailButton}>{contract.action}</Link>
+                  ) : (
+                    <button
+                      type="button"
+                      className={contract.statusTone === "attention" ? styles.reviewButton : styles.detailButton}
+                    >
+                      {contract.action}
+                    </button>
+                  )}
                   <span className={styles.contractDetail}>{contract.detail}</span>
                 </div>
                 <span className={styles.period}>{contract.period}</span>
