@@ -1,6 +1,7 @@
-import { Image, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { BrandLogo } from "@/components/BrandLogo";
+import { FigmaSvg } from "@/components/FigmaSvg";
 import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts, radii } from "@/theme";
 
@@ -17,7 +18,7 @@ function SummaryCard({ title, value, note, valueSize = 14 }: { title: string; va
 function Shortcut({ icon, label, onPress }: { icon: string; label: string; onPress?: () => void }) {
   return (
     <Pressable style={styles.shortcut} onPress={onPress}>
-      <View style={styles.shortcutIconWrap}><Image source={{ uri: icon }} style={styles.shortcutIcon} /></View>
+      <View style={styles.shortcutIconWrap}><FigmaSvg uri={icon} width={20} height={20} /></View>
       <Text style={styles.shortcutLabel}>{label}</Text>
     </Pressable>
   );
@@ -26,7 +27,7 @@ function Shortcut({ icon, label, onPress }: { icon: string; label: string; onPre
 function BottomItem({ icon, label, active }: { icon: string; label: string; active?: boolean }) {
   return (
     <View style={styles.bottomItem}>
-      <Image source={{ uri: icon }} style={styles.bottomIcon} />
+      <FigmaSvg uri={icon} width={24} height={24} />
       <Text style={[styles.bottomLabel, active && styles.bottomLabelActive]}>{label}</Text>
     </View>
   );
@@ -39,7 +40,7 @@ export default function TenantHomeScreen() {
     <SafeAreaView style={styles.safe}>
       <View style={styles.topLogo}><BrandLogo /></View>
       <View style={styles.header}>
-        <View style={styles.notification}><Image source={{ uri: figmaAssets.bell }} style={styles.notificationIcon} /></View>
+        <View style={styles.notification}><FigmaSvg uri={figmaAssets.bell} width={20} height={20} /></View>
         <View style={styles.greeting}>
           <Text style={styles.greetingTitle}>سلام، علی رضایی</Text>
           <Text style={styles.greetingNote}>به چارخونه خوش آمدید.</Text>
@@ -76,7 +77,7 @@ export default function TenantHomeScreen() {
 
         <View style={styles.notice}>
           <Text style={styles.noticeText}>درخواست شما پس از تکمیل مراحل برای بررسی به بانک ارسال می‌شود.</Text>
-          <Image source={{ uri: figmaAssets.info }} style={styles.infoIcon} />
+          <FigmaSvg uri={figmaAssets.info} width={16} height={16} />
         </View>
       </ScrollView>
 
@@ -95,7 +96,6 @@ const styles = StyleSheet.create({
   topLogo: { height: 60, alignItems: "flex-end" },
   header: { height: 56, paddingHorizontal: 20, paddingVertical: 8, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   notification: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  notificationIcon: { width: 20, height: 20 },
   greeting: { alignItems: "flex-end", gap: 2 },
   greetingTitle: { color: colors.page, fontFamily: fonts.semibold, fontSize: 16, writingDirection: "rtl" },
   greetingNote: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, writingDirection: "rtl" },
@@ -118,14 +118,11 @@ const styles = StyleSheet.create({
   quickRow: { flexDirection: "row", gap: 8 },
   shortcut: { flex: 1, minHeight: 89, backgroundColor: colors.surface, borderRadius: radii.md, paddingVertical: 12, paddingHorizontal: 4, alignItems: "center", justifyContent: "center", gap: 8 },
   shortcutIconWrap: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.page, alignItems: "center", justifyContent: "center" },
-  shortcutIcon: { width: 20, height: 20 },
   shortcutLabel: { color: colors.text, fontFamily: fonts.medium, fontSize: 11, textAlign: "center", writingDirection: "rtl" },
   notice: { backgroundColor: colors.successSoft, borderRadius: radii.sm, padding: 12, flexDirection: "row", alignItems: "center", gap: 8 },
   noticeText: { flex: 1, color: colors.primary, fontFamily: fonts.regular, fontSize: 11, lineHeight: 17, textAlign: "right", writingDirection: "rtl" },
-  infoIcon: { width: 16, height: 16 },
   bottomNav: { height: 80, backgroundColor: colors.page, borderTopWidth: 1, borderColor: colors.border, paddingHorizontal: 16, paddingVertical: 8, flexDirection: "row" },
   bottomItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 4 },
-  bottomIcon: { width: 24, height: 24 },
   bottomLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "center", writingDirection: "rtl" },
   bottomLabelActive: { color: colors.accent, fontFamily: fonts.medium },
 });
