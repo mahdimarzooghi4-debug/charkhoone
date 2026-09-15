@@ -118,7 +118,7 @@ Figma MCP asset URLs are currently isolated in `apps/mobile/src/figmaAssets.ts` 
 
 ## Verification
 
-The Owner Mobile tranche was typechecked in CI together with the existing web and backend jobs. The latest verification run completed successfully for all three jobs.
+The Owner Mobile code passed the mobile TypeScript CI check on the implementation commit; web and backend jobs passed in the same verification run.
 
 ## Open implementation boundary
 
