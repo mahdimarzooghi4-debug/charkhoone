@@ -18,4 +18,10 @@ export const figmaAssets = {
   homeActive: "https://www.figma.com/api/mcp/asset/e7511f97-786d-4a65-a865-211a6a1d884f.svg",
   sliderThumb: "https://www.figma.com/api/mcp/asset/4874f611-23b4-4483-beb0-33a62043b8cc.svg",
   gauge: "https://www.figma.com/api/mcp/asset/0e583abc-bfb1-48aa-8b9e-a02d14599b75.svg",
+  financingSelected: "https://www.figma.com/api/mcp/asset/03aaf7eb-8f37-4ef4-a0e6-7d978a95173a.svg",
+  financingUnselected: "https://www.figma.com/api/mcp/asset/fde0e876-7f9f-4766-b773-1c467ab72579.svg",
+  reviewCheck: "https://www.figma.com/api/mcp/asset/fa2d90b5-071c-4b2b-9c03-d9051b2d1484.svg",
+  reviewStepIdle: "https://www.figma.com/api/mcp/asset/2e15cba6-f6ce-40d0-b577-56da98b83450.svg",
+  reviewStepCurrent: "https://www.figma.com/api/mcp/asset/0d5d5337-c90b-4081-b4b3-847fcb158956.svg",
+  reviewStepDone: "https://www.figma.com/api/mcp/asset/ab35e1c9-6a75-4c9e-bb8e-318bf11ff129.svg",
 } as const;
