@@ -14,6 +14,7 @@ Owner and tenant use one shared mobile application. Shared authentication, ident
 - TypeScript
 - Expo Router
 - Vazirmatn through `@expo-google-fonts/vazirmatn`
+- `react-native-svg` for exact exported SVG assets
 - React Native `StyleSheet`; Tailwind is not used
 
 ## Implemented from Figma in this tranche
@@ -37,7 +38,7 @@ Tenant home links to the calculator and contract tracking flows. Other tenant se
 
 ## Asset handling
 
-Figma MCP asset URLs are currently isolated in `apps/mobile/src/figmaAssets.ts` so no icon/logo is redrawn or substituted. These URLs are short-lived. Before final merge, their exact exported bytes must be vendored into the repository and references changed to local assets.
+Figma MCP asset URLs are currently isolated in `apps/mobile/src/figmaAssets.ts` so no icon/logo is redrawn or substituted. SVG exports are rendered with `react-native-svg`. These URLs are short-lived. Before final merge, their exact exported bytes must be vendored into the repository and references changed to local assets.
 
 ## Open implementation boundary
 
