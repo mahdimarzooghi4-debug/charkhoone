@@ -116,6 +116,10 @@ Explicit frontend-only routes also exist for authentication error states, contra
 
 Figma MCP asset URLs are currently isolated in `apps/mobile/src/figmaAssets.ts` and `apps/mobile/src/ownerAssets.ts` where exported icons/images are needed, so no icon/logo is redrawn or substituted. SVG exports are rendered with `react-native-svg`. These URLs are short-lived. Before final merge, their exact exported bytes must be vendored into the repository and references changed to local assets.
 
+## Verification
+
+The Owner Mobile tranche was typechecked in CI together with the existing web and backend jobs. The latest verification run completed successfully for all three jobs.
+
 ## Open implementation boundary
 
 No bank, credit, fund, organization, payment-gateway or Khodnevis API is called by the mobile app yet. Navigation and screen state are frontend-only placeholders until the backend phase begins. Owner bottom-navigation items reuse the existing shared profile/contracts surfaces where those destinations are already represented; no additional owner-only home/account/contracts screens were invented beyond the supplied `04 - Owner Mobile` source page.
