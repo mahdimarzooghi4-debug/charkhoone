@@ -37,13 +37,23 @@ public sealed class FinancialRulesTests
     }
 
     [Fact]
-    public void TenantContribution_UsesBankApprovedLoan()
+    public void MaximumLoan_UsesFullDepositAndExternalGradeRatio()
+    {
+        const decimal fullDeposit = 833_333_333.33333333333333333333m;
+
+        var result = CreditAllocationCalculator.CalculateMaximumLoan(fullDeposit, "A1");
+
+        Assert.Equal(fullDeposit * 0.55m, result);
+    }
+
+    [Fact]
+    public void TenantContribution_SubtractsBankApprovedLoanWithoutInventingRoundingPolicy()
     {
         const decimal fullDeposit = 833_333_333.33333333333333333333m;
         const decimal approvedLoan = 458_333_333.33333333333333333333m;
 
         var result = CreditAllocationCalculator.CalculateTenantContribution(fullDeposit, approvedLoan);
 
-        Assert.Equal(375_000_000m, result);
+        Assert.Equal(fullDeposit - approvedLoan, result);
     }
 }
