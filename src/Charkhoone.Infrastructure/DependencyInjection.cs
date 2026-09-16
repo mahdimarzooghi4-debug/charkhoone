@@ -1,5 +1,7 @@
 using Charkhoone.Application.CreditApplications;
+using Charkhoone.Application.IdentityVerification;
 using Charkhoone.Infrastructure.CreditApplications;
+using Charkhoone.Infrastructure.IdentityVerification;
 using Charkhoone.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -23,6 +25,17 @@ public static class DependencyInjection
 
         services.AddScoped<IUserIdentityLookup, EfUserIdentityLookup>();
         services.AddScoped<ICreditApplicationService, EfCreditApplicationService>();
+        services.AddScoped<ICreditApplicationIdentityService, EfCreditApplicationIdentityService>();
+
+        var identityAdapterMode = configuration["ExternalAdapters:Identity:Mode"];
+        if (string.Equals(identityAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IIdentityVerificationAdapter, DevelopmentIdentityVerificationAdapter>();
+        }
+        else
+        {
+            services.AddSingleton<IIdentityVerificationAdapter, UnavailableIdentityVerificationAdapter>();
+        }
 
         return services;
     }
