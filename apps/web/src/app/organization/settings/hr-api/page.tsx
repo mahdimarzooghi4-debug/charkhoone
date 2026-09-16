@@ -2,10 +2,10 @@ import Link from "next/link";
 
 const statusRows = [
   { label: "وضعیت اتصال", value: "متصل", badge: true },
-  { label: "سیستم متصل", value: "سامانه HR سازمان نمونه" },
-  { label: "آخرین همگام‌سازی", value: "۱۴۰۵/۰۶/۰۸ — ۱۵:۳۲" },
-  { label: "پرسنل همگام‌شده", value: "۱٬۲۵۳ نفر" },
-  { label: "خطاهای آخرین همگام‌سازی", value: "۰ مورد" },
+  { label: "سیستم متصل", value: "سامانه HR سازمان نمونه", badge: false },
+  { label: "آخرین همگام‌سازی", value: "۱۴۰۵/۰۶/۰۸ — ۱۵:۳۲", badge: false },
+  { label: "پرسنل همگام‌شده", value: "۱٬۲۵۳ نفر", badge: false },
+  { label: "خطاهای آخرین همگام‌سازی", value: "۰ مورد", badge: false },
 ] as const;
 
 const mappings = [
