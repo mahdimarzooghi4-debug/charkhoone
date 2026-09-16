@@ -60,7 +60,7 @@ export function BrokerageSidebar() {
         })}
       </nav>
 
-      <Link href="/login" className="brokerage-sidebar__link brokerage-sidebar__logout">
+      <Link href="/brokerage/login" className="brokerage-sidebar__link brokerage-sidebar__logout">
         <span>خروج از حساب</span>
         <SidebarIcon name="logout" />
       </Link>
