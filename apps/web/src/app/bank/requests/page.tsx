@@ -43,7 +43,7 @@ const statusMeta: Record<Status, { label: string; className: string; action: str
 
 export default function BankRequestsPage() {
   return (
-    <main className={styles.page} data-node-id="264:160" data-name="Bank / Requests">
+    <main className={`${styles.page} ${styles.reviewedPanel}`} data-node-id="264:160" data-name="Bank / Requests">
       <section className={styles.mainContent} data-node-id="264:161">
         <header className={styles.header} data-node-id="264:162">
           <div className={styles.userInfo} data-node-id="264:163">
@@ -92,9 +92,9 @@ export default function BankRequestsPage() {
 
       <aside className={styles.sidebar} data-node-id="264:284">
         <div className={styles.brand}><img className={styles.logo} src={assets.logo} alt="چارخونه" width={127} height={55} /><div className={styles.bankIdentity}><strong>بانک نمونه</strong><span>تیم مدیریت تسهیلات</span></div></div>
-        <nav className={styles.nav} data-node-id="264:290">
+        <nav className={styles.nav} data-node-id="264:290" aria-label="منوی بانک">
           <Link href="/bank" className={styles.navItem}><span>خانه</span><img src={assets.home} alt="" width={18} height={18} /></Link>
-          <Link href="/bank/requests" className={`${styles.navItem} ${styles.navActive}`}><span>درخواست‌ها</span><img src={assets.requests} alt="" width={18} height={18} /></Link>
+          <Link href="/bank/requests" aria-current="page" className={`${styles.navItem} ${styles.navActive}`}><span>درخواست‌ها</span><img src={assets.requests} alt="" width={18} height={18} /></Link>
           <Link href="/bank/plans" className={styles.navItem}><span>طرح‌ها</span><img src={assets.plans} alt="" width={18} height={18} /></Link>
           <Link href="/bank/receive-pay" className={styles.navItem}><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={18} height={18} /></Link>
           <Link href="/bank/settings" className={styles.navItem}><span>تنظیمات</span><img src={assets.settings} alt="" width={18} height={18} /></Link>

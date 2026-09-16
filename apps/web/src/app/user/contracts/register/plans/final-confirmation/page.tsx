@@ -45,7 +45,15 @@ function Rows({ rows }: { rows: readonly (readonly [string, string, Tone?])[] })
   );
 }
 
-const process = [
+type ProcessStep = {
+  title: string;
+  note: string;
+  done?: boolean;
+  active?: boolean;
+  number?: string;
+};
+
+const process: readonly ProcessStep[] = [
   { title: "تأیید بانک", note: "تکمیل شده", done: true },
   { title: "پرداخت آورده", note: "تکمیل شده", done: true },
   { title: "تأیید نهایی شما", note: "نیاز به اقدام", active: true, number: "۳" },

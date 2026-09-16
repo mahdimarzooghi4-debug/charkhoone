@@ -11,7 +11,15 @@ const assets = {
   account: "https://www.figma.com/api/mcp/asset/57cbc0bc-9172-486b-8851-7f1f91195da4.svg",
 } as const;
 
-const membershipPlans = [
+type MembershipPlan = {
+  uses: string;
+  cap: string;
+  price: string;
+  selected?: boolean;
+  recommended?: boolean;
+};
+
+const membershipPlans: readonly MembershipPlan[] = [
   { uses: "۱ بار استفاده", cap: "تا ۵۰۰٬۰۰۰٬۰۰۰ تومان", price: "۲٬۵۰۰٬۰۰۰ تومان (نمونه)", selected: true, recommended: true },
   { uses: "۲ بار استفاده", cap: "تا ۵۰۰٬۰۰۰٬۰۰۰ تومان", price: "۴٬۰۰۰٬۰۰۰ تومان (نمونه)" },
   { uses: "۲ بار استفاده", cap: "تا ۱٬۰۰۰٬۰۰۰٬۰۰۰ تومان", price: "۶٬۵۰۰٬۰۰۰ تومان (نمونه)" },

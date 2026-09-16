@@ -76,6 +76,27 @@
 .navActive { color: #fff; font-weight: 600; background: rgb(255 255 255 / 8%); }
 .logout { margin-top: auto; font-weight: 600; }
 .page a:focus-visible { outline: 3px solid rgb(255 138 0 / 30%); outline-offset: 3px; }
+/* Reviewed against Figma 260:218 and 264:160. Keep these corrections scoped
+   until the other Bank frames receive their own visual review. */
+.reviewedPanel { min-height: max(100svh, 1041px); }
+.reviewedPanel .kpis, .reviewedPanel .financialCards { direction: ltr; }
+.reviewedPanel .kpi, .reviewedPanel .financialCard { direction: rtl; align-items: flex-start; text-align: right; }
+.reviewedPanel .warningBadge { color: var(--ch-color-accent); }
+.reviewedPanel .viewAll { align-self: flex-start; padding-top: 4px; }
+.reviewedPanel .logo { width: 180px; height: calc(180px * 55 / 127); }
+.reviewedPanel .navItem { direction: ltr; }
+.reviewedPanel .navItem span { direction: rtl; }
+.reviewedPanel .filterTabs { direction: ltr; justify-content: flex-end; }
+.reviewedPanel .filterTab { white-space: nowrap; }
+.reviewedPanel .searchBox { direction: ltr; }
+.reviewedPanel .searchBox span { direction: rtl; }
+.reviewedPanel .table, .reviewedPanel .requestsTable { min-width: 1108px; }
+.reviewedPanel .tableHeader, .reviewedPanel .tableRow { grid-template-columns: 150fr 150fr 150fr 220fr 250fr 188fr; }
+.reviewedPanel .requestsHeader, .reviewedPanel .requestsRow { grid-template-columns: 120fr 150fr 150fr 200fr 220fr 150fr 118fr; }
+.reviewedPanel .tableRow, .reviewedPanel .requestsRow { padding-block: 16px; }
+.reviewedPanel .tableRow > span, .reviewedPanel .requestsRow > span { min-width: 0; }
+.reviewedPanel .applicant { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 1040px) { .kpis, .financialCards { grid-template-columns: 1fr; } }
+@media (max-width: 820px) { .reviewedPanel { min-height: 100svh; } }
 @media (max-width: 820px) { .page { flex-direction: column-reverse; } .sidebar { width: 100%; flex-basis: auto; padding: 16px 20px; } .brand { display: none; } .nav { flex-direction: row; overflow-x: auto; padding-top: 0; } .navItem { width: auto; flex: 0 0 auto; } .logout { margin-top: 0; } .mainContent { padding: 24px; } .toolbar { align-items: stretch; flex-direction: column-reverse; direction: rtl; } .toolbarFilters { flex-wrap: wrap; } .searchBox { width: 100%; } }
 @media (max-width: 560px) { .mainContent { padding: 20px 16px; } .header { align-items: flex-start; flex-direction: column-reverse; direction: rtl; } .filterTabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; } .filterTab { flex: 0 0 auto; } }

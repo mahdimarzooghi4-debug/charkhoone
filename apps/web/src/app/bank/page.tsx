@@ -23,8 +23,8 @@ function Sidebar() {
   return (
     <aside className={styles.sidebar} data-node-id="260:319" data-name="sidebar-container">
       <div className={styles.brand}><img className={styles.logo} src={assets.logo} alt="چارخونه" width={127} height={55} /><div className={styles.bankIdentity}><strong>بانک نمونه</strong><span>تیم مدیریت تسهیلات</span></div></div>
-      <nav className={styles.nav} data-node-id="260:328">
-        <Link href="/bank" className={`${styles.navItem} ${styles.navActive}`}><span>خانه</span><img src={assets.home} alt="" width={18} height={18} /></Link>
+      <nav className={styles.nav} data-node-id="260:328" aria-label="منوی بانک">
+        <Link href="/bank" aria-current="page" className={`${styles.navItem} ${styles.navActive}`}><span>خانه</span><img src={assets.home} alt="" width={18} height={18} /></Link>
         <Link href="/bank/requests" className={styles.navItem}><span>درخواست‌ها</span><img src={assets.requests} alt="" width={18} height={18} /></Link>
         <Link href="/bank/plans" className={styles.navItem}><span>طرح‌ها</span><img src={assets.plans} alt="" width={18} height={18} /></Link>
         <Link href="/bank/receive-pay" className={styles.navItem}><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={18} height={18} /></Link>
@@ -37,7 +37,7 @@ function Sidebar() {
 
 export default function BankDashboardPage() {
   return (
-    <main className={styles.page} data-node-id="260:218" data-name="Bank / Dashboard">
+    <main className={`${styles.page} ${styles.reviewedPanel}`} data-node-id="260:218" data-name="Bank / Dashboard">
       <section className={styles.mainContent} data-node-id="260:219">
         <header className={styles.header} data-node-id="260:220">
           <div className={styles.userInfo} data-node-id="260:221"><div className={styles.userCopy}><strong data-node-id="260:223">شعبه مرکزی تهران</strong><span data-node-id="260:224">تیم چارخونه بانک</span></div><img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} /></div>
