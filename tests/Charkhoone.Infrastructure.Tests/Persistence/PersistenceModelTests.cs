@@ -65,16 +65,22 @@ public sealed class PersistenceModelTests
     }
 
     [Fact]
-    public void WorkflowAndOutboxTables_AreRegisteredForAuditAndReliablePublishing()
+    public void WorkflowAuditAndOutboxTables_AreRegisteredForRecoverableTransitions()
     {
         using var context = CreateContext();
 
-        Assert.Equal(
-            "workflow_transitions",
-            context.Model.FindEntityType(typeof(WorkflowTransitionRow))!.GetTableName());
-        Assert.Equal(
-            "outbox_messages",
-            context.Model.FindEntityType(typeof(OutboxMessageRow))!.GetTableName());
+        var workflow = context.Model.FindEntityType(typeof(WorkflowTransitionRow));
+        var audit = context.Model.FindEntityType(typeof(AuditEventRow));
+        var outbox = context.Model.FindEntityType(typeof(OutboxMessageRow));
+
+        Assert.Equal("workflow_transitions", workflow!.GetTableName());
+        Assert.Equal("audit_events", audit!.GetTableName());
+        Assert.Equal("outbox_messages", outbox!.GetTableName());
+
+        Assert.NotNull(audit.FindProperty(nameof(AuditEventRow.ActorId)));
+        Assert.NotNull(audit.FindProperty(nameof(AuditEventRow.Action)));
+        Assert.NotNull(audit.FindProperty(nameof(AuditEventRow.Reason)));
+        Assert.NotNull(audit.FindProperty(nameof(AuditEventRow.AggregateId)));
     }
 
     private static CharkhooneDbContext CreateContext()
