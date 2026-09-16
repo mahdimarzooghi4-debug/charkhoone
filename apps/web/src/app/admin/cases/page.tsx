@@ -80,7 +80,7 @@ export default function AdminCasesPage() {
                 <span role="cell"><Link className="admin-cases__manage" href={`/admin/cases/${item.id}`}>مدیریت</Link></span>
                 <span className="admin-cases__muted" role="cell">{item.updated}</span>
                 <span role="cell"><span className={`admin-cases__badge admin-cases__badge--${item.paymentTone}`}>{item.payment}</span></span>
-                <span className={item.partnerTone === "danger" ? "admin-cases__partner--danger" : ""} role="cell">{item.partner}</span>
+                <span className={"partnerTone" in item && item.partnerTone === "danger" ? "admin-cases__partner--danger" : ""} role="cell">{item.partner}</span>
                 <span role="cell"><span className={`admin-cases__badge admin-cases__badge--${item.stageTone}`}>{item.stage}</span></span>
                 <strong role="cell">{item.id}</strong>
                 <strong role="cell">{item.user}</strong>
