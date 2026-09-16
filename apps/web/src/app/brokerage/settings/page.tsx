@@ -181,7 +181,7 @@ export default function BrokerageSettingsPage() {
       <article className="brokerage-settings__policy">
         <div className="brokerage-settings__section-copy">
           <h2>کنترل داده‌های مالی</h2>
-          <p>قاعده‌ها در داده سازمانی مشخص داخل کارگزاری.</p>
+          <p>قواعد ورود و تطبیق داده بین چارخونه و سیستم داخلی کارگزاری.</p>
         </div>
         <div className="brokerage-settings__policy-grid">
           {policies.map((policy) => (
