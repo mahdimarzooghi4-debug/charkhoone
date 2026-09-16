@@ -1,0 +1,370 @@
+.brokerage-sync-error-detail {
+  position: relative;
+  min-height: 100vh;
+}
+
+.brokerage-sync-error-detail__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgb(0 0 0 / 42%);
+}
+
+.brokerage-sync-error-detail__modal {
+  position: fixed;
+  top: 115px;
+  left: max(24px, calc((100vw - 220px - 760px) / 2));
+  z-index: 90;
+  width: 760px;
+  height: 710px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  direction: rtl;
+  color: #1f2937;
+  background: #fff;
+  border: 1px solid #e5e7e6;
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgb(15 23 42 / 18%);
+}
+
+.brokerage-sync-error-detail__header {
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  direction: ltr;
+}
+
+.brokerage-sync-error-detail__close {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  background: #f3f4f6;
+  border: 1px solid #f3f4f6;
+  border-radius: 9px;
+}
+
+.brokerage-sync-error-detail__header-copy {
+  width: 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  direction: rtl;
+  text-align: right;
+}
+
+.brokerage-sync-error-detail__header-copy h1,
+.brokerage-sync-error-detail__header-copy p,
+.brokerage-sync-error-detail__summary p,
+.brokerage-sync-error-detail__record-card h2,
+.brokerage-sync-error-detail__compare-section h2,
+.brokerage-sync-error-detail__compare-card h3,
+.brokerage-sync-error-detail__diagnosis h2,
+.brokerage-sync-error-detail__diagnosis p {
+  margin: 0;
+}
+
+.brokerage-sync-error-detail__header-copy h1 {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.brokerage-sync-error-detail__header-copy p {
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.brokerage-sync-error-detail__summary {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 16px;
+  direction: ltr;
+  background: #fff8e7;
+  border: 1px solid #fde7b2;
+  border-radius: 12px;
+}
+
+.brokerage-sync-error-detail__summary > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  direction: rtl;
+  text-align: right;
+}
+
+.brokerage-sync-error-detail__summary strong {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.brokerage-sync-error-detail__summary p {
+  color: #6b7280;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.brokerage-sync-error-detail__status {
+  height: 34px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 12px;
+  color: #926012;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: #fff6de;
+  border: 1px solid #fff1cc;
+  border-radius: 999px;
+}
+
+.brokerage-sync-error-detail__record-card {
+  width: 100%;
+  min-height: 115px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px solid #e5e7e6;
+  border-radius: 12px;
+}
+
+.brokerage-sync-error-detail__record-card h2,
+.brokerage-sync-error-detail__compare-section h2 {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.brokerage-sync-error-detail__record-grid {
+  width: 100%;
+  height: 52px;
+  display: grid;
+  grid-template-columns: 150px 170px 180px minmax(160px, 1fr);
+  direction: ltr;
+}
+
+.brokerage-sync-error-detail__record-grid article {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  direction: rtl;
+  text-align: right;
+}
+
+.brokerage-sync-error-detail__record-grid span,
+.brokerage-sync-error-detail__compare-card span {
+  color: #6b7280;
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.brokerage-sync-error-detail__record-grid strong,
+.brokerage-sync-error-detail__compare-card strong {
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.6;
+}
+
+.brokerage-sync-error-detail__compare-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.brokerage-sync-error-detail__compare-grid {
+  width: 100%;
+  height: 160px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  direction: ltr;
+}
+
+.brokerage-sync-error-detail__compare-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  padding: 14px 16px;
+  direction: rtl;
+  background: #fff;
+  border: 1px solid #e5e7e6;
+  border-radius: 12px;
+}
+
+.brokerage-sync-error-detail__compare-card h3 {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.brokerage-sync-error-detail__compare-card > div {
+  width: 100%;
+  height: 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.brokerage-sync-error-detail__diagnosis {
+  width: 100%;
+  min-height: 104px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 14px 16px;
+  text-align: right;
+  background: #f8faf9;
+  border: 1px solid #e5e7e6;
+  border-radius: 12px;
+}
+
+.brokerage-sync-error-detail__diagnosis h2 {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.brokerage-sync-error-detail__diagnosis p {
+  color: #4b5563;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.brokerage-sync-error-detail__diagnosis .brokerage-sync-error-detail__diagnosis-warning {
+  color: #a16207;
+}
+
+.brokerage-sync-error-detail__actions {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  direction: ltr;
+}
+
+.brokerage-sync-error-detail__button {
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 18px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.brokerage-sync-error-detail__button--secondary {
+  width: 142px;
+  color: #374151;
+  background: #fff;
+  border: 1px solid #d1d5db;
+}
+
+.brokerage-sync-error-detail__button--primary {
+  width: 156px;
+  color: #fff;
+  background: #0d3b36;
+  border: 1px solid #0d3b36;
+}
+
+.brokerage-sync-error-detail__close:focus-visible,
+.brokerage-sync-error-detail__button:focus-visible {
+  outline: 2px solid rgb(255 138 0 / 65%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1040px) {
+  .brokerage-sync-error-detail__modal {
+    left: 50%;
+    width: min(760px, calc(100vw - 32px));
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 780px) {
+  .brokerage-sync-error-detail__modal {
+    top: 24px;
+    height: auto;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    padding: 20px;
+  }
+
+  .brokerage-sync-error-detail__header-copy {
+    width: auto;
+    flex: 1 1 auto;
+  }
+
+  .brokerage-sync-error-detail__summary {
+    height: auto;
+    min-height: 72px;
+  }
+
+  .brokerage-sync-error-detail__record-grid {
+    height: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .brokerage-sync-error-detail__compare-grid {
+    height: auto;
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .brokerage-sync-error-detail__summary {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+    padding-block: 14px;
+  }
+
+  .brokerage-sync-error-detail__record-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .brokerage-sync-error-detail__actions {
+    gap: 10px;
+  }
+
+  .brokerage-sync-error-detail__button--secondary,
+  .brokerage-sync-error-detail__button--primary {
+    width: auto;
+    flex: 1 1 0;
+  }
+}
