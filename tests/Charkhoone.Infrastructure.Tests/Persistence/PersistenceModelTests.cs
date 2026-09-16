@@ -83,6 +83,25 @@ public sealed class PersistenceModelTests
         Assert.NotNull(audit.FindProperty(nameof(AuditEventRow.AggregateId)));
     }
 
+    [Fact]
+    public void InboxMessage_UsesMessageIdAsDeduplicationKey()
+    {
+        using var context = CreateContext();
+        var entity = context.Model.FindEntityType(typeof(InboxMessageRow));
+
+        Assert.NotNull(entity);
+        Assert.Equal("inbox_messages", entity!.GetTableName());
+        Assert.Equal(
+            nameof(InboxMessageRow.MessageId),
+            Assert.Single(entity.FindPrimaryKey()!.Properties).Name);
+
+        var processedIndex = entity.GetIndexes().Single(index =>
+            index.Properties.Count == 1 &&
+            index.Properties[0].Name == nameof(InboxMessageRow.ProcessedAtUtc));
+
+        Assert.False(processedIndex.IsUnique);
+    }
+
     private static CharkhooneDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<CharkhooneDbContext>()

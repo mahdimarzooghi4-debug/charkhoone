@@ -19,6 +19,7 @@ public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> op
     public DbSet<PaymentInstructionRow> PaymentInstructions => Set<PaymentInstructionRow>();
     public DbSet<FrozenPrincipalRow> FrozenPrincipals => Set<FrozenPrincipalRow>();
     public DbSet<OutboxMessageRow> OutboxMessages => Set<OutboxMessageRow>();
+    public DbSet<InboxMessageRow> InboxMessages => Set<InboxMessageRow>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
