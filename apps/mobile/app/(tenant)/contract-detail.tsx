@@ -23,17 +23,19 @@ export default function TenantContractDetailScreen() {
           <Text style={styles.mutedSmall}>کد رهگیری: ۱۲۳۴۵۶۷۸۹۰۱۲</Text>
         </View>
 
-        <View style={styles.card}><Row label="شروع قرارداد" value="۱۵ مهر ۱۴۰۵" /><Row label="پایان قرارداد" value="۱۵ مهر ۱۴۰۶" /></View>
+        <View style={styles.periodCard}><Row label="شروع قرارداد" value="۱۵ مهر ۱۴۰۵" /><Row label="پایان قرارداد" value="۱۵ مهر ۱۴۰۶" /></View>
 
-        <View style={styles.card}>
+        <View style={[styles.card, styles.cardLarge, styles.financialCard]}>
           <Text style={styles.cardTitle}>شرایط مالی قرارداد</Text>
-          <View style={styles.twoCol}><MiniField label="اجاره ماهانه" value="۲۰٬۰۰۰٬۰۰۰ تومان" /><MiniField label="مبلغ رهن" value="۵۰۰٬۰۰۰٬۰۰۰ تومان" /></View>
-          <View style={styles.twoCol}><MiniField label="آورده پرداخت‌شده" value="۱۸۰٬۰۰۰٬۰۰۰ تومان" /><MiniField label="مبلغ تأمین مالی" value="۴۵۰٬۰۰۰٬۰۰۰ تومان" primary /></View>
+          <View style={styles.financialContent}>
+            <View style={styles.twoCol}><MiniField label="اجاره ماهانه" value="۲۰٬۰۰۰٬۰۰۰ تومان" /><MiniField label="مبلغ رهن" value="۵۰۰٬۰۰۰٬۰۰۰ تومان" /></View>
+            <View style={styles.twoCol}><MiniField label="آورده پرداخت‌شده" value="۱۸۰٬۰۰۰٬۰۰۰ تومان" /><MiniField label="مبلغ تأمین مالی" value="۴۵۰٬۰۰۰٬۰۰۰ تومان" primary /></View>
+          </View>
         </View>
 
-        <View style={styles.card}><Text style={styles.cardTitle}>طرح تأمین مالی</Text><Row label="طرح انتخاب‌شده" value="طرح تأمین مسکن" /><Row label="بانک" value="بانک ملت" /><Row label="نرخ قرارداد" value="۴٪" primary /></View>
+        <View style={[styles.card, styles.cardLarge]}><Text style={styles.cardTitle}>طرح تأمین مالی</Text><Row label="طرح انتخاب‌شده" value="طرح تأمین مسکن" /><Row label="بانک" value="بانک ملت" /><Row label="نرخ قرارداد" value="۴٪" primary /></View>
 
-        <View style={styles.card}><Text style={styles.cardTitle}>تعهد ماهانه</Text><View style={styles.obligation}><Text style={styles.obligationValue}>۲۰٬۰۰۰٬۰۰۰ تومان</Text><Text style={styles.obligationLabel}>اجاره ماهانه قرارداد</Text></View><View style={styles.obligation}><Text style={[styles.obligationValue, styles.primaryValue]}>۱۸٬۵۰۰٬۰۰۰ تومان</Text><Text style={styles.obligationLabel}>پرداخت ماهانه تأمین مالی</Text></View></View>
+        <View style={[styles.card, styles.cardLarge]}><Text style={styles.cardTitle}>تعهد ماهانه</Text><View style={styles.obligation}><Text style={styles.obligationValue}>۲۰٬۰۰۰٬۰۰۰ تومان</Text><Text style={styles.obligationLabel}>اجاره ماهانه قرارداد</Text></View><View style={styles.obligation}><Text style={[styles.obligationValue, styles.primaryValue]}>۱۸٬۵۰۰٬۰۰۰ تومان</Text><Text style={styles.obligationLabel}>پرداخت ماهانه تأمین مالی</Text></View></View>
 
         <View style={styles.nextPayment}>
           <View style={styles.nextHeader}><Text style={styles.nextTitle}>پرداخت بعدی</Text><View style={styles.pendingBadge}><Text style={styles.pendingText}>در انتظار پرداخت</Text></View></View>
@@ -43,8 +45,8 @@ export default function TenantContractDetailScreen() {
           <AppButton variant="primary" onPress={() => router.push("/(tenant)/payments")}>مشاهده پرداخت‌ها</AppButton>
         </View>
 
-        <View style={styles.card}><Text style={styles.cardTitle}>اطلاعات ملک</Text><Text style={styles.miniLabel}>آدرس</Text><Text style={styles.address}>تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴، واحد ۳</Text><Row label="کدپستی" value="۱۹۹۸۷۶۵۴۳۲" /></View>
-        <View style={styles.card}><Text style={styles.cardTitle}>طرفین قرارداد</Text><View style={styles.party}><Text style={styles.partyName}>علی رضایی <Text style={styles.partyRole}>مستأجر</Text></Text><Text style={styles.mutedSmall}>کد ملی: ۰۰۱•••••۷۸۹</Text></View><View style={styles.party}><Text style={styles.partyName}>محمد رضایی <Text style={styles.partyRole}>مالک</Text></Text><Text style={styles.mutedSmall}>کد ملی: ۰۰۲•••••۴۵۶</Text></View></View>
+        <View style={[styles.card, styles.cardLarge]}><Text style={styles.cardTitle}>اطلاعات ملک</Text><Text style={styles.propertyLabel}>آدرس</Text><Text style={styles.address}>تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴، واحد ۳</Text><Row label="کدپستی" value="۱۹۹۸۷۶۵۴۳۲" /></View>
+        <View style={[styles.card, styles.cardLarge]}><Text style={styles.cardTitle}>طرفین قرارداد</Text><View style={styles.party}><Text style={styles.partyName}>علی رضایی <Text style={styles.partyRole}>مستأجر</Text></Text><Text style={styles.mutedSmall}>کد ملی: ۰۰۱•••••۷۸۹</Text></View><View style={styles.party}><Text style={styles.partyName}>محمد رضایی <Text style={styles.partyRole}>مالک</Text></Text><Text style={styles.mutedSmall}>کد ملی: ۰۰۲•••••۴۵۶</Text></View></View>
         <View style={styles.links}><Pressable onPress={() => router.push("/(tenant)/payments")}><Text style={styles.link}>مشاهده پرداخت‌ها</Text></Pressable><Text style={styles.link}>مشاهده طرح تأمین مالی</Text></View>
       </ScrollView>
     </SafeAreaView>
@@ -53,7 +55,7 @@ export default function TenantContractDetailScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.primary },
-  scroll: { padding: 16, paddingBottom: 32, gap: 12 },
+  scroll: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32, gap: 12 },
   heroCard: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radii.lg, padding: 20, gap: 12 },
   badgeRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   roleBadge: { backgroundColor: colors.primary, borderRadius: radii.sm, paddingHorizontal: 12, paddingVertical: 6 },
@@ -63,7 +65,11 @@ const styles = StyleSheet.create({
   city: { color: colors.text, fontFamily: fonts.bold, fontSize: 20, textAlign: "right", writingDirection: "rtl" },
   muted: { color: colors.muted, fontFamily: fonts.regular, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
   mutedSmall: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, textAlign: "right", writingDirection: "rtl" },
+  periodCard: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radii.lg, padding: 16, gap: 10 },
   card: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radii.lg, padding: 16, gap: 12 },
+  cardLarge: { padding: 20 },
+  financialCard: { gap: 16 },
+  financialContent: { gap: 16 },
   cardTitle: { color: colors.text, fontFamily: fonts.bold, fontSize: 15, textAlign: "right", writingDirection: "rtl" },
   row: { minHeight: 22, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   value: { color: colors.text, fontFamily: fonts.semibold, fontSize: 14 },
@@ -83,10 +89,11 @@ const styles = StyleSheet.create({
   pendingText: { color: colors.accent, fontFamily: fonts.medium, fontSize: 12, writingDirection: "rtl" },
   nextAmount: { color: colors.primary, fontFamily: fonts.bold, fontSize: 24, textAlign: "right", writingDirection: "rtl" },
   nextLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
+  propertyLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, textAlign: "right", writingDirection: "rtl" },
   address: { color: colors.text, fontFamily: fonts.medium, fontSize: 13, lineHeight: 20, textAlign: "right", writingDirection: "rtl" },
   party: { alignItems: "flex-end", gap: 4 },
   partyName: { color: colors.text, fontFamily: fonts.semibold, fontSize: 14, writingDirection: "rtl" },
   partyRole: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11 },
-  links: { gap: 8, paddingVertical: 8, alignItems: "center" },
+  links: { gap: 8, paddingTop: 8, paddingBottom: 16, alignItems: "center" },
   link: { color: colors.page, fontFamily: fonts.semibold, fontSize: 14, writingDirection: "rtl" },
 });
