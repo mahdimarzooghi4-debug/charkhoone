@@ -183,11 +183,6 @@ public sealed class EfBankFundingService(
 
             if (bankResult.Outcome != ProcessBankFundingOutcome.Funded)
             {
-                if (bankResult.Outcome is not ProcessBankFundingOutcome.InvalidState)
-                {
-                    return bankResult;
-                }
-
                 return bankResult;
             }
 
@@ -253,7 +248,7 @@ public sealed class EfBankFundingService(
                 occurredAtUtc);
 
             AddAudit(applicationId, $"bank:{plan.BankId}", "bank_approval_declined", "The selected bank declined the credit application.", occurredAtUtc);
-            AddOutbox("credit-application.bank-declined.v1", applicationId, occurredAtUtc, new
+            AddOutbox("credit-application.bank-declined.v1", occurredAtUtc, new
             {
                 applicationId,
                 approvalId,
@@ -333,7 +328,7 @@ public sealed class EfBankFundingService(
             "bank_approval_applied",
             "Funding allocation uses the bank-approved amount, not the theoretical eligibility ceiling.",
             occurredAtUtc);
-        AddOutbox("credit-application.bank-approved.v1", applicationId, occurredAtUtc, new
+        AddOutbox("credit-application.bank-approved.v1", occurredAtUtc, new
         {
             applicationId,
             approvalId,
@@ -349,7 +344,6 @@ public sealed class EfBankFundingService(
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
 
-        // The bank stage completed; the caller continues immediately to the independent fund adapter.
         return new ProcessBankFundingResult(
             ProcessBankFundingOutcome.Funded,
             ToView(application, contract, allocation, null));
@@ -371,15 +365,15 @@ public sealed class EfBankFundingService(
                 .SingleAsync(cancellationToken);
             var contract = await dbContext.LeaseContracts
                 .SingleAsync(x => x.Id == contractId, cancellationToken);
-            var principal = await dbContext.FrozenPrincipals
+            var initialPrincipal = await dbContext.FrozenPrincipals
                 .SingleOrDefaultAsync(x => x.ContractId == contractId, cancellationToken);
 
-            if (application.Status == CreditApplicationStatus.ApprovedFunded && principal is not null)
+            if (application.Status == CreditApplicationStatus.ApprovedFunded && initialPrincipal is not null)
             {
                 await transaction.RollbackAsync(cancellationToken);
                 return new ProcessBankFundingResult(
                     ProcessBankFundingOutcome.AlreadyFunded,
-                    ToView(application, contract, allocation, principal));
+                    ToView(application, contract, allocation, initialPrincipal));
             }
 
             if (application.Status != CreditApplicationStatus.FundingPending)
@@ -387,7 +381,7 @@ public sealed class EfBankFundingService(
                 await transaction.RollbackAsync(cancellationToken);
                 return new ProcessBankFundingResult(
                     ProcessBankFundingOutcome.InvalidState,
-                    ToView(application, contract, allocation, principal));
+                    ToView(application, contract, allocation, initialPrincipal));
             }
 
             request = await dbContext.FundPrincipalFreezes
@@ -484,7 +478,7 @@ public sealed class EfBankFundingService(
                 ToView(lockedApplication, lockedContract, allocation, existingPrincipal));
         }
 
-        var principal = existingPrincipal ?? new FrozenPrincipalRow
+        var frozenPrincipal = existingPrincipal ?? new FrozenPrincipalRow
         {
             ContractId = contractId,
             BankId = allocation.BankId,
@@ -495,7 +489,7 @@ public sealed class EfBankFundingService(
 
         if (existingPrincipal is null)
         {
-            dbContext.FrozenPrincipals.Add(principal);
+            dbContext.FrozenPrincipals.Add(frozenPrincipal);
         }
 
         ApplyTransition(
@@ -511,7 +505,7 @@ public sealed class EfBankFundingService(
             "bank_principal_frozen",
             "Bank principal is recorded as a separate frozen resource and is not available for coverage spending.",
             occurredAtUtc);
-        AddOutbox("credit-application.funding-completed.v1", applicationId, occurredAtUtc, new
+        AddOutbox("credit-application.funding-completed.v1", occurredAtUtc, new
         {
             applicationId,
             fundingAllocationId = allocation.Id,
@@ -528,7 +522,7 @@ public sealed class EfBankFundingService(
 
         return new ProcessBankFundingResult(
             ProcessBankFundingOutcome.Funded,
-            ToView(lockedApplication, lockedContract, allocation, principal));
+            ToView(lockedApplication, lockedContract, allocation, frozenPrincipal));
     }
 
     private void MarkExternalIndeterminate(
@@ -590,7 +584,6 @@ public sealed class EfBankFundingService(
 
     private void AddOutbox(
         string type,
-        Guid applicationId,
         DateTimeOffset occurredAtUtc,
         object payload) =>
         dbContext.OutboxMessages.Add(new OutboxMessageRow
