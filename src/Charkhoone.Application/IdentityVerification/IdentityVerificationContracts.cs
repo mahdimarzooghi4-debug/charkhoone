@@ -22,6 +22,8 @@ public sealed record IdentityVerificationResponse(
 
 public interface IIdentityVerificationAdapter
 {
+    string Provider { get; }
+
     Task<IdentityVerificationResponse> VerifyAsync(
         IdentityVerificationRequest request,
         CancellationToken cancellationToken = default);
@@ -30,6 +32,7 @@ public interface IIdentityVerificationAdapter
 public enum ProcessIdentityVerificationOutcome
 {
     Applied,
+    AlreadyProcessed,
     Indeterminate,
     NotFound,
     InvalidState,
