@@ -4,12 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/marketing/BrandLogo";
 
-type IconName = "home" | "personnel" | "plans" | "cases" | "payments" | "settings" | "logout";
+export type SidebarIconName = "home" | "personnel" | "plans" | "cases" | "payments" | "settings" | "logout";
 
 type NavItem = {
   href: string;
   label: string;
-  icon: IconName;
+  icon: SidebarIconName;
   exact?: boolean;
 };
 
@@ -22,7 +22,7 @@ const navItems: NavItem[] = [
   { href: "/organization/settings", label: "تنظیمات", icon: "settings" },
 ];
 
-function SidebarIcon({ name }: { name: IconName }) {
+export function SidebarIcon({ name }: { name: SidebarIconName }) {
   const common = {
     width: 18,
     height: 18,
