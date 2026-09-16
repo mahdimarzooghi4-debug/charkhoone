@@ -1,0 +1,44 @@
+name: generate-tenant-ledger-migration
+
+on:
+  push:
+    branches:
+      - feature/tenant-contribution-ledger-v1
+    paths:
+      - .github/workflows/generate-tenant-ledger-migration.yml
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: feature/tenant-contribution-ledger-v1
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Install dotnet-ef
+        run: dotnet tool install --global dotnet-ef --version 10.0.12
+      - name: Restore
+        run: dotnet restore Charkhoone.slnx
+      - name: Generate migration
+        run: |
+          dotnet ef migrations add AddTenantContributionLedger \
+            --project src/Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj \
+            --startup-project src/Charkhoone.Api/Charkhoone.Api.csproj \
+            --output-dir Persistence/Migrations
+      - name: Commit generated migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/Charkhoone.Infrastructure/Persistence/Migrations
+          if git diff --cached --quiet; then
+            echo "No migration changes generated."
+            exit 1
+          fi
+          git commit -m "feat(persistence): add tenant contribution ledger migration"
+          git push origin HEAD:feature/tenant-contribution-ledger-v1
