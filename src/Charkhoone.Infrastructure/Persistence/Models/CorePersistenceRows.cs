@@ -60,6 +60,20 @@ public sealed class CreditApplicationRow
     public DateTimeOffset UpdatedAtUtc { get; set; }
 }
 
+public sealed class VerificationRequestRow
+{
+    public Guid Id { get; set; }
+    public Guid CreditApplicationId { get; set; }
+    public string Type { get; set; } = string.Empty;
+    public string Provider { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public string IdempotencyKey { get; set; } = string.Empty;
+    public string? ExternalReference { get; set; }
+    public string? ReasonCode { get; set; }
+    public DateTimeOffset CreatedAtUtc { get; set; }
+    public DateTimeOffset UpdatedAtUtc { get; set; }
+}
+
 public sealed class LeaseContractRow
 {
     public Guid Id { get; set; }
