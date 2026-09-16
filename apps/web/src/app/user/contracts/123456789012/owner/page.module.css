@@ -1,0 +1,85 @@
+.page { min-height: 100svh; display: flex; align-items: stretch; direction: ltr; background: var(--ch-color-page); }
+.mainContent { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 24px; padding: 32px; direction: rtl; }
+.pageHeader { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+.breadcrumb { width: 100%; display: flex; align-items: center; gap: 4px; color: var(--ch-color-muted); font-size: 13px; }
+.titleBlock { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 20px; direction: ltr; }
+.badges { display: flex; align-items: center; gap: 8px; }
+.activeBadge { padding: 6px 12px; color: var(--ch-color-primary); font-size: 12px; font-weight: 600; background: #e6f4e6; border-radius: 8px; }
+.ownerBadge { padding: 4px 12px; color: #0369a1; font-size: 12px; font-weight: 600; background: #e0f2fe; border-radius: 6px; }
+.titleCopy { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; direction: rtl; text-align: right; }
+.titleCopy h1, .titleCopy p, .card h2, .activeStatus h2, .activeStatus p, .payoutMethod p, .infoBox, .successInfo { margin: 0; }
+.titleCopy h1 { color: var(--ch-color-text); font-size: 24px; font-weight: 700; }
+.titleCopy p { color: var(--ch-color-muted); font-size: 14px; }
+.columns { width: 100%; display: flex; align-items: flex-start; gap: 24px; direction: ltr; }
+.secondaryColumn { width: 400px; flex: 0 0 400px; display: flex; flex-direction: column; gap: 16px; direction: rtl; }
+.primaryColumn { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 16px; direction: rtl; }
+.card { width: 100%; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 16px; }
+.primaryColumn .card { padding: 24px; }
+.card h2 { width: 100%; color: var(--ch-color-text); font-size: 15px; font-weight: 600; text-align: right; }
+.primaryColumn .card h2 { font-size: 16px; }
+.cardHeader { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
+.cardHeader h2 { width: auto; direction: rtl; }
+.mutedBadge { padding: 6px 12px; color: var(--ch-color-muted); font-size: 12px; font-weight: 600; background: var(--ch-color-page); border-radius: 8px; }
+.divider { width: 100%; height: 1px; background: var(--ch-color-border); }
+.inlineDetails { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
+.inlineDetails span { color: var(--ch-color-muted); font-size: 14px; direction: rtl; }
+.inlineDetails strong { color: var(--ch-color-text); font-size: 15px; font-weight: 600; direction: rtl; }
+.propertyInfo { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+.propertyInfo > div { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.propertyInfo span { color: var(--ch-color-muted); font-size: 13px; }
+.propertyInfo strong { color: var(--ch-color-text); font-size: 14px; font-weight: 600; }
+.settlementRows { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+.settlementRows > div { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; direction: ltr; }
+.settlementRows strong { color: var(--ch-color-text); font-size: 14px; font-weight: 600; direction: rtl; }
+.settlementRows strong.accent { color: var(--ch-color-accent); }
+.settlementRows span { color: var(--ch-color-muted); font-size: 13px; direction: rtl; }
+.smallButton { align-self: flex-start; min-height: 40px; display: inline-flex; align-items: center; justify-content: center; padding: 0 20px; color: var(--ch-color-text); font-size: 13px; font-weight: 600; text-decoration: none; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 10px; }
+.quickActions { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.quickActions > a, .quickActions > div { width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 12px; color: var(--ch-color-primary); font-size: 14px; font-weight: 600; text-decoration: none; border: 1px solid var(--ch-color-border); border-radius: 12px; direction: ltr; }
+.quickActions span { color: var(--ch-color-text); font-size: 13px; font-weight: 500; direction: rtl; }
+.activeStatus { width: 100%; display: flex; flex-direction: column; gap: 12px; padding: 20px; background: #f0f7f6; border: 1px solid #c2e2df; border-radius: 16px; }
+.activeTop { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
+.activeTop h2 { color: var(--ch-color-primary); font-size: 16px; font-weight: 700; direction: rtl; }
+.currentBadge { padding: 4px 10px; color: var(--ch-color-primary); font-size: 11px; font-weight: 500; background: #e6f4e6; border-radius: 6px; }
+.activeStatus p { color: var(--ch-color-text); font-size: 14px; text-align: right; }
+.activeStatus > strong { color: var(--ch-color-primary); font-size: 13px; font-weight: 600; text-align: right; }
+.waitBadge { padding: 6px 12px; color: var(--ch-color-accent); font-size: 12px; font-weight: 600; background: #fff3e0; border-radius: 8px; }
+.nextSettlement { width: 100%; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; direction: ltr; }
+.nextSettlement > div { display: flex; flex-direction: column; gap: 4px; }
+.nextSettlement > div:first-child { align-items: flex-start; }
+.nextSettlement > div:last-child { align-items: flex-end; direction: rtl; }
+.nextSettlement span { color: var(--ch-color-muted); font-size: 13px; }
+.nextSettlement strong { color: var(--ch-color-text); font-size: 16px; font-weight: 700; }
+.nextSettlement .bigAmount { color: var(--ch-color-primary); font-size: 24px; }
+.infoBox { width: 100%; padding: 12px; color: var(--ch-color-muted); font-size: 13px; line-height: 1.8; text-align: right; background: #f9fafb; border-radius: 8px; }
+.payoutMethod { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
+.systemBadge, .completeBadge { padding: 6px 12px; color: var(--ch-color-primary); font-size: 12px; font-weight: 600; background: #e6f4e6; border-radius: 8px; }
+.payoutMethod > div { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; direction: rtl; text-align: right; }
+.payoutMethod strong { color: var(--ch-color-text); font-size: 16px; }
+.payoutMethod p { color: var(--ch-color-muted); font-size: 13px; }
+.grid { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.grid > div, .financingGrid > div { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.grid strong, .financingGrid strong { color: var(--ch-color-text); font-size: 15px; font-weight: 600; }
+.grid span, .financingGrid span { color: var(--ch-color-muted); font-size: 13px; }
+.financingGrid { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.successInfo { width: 100%; padding: 12px; color: var(--ch-color-primary); font-size: 13px; text-align: right; background: #f0f7f6; border-radius: 8px; }
+.sidebar { width: 260px; flex: 0 0 260px; display: flex; flex-direction: column; justify-content: space-between; padding: 40px 20px; direction: rtl; background: var(--ch-color-primary); }
+.sidebarTop { display: flex; flex-direction: column; gap: 32px; }
+.logoWrap { display: flex; justify-content: center; }
+.logoWrap img { width: 127px; height: 55px; display: block; object-fit: contain; }
+.nav { display: flex; flex-direction: column; gap: 6px; }
+.navItem { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--ch-color-muted); font-size: 14px; text-decoration: none; border-radius: 12px; }
+.navItem > span:nth-child(2) { min-width: 0; flex: 1 1 auto; text-align: right; }
+.navItem img { width: 20px; height: 20px; display: block; object-fit: contain; }
+.navSpacer { width: 20px; height: 1px; flex: 0 0 20px; }
+.navActive { color: #fff; font-weight: 600; background: rgb(255 255 255 / 8%); }
+.alertBadge { min-width: 20px; display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; color: #fff; font-size: 11px; font-weight: 600; background: var(--ch-color-accent); border-radius: 99px; }
+.profile { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid rgb(255 255 255 / 13%); }
+.avatar { width: 40px; height: 40px; display: block; object-fit: cover; border-radius: 20px; }
+.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.profileText strong { color: #fff; font-size: 14px; font-weight: 600; }
+.profileText span { color: var(--ch-color-muted); font-size: 11px; }
+.page a:focus-visible { outline: 3px solid rgb(255 138 0 / 30%); outline-offset: 3px; }
+@media (max-width: 1120px) { .secondaryColumn { width: 340px; flex-basis: 340px; } .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 920px) { .page { flex-direction: column-reverse; } .sidebar { width: 100%; flex-basis: auto; padding: 16px 20px; } .sidebarTop { gap: 16px; } .logoWrap, .profile { display: none; } .nav { flex-direction: row; overflow-x: auto; } .navItem { width: auto; flex: 0 0 auto; } .mainContent { padding: 24px; } .columns { flex-direction: column; } .secondaryColumn, .primaryColumn { width: 100%; flex-basis: auto; } }
+@media (max-width: 640px) { .mainContent { padding: 20px 16px; } .titleBlock { align-items: flex-start; flex-direction: column-reverse; direction: rtl; } .grid, .financingGrid { grid-template-columns: 1fr; } .nextSettlement, .payoutMethod { align-items: flex-start; flex-direction: column; direction: rtl; } .nextSettlement > div:first-child, .nextSettlement > div:last-child { align-items: flex-end; } }
