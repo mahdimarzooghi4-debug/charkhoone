@@ -1,0 +1,711 @@
+.brokerage-transfer,
+.brokerage-transaction-detail {
+  width: min(1220px, 100%);
+  min-height: 100vh;
+  margin-inline: auto;
+  padding: 28px 32px;
+  color: var(--ch-color-text);
+  background: var(--ch-color-page);
+}
+
+.brokerage-transfer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.brokerage-transfer__header {
+  min-height: 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  text-align: right;
+}
+
+.brokerage-transfer__header h1,
+.brokerage-transfer__summary-card h2,
+.brokerage-transaction-detail h1,
+.brokerage-transaction-detail h2 {
+  margin: 0;
+  color: var(--ch-color-text);
+}
+
+.brokerage-transfer__header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.brokerage-transfer__header p,
+.brokerage-transfer__summary-card p,
+.brokerage-transaction-detail p {
+  margin: 0;
+}
+
+.brokerage-transfer__header p {
+  color: var(--ch-color-text-subtle);
+  font-size: 12px;
+}
+
+.brokerage-transfer__metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  direction: ltr;
+}
+
+.brokerage-transfer__metric {
+  min-width: 0;
+  min-height: 102px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 14px 16px;
+  direction: rtl;
+  text-align: right;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 12px;
+}
+
+.brokerage-transfer__metric span {
+  color: var(--ch-color-text-subtle);
+  font-size: 12px;
+}
+
+.brokerage-transfer__metric strong {
+  color: var(--ch-color-text);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.brokerage-transfer__metric small {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.brokerage-transfer__controls {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  direction: ltr;
+}
+
+.brokerage-transfer__filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  direction: ltr;
+}
+
+.brokerage-transfer__filters button {
+  min-height: 36px;
+  padding: 0 15px;
+  color: var(--ch-color-text-subtle);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.brokerage-transfer__filters button:hover,
+.brokerage-transfer__filters button:focus-visible {
+  border-color: var(--ch-color-primary);
+}
+
+.brokerage-transfer__filters .brokerage-transfer__filter--active {
+  color: #fff;
+  background: var(--ch-color-primary);
+  border-color: var(--ch-color-primary);
+}
+
+.brokerage-transfer__search {
+  width: 350px;
+  flex: 0 0 auto;
+  direction: rtl;
+}
+
+.brokerage-transfer__search input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  color: var(--ch-color-text);
+  font: inherit;
+  font-size: 12px;
+  text-align: right;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 8px;
+  outline: none;
+}
+
+.brokerage-transfer__search input::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
+
+.brokerage-transfer__search input:focus {
+  border-color: var(--ch-color-primary);
+  box-shadow: 0 0 0 3px rgb(13 59 54 / 7%);
+}
+
+.brokerage-transfer__table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 12px;
+}
+
+.brokerage-transfer-table {
+  min-width: 1154px;
+  overflow: hidden;
+}
+
+.brokerage-transfer-table__row {
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: 80px 110px 110px 165px 180px 120px 155px 204px;
+  align-items: center;
+  padding-inline: 16px;
+  direction: ltr;
+  border-top: 1px solid var(--ch-color-border);
+}
+
+.brokerage-transfer-table__head {
+  min-height: 42px;
+  border-top: 0;
+}
+
+.brokerage-transfer-table__row > span,
+.brokerage-transfer-table__row > strong {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-inline: 4px;
+  direction: rtl;
+  color: var(--ch-color-text);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brokerage-transfer-table__row > strong {
+  font-weight: 500;
+}
+
+.brokerage-transfer-table__head > span {
+  color: var(--ch-color-text-subtle);
+  font-size: 11px;
+}
+
+.brokerage-transfer-table__head > span:first-child,
+.brokerage-transfer-table__row > span:first-child {
+  justify-content: center;
+}
+
+.brokerage-transfer-table__row > span:nth-child(2) {
+  justify-content: flex-end;
+}
+
+.brokerage-transfer-table__action a {
+  color: var(--ch-color-text);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.brokerage-transfer-table__action a:hover,
+.brokerage-transfer-table__action a:focus-visible {
+  color: var(--ch-color-primary);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.brokerage-transfer__status {
+  min-width: 0;
+  width: max-content;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  border-radius: 999px;
+}
+
+.brokerage-transfer__status--success {
+  color: #166534;
+  background: #e2f4e5;
+}
+
+.brokerage-transfer__status--warning {
+  color: #926012;
+  background: #fff6de;
+}
+
+.brokerage-transfer__status--danger {
+  color: #b91c1c;
+  background: #fee2e2;
+}
+
+.brokerage-transfer__bottom {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  direction: ltr;
+}
+
+.brokerage-transfer__summary-card {
+  min-width: 0;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px 18px;
+  direction: rtl;
+  text-align: right;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 12px;
+}
+
+.brokerage-transfer__summary-card h2 {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.brokerage-transfer__summary-card > p {
+  color: var(--ch-color-text-subtle);
+  font-size: 11px;
+}
+
+.brokerage-transfer__summary-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  direction: ltr;
+}
+
+.brokerage-transfer__summary-grid > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  direction: rtl;
+}
+
+.brokerage-transfer__summary-grid span {
+  color: var(--ch-color-text-subtle);
+  font-size: 11px;
+}
+
+.brokerage-transfer__summary-grid strong {
+  color: var(--ch-color-text);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.brokerage-transfer__success-text {
+  color: #18794e !important;
+}
+
+.brokerage-transfer__warning-text {
+  color: #9a6700 !important;
+}
+
+.brokerage-transaction-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.brokerage-transaction-detail__header {
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  direction: ltr;
+}
+
+.brokerage-transaction-detail__header > div {
+  min-width: 0;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  direction: rtl;
+  text-align: right;
+}
+
+.brokerage-transaction-detail__header h1 {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.brokerage-transaction-detail__header p,
+.brokerage-transaction-detail__section-title p,
+.brokerage-transaction-detail__summary p {
+  color: var(--ch-color-text-subtle);
+  font-size: 12px;
+}
+
+.brokerage-transaction-detail__header > a {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  direction: rtl;
+  color: var(--ch-color-primary);
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 10px;
+  white-space: nowrap;
+}
+
+.brokerage-transaction-detail__header > a:hover,
+.brokerage-transaction-detail__header > a:focus-visible {
+  border-color: var(--ch-color-primary);
+}
+
+.brokerage-transaction-detail__summary,
+.brokerage-transaction-detail__panel {
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 14px;
+}
+
+.brokerage-transaction-detail__summary {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.brokerage-transaction-detail__summary-top {
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  direction: ltr;
+}
+
+.brokerage-transaction-detail__summary-top > div {
+  min-width: 0;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  direction: rtl;
+  text-align: right;
+}
+
+.brokerage-transaction-detail__summary-top h2 {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.brokerage-transaction-detail__divider {
+  height: 1px;
+  background: var(--ch-color-border);
+}
+
+.brokerage-transaction-detail__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  direction: ltr;
+}
+
+.brokerage-transaction-detail__summary-grid article,
+.brokerage-transaction-detail__effect-grid article {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  direction: rtl;
+  text-align: right;
+}
+
+.brokerage-transaction-detail__summary-grid span,
+.brokerage-transaction-detail__info-grid span,
+.brokerage-transaction-detail__effect-grid span {
+  color: var(--ch-color-text-subtle);
+  font-size: 12px;
+}
+
+.brokerage-transaction-detail__summary-grid strong,
+.brokerage-transaction-detail__info-grid strong,
+.brokerage-transaction-detail__effect-grid strong {
+  color: var(--ch-color-text);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.brokerage-transaction-detail__summary-grid small,
+.brokerage-transaction-detail__effect-grid small {
+  color: var(--ch-color-text-subtle);
+  font-size: 11px;
+}
+
+.brokerage-transaction-detail__middle {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  direction: ltr;
+}
+
+.brokerage-transaction-detail__panel {
+  min-width: 0;
+  padding: 18px 20px;
+  direction: rtl;
+}
+
+.brokerage-transaction-detail__section-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 7px;
+  text-align: right;
+}
+
+.brokerage-transaction-detail__section-title h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.brokerage-transaction-detail__info-grid {
+  margin-top: 14px;
+  display: grid;
+  direction: ltr;
+}
+
+.brokerage-transaction-detail__info-grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.brokerage-transaction-detail__info-grid--two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.brokerage-transaction-detail__info-grid article {
+  min-width: 0;
+  min-height: 62px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  padding: 7px 8px;
+  direction: rtl;
+  text-align: right;
+}
+
+.brokerage-transaction-detail__info--second-row {
+  border-top: 1px solid var(--ch-color-border);
+}
+
+.brokerage-transaction-detail__note {
+  margin-top: 10px !important;
+  padding: 10px 12px;
+  color: var(--ch-color-text-subtle);
+  font-size: 11px !important;
+  text-align: right;
+  background: #f8faf9;
+  border-radius: 10px;
+}
+
+.brokerage-transaction-detail__effect {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.brokerage-transaction-detail__effect-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  direction: ltr;
+}
+
+.brokerage-transaction-detail__history {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.brokerage-transaction-history {
+  display: flex;
+  flex-direction: column;
+}
+
+.brokerage-transaction-history__row {
+  min-height: 63px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  direction: ltr;
+  border-bottom: 1px solid var(--ch-color-border);
+}
+
+.brokerage-transaction-history__row:last-child {
+  border-bottom: 0;
+}
+
+.brokerage-transaction-history__meta {
+  min-width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  direction: rtl;
+}
+
+.brokerage-transaction-history__meta small,
+.brokerage-transaction-history__copy small {
+  color: var(--ch-color-text-subtle);
+  font-size: 11px;
+}
+
+.brokerage-transaction-history__copy {
+  min-width: 0;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  direction: rtl;
+  text-align: right;
+}
+
+.brokerage-transaction-history__copy strong {
+  color: var(--ch-color-text);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 1180px) {
+  .brokerage-transfer,
+  .brokerage-transaction-detail {
+    padding-inline: 24px;
+  }
+
+  .brokerage-transfer__metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .brokerage-transfer__bottom,
+  .brokerage-transaction-detail__middle {
+    grid-template-columns: 1fr;
+  }
+
+  .brokerage-transaction-detail__effect-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .brokerage-transfer,
+  .brokerage-transaction-detail {
+    padding: 20px 16px;
+  }
+
+  .brokerage-transfer__metrics,
+  .brokerage-transaction-detail__summary-grid,
+  .brokerage-transaction-detail__effect-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .brokerage-transfer__controls {
+    align-items: stretch;
+    flex-direction: column-reverse;
+    direction: rtl;
+  }
+
+  .brokerage-transfer__filters {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .brokerage-transfer__search {
+    width: 100%;
+  }
+
+  .brokerage-transfer__summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .brokerage-transaction-detail__header {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+    direction: rtl;
+  }
+
+  .brokerage-transaction-detail__summary-top {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+    direction: rtl;
+  }
+
+  .brokerage-transaction-detail__info-grid--three,
+  .brokerage-transaction-detail__info-grid--two {
+    grid-template-columns: 1fr;
+  }
+
+  .brokerage-transaction-detail__info-grid article {
+    border-top: 1px solid var(--ch-color-border);
+  }
+
+  .brokerage-transaction-detail__info-grid article:first-child {
+    border-top: 0;
+  }
+
+  .brokerage-transaction-history__row {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+    gap: 8px;
+    padding-block: 12px;
+    direction: rtl;
+  }
+}
