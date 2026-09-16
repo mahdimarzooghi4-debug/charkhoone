@@ -1,6 +1,8 @@
 using Charkhoone.Application.CreditApplications;
+using Charkhoone.Application.CreditEligibility;
 using Charkhoone.Application.IdentityVerification;
 using Charkhoone.Infrastructure.CreditApplications;
+using Charkhoone.Infrastructure.CreditEligibility;
 using Charkhoone.Infrastructure.IdentityVerification;
 using Charkhoone.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +28,7 @@ public static class DependencyInjection
         services.AddScoped<IUserIdentityLookup, EfUserIdentityLookup>();
         services.AddScoped<ICreditApplicationService, EfCreditApplicationService>();
         services.AddScoped<ICreditApplicationIdentityService, EfCreditApplicationIdentityService>();
+        services.AddScoped<ICreditEligibilityService, EfCreditEligibilityService>();
 
         var identityAdapterMode = configuration["ExternalAdapters:Identity:Mode"];
         if (string.Equals(identityAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
@@ -35,6 +38,16 @@ public static class DependencyInjection
         else
         {
             services.AddSingleton<IIdentityVerificationAdapter, UnavailableIdentityVerificationAdapter>();
+        }
+
+        var creditGradeAdapterMode = configuration["ExternalAdapters:CreditGrade:Mode"];
+        if (string.Equals(creditGradeAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IExternalCreditGradeAdapter, DevelopmentExternalCreditGradeAdapter>();
+        }
+        else
+        {
+            services.AddSingleton<IExternalCreditGradeAdapter, UnavailableExternalCreditGradeAdapter>();
         }
 
         return services;

@@ -102,6 +102,30 @@ public sealed class PersistenceModelTests
         Assert.False(processedIndex.IsUnique);
     }
 
+    [Fact]
+    public void CreditEligibilityAssessment_PersistsTheoreticalCapWithoutApprovedLoanFields()
+    {
+        using var context = CreateContext();
+        var entity = context.Model.FindEntityType(typeof(CreditEligibilityAssessmentRow));
+
+        Assert.NotNull(entity);
+        Assert.Equal("credit_eligibility_assessments", entity!.GetTableName());
+
+        var maximumLoan = entity.FindProperty(nameof(CreditEligibilityAssessmentRow.MaximumEligibleLoanRial));
+        Assert.NotNull(maximumLoan);
+        Assert.Equal(38, maximumLoan!.GetPrecision());
+        Assert.Equal(18, maximumLoan.GetScale());
+
+        var idempotencyIndex = entity.GetIndexes().Single(index =>
+            index.Properties.Count == 1 &&
+            index.Properties[0].Name == nameof(CreditEligibilityAssessmentRow.IdempotencyKey));
+        Assert.True(idempotencyIndex.IsUnique);
+
+        Assert.DoesNotContain(entity.GetProperties(), property =>
+            property.Name.Contains("ApprovedLoan", StringComparison.OrdinalIgnoreCase)
+            || property.Name.Contains("TenantContribution", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static CharkhooneDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<CharkhooneDbContext>()
