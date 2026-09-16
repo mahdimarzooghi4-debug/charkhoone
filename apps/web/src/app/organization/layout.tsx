@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { OrganizationSidebar } from "@/components/organization/OrganizationSidebar";
+import { OrganizationShell } from "@/components/organization/OrganizationShell";
 import "./organization.css";
 import "./personnel.css";
 import "./organization-personnel.css";
@@ -8,6 +8,7 @@ import "./cases.css";
 import "./payments.css";
 import "./settings.css";
 import "./users.css";
+import "./login.css";
 
 export const metadata: Metadata = {
   title: "پنل سازمان | چارخونه",
@@ -15,10 +16,5 @@ export const metadata: Metadata = {
 };
 
 export default function OrganizationLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <div className="org-shell">
-      <main className="org-shell__main">{children}</main>
-      <OrganizationSidebar />
-    </div>
-  );
+  return <OrganizationShell>{children}</OrganizationShell>;
 }
