@@ -1,10 +1,10 @@
 import type { PropsWithChildren } from "react";
-import { Pressable, StyleSheet, Text, type PressableProps } from "react-native";
+import { Pressable, StyleSheet, Text, type PressableProps, type TextStyle } from "react-native";
 import { colors, fonts, radii } from "@/theme";
 
-type AppButtonProps = PropsWithChildren<PressableProps & { variant?: "light" | "primary" | "outline" }>;
+type AppButtonProps = PropsWithChildren<PressableProps & { variant?: "light" | "primary" | "outline"; labelStyle?: TextStyle }>;
 
-export function AppButton({ children, variant = "light", style, ...props }: AppButtonProps) {
+export function AppButton({ children, variant = "light", style, labelStyle, ...props }: AppButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
@@ -16,7 +16,7 @@ export function AppButton({ children, variant = "light", style, ...props }: AppB
         typeof style === "function" ? style({ pressed }) : style,
       ]}
     >
-      <Text style={[styles.label, variant === "primary" ? styles.labelOnPrimary : styles.labelOnLight]}>
+      <Text style={[styles.label, variant === "primary" ? styles.labelOnPrimary : styles.labelOnLight, labelStyle]}>
         {children}
       </Text>
     </Pressable>
