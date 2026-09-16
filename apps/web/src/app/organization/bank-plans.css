@@ -1,0 +1,872 @@
+.org-bank-plans,
+.org-plan-detail,
+.org-plan-activation,
+.org-plan-review,
+.org-plan-success {
+  width: min(1220px, 100%);
+  min-height: 100vh;
+  margin-inline: auto;
+  padding: 28px 32px;
+  color: var(--ch-color-text);
+}
+
+.org-bank-plans,
+.org-plan-detail,
+.org-plan-activation,
+.org-plan-review,
+.org-plan-success {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.org-bank-plans__header,
+.org-plan-detail__header,
+.org-plan-flow__header,
+.org-plan-success__header {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.org-bank-plans__title,
+.org-plan-detail__header > div,
+.org-plan-flow__header > div,
+.org-plan-success__header > div {
+  min-width: 0;
+  flex: 1 1 auto;
+  text-align: right;
+}
+
+.org-bank-plans__title h1,
+.org-plan-detail__header h1,
+.org-plan-flow__header h1,
+.org-plan-success__header h1 {
+  margin: 0;
+  color: var(--ch-color-text);
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.org-bank-plans__title p,
+.org-plan-detail__header p,
+.org-plan-flow__header p,
+.org-plan-success__header p {
+  margin: 2px 0 0;
+  color: var(--ch-color-text-subtle);
+  font-size: 13px;
+}
+
+.org-bank-plans__actions,
+.org-plan-detail__activation-actions,
+.org-plan-flow__actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  direction: ltr;
+}
+
+.org-bank-plans__actions .org-action-button,
+.org-plan-detail__header .org-action-button,
+.org-plan-flow__header .org-action-button,
+.org-plan-detail__activation-actions .org-action-button,
+.org-plan-flow__actions .org-action-button {
+  min-height: 44px;
+  direction: rtl;
+  white-space: nowrap;
+}
+
+.org-bank-plans__metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  direction: ltr;
+}
+
+.org-bank-plan-metric {
+  min-width: 0;
+  height: 102px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 16px;
+  direction: rtl;
+  text-align: right;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 16px;
+}
+
+.org-bank-plan-metric span,
+.org-bank-plan-metric small {
+  color: var(--ch-color-text-subtle);
+}
+
+.org-bank-plan-metric span {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.org-bank-plan-metric strong {
+  color: var(--ch-color-text);
+  font-size: 22px;
+  line-height: 1.35;
+}
+
+.org-bank-plan-metric small {
+  font-size: 12px;
+}
+
+.org-bank-plans__note {
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 18px;
+  text-align: right;
+  background: #f8faf9;
+  border: 1px solid var(--ch-color-border);
+  border-radius: 12px;
+}
+
+.org-bank-plans__note strong {
+  flex: 0 0 auto;
+  color: var(--ch-color-primary);
+  font-size: 13px;
+}
+
+.org-bank-plans__note span {
+  color: var(--ch-color-text-subtle);
+  font-size: 13px;
+}
+
+.org-bank-plans__controls {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.org-bank-plans__search {
+  width: 420px;
+  max-width: 100%;
+}
+
+.org-bank-plans__search input {
+  width: 100%;
+  min-height: 44px;
+  height: 44px;
+  padding: 0 14px;
+  color: var(--ch-color-text);
+  text-align: right;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 10px;
+  outline: 0;
+}
+
+.org-bank-plans__search input::placeholder {
+  color: var(--ch-color-muted);
+  opacity: 1;
+}
+
+.org-bank-plans__search input:focus-visible {
+  border-color: var(--ch-color-primary);
+  box-shadow: 0 0 0 3px rgb(13 59 54 / 10%);
+}
+
+.org-bank-plans__filter {
+  min-width: 136px;
+  min-height: 44px;
+  height: 44px;
+  padding: 0 14px;
+  color: var(--ch-color-primary);
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 10px;
+}
+
+.org-bank-plans-table-wrap,
+.org-plan-selection-table-wrap {
+  width: 100%;
+  overflow: auto;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 16px;
+}
+
+.org-bank-plans-table {
+  width: 100%;
+  min-width: 1080px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  direction: rtl;
+  text-align: right;
+}
+
+.org-bank-plans-table th {
+  height: 50px;
+  padding: 0 10px;
+  color: var(--ch-color-text-subtle);
+  font-size: 12px;
+  font-weight: 700;
+  background: #f3f5f4;
+}
+
+.org-bank-plans-table td {
+  height: 72px;
+  padding: 0 10px;
+  color: var(--ch-color-text);
+  font-size: 12px;
+  vertical-align: middle;
+  border-top: 1px solid var(--ch-color-border);
+}
+
+.org-bank-plans-table td strong {
+  font-size: 13px;
+}
+
+.org-bank-plans-table th:nth-child(1), .org-bank-plans-table td:nth-child(1) { width: 12%; }
+.org-bank-plans-table th:nth-child(2), .org-bank-plans-table td:nth-child(2) { width: 16%; }
+.org-bank-plans-table th:nth-child(3), .org-bank-plans-table td:nth-child(3) { width: 15%; }
+.org-bank-plans-table th:nth-child(4), .org-bank-plans-table td:nth-child(4) { width: 10%; }
+.org-bank-plans-table th:nth-child(5), .org-bank-plans-table td:nth-child(5) { width: 16%; }
+.org-bank-plans-table th:nth-child(6), .org-bank-plans-table td:nth-child(6) { width: 12%; }
+.org-bank-plans-table th:nth-child(7), .org-bank-plans-table td:nth-child(7) { width: 10%; }
+.org-bank-plans-table th:nth-child(8), .org-bank-plans-table td:nth-child(8) { width: 9%; }
+
+.org-plan-status {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+
+.org-plan-status--active {
+  color: var(--ch-color-primary);
+  background: #e6f4e6;
+}
+
+.org-plan-status--available,
+.org-plan-status--muted {
+  color: var(--ch-color-muted);
+  background: #f3f5f4;
+}
+
+.org-plan-table-action {
+  min-width: 74px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  color: var(--ch-color-primary);
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 10px;
+}
+
+.org-plan-table-action--primary {
+  color: #fff;
+  background: var(--ch-color-primary);
+  border-color: var(--ch-color-primary);
+}
+
+.org-bank-plans-table__footer {
+  min-width: 1080px;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 16px;
+  border-top: 1px solid var(--ch-color-border);
+}
+
+.org-bank-plans-table__footer > span {
+  color: var(--ch-color-text-subtle);
+  font-size: 12px;
+}
+
+.org-plan-card,
+.org-plan-detail__activation,
+.org-plan-review__confirmation {
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 16px;
+}
+
+.org-plan-card {
+  padding: 20px;
+}
+
+.org-plan-detail__summary {
+  min-height: 210px;
+}
+
+.org-plan-detail__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.org-plan-detail__section-head--plain {
+  justify-content: flex-end;
+}
+
+.org-plan-detail__section-head > div {
+  min-width: 0;
+  flex: 1 1 auto;
+  text-align: right;
+}
+
+.org-plan-detail__section-head h2,
+.org-plan-detail__activation h2,
+.org-plan-review h2,
+.org-plan-success h2 {
+  margin: 0;
+  color: var(--ch-color-text);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.org-plan-detail__section-head p,
+.org-plan-detail__activation p,
+.org-plan-review__detail-card > p,
+.org-plan-review__people > p,
+.org-plan-review__confirmation p,
+.org-plan-success__next > p {
+  margin: 4px 0 0;
+  color: var(--ch-color-text-subtle);
+  font-size: 12px;
+}
+
+.org-plan-detail__stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  direction: ltr;
+}
+
+.org-plan-detail__two-column .org-plan-detail__stat-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.org-plan-detail__stat {
+  min-width: 0;
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px 16px;
+  direction: rtl;
+  text-align: right;
+  background: #f8f9f9;
+  border-radius: 12px;
+}
+
+.org-plan-detail__stat span,
+.org-plan-detail__stat small {
+  color: var(--ch-color-text-subtle);
+}
+
+.org-plan-detail__stat span { font-size: 12px; }
+.org-plan-detail__stat strong { font-size: 16px; line-height: 1.45; }
+.org-plan-detail__stat small { font-size: 11px; }
+
+.org-plan-detail__two-column,
+.org-plan-review__two-column {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  direction: ltr;
+}
+
+.org-plan-detail__two-column > *,
+.org-plan-review__two-column > * {
+  direction: rtl;
+}
+
+.org-plan-detail__payer-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.org-plan-detail__payer-options > div {
+  min-height: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--ch-color-border);
+  border-radius: 12px;
+}
+
+.org-plan-detail__payer-options > div strong { font-size: 14px; }
+.org-plan-detail__payer-options > div span { color: var(--ch-color-text-subtle); font-size: 11px; }
+
+.org-plan-detail__payer-options > .org-plan-detail__payer-options--selected {
+  background: #e8f5ef;
+  border: 1.5px solid var(--ch-color-primary);
+}
+
+.org-plan-detail__payer-options--selected strong { color: var(--ch-color-primary); }
+
+.org-plan-detail__emphasis {
+  margin: 12px 0 0;
+  color: var(--ch-color-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.org-plan-detail__activation,
+.org-plan-review__confirmation {
+  min-height: 104px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px;
+}
+
+.org-plan-detail__activation > div:last-child,
+.org-plan-review__confirmation > div:last-child {
+  min-width: 0;
+  flex: 1 1 auto;
+  text-align: right;
+}
+
+.org-plan-activation__summary {
+  padding: 18px;
+}
+
+.org-plan-activation__summary-grid,
+.org-plan-review__summary-grid,
+.org-plan-success__summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  direction: ltr;
+}
+
+.org-plan-activation__summary-grid > div,
+.org-plan-review__summary-grid > div,
+.org-plan-success__summary-grid > div {
+  min-width: 0;
+  min-height: 78px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 14px;
+  direction: rtl;
+  text-align: right;
+  background: #f8faf9;
+  border-radius: 10px;
+}
+
+.org-plan-activation__summary-grid span,
+.org-plan-review__summary-grid span,
+.org-plan-success__summary-grid span {
+  color: var(--ch-color-text-subtle);
+  font-size: 11px;
+}
+
+.org-plan-activation__summary-grid strong,
+.org-plan-review__summary-grid strong,
+.org-plan-success__summary-grid strong {
+  color: var(--ch-color-text);
+  font-size: 15px;
+}
+
+.org-plan-activation__summary-grid small,
+.org-plan-review__summary-grid small,
+.org-plan-success__summary-grid small {
+  color: var(--ch-color-text-subtle);
+  font-size: 10px;
+}
+
+.org-plan-activation__controls {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  direction: ltr;
+}
+
+.org-plan-activation__controls > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  direction: rtl;
+}
+
+.org-plan-activation__controls .org-bank-plans__search {
+  direction: rtl;
+}
+
+.org-plan-selection-table {
+  width: 100%;
+  min-width: 1120px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  direction: rtl;
+  text-align: right;
+}
+
+.org-plan-selection-table th {
+  height: 50px;
+  padding: 0 8px;
+  color: var(--ch-color-text-subtle);
+  font-size: 11px;
+  font-weight: 500;
+  background: #f5f6f5;
+}
+
+.org-plan-selection-table td {
+  height: 52px;
+  padding: 0 8px;
+  color: var(--ch-color-text);
+  font-size: 12px;
+  border-top: 1px solid var(--ch-color-border);
+}
+
+.org-plan-selection-table th:first-child,
+.org-plan-selection-table td:first-child {
+  width: 68px;
+  text-align: center;
+}
+
+.org-plan-selection-table th:nth-child(2), .org-plan-selection-table td:nth-child(2) { width: 220px; }
+.org-plan-selection-table th:nth-child(3), .org-plan-selection-table td:nth-child(3) { width: 120px; }
+.org-plan-selection-table th:nth-child(4), .org-plan-selection-table td:nth-child(4) { width: 150px; }
+.org-plan-selection-table th:nth-child(5), .org-plan-selection-table td:nth-child(5) { width: 190px; }
+.org-plan-selection-table th:nth-child(6), .org-plan-selection-table td:nth-child(6) { width: 212px; }
+.org-plan-selection-table th:nth-child(7), .org-plan-selection-table td:nth-child(7) { width: 160px; text-align: center; }
+
+.org-plan-selection-table__disabled td {
+  color: var(--ch-color-text-subtle);
+}
+
+.org-plan-selection-checkbox {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  min-height: 20px;
+  display: inline-grid;
+  place-content: center;
+  margin: 0;
+  vertical-align: middle;
+  background: #fff;
+  border: 1px solid var(--ch-color-border);
+  border-radius: 6px;
+}
+
+.org-plan-selection-checkbox:checked {
+  background: var(--ch-color-primary);
+  border-color: var(--ch-color-primary);
+}
+
+.org-plan-selection-checkbox:checked::after {
+  content: "✓";
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.org-plan-selection-checkbox:disabled {
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.org-plan-activation__selection-summary {
+  min-height: 82px;
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 24px;
+  align-items: center;
+  padding: 14px 18px;
+  direction: ltr;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 14px;
+}
+
+.org-plan-activation__selection-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  direction: rtl;
+  text-align: right;
+}
+
+.org-plan-activation__selection-summary strong { font-size: 14px; }
+.org-plan-activation__selection-summary span { color: var(--ch-color-text-subtle); font-size: 11px; }
+
+.org-plan-review__summary h2,
+.org-plan-success__summary h2,
+.org-plan-review__people h2,
+.org-plan-review__detail-card h2,
+.org-plan-success__next h2 {
+  margin-bottom: 10px;
+}
+
+.org-plan-review__detail-card {
+  min-height: 220px;
+}
+
+.org-plan-review__info-row,
+.org-plan-review__check-row {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 8px 14px;
+  background: #f8faf9;
+  border-radius: 10px;
+}
+
+.org-plan-review__info-row > span {
+  color: var(--ch-color-text-subtle);
+  font-size: 12px;
+}
+
+.org-plan-review__info-row > div,
+.org-plan-review__check-row > div {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.org-plan-review__info-row strong,
+.org-plan-review__check-row strong {
+  font-size: 13px;
+}
+
+.org-plan-review__info-row small,
+.org-plan-review__check-row small {
+  color: var(--ch-color-text-subtle);
+  font-size: 11px;
+}
+
+.org-plan-review__check {
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  display: grid;
+  place-items: center;
+  color: var(--ch-color-primary);
+  font-size: 14px;
+  font-weight: 700;
+  background: #e2f2e8;
+  border-radius: 50%;
+}
+
+.org-plan-review__people-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.org-plan-review__people-grid > div {
+  min-height: 68px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 18px;
+  background: #f8faf9;
+  border-radius: 10px;
+}
+
+.org-plan-review__people-grid strong { font-size: 15px; }
+.org-plan-review__people-grid span { color: var(--ch-color-text-subtle); font-size: 12px; }
+
+.org-plan-review__confirmation {
+  min-height: 120px;
+  border-radius: 14px;
+}
+
+.org-plan-success {
+  gap: 18px;
+  padding: 32px;
+}
+
+.org-plan-success__header {
+  justify-content: flex-end;
+}
+
+.org-plan-success__hero {
+  min-height: 230px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.org-plan-success__icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  color: #0e7333;
+  font-size: 26px;
+  font-weight: 700;
+  background: #e5f4e6;
+  border-radius: 50%;
+}
+
+.org-plan-success__hero h2 {
+  font-size: 22px;
+}
+
+.org-plan-success__hero p {
+  max-width: 760px;
+  margin: 0;
+  color: var(--ch-color-text-subtle);
+  font-size: 13px;
+}
+
+.org-plan-success__summary {
+  min-height: 172px;
+}
+
+.org-plan-success__summary-grid > div {
+  min-height: 84px;
+}
+
+.org-plan-success__next {
+  min-height: 279px;
+}
+
+.org-plan-success__steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 12px;
+}
+
+.org-plan-success__steps > div {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.org-plan-success__steps > div > span {
+  width: 30px;
+  height: 30px;
+  flex: 0 0 30px;
+  display: grid;
+  place-items: center;
+  color: #0e4a45;
+  font-size: 12px;
+  font-weight: 700;
+  background: #f1f4f2;
+  border-radius: 50%;
+}
+
+.org-plan-success__steps > div > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.org-plan-success__steps strong { font-size: 13px; }
+.org-plan-success__steps small { color: var(--ch-color-text-subtle); font-size: 11px; }
+
+@media (max-width: 1120px) {
+  .org-bank-plans__metrics,
+  .org-plan-detail__stat-grid,
+  .org-plan-activation__summary-grid,
+  .org-plan-review__summary-grid,
+  .org-plan-success__summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .org-plan-detail__two-column,
+  .org-plan-review__two-column {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 820px) {
+  .org-bank-plans,
+  .org-plan-detail,
+  .org-plan-activation,
+  .org-plan-review,
+  .org-plan-success {
+    padding: 20px 16px;
+  }
+
+  .org-bank-plans__header,
+  .org-plan-detail__header,
+  .org-plan-flow__header,
+  .org-plan-detail__activation,
+  .org-plan-review__confirmation {
+    align-items: stretch;
+    flex-direction: column-reverse;
+  }
+
+  .org-bank-plans__actions,
+  .org-plan-detail__activation-actions,
+  .org-plan-flow__actions {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .org-bank-plans__controls,
+  .org-plan-activation__controls {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .org-bank-plans__search {
+    width: 100%;
+  }
+
+  .org-plan-activation__selection-summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .org-bank-plans__metrics,
+  .org-plan-detail__stat-grid,
+  .org-plan-detail__two-column .org-plan-detail__stat-grid,
+  .org-plan-activation__summary-grid,
+  .org-plan-review__summary-grid,
+  .org-plan-review__people-grid,
+  .org-plan-success__summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .org-plan-detail__payer-options {
+    grid-template-columns: 1fr;
+  }
+}
