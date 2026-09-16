@@ -224,7 +224,7 @@
 .admin-dashboard__metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
+  gap: 12px;
   direction: ltr;
 }
 
@@ -270,7 +270,7 @@
 .admin-dashboard__two-column {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 2px;
+  gap: 16px;
   direction: ltr;
 }
 
@@ -390,16 +390,17 @@
 
 .admin-dashboard__mini-grid {
   display: grid;
-  gap: 7px;
   direction: ltr;
 }
 
 .admin-dashboard__mini-grid--four {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
 }
 
 .admin-dashboard__mini-grid--three {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .admin-dashboard__mini {
