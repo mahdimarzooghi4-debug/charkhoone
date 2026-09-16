@@ -1,0 +1,293 @@
+.brokerage-sync-errors {
+  position: relative;
+  min-height: 100vh;
+}
+
+.brokerage-sync-errors__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgb(0 0 0 / 42%);
+}
+
+.brokerage-sync-errors__modal {
+  position: fixed;
+  top: 150px;
+  left: max(24px, calc((100vw - 220px - 760px) / 2));
+  z-index: 70;
+  width: 760px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 24px;
+  direction: rtl;
+  color: #1f2937;
+  background: #fff;
+  border: 1px solid #e5e7e6;
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgb(15 23 42 / 18%);
+}
+
+.brokerage-sync-errors__header {
+  min-height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  direction: ltr;
+}
+
+.brokerage-sync-errors__close {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7380;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1;
+  background: #f4f5f5;
+  border-radius: 8px;
+}
+
+.brokerage-sync-errors__header-copy {
+  width: 560px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  direction: rtl;
+  text-align: right;
+}
+
+.brokerage-sync-errors__header-copy h1,
+.brokerage-sync-errors__header-copy p,
+.brokerage-sync-errors__summary p,
+.brokerage-sync-errors__policy-note {
+  margin: 0;
+}
+
+.brokerage-sync-errors__header-copy h1 {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.brokerage-sync-errors__header-copy p {
+  color: #6b7380;
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.brokerage-sync-errors__summary {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px;
+  color: #736140;
+  background: #fff7e4;
+  border-radius: 12px;
+}
+
+.brokerage-sync-errors__summary p {
+  width: min(297px, 100%);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+.brokerage-sync-errors__summary strong {
+  color: #a15e08;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.brokerage-sync-errors-table {
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #e5e7e6;
+  border-radius: 12px;
+}
+
+.brokerage-sync-errors-table__row {
+  min-height: 90px;
+  display: grid;
+  grid-template-columns: 110px 110px 180px 135px minmax(177px, 1fr);
+  direction: ltr;
+  border-top: 1px solid #ecedec;
+}
+
+.brokerage-sync-errors-table__row > span,
+.brokerage-sync-errors-table__row > strong {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  direction: rtl;
+  color: #38404a;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.brokerage-sync-errors-table__row > strong {
+  font-weight: 500;
+}
+
+.brokerage-sync-errors-table__head {
+  min-height: 46px;
+  background: #f7f8f8;
+  border-top: 0;
+}
+
+.brokerage-sync-errors-table__head > span {
+  color: #6b7380;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.brokerage-sync-errors-table__review {
+  width: 72px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0d3b36;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  background: #fff;
+  border: 1px solid #d1d6d4;
+  border-radius: 8px;
+}
+
+.brokerage-sync-errors-table__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  color: #926012;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  background: #fff6de;
+  border-radius: 999px;
+}
+
+.brokerage-sync-errors__policy-note {
+  width: 100%;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  color: #5c6670;
+  font-size: 12px;
+  line-height: 1.8;
+  text-align: right;
+  background: #f6f7f7;
+  border-radius: 10px;
+}
+
+.brokerage-sync-errors__actions {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  direction: ltr;
+}
+
+.brokerage-sync-errors__button {
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 18px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.brokerage-sync-errors__button--secondary {
+  width: 90px;
+  color: #1f2938;
+  background: #fff;
+  border: 1px solid #d1d6d4;
+}
+
+.brokerage-sync-errors__button--primary {
+  width: 150px;
+  color: #fff;
+  background: #0d3b36;
+  border: 1px solid #0d3b36;
+}
+
+.brokerage-sync-errors__close:focus-visible,
+.brokerage-sync-errors__button:focus-visible,
+.brokerage-sync-errors-table__review:focus-visible {
+  outline: 2px solid rgb(255 138 0 / 65%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1040px) {
+  .brokerage-sync-errors__modal {
+    top: 80px;
+    left: 50%;
+    width: min(760px, calc(100vw - 32px));
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 780px) {
+  .brokerage-sync-errors__modal {
+    top: 24px;
+    max-height: calc(100vh - 48px);
+    overflow-y: auto;
+    padding: 20px;
+  }
+
+  .brokerage-sync-errors__header-copy {
+    width: auto;
+    flex: 1 1 auto;
+  }
+
+  .brokerage-sync-errors__summary {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+  }
+
+  .brokerage-sync-errors__summary p {
+    width: 100%;
+  }
+
+  .brokerage-sync-errors-table {
+    overflow-x: auto;
+  }
+
+  .brokerage-sync-errors-table__row {
+    width: 712px;
+  }
+}
+
+@media (max-width: 520px) {
+  .brokerage-sync-errors__actions {
+    gap: 10px;
+  }
+
+  .brokerage-sync-errors__button--secondary,
+  .brokerage-sync-errors__button--primary {
+    width: auto;
+    flex: 1 1 0;
+  }
+}

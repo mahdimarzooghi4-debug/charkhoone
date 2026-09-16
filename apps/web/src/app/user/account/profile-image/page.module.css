@@ -1,0 +1,24 @@
+.modal { width: min(460px, 100%); display: flex; flex-direction: column; gap: 24px; padding: 24px; background: #fff; border-radius: 24px; box-shadow: 0 8px 12px rgb(0 0 0 / 12%); }
+.modalHeader { display: flex; align-items: center; justify-content: space-between; direction: ltr; }
+.modalHeader h1, .modalBody p { margin: 0; }
+.modalHeader h1 { color: var(--ch-color-text); font-size: 18px; font-weight: 700; direction: rtl; }
+.closeButton { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: var(--ch-color-text); font-size: 16px; font-weight: 600; text-decoration: none; border: 1px solid var(--ch-color-border); border-radius: 12px; }
+.modalBody { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+.modalBody > p { width: 100%; color: var(--ch-color-text-secondary); font-size: 14px; line-height: 22px; text-align: right; }
+.avatarPreview { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.currentAvatar { width: 110px; height: 110px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 32px; font-weight: 700; background: var(--ch-color-primary); border-radius: 55px; }
+.previewCaption { color: var(--ch-color-muted); font-size: 13px; }
+.divider { width: 100%; height: 1px; background: var(--ch-color-border); }
+.sourceField { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+.sourceField label { color: var(--ch-color-text); font-size: 14px; font-weight: 500; text-align: right; }
+.selectLike { width: 100%; height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 12px; direction: ltr; }
+.selectLike > span { color: var(--ch-color-muted); font-size: 16px; }
+.selectLike strong { min-width: 0; flex: 1 1 auto; color: var(--ch-color-text); font-size: 14px; font-weight: 400; direction: rtl; text-align: right; }
+.actions { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.primaryAction, .destructiveAction, .cancelAction { width: 100%; display: inline-flex; align-items: center; justify-content: center; font-family: inherit; font-size: 14px; font-weight: 600; text-decoration: none; border-radius: 12px; }
+.primaryAction, .destructiveAction { min-height: 48px; padding: 0 24px; }
+.primaryAction { color: #fff; background: var(--ch-color-primary); }
+.destructiveAction { color: #ff383c; background: #faf2f2; border: 0; }
+.cancelAction { min-height: 0; padding: 8px; color: var(--ch-color-text-secondary); font-weight: 500; }
+.modal button:focus-visible, .modal a:focus-visible { outline: 3px solid rgb(255 138 0 / 30%); outline-offset: 3px; }
+@media (max-width: 520px) { .modal { padding: 20px 16px; } }

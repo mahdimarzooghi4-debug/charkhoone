@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "چارخونه",
+    "slug": "charkhoone",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "charkhoone",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

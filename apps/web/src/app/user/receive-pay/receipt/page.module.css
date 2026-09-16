@@ -1,0 +1,87 @@
+.page {
+  min-height: 100svh;
+  display: flex;
+  align-items: stretch;
+  direction: ltr;
+  background: var(--ch-color-page);
+}
+
+.mainContent { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 24px; padding: 32px; direction: rtl; }
+.headerBlock { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; }
+.backLink { width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 8px; color: var(--ch-color-primary); font-size: 13px; font-weight: 500; text-decoration: none; }
+.backLink span { font-size: 14px; font-weight: 700; }
+.headerRight { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.breadcrumb { display: flex; align-items: center; justify-content: flex-end; gap: 4px; color: var(--ch-color-muted); font-size: 13px; }
+.breadcrumb .current { color: var(--ch-color-primary); }
+.headerRight h1, .headerRight p, .statusSection h2 { margin: 0; }
+.headerRight h1 { color: var(--ch-color-text); font-size: 24px; font-weight: 700; }
+.headerRight p { color: var(--ch-color-muted); font-size: 14px; }
+
+.receiptWrapper { width: 100%; display: flex; flex-direction: column; align-items: center; padding: 12px 0 24px; }
+.receiptCard { width: min(580px, 100%); display: flex; flex-direction: column; align-items: stretch; gap: 24px; padding: 32px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 20px; box-shadow: 0 4px 10px rgb(0 0 0 / 3%); }
+.brandBlock { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.brandBlock strong { color: var(--ch-color-primary); font-size: 24px; font-weight: 700; }
+.divider { width: 100%; height: 1px; background: var(--ch-color-border); }
+.statusSection { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
+.checkCircle { width: 56px; height: 56px; display: inline-flex; align-items: center; justify-content: center; background: #e6f4e6; border-radius: 28px; }
+.checkCircle img { width: 24px; height: 24px; display: block; }
+.statusSection h2 { color: var(--ch-color-primary); font-size: 18px; font-weight: 700; }
+.amount { color: var(--ch-color-text); font-size: 32px; font-weight: 700; }
+.badges { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.paidBadge, .paymentBadge { padding: 6px 12px; font-size: 12px; font-weight: 500; border-radius: 8px; }
+.paidBadge { color: var(--ch-color-primary); background: #e6f4e6; }
+.paymentBadge { color: #0369a1; background: #e0f2fe; }
+.detailsList { width: 100%; display: flex; flex-direction: column; }
+.detailRow { min-height: 45px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; color: var(--ch-color-text); font-size: 14px; direction: ltr; border-bottom: 1px solid var(--ch-color-border); }
+.detailRow:last-child { border-bottom: 0; }
+.detailRow > strong, .detailRow > span:first-child { direction: rtl; text-align: left; }
+.detailRow > strong { font-weight: 700; }
+.detailLabel { color: var(--ch-color-muted); font-weight: 500; direction: rtl; text-align: right; }
+.contractContext { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px; color: inherit; text-decoration: none; background: #f9fafb; border: 1px solid var(--ch-color-border); border-radius: 12px; direction: ltr; }
+.contractAction { color: var(--ch-color-primary); font-size: 13px; font-weight: 600; direction: rtl; }
+.contractInfo { display: flex; align-items: center; gap: 8px; direction: rtl; }
+.contractInfo strong { color: var(--ch-color-text); font-size: 14px; font-weight: 600; }
+.tenantBadge { padding: 4px 10px; color: #0369a1; font-size: 11px; font-weight: 500; background: #e0f2fe; border-radius: 6px; }
+
+.actions { display: flex; align-items: center; justify-content: center; gap: 12px; padding-top: 24px; }
+.printAction, .primaryAction { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; font-family: inherit; font-size: 14px; font-weight: 500; border: 0; border-radius: 12px; }
+.printAction { min-height: 0; padding: 10px 16px; color: var(--ch-color-primary); font-weight: 600; background: transparent; }
+.primaryAction { color: #fff; background: var(--ch-color-primary); }
+
+.sidebar { width: 260px; flex: 0 0 260px; display: flex; flex-direction: column; justify-content: space-between; padding: 40px 20px; direction: rtl; background: var(--ch-color-primary); }
+.sidebarTop { display: flex; flex-direction: column; gap: 32px; }
+.logoWrap { width: 100%; display: flex; justify-content: center; }
+.logoWrap img { width: 127px; height: 55px; display: block; object-fit: contain; }
+.nav { display: flex; flex-direction: column; gap: 6px; }
+.navItem { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--ch-color-muted); font-size: 14px; text-decoration: none; border-radius: 12px; }
+.navItem > span:nth-child(2) { min-width: 0; flex: 1 1 auto; text-align: right; }
+.navItem img { width: 20px; height: 20px; display: block; object-fit: contain; }
+.navSpacer { width: 20px; height: 1px; flex: 0 0 20px; }
+.navActive { color: #fff; font-weight: 600; background: rgb(255 255 255 / 8%); }
+.alertBadge { min-width: 20px; display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; color: #fff; font-size: 11px; font-weight: 600; background: var(--ch-color-accent); border-radius: 99px; }
+.profile { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid rgb(255 255 255 / 13%); }
+.avatar { width: 40px; height: 40px; display: block; object-fit: cover; border-radius: 20px; }
+.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.profileText strong { color: #fff; font-size: 14px; font-weight: 600; }
+.profileText span { color: var(--ch-color-muted); font-size: 11px; }
+.page button:focus-visible, .page a:focus-visible { outline: 3px solid rgb(255 138 0 / 30%); outline-offset: 3px; }
+
+@media (max-width: 920px) {
+  .page { flex-direction: column-reverse; }
+  .sidebar { width: 100%; flex-basis: auto; padding: 16px 20px; }
+  .sidebarTop { gap: 16px; }
+  .logoWrap, .profile { display: none; }
+  .nav { flex-direction: row; overflow-x: auto; }
+  .navItem { width: auto; flex: 0 0 auto; }
+  .mainContent { padding: 24px; }
+}
+
+@media (max-width: 640px) {
+  .mainContent { padding: 20px 16px; gap: 20px; }
+  .receiptCard { padding: 24px 18px; }
+  .amount { font-size: 27px; }
+  .detailRow { align-items: flex-start; flex-direction: column; gap: 4px; direction: rtl; }
+  .detailRow > strong, .detailRow > span:first-child { text-align: right; }
+  .actions { width: 100%; flex-direction: column; }
+  .printAction, .primaryAction { width: 100%; }
+}

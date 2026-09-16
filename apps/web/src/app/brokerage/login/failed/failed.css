@@ -1,0 +1,12 @@
+.brokerage-login--failed .brokerage-login__field input {
+  border-color: #b91c1c;
+}
+
+.brokerage-login--failed .brokerage-login__field input:focus {
+  border-color: #b91c1c;
+  box-shadow: 0 0 0 3px rgb(185 28 28 / 10%);
+}
+
+.brokerage-login--failed .brokerage-login__message {
+  color: #b91c1c;
+}

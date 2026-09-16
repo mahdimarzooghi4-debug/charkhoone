@@ -1,0 +1,22 @@
+.modalPage { position: relative; min-height: 100svh; }
+.backdrop { position: fixed; inset: 0; z-index: 20; background: rgb(20 26 26 / 42%); }
+.modal { position: fixed; z-index: 21; top: 50%; left: 50%; width: min(560px, calc(100vw - 32px)); display: flex; flex-direction: column; gap: 16px; padding: 20px 24px 16px; direction: rtl; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 12px; transform: translate(-50%, -50%); }
+.header { position: relative; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; padding-left: 32px; }
+.header h1, .header p, .fieldLabel, .helper { margin: 0; }
+.header h1 { color: var(--ch-color-text); font-size: 19px; font-weight: 700; }
+.header p { color: #6b7280; font-size: 12px; }
+.close { position: absolute; left: 0; top: -4px; color: #6b7280; font-size: 24px; text-decoration: none; }
+.divider { width: 100%; height: 1px; background: var(--ch-color-border); }
+.summary { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; background: #f9fafb; border: 1px solid var(--ch-color-border); border-radius: 8px; }
+.summaryRow { display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
+.summaryRow span { color: #6b7280; font-size: 11px; direction: rtl; }
+.summaryRow strong { color: var(--ch-color-text); font-size: 13px; font-weight: 600; direction: rtl; }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.fieldLabel { color: var(--ch-color-text); font-size: 14px; font-weight: 500; text-align: right; }
+.textarea { height: 108px; padding: 14px 16px; color: #9ca3af; font-size: 13px; text-align: right; background: #fff; border: 1px solid #d1d5db; border-radius: 10px; }
+.helper { color: #6b7280; font-size: 11px; text-align: right; }
+.actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
+.cancel, .confirm { min-height: 40px; display: inline-flex; align-items: center; justify-content: center; padding: 0 18px; font-size: 13px; font-weight: 600; text-decoration: none; border-radius: 10px; }
+.cancel { color: #374151; background: #fff; border: 1px solid #d1d5db; }
+.confirm { color: #fff; background: #dc2626; }
+@media (max-width: 560px) { .modal { padding: 18px 16px 14px; } .actions { align-items: stretch; flex-direction: column-reverse; } .cancel, .confirm { width: 100%; } }

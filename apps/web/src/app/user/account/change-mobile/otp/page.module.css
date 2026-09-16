@@ -1,0 +1,20 @@
+.modal { width: min(460px, 100%); display: flex; flex-direction: column; gap: 20px; padding: 24px; background: #fff; border-radius: 24px; box-shadow: 0 8px 12px rgb(0 0 0 / 12%); }
+.modalHeader { display: flex; align-items: center; justify-content: space-between; direction: ltr; }
+.modalHeader h1, .modalBody p { margin: 0; }
+.modalHeader h1 { color: var(--ch-color-text); font-size: 18px; font-weight: 700; direction: rtl; }
+.closeButton { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--ch-color-border); border-radius: 12px; }
+.closeButton img { width: 14px; height: 14px; display: block; }
+.modalBody { display: flex; flex-direction: column; gap: 20px; }
+.modalBody > p { color: var(--ch-color-text-secondary); font-size: 14px; line-height: 22px; text-align: right; }
+.otpRow { width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; }
+.otpDigit { width: 48px; height: 56px; display: inline-flex; align-items: center; justify-content: center; color: var(--ch-color-text); font-size: 20px; font-weight: 700; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 12px; }
+.otpDigitActive { border: 1.5px solid var(--ch-color-primary); }
+.timer { width: 100%; color: var(--ch-color-accent); font-size: 13px; font-weight: 500; text-align: center; }
+.divider { width: 100%; height: 1px; background: var(--ch-color-border); }
+.actions { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.primaryAction { width: 100%; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; background: var(--ch-color-primary); border-radius: 12px; }
+.secondaryLinks { display: flex; align-items: center; justify-content: center; gap: 24px; padding: 8px 0; font-size: 14px; font-weight: 500; }
+.secondaryLinks a { color: var(--ch-color-primary); text-decoration: none; }
+.secondaryLinks .cancel { color: var(--ch-color-muted); }
+.modal a:focus-visible { outline: 3px solid rgb(255 138 0 / 30%); outline-offset: 3px; }
+@media (max-width: 520px) { .modal { padding: 20px 16px; } .otpRow { gap: 8px; } .otpDigit { width: 44px; } }
