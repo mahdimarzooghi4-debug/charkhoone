@@ -5,6 +5,13 @@ using Charkhoone.Domain.Payments;
 
 namespace Charkhoone.Infrastructure.Persistence.Models;
 
+public sealed class UserRow
+{
+    public Guid Id { get; set; }
+    public string OidcSubject { get; set; } = string.Empty;
+    public DateTimeOffset CreatedAtUtc { get; set; }
+}
+
 public sealed class BankLoanPlanVersionRow
 {
     public Guid Id { get; set; }
