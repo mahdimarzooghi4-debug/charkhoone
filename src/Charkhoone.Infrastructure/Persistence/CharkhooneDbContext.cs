@@ -6,6 +6,7 @@ namespace Charkhoone.Infrastructure.Persistence;
 public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> options)
     : DbContext(options)
 {
+    public DbSet<UserRow> Users => Set<UserRow>();
     public DbSet<BankLoanPlanVersionRow> BankLoanPlanVersions => Set<BankLoanPlanVersionRow>();
     public DbSet<BankLoanPlanOrganizationRow> BankLoanPlanOrganizations => Set<BankLoanPlanOrganizationRow>();
     public DbSet<CreditGradePolicyVersionRow> CreditGradePolicyVersions => Set<CreditGradePolicyVersionRow>();
