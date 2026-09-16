@@ -5,14 +5,14 @@ import { FigmaSvg } from "@/components/FigmaSvg";
 import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts } from "@/theme";
 
-type AppHeaderProps = { title: string };
+type AppHeaderProps = { title: string; bordered?: boolean };
 
-export function AppHeader({ title }: AppHeaderProps) {
+export function AppHeader({ title, bordered = false }: AppHeaderProps) {
   const router = useRouter();
   return (
     <View style={styles.wrapper}>
       <BrandLogo />
-      <View style={styles.bar}>
+      <View style={[styles.bar, bordered && styles.barBordered]}>
         <Pressable accessibilityRole="button" accessibilityLabel="بازگشت" onPress={() => router.back()} style={styles.back}>
           <View style={styles.backIcon}><FigmaSvg uri={figmaAssets.back} width={24} height={40} /></View>
         </Pressable>
@@ -33,6 +33,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  barBordered: { borderBottomWidth: 1, borderBottomColor: colors.border },
   back: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
   backIcon: { width: 24, height: 40, transform: [{ rotate: "180deg" }] },
   title: { fontFamily: fonts.semibold, fontSize: 18, color: colors.text, textAlign: "right", writingDirection: "rtl" },
