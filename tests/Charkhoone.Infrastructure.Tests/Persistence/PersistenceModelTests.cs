@@ -8,6 +8,27 @@ namespace Charkhoone.Infrastructure.Tests.Persistence;
 public sealed class PersistenceModelTests
 {
     [Fact]
+    public void User_UsesUniqueOidcSubjectAndOwnsCreditApplications()
+    {
+        using var context = CreateContext();
+        var user = context.Model.FindEntityType(typeof(UserRow));
+        var application = context.Model.FindEntityType(typeof(CreditApplicationRow));
+
+        Assert.NotNull(user);
+        Assert.Equal("users", user!.GetTableName());
+
+        var subjectIndex = user.GetIndexes().Single(index =>
+            index.Properties.Count == 1 &&
+            index.Properties[0].Name == nameof(UserRow.OidcSubject));
+        Assert.True(subjectIndex.IsUnique);
+
+        var ownership = application!.GetForeignKeys().Single(foreignKey =>
+            foreignKey.Properties.Count == 1 &&
+            foreignKey.Properties[0].Name == nameof(CreditApplicationRow.ApplicantUserId));
+        Assert.Equal(typeof(UserRow), ownership.PrincipalEntityType.ClrType);
+    }
+
+    [Fact]
     public void PaymentInstruction_UsesLosslessDecimalStorageAndUniqueIdempotencyKey()
     {
         using var context = CreateContext();
