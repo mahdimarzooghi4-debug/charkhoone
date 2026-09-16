@@ -43,7 +43,10 @@ export default function CalculatorResultScreen() {
             <Text style={styles.comparisonNote}>براساس مقایسه با شرایط عادی قابل استفاده</Text>
           </View>
         </View>
-        <Text style={styles.disclaimer}>این برآورد اولیه است و مبلغ نهایی پس از ثبت قرارداد، بررسی اعتبار و طرح‌های قابل استفاده مشخص می‌شود.</Text>
+        <View style={styles.disclaimerRow}>
+          <Text style={styles.disclaimer}>این برآورد اولیه است و مبلغ نهایی پس از ثبت قرارداد، بررسی اعتبار و طرح‌های قابل استفاده مشخص می‌شود.</Text>
+          <View style={styles.infoBubble}><Text style={styles.infoBubbleText}>i</Text></View>
+        </View>
       </ScrollView>
       <View style={styles.actions}>
         <AppButton variant="primary" onPress={() => router.push("/(shared)/contract-tracking")}>ثبت کد رهگیری قرارداد</AppButton>
@@ -75,6 +78,9 @@ const styles = StyleSheet.create({
   highlightTitle: { color: colors.accent, fontFamily: fonts.semibold, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
   highlightNote: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "right", writingDirection: "rtl" },
   comparisonNote: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "right", writingDirection: "rtl" },
-  disclaimer: { color: colors.page, fontFamily: fonts.regular, fontSize: 11, lineHeight: 18, textAlign: "right", writingDirection: "rtl", marginHorizontal: 20, marginTop: 16 },
+  disclaimerRow: { marginHorizontal: 20, marginTop: 16, flexDirection: "row", alignItems: "center", gap: 8 },
+  disclaimer: { flex: 1, color: colors.page, fontFamily: fonts.regular, fontSize: 11, lineHeight: 18, textAlign: "right", writingDirection: "rtl" },
+  infoBubble: { width: 16, height: 16, borderRadius: 8, backgroundColor: "#EDEDED", alignItems: "center", justifyContent: "center" },
+  infoBubbleText: { color: colors.muted, fontFamily: fonts.bold, fontSize: 10, lineHeight: 12 },
   actions: { backgroundColor: colors.surface, borderTopWidth: 1, borderColor: colors.border, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24, gap: 12 },
 });
