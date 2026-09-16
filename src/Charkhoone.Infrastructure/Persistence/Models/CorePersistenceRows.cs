@@ -87,6 +87,17 @@ public sealed class WorkflowTransitionRow
     public DateTimeOffset OccurredAtUtc { get; set; }
 }
 
+public sealed class AuditEventRow
+{
+    public Guid Id { get; set; }
+    public string AggregateType { get; set; } = string.Empty;
+    public Guid AggregateId { get; set; }
+    public string ActorId { get; set; } = string.Empty;
+    public string Action { get; set; } = string.Empty;
+    public string Reason { get; set; } = string.Empty;
+    public DateTimeOffset OccurredAtUtc { get; set; }
+}
+
 public sealed class PaymentInstructionRow
 {
     public Guid Id { get; set; }
