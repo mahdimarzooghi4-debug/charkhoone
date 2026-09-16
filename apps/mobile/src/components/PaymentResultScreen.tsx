@@ -70,12 +70,13 @@ export function PaymentResultScreen({ kind, status }: PaymentResultScreenProps) 
   const success = status === "success";
   const failed = status === "failed";
   const pending = status === "pending";
+  const membershipActive = success && kind === "membership";
   const compactMembershipTitle = kind === "membership" && !pending;
 
   const title = success ? data.successTitle : failed ? data.failedTitle : data.pendingTitle;
   const statusLabel = success ? (kind === "membership" ? "فعال" : "موفق") : failed ? "ناموفق" : "در حال بررسی";
   const tone = success ? styles.success : failed ? styles.failed : styles.pending;
-  const toneBg = success ? styles.successBg : failed ? styles.failedBg : styles.pendingBg;
+  const toneBg = membershipActive ? styles.membershipActiveBg : success ? styles.successBg : failed ? styles.failedBg : styles.pendingBg;
   const statusWidth = failed ? styles.failedStatusWidth : pending ? styles.pendingStatusWidth : kind === "membership" ? undefined : styles.successStatusWidth;
   const noteBg = success ? styles.successNoteBg : failed ? styles.failedNoteBg : styles.pendingNoteBg;
   const noteTitle = success ? data.successNoteTitle : failed ? data.failedNoteTitle : "از پرداخت تکراری خودداری کنید";
@@ -131,8 +132,8 @@ export function PaymentResultScreen({ kind, status }: PaymentResultScreenProps) 
             <Text style={[styles.heroTitle, compactMembershipTitle && styles.heroTitleCompact]}>{title}</Text>
           </View>
           <Text style={[styles.amount, tone]}>{data.amount}</Text>
-          <View style={[styles.statusBadge, toneBg, statusWidth]}>
-            <Text style={[styles.statusText, tone]}>{statusLabel}</Text>
+          <View style={[styles.statusBadge, toneBg, statusWidth, membershipActive && styles.membershipActiveBadge]}>
+            <Text style={[styles.statusText, tone, membershipActive && styles.membershipActiveText]}>{statusLabel}</Text>
           </View>
         </View>
 
@@ -182,11 +183,14 @@ const styles = StyleSheet.create({
   heroTitleCompact: { fontSize: 18, lineHeight: 30 },
   amount: { fontFamily: fonts.bold, fontSize: 26, lineHeight: 34, textAlign: "center", writingDirection: "rtl" },
   statusBadge: { minHeight: 24, borderRadius: 14, paddingHorizontal: 12, alignItems: "center", justifyContent: "center" },
+  membershipActiveBadge: { minHeight: 30, borderRadius: radii.sm },
+  membershipActiveText: { lineHeight: 18 },
   successStatusWidth: { minWidth: 64 },
   failedStatusWidth: { minWidth: 72 },
   pendingStatusWidth: { minWidth: 96 },
   statusText: { fontFamily: fonts.medium, fontSize: 12, lineHeight: 24, textAlign: "center", writingDirection: "rtl" },
   success: { color: colors.primary },
+  membershipActiveBg: { backgroundColor: colors.successSoft },
   successBg: { backgroundColor: "#F0FAF5" },
   failed: { color: "#B62B2B" },
   failedBg: { backgroundColor: "#FEF0F0" },
