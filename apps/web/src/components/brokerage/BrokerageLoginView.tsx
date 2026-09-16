@@ -1,8 +1,16 @@
 import { BrandLogo } from "@/components/marketing/BrandLogo";
 
-export function BrokerageLoginView() {
+type BrokerageLoginViewProps = {
+  failed?: boolean;
+};
+
+export function BrokerageLoginView({ failed = false }: BrokerageLoginViewProps) {
   return (
-    <section className="brokerage-login" data-node-id="791:2" data-name="Brokerage / Login">
+    <section
+      className={["brokerage-login", failed ? "brokerage-login--failed" : ""].filter(Boolean).join(" ")}
+      data-node-id={failed ? "793:60" : "791:2"}
+      data-name={failed ? "Brokerage / Login — Failed" : "Brokerage / Login"}
+    >
       <div className="brokerage-login__content">
         <div className="brokerage-login__card">
           <header className="brokerage-login__header">
@@ -18,6 +26,7 @@ export function BrokerageLoginView() {
                 type="text"
                 autoComplete="username"
                 placeholder="user@broker.ir"
+                aria-invalid={failed || undefined}
               />
             </label>
 
@@ -28,11 +37,14 @@ export function BrokerageLoginView() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="••••••••••••"
+                aria-invalid={failed || undefined}
               />
             </label>
 
-            <p className="brokerage-login__message">
-              برای بازنشانی رمز، از مدیر دسترسی کارگزاری یا پشتیبانی چارخونه درخواست دهید.
+            <p className="brokerage-login__message" role={failed ? "alert" : undefined}>
+              {failed
+                ? "ایمیل/شماره موبایل یا رمز عبور نادرست است. دوباره تلاش کنید."
+                : "برای بازنشانی رمز، از مدیر دسترسی کارگزاری یا پشتیبانی چارخونه درخواست دهید."}
             </p>
 
             <button className="brokerage-login__submit" type="submit">
