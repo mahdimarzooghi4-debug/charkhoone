@@ -48,4 +48,8 @@ export const figmaAssets = {
   profileFileText: "https://www.figma.com/api/mcp/asset/70c0faca-3f7c-4f6c-a60a-0030b146b558.svg",
   profileCreditCard: "https://www.figma.com/api/mcp/asset/e4166002-d87d-4078-a760-4758bb403b85.svg",
   profileHome: "https://www.figma.com/api/mcp/asset/3130b152-dc1f-4902-a4fb-b9d4714d8ea4.svg",
+  paymentsUser: "https://www.figma.com/api/mcp/asset/36bc2863-72d0-4f77-b6e8-5d528d3979bf.svg",
+  paymentsFileText: "https://www.figma.com/api/mcp/asset/a9cd8c8d-c685-4b8a-9f1c-93fbfa56ceaf.svg",
+  paymentsCreditCard: "https://www.figma.com/api/mcp/asset/33eb2140-1475-41c0-a58e-da811bd9b72b.svg",
+  paymentsHome: "https://www.figma.com/api/mcp/asset/08687529-3d81-40a8-8872-6961cc356671.svg",
 } as const;
