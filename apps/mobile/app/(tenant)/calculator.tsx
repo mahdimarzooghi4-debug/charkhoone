@@ -49,7 +49,10 @@ export default function CalculatorScreen() {
       </View>
       <View style={styles.preliminary}>
         <Text style={styles.preliminaryTitle}>برآورد اولیه</Text>
-        <Text style={styles.preliminaryText}>پس از محاسبه، محدوده قابل تأمین، شرایط مالی و مزایای قابل استفاده برای شما نمایش داده می‌شود.</Text>
+        <View style={styles.preliminaryRow}>
+          <Text style={styles.preliminaryText}>پس از محاسبه، محدوده قابل تأمین، شرایط مالی و مزایای قابل استفاده برای شما نمایش داده می‌شود.</Text>
+          <View style={styles.infoBubble}><Text style={styles.infoBubbleText}>i</Text></View>
+        </View>
       </View>
       <View style={styles.flex} />
       <View style={styles.actions}><AppButton onPress={() => router.push("/(tenant)/calculator-result")}>محاسبه شرایط</AppButton></View>
@@ -83,7 +86,10 @@ const styles = StyleSheet.create({
   estimateNote: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, lineHeight: 16, textAlign: "right", writingDirection: "rtl" },
   preliminary: { paddingHorizontal: 20, paddingTop: 20, gap: 4, alignItems: "flex-end" },
   preliminaryTitle: { color: colors.page, fontFamily: fonts.semibold, fontSize: 14, writingDirection: "rtl" },
-  preliminaryText: { color: colors.page, fontFamily: fonts.regular, fontSize: 11, lineHeight: 17, textAlign: "right", writingDirection: "rtl" },
+  preliminaryRow: { width: "100%", flexDirection: "row", alignItems: "center", gap: 8 },
+  preliminaryText: { flex: 1, color: colors.page, fontFamily: fonts.regular, fontSize: 11, lineHeight: 17, textAlign: "right", writingDirection: "rtl" },
+  infoBubble: { width: 16, height: 16, borderRadius: 8, backgroundColor: "#EDEDED", alignItems: "center", justifyContent: "center" },
+  infoBubbleText: { color: colors.muted, fontFamily: fonts.bold, fontSize: 10, lineHeight: 12 },
   flex: { flex: 1 },
   actions: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24 },
 });
