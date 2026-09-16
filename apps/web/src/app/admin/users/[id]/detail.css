@@ -1,0 +1,410 @@
+.admin-user-detail {
+  width: min(1220px, 100%);
+  min-height: 100vh;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px 32px;
+  color: var(--ch-color-text);
+}
+
+.admin-user-detail__header {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  direction: ltr;
+}
+
+.admin-user-detail__back {
+  width: 132px;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  direction: rtl;
+  color: var(--ch-color-primary);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 10px;
+}
+
+.admin-user-detail__heading {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  direction: rtl;
+  text-align: right;
+}
+
+.admin-user-detail__heading h1,
+.admin-user-detail__heading p,
+.admin-user-detail__panel h2,
+.admin-user-detail__panel p {
+  margin: 0;
+}
+
+.admin-user-detail__heading h1 {
+  width: 100%;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.admin-user-detail__heading p {
+  width: 100%;
+  color: var(--ch-color-text-subtle);
+  font-size: 13px;
+}
+
+.admin-user-detail__panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 20px;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 16px;
+}
+
+.admin-user-detail__summary {
+  min-height: 210px;
+}
+
+.admin-user-detail__panel-head {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  direction: ltr;
+}
+
+.admin-user-detail__panel-head h2,
+.admin-user-detail__section-copy h2 {
+  direction: rtl;
+  color: var(--ch-color-text);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.admin-user-detail__badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 12px;
+  direction: rtl;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: 8px;
+}
+
+.admin-user-detail__badge--active {
+  color: var(--ch-color-primary);
+  background: #e6f4e6;
+}
+
+.admin-user-detail__badge--pending {
+  color: #c76100;
+  background: #fff5e3;
+}
+
+.admin-user-detail__badge--limited {
+  color: #b01c1c;
+  background: #fcebeb;
+}
+
+.admin-user-detail__badge--muted {
+  color: var(--ch-color-muted);
+  background: var(--ch-color-page);
+}
+
+.admin-user-detail__facts {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  direction: ltr;
+}
+
+.admin-user-detail__facts article,
+.admin-user-detail__mini-grid article,
+.admin-user-detail__financial-grid article {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  direction: rtl;
+  text-align: right;
+  background: #f7f9f8;
+  border-radius: 12px;
+}
+
+.admin-user-detail__facts article {
+  min-height: 74px;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 12px;
+}
+
+.admin-user-detail__facts span,
+.admin-user-detail__mini-grid span,
+.admin-user-detail__financial-grid span,
+.admin-user-detail__financial-grid small {
+  width: 100%;
+  color: var(--ch-color-text-subtle);
+}
+
+.admin-user-detail__facts span,
+.admin-user-detail__mini-grid span,
+.admin-user-detail__financial-grid span {
+  font-size: 12px;
+}
+
+.admin-user-detail__facts strong,
+.admin-user-detail__mini-grid strong,
+.admin-user-detail__financial-grid strong {
+  width: 100%;
+  color: var(--ch-color-text);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.admin-user-detail__two-column {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  direction: ltr;
+}
+
+.admin-user-detail__compact-panel {
+  min-height: 230px;
+  gap: 8px;
+  padding: 16px;
+  direction: rtl;
+}
+
+.admin-user-detail__lead {
+  width: 100%;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.admin-user-detail__description {
+  width: 100%;
+  color: var(--ch-color-text-subtle);
+  font-size: 13px;
+  text-align: right;
+}
+
+.admin-user-detail__mini-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  direction: ltr;
+}
+
+.admin-user-detail__mini-grid article {
+  min-height: 56px;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 12px;
+}
+
+.admin-user-detail__small-action {
+  width: max-content;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  color: var(--ch-color-primary);
+  font-size: 13px;
+  font-weight: 500;
+  background: #fff;
+  border: 1px solid var(--ch-color-border);
+  border-radius: 10px;
+}
+
+.admin-user-detail__financial {
+  min-height: 190px;
+  gap: 10px;
+  padding: 18px 20px;
+}
+
+.admin-user-detail__section-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+.admin-user-detail__section-copy h2,
+.admin-user-detail__section-copy p {
+  width: 100%;
+}
+
+.admin-user-detail__section-copy p {
+  color: var(--ch-color-text-subtle);
+  font-size: 12px;
+}
+
+.admin-user-detail__financial-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  direction: ltr;
+}
+
+.admin-user-detail__financial-grid article {
+  min-height: 74px;
+  justify-content: center;
+  gap: 4px;
+  padding: 10px 12px;
+}
+
+.admin-user-detail__financial-grid small {
+  font-size: 11px;
+}
+
+.admin-user-detail__events {
+  min-height: 200px;
+  gap: 14px;
+  padding: 14px 20px;
+}
+
+.admin-user-detail__event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.admin-user-detail__event {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  direction: ltr;
+}
+
+.admin-user-detail__event-meta {
+  width: 220px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  direction: rtl;
+}
+
+.admin-user-detail__event-meta > span:first-child {
+  width: 96px;
+  color: var(--ch-color-text-subtle);
+  font-size: 12px;
+  text-align: right;
+}
+
+.admin-user-detail__event-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  direction: rtl;
+  text-align: right;
+}
+
+.admin-user-detail__event-copy strong,
+.admin-user-detail__event-copy small {
+  width: 100%;
+}
+
+.admin-user-detail__event-copy strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.admin-user-detail__event-copy small {
+  color: var(--ch-color-text-subtle);
+  font-size: 11px;
+}
+
+.admin-user-detail a:hover,
+.admin-user-detail a:focus-visible {
+  filter: brightness(1.03);
+}
+
+.admin-user-detail a:focus-visible {
+  outline: 2px solid rgb(255 138 0 / 55%);
+  outline-offset: 2px;
+}
+
+@media (max-width: 1180px) {
+  .admin-user-detail {
+    padding-inline: 24px;
+  }
+
+  .admin-user-detail__facts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .admin-user-detail__two-column,
+  .admin-user-detail__financial-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-user-detail__compact-panel,
+  .admin-user-detail__financial {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-user-detail {
+    padding: 20px 16px;
+  }
+
+  .admin-user-detail__header {
+    align-items: stretch;
+    flex-direction: column-reverse;
+    direction: rtl;
+  }
+
+  .admin-user-detail__back {
+    width: 100%;
+  }
+
+  .admin-user-detail__facts,
+  .admin-user-detail__mini-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-user-detail__event {
+    align-items: flex-start;
+    flex-direction: column-reverse;
+    gap: 8px;
+    padding-block: 8px;
+  }
+
+  .admin-user-detail__event-meta {
+    width: 100%;
+  }
+}
