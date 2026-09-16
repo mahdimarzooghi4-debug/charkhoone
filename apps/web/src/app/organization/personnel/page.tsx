@@ -42,9 +42,9 @@ export default function OrganizationPersonnelPage() {
       <header className="org-personnel__header">
         <div className="org-personnel__actions" aria-label="عملیات پرسنل">
           <button className="org-action-button org-action-button--surface" type="button">خروجی</button>
-          <button className="org-action-button org-action-button--surface" type="button">ورود گروهی</button>
+          <Link className="org-action-button org-action-button--surface" href="/organization/personnel/import">ورود گروهی</Link>
           <button className="org-action-button org-action-button--surface" type="button">همگام‌سازی API</button>
-          <button className="org-action-button org-action-button--primary" type="button">افزودن دستی</button>
+          <Link className="org-action-button org-action-button--primary" href="/organization/personnel/new">افزودن دستی</Link>
         </div>
         <div className="org-personnel__title">
           <h1>پرسنل</h1>
