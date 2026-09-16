@@ -2,14 +2,15 @@ name: generate-verification-migration
 
 on:
   push:
-    branches: ["feature/identity-verification-adapter-v1"]
+    branches:
+      - feature/identity-verification-adapter-v1
 
 permissions:
   contents: write
 
 jobs:
   generate:
-    if: github.event.head_commit.message == 'ci: commit verification request migration'
+    if: "${{ github.event.head_commit.message == 'ci: retry commit verification migration' }}"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
