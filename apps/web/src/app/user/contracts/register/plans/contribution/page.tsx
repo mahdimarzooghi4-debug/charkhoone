@@ -49,13 +49,21 @@ function Rows({ rows }: { rows: readonly (readonly [string, string, Tone?])[] })
   );
 }
 
-const process = [
+type ProcessStep = {
+  title: string;
+  note: string;
+  done?: boolean;
+  active?: boolean;
+  number?: string;
+};
+
+const process: readonly ProcessStep[] = [
   { title: "درخواست ثبت شد", note: "تکمیل شده", done: true },
   { title: "تأیید بانک", note: "تکمیل شده", done: true },
   { title: "پرداخت آورده", note: "نیاز به اقدام", active: true, number: "۳" },
   { title: "تأیید نهایی طرفین", note: "در انتظار", number: "۴" },
   { title: "فعال شدن قرارداد", note: "در انتظار", number: "۵" },
-] as const;
+];
 
 export default function ContributionPage() {
   return (
