@@ -17,6 +17,12 @@ public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> op
     public DbSet<BankApprovalRow> BankApprovals => Set<BankApprovalRow>();
     public DbSet<FundingAllocationRow> FundingAllocations => Set<FundingAllocationRow>();
     public DbSet<FundPrincipalFreezeRow> FundPrincipalFreezes => Set<FundPrincipalFreezeRow>();
+    public DbSet<TenantContributionFundingRow> TenantContributionFundings => Set<TenantContributionFundingRow>();
+    public DbSet<TenantContributionRow> TenantContributions => Set<TenantContributionRow>();
+    public DbSet<ExternalTransactionRow> ExternalTransactions => Set<ExternalTransactionRow>();
+    public DbSet<LedgerAccountRow> LedgerAccounts => Set<LedgerAccountRow>();
+    public DbSet<JournalEntryRow> JournalEntries => Set<JournalEntryRow>();
+    public DbSet<JournalLineRow> JournalLines => Set<JournalLineRow>();
     public DbSet<LeaseContractRow> LeaseContracts => Set<LeaseContractRow>();
     public DbSet<WorkflowTransitionRow> WorkflowTransitions => Set<WorkflowTransitionRow>();
     public DbSet<AuditEventRow> AuditEvents => Set<AuditEventRow>();

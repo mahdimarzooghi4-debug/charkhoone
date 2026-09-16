@@ -55,12 +55,39 @@ public sealed record FundPrincipalFreezeResponse(
     string? ExternalReference = null,
     string? ReasonCode = null);
 
+public enum FundTenantContributionStatus
+{
+    Confirmed,
+    Failed,
+    Indeterminate,
+}
+
+public sealed record FundTenantContributionRequest(
+    Guid RequestId,
+    Guid FundingAllocationId,
+    Guid CreditApplicationId,
+    Guid ContractId,
+    Guid TenantUserId,
+    decimal ExpectedAmountRial);
+
+public sealed record FundTenantContributionResponse(
+    FundTenantContributionStatus Status,
+    string Provider,
+    decimal? ConfirmedAmountRial = null,
+    string? FundReference = null,
+    string? ExternalReference = null,
+    string? ReasonCode = null);
+
 public interface IExternalFundAdapter
 {
     string Provider { get; }
 
     Task<FundPrincipalFreezeResponse> FreezePrincipalAsync(
         FundPrincipalFreezeRequest request,
+        CancellationToken cancellationToken = default);
+
+    Task<FundTenantContributionResponse> CheckTenantContributionAsync(
+        FundTenantContributionRequest request,
         CancellationToken cancellationToken = default);
 }
 

@@ -75,6 +75,44 @@ public sealed class DevelopmentFundAdapter(IConfiguration configuration) : IExte
             $"dev-fund-request:{request.RequestId:D}",
             "development_mock_response"));
     }
+
+    public Task<FundTenantContributionResponse> CheckTenantContributionAsync(
+        FundTenantContributionRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var configuredStatus = configuration["ExternalAdapters:Fund:TenantContributionDevelopmentStatus"];
+        var status = Enum.TryParse<FundTenantContributionStatus>(configuredStatus, ignoreCase: true, out var parsed)
+            ? parsed
+            : FundTenantContributionStatus.Indeterminate;
+
+        decimal? confirmedAmountRial = null;
+        string? fundReference = null;
+
+        if (status == FundTenantContributionStatus.Confirmed)
+        {
+            var configuredAmount = configuration["ExternalAdapters:Fund:TenantContributionDevelopmentAmountRial"];
+            confirmedAmountRial = decimal.TryParse(
+                configuredAmount,
+                NumberStyles.Number,
+                CultureInfo.InvariantCulture,
+                out var amount)
+                ? amount
+                : request.ExpectedAmountRial;
+
+            var configuredReference = configuration["ExternalAdapters:Fund:TenantContributionDevelopmentFundReference"];
+            fundReference = string.IsNullOrWhiteSpace(configuredReference)
+                ? $"dev-tenant-contribution:{request.FundingAllocationId:D}"
+                : configuredReference.Trim();
+        }
+
+        return Task.FromResult(new FundTenantContributionResponse(
+            status,
+            Provider,
+            confirmedAmountRial,
+            fundReference,
+            $"dev-tenant-contribution-request:{request.RequestId:D}",
+            "development_mock_response"));
+    }
 }
 
 public sealed class UnavailableFundAdapter : IExternalFundAdapter
@@ -86,6 +124,14 @@ public sealed class UnavailableFundAdapter : IExternalFundAdapter
         CancellationToken cancellationToken = default) =>
         Task.FromResult(new FundPrincipalFreezeResponse(
             FundPrincipalFreezeStatus.Indeterminate,
+            Provider,
+            ReasonCode: "fund_provider_unconfigured"));
+
+    public Task<FundTenantContributionResponse> CheckTenantContributionAsync(
+        FundTenantContributionRequest request,
+        CancellationToken cancellationToken = default) =>
+        Task.FromResult(new FundTenantContributionResponse(
+            FundTenantContributionStatus.Indeterminate,
             Provider,
             ReasonCode: "fund_provider_unconfigured"));
 }

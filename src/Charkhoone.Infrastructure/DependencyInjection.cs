@@ -2,11 +2,13 @@ using Charkhoone.Application.BankFunding;
 using Charkhoone.Application.CreditApplications;
 using Charkhoone.Application.CreditEligibility;
 using Charkhoone.Application.IdentityVerification;
+using Charkhoone.Application.TenantContributionFunding;
 using Charkhoone.Infrastructure.BankFunding;
 using Charkhoone.Infrastructure.CreditApplications;
 using Charkhoone.Infrastructure.CreditEligibility;
 using Charkhoone.Infrastructure.IdentityVerification;
 using Charkhoone.Infrastructure.Persistence;
+using Charkhoone.Infrastructure.TenantContributionFunding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<ICreditApplicationIdentityService, EfCreditApplicationIdentityService>();
         services.AddScoped<ICreditEligibilityService, EfCreditEligibilityService>();
         services.AddScoped<IBankFundingService, EfBankFundingService>();
+        services.AddScoped<ITenantContributionFundingService, EfTenantContributionFundingService>();
 
         var identityAdapterMode = configuration["ExternalAdapters:Identity:Mode"];
         if (string.Equals(identityAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
