@@ -4,16 +4,19 @@ import BrokerageSettingsPage from "../page";
 const syncErrors = [
   {
     id: "TRX-۸۴۱۹۶",
+    detailId: "TRX-A4196",
     type: "وجه مستأجر",
     issue: "شناسه پرونده نامعتبر",
   },
   {
     id: "TRX-۸۴۰۸۸",
+    detailId: "TRX-A4088",
     type: "سهم چارخونه از درآمد",
     issue: "مبلغ با دوره مالی نمی‌خواند",
   },
   {
     id: "TRX-۸۳۹۷۱",
+    detailId: "TRX-A3971",
     type: "سود واقعی دوره",
     issue: "دوره در چارخونه یافت نشد",
   },
@@ -66,9 +69,12 @@ export default function BrokerageSettingsSyncErrorsPage() {
           {syncErrors.map((error) => (
             <div className="brokerage-sync-errors-table__row" role="row" key={error.id}>
               <span role="cell">
-                <button className="brokerage-sync-errors-table__review" type="button">
+                <Link
+                  className="brokerage-sync-errors-table__review"
+                  href={`/brokerage/settings/sync-errors/${error.detailId}`}
+                >
                   بررسی
-                </button>
+                </Link>
               </span>
               <span role="cell">
                 <span className="brokerage-sync-errors-table__status">نیازمند بررسی</span>
