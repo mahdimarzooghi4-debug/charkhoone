@@ -2,12 +2,26 @@ import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { OwnerBadge, OwnerBottomNav } from "@/components/OwnerUi";
 import { colors, fonts, radii } from "@/theme";
 
-function SummaryCard({ label, value, unit, footer, footerAccent }: { label: string; value: string; unit: string; footer: string; footerAccent?: boolean }) {
+function SummaryCard({
+  label,
+  value,
+  unit,
+  footer,
+  footerAccent,
+  compactValue,
+}: {
+  label: string;
+  value: string;
+  unit: string;
+  footer: string;
+  footerAccent?: boolean;
+  compactValue?: boolean;
+}) {
   return (
     <View style={styles.summaryCard}>
       <Text style={styles.summaryLabel}>{label}</Text>
-      <Text numberOfLines={1} style={styles.summaryValue}>{value}</Text>
-      <Text style={styles.summaryUnit}>{unit}</Text>
+      <Text numberOfLines={1} style={[styles.summaryValue, compactValue && styles.summaryValueCompact]}>{value}</Text>
+      <Text numberOfLines={1} style={styles.summaryUnit}>{unit}</Text>
       <Text style={[styles.summaryFooter, footerAccent && styles.summaryFooterAccent]}>{footer}</Text>
     </View>
   );
@@ -33,17 +47,21 @@ export default function OwnerReceivePayScreen() {
         <View style={styles.summaryRow}>
           <SummaryCard label="در انتظار تسویه" value="۱۹٬۹۰۰٬۰۰۰" unit="تومان" footer="۱ دریافتی" footerAccent />
           <SummaryCard label="تسویه‌شده این ماه" value="۴۰٬۰۰۰٬۰۰۰" unit="تومان" footer="۲ تسویه" />
-          <SummaryCard label="دریافتی بعدی" value="۱۵ آبان ۱۴۰۵" unit="۱۹٬۹۰۰٬۰۰۰ تومان" footer="‌" />
+          <SummaryCard label="دریافتی بعدی" value="۱۵ آبان ۱۴۰۵" unit="۱۹٬۹۰۰٬۰۰۰ تومان" footer="‌" compactValue />
         </View>
 
         <View style={styles.heroCard}>
           <View style={styles.heroHeader}><View style={styles.badges}><OwnerBadge tone="warning">در انتظار تسویه</OwnerBadge><OwnerBadge>دریافت</OwnerBadge></View><Text style={styles.heroTitle}>دریافتی بعدی شما</Text></View>
-          <Text style={styles.heroAmount}>۱۹٬۹۰۰٬۰۰۰ تومان</Text>
-          <Text style={styles.heroLine}>کارمزد خدمات چارخونه (۰٫۵٪): −۱۰۰٬۰۰۰ تومان</Text>
-          <Text style={styles.heroLineBold}>مبلغ خالص قابل تسویه: ۱۹٬۹۰۰٬۰۰۰ تومان</Text>
-          <Text style={styles.heroMuted}>تاریخ تسویه: ۱۵ آبان ۱۴۰۵</Text>
-          <Text style={styles.heroMuted}>مستأجر: علی رضایی</Text>
-          <Text style={styles.heroMuted}>ملک: سعادت‌آباد</Text>
+          <View style={styles.heroInfo}>
+            <Text style={styles.heroAmount}>۱۹٬۹۰۰٬۰۰۰ تومان</Text>
+            <View style={styles.feeBreakdown}>
+              <Text style={styles.heroLine}>کارمزد خدمات چارخونه (۰٫۵٪): −۱۰۰٬۰۰۰ تومان</Text>
+              <Text style={styles.heroLineBold}>مبلغ خالص قابل تسویه: ۱۹٬۹۰۰٬۰۰۰ تومان</Text>
+            </View>
+            <Text style={styles.heroMuted}>تاریخ تسویه: ۱۵ آبان ۱۴۰۵</Text>
+            <Text style={styles.heroMuted}>مستأجر: علی رضایی</Text>
+            <Text style={styles.heroMuted}>ملک: سعادت‌آباد</Text>
+          </View>
         </View>
 
         <View style={styles.section}>
@@ -69,20 +87,23 @@ export default function OwnerReceivePayScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.primary },
   header: { height: 56, backgroundColor: colors.surface, borderBottomWidth: 1, borderColor: colors.border, paddingHorizontal: 16, alignItems: "flex-end", justifyContent: "center" },
-  headerTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 18, textAlign: "right", writingDirection: "rtl" },
+  headerTitle: { width: "100%", color: colors.text, fontFamily: fonts.semibold, fontSize: 18, textAlign: "right", writingDirection: "rtl" },
   scroll: { paddingTop: 20, paddingBottom: 20, gap: 20 },
   summaryRow: { paddingHorizontal: 16, flexDirection: "row", gap: 8 },
-  summaryCard: { flex: 1, minHeight: 116, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md, padding: 12, gap: 6, alignItems: "flex-end" },
+  summaryCard: { flex: 1, height: 116, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md, padding: 12, gap: 6, alignItems: "flex-end" },
   summaryLabel: { width: "100%", color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "right", writingDirection: "rtl" },
   summaryValue: { width: "100%", color: colors.text, fontFamily: fonts.semibold, fontSize: 15, textAlign: "right", writingDirection: "rtl" },
+  summaryValueCompact: { fontSize: 14 },
   summaryUnit: { width: "100%", color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "right", writingDirection: "rtl" },
   summaryFooter: { width: "100%", color: colors.primary, fontFamily: fonts.medium, fontSize: 11, textAlign: "right", writingDirection: "rtl" },
   summaryFooterAccent: { color: colors.accent },
-  heroCard: { marginHorizontal: 16, backgroundColor: colors.infoSoft, borderWidth: 1, borderColor: "rgba(13,59,54,0.1)", borderRadius: radii.lg, padding: 16, gap: 8 },
+  heroCard: { height: 255, marginHorizontal: 16, backgroundColor: colors.infoSoft, borderWidth: 1, borderColor: "rgba(13,59,54,0.1)", borderRadius: radii.lg, padding: 16, gap: 16 },
   heroHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   badges: { flexDirection: "row", gap: 8, alignItems: "center" },
   heroTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 15, writingDirection: "rtl" },
-  heroAmount: { color: colors.primary, fontFamily: fonts.bold, fontSize: 22, textAlign: "right", writingDirection: "rtl", marginTop: 8 },
+  heroInfo: { gap: 8 },
+  heroAmount: { color: colors.primary, fontFamily: fonts.bold, fontSize: 22, textAlign: "right", writingDirection: "rtl" },
+  feeBreakdown: { gap: 4 },
   heroLine: { color: colors.text, fontFamily: fonts.regular, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
   heroLineBold: { color: colors.text, fontFamily: fonts.bold, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
   heroMuted: { color: colors.muted, fontFamily: fonts.regular, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
