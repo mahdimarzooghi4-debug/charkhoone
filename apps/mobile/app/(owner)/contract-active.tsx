@@ -1,9 +1,9 @@
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AppButton } from "@/components/AppButton";
 import { AppHeader } from "@/components/AppHeader";
 import { OwnerBadge, OwnerCard, OwnerRow } from "@/components/OwnerUi";
-import { colors, fonts, radii } from "@/theme";
+import { colors, fonts } from "@/theme";
 
 export default function OwnerContractActiveScreen() {
   const router = useRouter();
@@ -53,8 +53,8 @@ export default function OwnerContractActiveScreen() {
           </OwnerCard>
 
           <View style={styles.quickActions}>
-            <AppButton variant="outline" onPress={() => router.push("/(owner)/receive-pay")}>مشاهده دریافت و پرداخت</AppButton>
-            <AppButton variant="outline" onPress={() => router.push("/(owner)/receive-pay")}>مشاهده سوابق تسویه</AppButton>
+            <Pressable style={styles.quickAction} onPress={() => router.push("/(owner)/receive-pay")}><Text style={styles.quickActionText}>مشاهده دریافت و پرداخت</Text></Pressable>
+            <Pressable style={styles.quickAction} onPress={() => router.push("/(owner)/receive-pay")}><Text style={styles.quickActionText}>مشاهده سوابق تسویه</Text></Pressable>
           </View>
         </View>
       </ScrollView>
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   heroTitle: { width: "100%", color: colors.page, fontFamily: fonts.bold, fontSize: 20, textAlign: "right", writingDirection: "rtl" },
   heroDescription: { width: "100%", color: "#C8D2D0", fontFamily: fonts.regular, fontSize: 14, lineHeight: 22, textAlign: "right", writingDirection: "rtl" },
   tracking: { width: "100%", color: colors.muted, fontFamily: fonts.regular, fontSize: 12, textAlign: "right", writingDirection: "rtl" },
-  content: { paddingHorizontal: 16, gap: 16 },
+  content: { paddingHorizontal: 16, paddingTop: 16, gap: 16 },
   nextCard: { borderColor: colors.primary },
   nextHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   cardTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 15, writingDirection: "rtl" },
@@ -81,5 +81,7 @@ const styles = StyleSheet.create({
   addressBlock: { gap: 4 },
   label: { color: colors.muted, fontFamily: fonts.regular, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
   address: { color: colors.text, fontFamily: fonts.medium, fontSize: 13, lineHeight: 21, textAlign: "right", writingDirection: "rtl" },
-  quickActions: { gap: 8, paddingBottom: 8 },
+  quickActions: { gap: 8 },
+  quickAction: { height: 44, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  quickActionText: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 14, textAlign: "center", writingDirection: "rtl" },
 });
