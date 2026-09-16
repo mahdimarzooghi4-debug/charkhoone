@@ -14,8 +14,8 @@ const assets = {
 } as const;
 
 const quickAccess = [
-  { label: "ماشین‌حساب", icon: assets.calculator, nodeId: "144:205", href: null },
-  { label: "ثبت کد رهگیری", icon: assets.quickFile, nodeId: "144:211", href: null },
+  { label: "ماشین‌حساب", icon: assets.calculator, nodeId: "144:205", href: "/user/calculator" },
+  { label: "ثبت کد رهگیری", icon: assets.quickFile, nodeId: "144:211", href: "/user/contracts/register" },
   { label: "املاک من", icon: assets.quickHome, nodeId: "144:217", href: "/user/properties" },
 ];
 
@@ -23,7 +23,7 @@ const navItems = [
   { label: "خانه", icon: assets.navHome, active: true, nodeId: "144:291", href: "/user/home" },
   { label: "قراردادها", icon: assets.navFile, active: false, nodeId: "144:294", href: "/user/contracts" },
   { label: "دریافت و پرداخت", icon: assets.navCard, active: false, nodeId: "144:297", href: "/user/receive-pay" },
-  { label: "حساب من", icon: assets.navUser, active: false, nodeId: "144:300", href: null },
+  { label: "حساب من", icon: assets.navUser, active: false, nodeId: "144:300", href: "/user/account" },
 ];
 
 function Badge({ children, tone = "green" }: { children: React.ReactNode; tone?: "green" | "orange" | "blue" | "red" | "gray" }) {
