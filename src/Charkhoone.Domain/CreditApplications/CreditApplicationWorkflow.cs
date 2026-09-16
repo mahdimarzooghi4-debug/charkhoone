@@ -32,7 +32,7 @@ public sealed class CreditApplicationWorkflow
             [CreditApplicationStatus.PlanSelectionPending] = Set(CreditApplicationStatus.PropertyContractPending, CreditApplicationStatus.Withdrawn, CreditApplicationStatus.Expired),
             [CreditApplicationStatus.PropertyContractPending] = Set(CreditApplicationStatus.ExternalChecksPending, CreditApplicationStatus.NeedsDocuments, CreditApplicationStatus.Withdrawn),
             [CreditApplicationStatus.ExternalChecksPending] = Set(CreditApplicationStatus.DecisionReady, CreditApplicationStatus.ExternalCheckIndeterminate, CreditApplicationStatus.NeedsDocuments, CreditApplicationStatus.Rejected),
-            [CreditApplicationStatus.ExternalCheckIndeterminate] = Set(CreditApplicationStatus.ExternalChecksPending, CreditApplicationStatus.DecisionReady, CreditApplicationStatus.Rejected),
+            [CreditApplicationStatus.ExternalCheckIndeterminate] = Set(CreditApplicationStatus.ExternalChecksPending, CreditApplicationStatus.DecisionReady, CreditApplicationStatus.BankApprovalPending, CreditApplicationStatus.FundingPending, CreditApplicationStatus.Rejected),
             [CreditApplicationStatus.NeedsDocuments] = Set(CreditApplicationStatus.Withdrawn, CreditApplicationStatus.Expired),
             [CreditApplicationStatus.DecisionReady] = Set(CreditApplicationStatus.BankApprovalPending, CreditApplicationStatus.Rejected),
             [CreditApplicationStatus.BankApprovalPending] = Set(CreditApplicationStatus.FundingPending, CreditApplicationStatus.ExternalCheckIndeterminate, CreditApplicationStatus.Rejected),

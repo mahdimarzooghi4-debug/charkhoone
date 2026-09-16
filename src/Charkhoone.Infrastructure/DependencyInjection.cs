@@ -1,6 +1,8 @@
+using Charkhoone.Application.BankFunding;
 using Charkhoone.Application.CreditApplications;
 using Charkhoone.Application.CreditEligibility;
 using Charkhoone.Application.IdentityVerification;
+using Charkhoone.Infrastructure.BankFunding;
 using Charkhoone.Infrastructure.CreditApplications;
 using Charkhoone.Infrastructure.CreditEligibility;
 using Charkhoone.Infrastructure.IdentityVerification;
@@ -29,6 +31,7 @@ public static class DependencyInjection
         services.AddScoped<ICreditApplicationService, EfCreditApplicationService>();
         services.AddScoped<ICreditApplicationIdentityService, EfCreditApplicationIdentityService>();
         services.AddScoped<ICreditEligibilityService, EfCreditEligibilityService>();
+        services.AddScoped<IBankFundingService, EfBankFundingService>();
 
         var identityAdapterMode = configuration["ExternalAdapters:Identity:Mode"];
         if (string.Equals(identityAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
@@ -48,6 +51,26 @@ public static class DependencyInjection
         else
         {
             services.AddSingleton<IExternalCreditGradeAdapter, UnavailableExternalCreditGradeAdapter>();
+        }
+
+        var bankApprovalAdapterMode = configuration["ExternalAdapters:BankApproval:Mode"];
+        if (string.Equals(bankApprovalAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IExternalBankApprovalAdapter, DevelopmentBankApprovalAdapter>();
+        }
+        else
+        {
+            services.AddSingleton<IExternalBankApprovalAdapter, UnavailableBankApprovalAdapter>();
+        }
+
+        var fundAdapterMode = configuration["ExternalAdapters:Fund:Mode"];
+        if (string.Equals(fundAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IExternalFundAdapter, DevelopmentFundAdapter>();
+        }
+        else
+        {
+            services.AddSingleton<IExternalFundAdapter, UnavailableFundAdapter>();
         }
 
         return services;
