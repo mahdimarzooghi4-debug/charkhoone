@@ -2,9 +2,9 @@ import Link from "next/link";
 
 const roles = [
   { id: "admin", title: "مدیر پنل", description: "دسترسی کامل به کاربران، پرسنل، طرح‌ها، پرونده‌ها، پرداخت‌ها و تنظیمات", checked: true },
-  { id: "finance", title: "مالی", description: "دسترسی به پرداخت‌ها، تعهدات سازمان و پرونده‌های مرتبط" },
-  { id: "hr", title: "منابع انسانی", description: "دسترسی به پرسنل، طرح‌های تخصیص‌یافته و وضعیت پرونده کارکنان" },
-  { id: "viewer", title: "مشاهده‌گر", description: "فقط مشاهده بخش‌های مجاز، بدون امکان ثبت یا تغییر" },
+  { id: "finance", title: "مالی", description: "دسترسی به پرداخت‌ها، تعهدات سازمان و پرونده‌های مرتبط", checked: false },
+  { id: "hr", title: "منابع انسانی", description: "دسترسی به پرسنل، طرح‌های تخصیص‌یافته و وضعیت پرونده کارکنان", checked: false },
+  { id: "viewer", title: "مشاهده‌گر", description: "فقط مشاهده بخش‌های مجاز، بدون امکان ثبت یا تغییر", checked: false },
 ] as const;
 
 export default function OrganizationAddUserPage() {
