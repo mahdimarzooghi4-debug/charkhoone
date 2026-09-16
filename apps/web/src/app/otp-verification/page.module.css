@@ -31,7 +31,9 @@
 .tagline,
 .description,
 .headers h2,
-.headers p {
+.headers p,
+.errorText,
+.successText {
   margin: 0;
 }
 
@@ -77,7 +79,9 @@
 .otpSection,
 .resend,
 .action,
-.changeMobile {
+.changeMobile,
+.errorText,
+.successText {
   width: 100%;
 }
 
@@ -150,6 +154,14 @@
   border-radius: 12px;
 }
 
+.digitError {
+  border: 1.5px solid #e53333;
+}
+
+.faded {
+  opacity: 0.5;
+}
+
 .resend {
   display: flex;
   align-items: center;
@@ -161,9 +173,29 @@
   white-space: nowrap;
 }
 
-.resend strong {
+.resend strong,
+.resendLink {
   color: var(--ch-color-primary);
   font-weight: 500;
+}
+
+.resendLink {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.errorText {
+  color: #e53333;
+  font-size: 13px;
+  font-weight: 400;
+  text-align: center;
+}
+
+.successText {
+  color: #219661;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
 }
 
 .action {
@@ -187,6 +219,11 @@
   outline-color: rgb(255 138 0 / 35%);
 }
 
+.loadingSubmit {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
 .changeMobile {
   display: flex;
   align-items: flex-start;
@@ -206,83 +243,26 @@
 }
 
 @media (max-width: 1240px) {
-  .page {
-    padding-inline: 64px;
-  }
-
-  .split {
-    gap: 48px;
-  }
-
-  .showcase {
-    min-width: 0;
-    flex: 1 1 auto;
-  }
+  .page { padding-inline: 64px; }
+  .split { gap: 48px; }
+  .showcase { min-width: 0; flex: 1 1 auto; }
 }
 
 @media (max-width: 960px) {
-  .page {
-    padding: 56px 32px;
-  }
-
-  .split {
-    max-width: 640px;
-    flex-direction: column-reverse;
-    justify-content: center;
-    gap: 48px;
-  }
-
-  .showcase,
-  .card {
-    width: 100%;
-    flex-basis: auto;
-  }
-
-  .showcase {
-    align-items: center;
-    text-align: center;
-  }
+  .page { padding: 56px 32px; }
+  .split { max-width: 640px; flex-direction: column-reverse; justify-content: center; gap: 48px; }
+  .showcase, .card { width: 100%; flex-basis: auto; }
+  .showcase { align-items: center; text-align: center; }
 }
 
 @media (max-width: 620px) {
-  .page {
-    align-items: flex-start;
-    padding: 24px 16px;
-  }
-
-  .split {
-    gap: 32px;
-  }
-
-  .card {
-    padding: 24px 20px;
-    gap: 24px;
-  }
-
-  .showcase {
-    gap: 12px;
-  }
-
-  .tagline {
-    font-size: 28px;
-    line-height: 1.55;
-  }
-
-  .description {
-    font-size: 14px;
-    line-height: 26px;
-  }
-
-  .digits {
-    gap: 8px;
-  }
-
-  .digitBox {
-    width: 44px;
-    flex-basis: 44px;
-  }
-
-  .resend {
-    white-space: normal;
-  }
+  .page { align-items: flex-start; padding: 24px 16px; }
+  .split { gap: 32px; }
+  .card { padding: 24px 20px; gap: 24px; }
+  .showcase { gap: 12px; }
+  .tagline { font-size: 28px; line-height: 1.55; }
+  .description { font-size: 14px; line-height: 26px; }
+  .digits { gap: 8px; }
+  .digitBox { width: 44px; flex-basis: 44px; }
+  .resend { white-space: normal; }
 }
