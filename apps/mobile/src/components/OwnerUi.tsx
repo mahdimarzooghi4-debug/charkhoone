@@ -20,19 +20,41 @@ export function OwnerCard({ title, children, style, soft = false }: OwnerCardPro
   );
 }
 
-export function OwnerRow({ label, value, valueStyle }: { label: string; value: string; valueStyle?: TextStyle }) {
+export function OwnerRows({ children, gap = 10 }: PropsWithChildren<{ gap?: number }>) {
+  return <View style={[styles.rows, { gap }]}>{children}</View>;
+}
+
+export function OwnerRow({
+  label,
+  value,
+  valueStyle,
+  labelStyle,
+}: {
+  label: string;
+  value: string;
+  valueStyle?: TextStyle;
+  labelStyle?: TextStyle;
+}) {
   return (
     <View style={styles.row}>
       <Text style={[styles.value, valueStyle]}>{value}</Text>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={[styles.label, labelStyle]}>{label}</Text>
     </View>
   );
 }
 
-export function OwnerBadge({ children, tone = "success" }: PropsWithChildren<{ tone?: "success" | "warning" | "neutral" | "danger" | "owner" }>) {
+export function OwnerBadge({
+  children,
+  tone = "success",
+  size = "compact",
+}: PropsWithChildren<{
+  tone?: "success" | "warning" | "neutral" | "danger" | "owner";
+  size?: "compact" | "hero";
+}>) {
+  const hero = size === "hero";
   return (
-    <View style={[styles.badge, styles[`badge_${tone}`]]}>
-      <Text style={[styles.badgeText, styles[`badgeText_${tone}`]]}>{children}</Text>
+    <View style={[styles.badge, hero && styles.badgeHero, styles[`badge_${tone}`]]}>
+      <Text style={[styles.badgeText, hero && styles.badgeTextHero, styles[`badgeText_${tone}`]]}>{children}</Text>
     </View>
   );
 }
@@ -77,16 +99,19 @@ const styles = StyleSheet.create({
     textAlign: "right",
     writingDirection: "rtl",
   },
+  rows: { width: "100%" },
   row: { width: "100%", flexDirection: "row", alignItems: "center", justifyContent: "space-between", minHeight: 20 },
   value: { color: colors.text, fontFamily: fonts.medium, fontSize: 13, writingDirection: "rtl" },
   label: { color: colors.muted, fontFamily: fonts.regular, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
-  badge: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5, alignSelf: "flex-start" },
+  badge: { borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, alignSelf: "flex-start" },
+  badgeHero: { paddingHorizontal: 12, paddingVertical: 6 },
   badge_success: { backgroundColor: "#E6F4E6" },
   badge_warning: { backgroundColor: "#FFF3E0" },
   badge_neutral: { backgroundColor: colors.page },
   badge_danger: { backgroundColor: "#F2D9D9" },
   badge_owner: { backgroundColor: "#E5F0F7" },
   badgeText: { fontFamily: fonts.medium, fontSize: 11, writingDirection: "rtl" },
+  badgeTextHero: { fontSize: 12 },
   badgeText_success: { color: colors.primary },
   badgeText_warning: { color: "#D97706" },
   badgeText_neutral: { color: "#6B7280" },
