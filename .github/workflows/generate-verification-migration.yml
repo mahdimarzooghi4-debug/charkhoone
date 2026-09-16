@@ -4,8 +4,12 @@ on:
   push:
     branches: ["feature/identity-verification-adapter-v1"]
 
+permissions:
+  contents: write
+
 jobs:
   generate:
+    if: github.event.head_commit.message == 'ci: commit verification request migration'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -23,8 +27,10 @@ jobs:
           --startup-project src/Charkhoone.Api/Charkhoone.Api.csproj
           --context CharkhooneDbContext
           --output-dir Persistence/Migrations
-      - name: Upload migration
-        uses: actions/upload-artifact@v4
-        with:
-          name: verification-request-migration
-          path: src/Charkhoone.Infrastructure/Persistence/Migrations
+      - name: Commit generated migration
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/Charkhoone.Infrastructure/Persistence/Migrations
+          git commit -m "feat(persistence): add verification request migration"
+          git push
