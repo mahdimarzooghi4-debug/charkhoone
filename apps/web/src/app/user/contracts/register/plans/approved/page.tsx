@@ -38,13 +38,21 @@ function Rows({ rows }: { rows: readonly (readonly [string, string, boolean?])[]
   return <div className={styles.rows}>{rows.map(([label, value, emphasized], index) => <div className={`${styles.row} ${index === rows.length - 1 ? styles.lastRow : ""}`} key={label}><strong className={emphasized ? styles.emphasized : ""}>{value}</strong><span>{label}</span></div>)}</div>;
 }
 
-const process = [
+type ProcessStep = {
+  title: string;
+  note: string;
+  done?: boolean;
+  active?: boolean;
+  number?: string;
+};
+
+const process: readonly ProcessStep[] = [
   { title: "درخواست ثبت شد", note: "تکمیل شده", done: true },
   { title: "تأیید بانک", note: "تکمیل شده", done: true },
   { title: "عضویت چارخونه", note: "نیاز به اقدام", active: true, number: "۳" },
   { title: "تأیید نهایی طرفین", note: "در انتظار", number: "۴" },
   { title: "فعال شدن قرارداد", note: "در انتظار", number: "۵" },
-] as const;
+];
 
 export default function FinancingApprovedPage() {
   return (
