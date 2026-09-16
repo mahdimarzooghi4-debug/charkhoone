@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { OrganizationSidebar } from "@/components/organization/OrganizationSidebar";
 import "./organization.css";
 import "./personnel.css";
+import "./organization-personnel.css";
 
 export const metadata: Metadata = {
   title: "پنل سازمان | چارخونه",
