@@ -1,3 +1,5 @@
+using Charkhoone.Application.CreditApplications;
+using Charkhoone.Infrastructure.CreditApplications;
 using Charkhoone.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -18,6 +20,9 @@ public static class DependencyInjection
             services.AddDbContext<CharkhooneDbContext>(options =>
                 options.UseNpgsql(connectionString));
         }
+
+        services.AddScoped<IUserIdentityLookup, EfUserIdentityLookup>();
+        services.AddScoped<ICreditApplicationService, EfCreditApplicationService>();
 
         return services;
     }
