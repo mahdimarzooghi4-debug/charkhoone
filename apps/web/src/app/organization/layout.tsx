@@ -7,6 +7,7 @@ import "./bank-plans.css";
 import "./cases.css";
 import "./payments.css";
 import "./settings.css";
+import "./users.css";
 
 export const metadata: Metadata = {
   title: "پنل سازمان | چارخونه",
