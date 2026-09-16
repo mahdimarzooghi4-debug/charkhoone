@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { BrokerageSidebar } from "@/components/brokerage/BrokerageSidebar";
+import { BrokerageShell } from "@/components/brokerage/BrokerageShell";
 import "./brokerage.css";
+import "./login.css";
 
 export const metadata: Metadata = {
   title: "پنل کارگزاری | چارخونه",
@@ -8,10 +9,5 @@ export const metadata: Metadata = {
 };
 
 export default function BrokerageLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <div className="brokerage-shell">
-      <main className="brokerage-shell__main">{children}</main>
-      <BrokerageSidebar />
-    </div>
-  );
+  return <BrokerageShell>{children}</BrokerageShell>;
 }
