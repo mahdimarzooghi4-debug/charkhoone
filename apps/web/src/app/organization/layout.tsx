@@ -3,6 +3,7 @@ import { OrganizationSidebar } from "@/components/organization/OrganizationSideb
 import "./organization.css";
 import "./personnel.css";
 import "./organization-personnel.css";
+import "./bank-plans.css";
 
 export const metadata: Metadata = {
   title: "پنل سازمان | چارخونه",
