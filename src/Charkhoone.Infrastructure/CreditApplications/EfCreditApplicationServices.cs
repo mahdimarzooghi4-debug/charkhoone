@@ -72,10 +72,10 @@ public sealed class EfCreditApplicationService(CharkhooneDbContext dbContext) : 
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
         var row = await dbContext.CreditApplications
-            .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} AND \"ApplicantUserId\" = {applicantUserId} FOR UPDATE")
             .SingleOrDefaultAsync(cancellationToken);
 
-        if (row is null || row.ApplicantUserId != applicantUserId)
+        if (row is null)
         {
             await transaction.RollbackAsync(cancellationToken);
             return new SubmitCreditApplicationResult(SubmitCreditApplicationOutcome.NotFound, null);
