@@ -51,8 +51,20 @@ public sealed class CreditApplicationWorkflow
 
     private readonly List<WorkflowTransition<CreditApplicationStatus>> _transitions = [];
 
-    public CreditApplicationStatus Status { get; private set; } = CreditApplicationStatus.Draft;
+    public CreditApplicationWorkflow()
+        : this(CreditApplicationStatus.Draft)
+    {
+    }
+
+    private CreditApplicationWorkflow(CreditApplicationStatus status)
+    {
+        Status = status;
+    }
+
+    public CreditApplicationStatus Status { get; private set; }
     public IReadOnlyList<WorkflowTransition<CreditApplicationStatus>> Transitions => _transitions;
+
+    public static CreditApplicationWorkflow Restore(CreditApplicationStatus status) => new(status);
 
     public WorkflowTransition<CreditApplicationStatus> MoveTo(
         CreditApplicationStatus next,
