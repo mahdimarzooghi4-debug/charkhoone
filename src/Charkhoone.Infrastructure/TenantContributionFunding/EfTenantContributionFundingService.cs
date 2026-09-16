@@ -72,7 +72,7 @@ public sealed class EfTenantContributionFundingService(
                 : await dbContext.TenantContributions
                     .SingleOrDefaultAsync(x => x.ContractId == contract.Id, cancellationToken);
 
-            var existingJournal = await dbContext.JournalEntries
+            var initialJournal = await dbContext.JournalEntries
                 .SingleOrDefaultAsync(
                     x => x.IdempotencyKey == JournalIdempotencyKey(allocation.Id),
                     cancellationToken);
@@ -82,7 +82,7 @@ public sealed class EfTenantContributionFundingService(
                 if (contract is null
                     || contribution.FundingAllocationId != allocation.Id
                     || contribution.InitialAmountRial != allocation.TenantContributionRial
-                    || existingJournal is null)
+                    || initialJournal is null)
                 {
                     await transaction.RollbackAsync(cancellationToken);
                     return new ReconcileTenantContributionResult(
@@ -98,7 +98,7 @@ public sealed class EfTenantContributionFundingService(
                 await transaction.RollbackAsync(cancellationToken);
                 return new ReconcileTenantContributionResult(
                     ReconcileTenantContributionOutcome.AlreadyReconciled,
-                    ToView(application, contract, allocation, funding, externalTransaction, existingJournal));
+                    ToView(application, contract, allocation, funding, externalTransaction, initialJournal));
             }
 
             if (application.Status != CreditApplicationStatus.ApprovedFunded
