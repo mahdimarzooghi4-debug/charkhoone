@@ -2,7 +2,7 @@ name: ci
 
 on:
   push:
-    branches: [main, "bootstrap/**", "feature/brokerage-panel-v1"]
+    branches: [main, "bootstrap/**"]
   pull_request:
     branches: [main]
 
