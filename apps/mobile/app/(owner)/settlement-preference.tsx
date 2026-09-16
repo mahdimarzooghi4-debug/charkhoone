@@ -86,7 +86,7 @@ export default function OwnerSettlementPreferenceScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.primary },
-  scroll: { padding: 16, paddingBottom: 60, gap: 16 },
+  scroll: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 100, gap: 16 },
   intro: { gap: 8 },
   title: { color: colors.page, fontFamily: fonts.bold, fontSize: 18, textAlign: "right", writingDirection: "rtl" },
   description: { color: colors.muted, fontFamily: fonts.regular, fontSize: 13, lineHeight: 21, textAlign: "right", writingDirection: "rtl" },
