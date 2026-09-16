@@ -11,93 +11,102 @@ Source file: `charkhooneh-platform` (`kIJQxlRhLRhjCCckMfcmsa`).
 - RTL example: `RTL Demo` (`35:197`)
 - Route: `/design-system`
 
-Covered tokens/components:
-
-- Brand and semantic color tokens.
-- Vazirmatn typography references.
-- Spacing scale: 4, 8, 12, 16, 24, 32, 48 px.
-- Radius scale: 8, 12, 16, 24 px.
-- Default button/input height: 48 px.
-- RTL lease-registration example as reusable components.
+Covered tokens/components include brand and semantic colors, Vazirmatn typography, spacing/radius scales, 48px default controls and the RTL example components.
 
 ### Marketing / public pages
 
 - Page: `09-Charkhooneh Landing` (`636:2`)
-- Landing frame: `Charkhooneh / Landing` (`631:474`)
-- Route: `/`
-- App-download frame: `Charkhooneh / App Download` (`1002:8`)
-- Route: `/app-download`
+- `Charkhooneh / Landing` (`631:474`) → `/`
+- `Charkhooneh / App Download` (`1002:8`) → `/app-download`
 
-Landing coverage includes the Figma header, hero/ecosystem visual, audience cards, four-step flow, "چرا چارخونه؟" cards, final CTA and footer. The app-download route covers the Figma header, phone mockup, Android option and iOS coming-soon state.
+Landing coverage includes the Figma header, hero/ecosystem visual, audience cards, four-step flow, benefits, final CTA and footer. App Download covers the Figma phone mockup, Android option and iOS coming-soon state. The Android action remains visual-only because Figma does not provide an APK URL.
 
 ### User Web App
 
-- Page: `05 - User Web App` (`144:14`)
-- This is one unified User Web application; tenant/owner states are screens and flows inside the same web app, not separate web apps.
-- Login frame: `Web App / Login` (`163:165`), route `/login`
-- OTP frame: `Web App / OTP Verification` (`167:175`), route `/otp-verification`
-- Identity frame: `Web App / Identity Verification` (`167:211`), route `/identity-verification`
-- Home frame: `Web App / Home` (`144:154`), route `/user/home`
-- Contracts frame: `Web App / Contracts` (`149:150`), route `/user/contracts`
-- Contract-detail frame: `Web App / Contract Detail` (`150:277`), route `/user/contracts/123456789012`
-- Owner active-contract frame: `Web App / Contract Active` (`161:163`), route `/user/contracts/123456789012/owner`
-- Tenant terminated-contract frame: `Web App / Contract Terminated / Tenant` (`171:379`), route `/user/contracts/123456789012/terminated`
-- Receive & Pay frame: `Web App / Receive & Pay` (`150:412`), route `/user/receive-pay`
-- Properties frame: `Web App / Properties` (`173:379`), route `/user/properties`
-- Payment-return frame: `Web App / Payment Return` (`173:639`), route `/user/receive-pay/result`
-- Receipt frame: `Web App / Receipt` (`173:542`), route `/user/receive-pay/receipt`
-- Account frame: `Web App / Account` (`161:424`), route `/user/account`
-- Register tracking-code frame: `Web App / Register Tracking Code` (`150:706`), route `/user/contracts/register`
-- Contract-lookup-result frame: `Web App / Contract Lookup Result` (`150:761`), route `/user/contracts/register/result`
-- Eligible-financing-plans frame: `Web App / Eligible Financing Plans` (`150:904`), route `/user/contracts/register/plans`
-- Plan-confirmation frame: `Web App / Plan Confirmation` (`150:1053`), route `/user/contracts/register/plans/confirmation`
-- Financing-under-review frame: `Web App / Financing Under Review` (`150:1198`), route `/user/contracts/register/plans/review`
-- Financing-approved / membership-required frame: `Web App / Financing Approved / Membership Required` (`912:106`), route `/user/contracts/register/plans/approved`
-- Tenant-membership frame: `Web App / Tenant Membership` (`195:322`), route `/user/contracts/register/plans/membership`
-- Membership-payment-success frame: `Web App / Payment Return / Membership Success` (`175:754`), route `/user/contracts/register/plans/membership/result`
-- Membership-payment-failed frame: `Web App / Payment Return / Membership Failed` (`175:856`), route `/user/contracts/register/plans/membership/failed`
-- Contribution-required frame: `Web App / Financing Approved / Contribution Required` (`150:1317`), route `/user/contracts/register/plans/contribution`
-- Contribution-paid / final-confirmation frame: `Web App / Contribution Paid / Final Confirmation` (`150:1489`), route `/user/contracts/register/plans/final-confirmation`
-- Waiting-owner-confirmation frame: `Web App / Waiting for Owner Confirmation` (`171:211`), route `/user/contracts/register/plans/waiting-owner`
-- Financing-not-approved frame: `Web App / Financing Not Approved` (`161:334`), route `/user/contracts/register/plans/not-approved`
+Page: `05 - User Web App` (`144:14`). This is one unified User Web application; tenant/owner states are screen flows in the same web app rather than separate web apps.
 
-The login route covers the Figma split brand/auth layout, exact Persian copy, mobile-number field, confirmation-code action, legal copy and the login-specific exported logo. The login form performs frontend-only navigation to the OTP route.
+#### Authentication and shared entry states
 
-The OTP route covers the corresponding split layout, exact masked-mobile copy, five Figma digit boxes, resend countdown state, confirmation action, change-mobile link and its screen-specific exported logo. Its confirmation action performs frontend-only navigation to the identity-verification route. The OTP digits and countdown are Figma fixture state only; no verification service or timer logic is introduced yet.
+- `Web App / Login` (`163:165`) → `/login`
+- `Web App / OTP Verification` (`167:175`) → `/otp-verification`
+- `Web App / OTP Verification / Error` (`168:45`) → `/otp-verification/error`
+- `Web App / OTP Verification / Loading` (`168:215`) → `/otp-verification/loading`
+- `Web App / OTP Verification / Resend Available` (`168:248`) → `/otp-verification/resend`
+- `Web App / Identity Verification` (`167:211`) → `/identity-verification`
+- `Web App / Identity Verification / Invalid Format` (`170:51`) → `/identity-verification/invalid-format`
+- `Web App / Identity Verification / Mismatch` (`170:79`) → `/identity-verification/mismatch`
+- `Web App / Identity Verification / Loading` (`170:107`) → `/identity-verification/loading`
 
-The identity-verification route covers the Figma split layout, verified masked-mobile row and badge, national-ID input, confirmation action and the screen-specific exported logo. The masked mobile and example national ID remain presentation fixtures. Its CTA performs frontend-only navigation to `/user/home`.
+OTP digits, countdowns, error/loading/resend messages, masked mobile and national ID are Figma fixture states only. No OTP or identity-validation service is connected yet.
 
-The User Web home route implements the Figma desktop dashboard shell: right sidebar and profile, overview cards, membership status, action-required cards, quick access, recent contracts, and the receive/pay activity table. Names, amounts, dates, contract counts, membership limits and statuses are presentation fixtures copied from Figma and are not business rules or API-backed values. The quick-access routes currently point to the implemented or in-progress frontend screens for calculator, tracking-code registration and properties.
+#### Dashboard, account and utilities
 
-The contracts route implements the Figma summary row, role/status filters and four contract states. The Saadatabad fixture has frontend-only destination screens for tenant active detail, owner active detail and tenant terminated state. These routes represent Figma screen states; no role/state resolution service is connected yet.
+- `Web App / Home` (`144:154`) → `/user/home`
+- `Web App / Account` (`161:424`) → `/user/account`
+- `Web App / Change Mobile / Step 1` (`175:224`) → `/user/account/change-mobile`
+- `Web App / Change Mobile / Step 2 OTP` (`175:341`) → `/user/account/change-mobile/otp`
+- `Web App / Change Profile Image / Default` (`175:459`) → `/user/account/profile-image`
+- `Web App / Change Profile Image / Preview` (`175:578`) → `/user/account/profile-image/preview`
+- `Web App / Calculator` (`150:588`) → `/user/calculator`
 
-The tenant contract-detail route implements the Figma breadcrumb/header, contract role/status, property and party information, active-contract status, next-payment card, main contract data and completed financing-plan card. The owner active-contract route covers the owner-specific tenant/property cards, settlement status, next receivable, payout method, contract conditions and completed financing summary. The terminated tenant route covers the four-step termination/settlement state and financial-settlement summary. All tracking codes, dates, overdue counts, settlement amounts and fee copy are Figma presentation fixtures.
+The dashboard/account/calculator values, limits, identity information and banking fields are presentation fixtures. Profile image/mobile-change screens are frontend-only; no account, upload, SMS or banking behavior is connected.
 
-The tracking-code and lookup-result routes implement the frontend entry into the financing lifecycle. The lookup-result role selection links into eligible financing plans; no Khodnevis/contract lookup service is called yet.
+#### Contracts, property and receive/pay
 
-The financing lifecycle now covers eligible plans, plan confirmation, bank-review state, approved/membership-required state, membership selection, membership payment success/failure, contribution-required state, final confirmation, waiting-for-owner state and not-approved alternative-plan state. Navigation between these routes is frontend-only and exists to represent Figma screen progression; bank review, eligibility, payment processing, membership activation, contribution settlement and owner confirmation are not implemented as business logic or external integrations.
+- `Web App / Contracts` (`149:150`) → `/user/contracts`
+- `Web App / Contract Detail` (`150:277`) → `/user/contracts/123456789012`
+- `Web App / Properties` (`173:379`) → `/user/properties`
+- `Web App / Receive & Pay` (`150:412`) → `/user/receive-pay`
+- `Web App / Payment Return` (`173:639`) → `/user/receive-pay/result`
+- `Web App / Receipt` (`173:542`) → `/user/receive-pay/receipt`
+- `Web App / Contract Active` (`161:163`) → `/user/contracts/123456789012/owner`
+- `Web App / Contract Terminated / Tenant` (`171:379`) → `/user/contracts/123456789012/terminated`
 
-The receive/pay route implements the Figma header, four overview cards, terminated-contract warning, type/status filters and financial-history rows covering overdue/pending payments, future settlement and completed payment/settlement states. The payment-result and receipt frames are implemented as frontend-only destination screens. The amounts, dates, displayed ۰٫۵٪ service-fee copy, overdue count and termination explanation remain presentation fixtures rather than business rules.
+The screens cover active/terminated contract presentation, property cards, transaction history, payment result and receipt. Print/download/share controls remain visual-only where behavior is not specified.
 
-The properties route implements the Figma header/notification control, tenant-owner-total summary pills, three property cards (active tenant, active owner and owner in-progress states) and the inline empty state. Addresses, postal codes, dates and amounts are Figma fixtures only.
+#### Tenant financing lifecycle
 
-The payment-return route implements the Figma successful-payment result card, amount, transaction details, installment/contract context and navigation back to Receive & Pay. Its `مشاهده رسید` CTA links frontend-only to the implemented receipt route and its contract context links to the Saadatabad detail fixture.
+- `Web App / Register Tracking Code` (`150:706`) → `/user/contracts/register`
+- `Web App / Contract Lookup Result` (`150:761`) → `/user/contracts/register/result`
+- `Web App / Eligible Financing Plans` (`150:904`) → `/user/contracts/register/plans`
+- `Web App / Plan Confirmation` (`150:1053`) → `/user/contracts/register/plans/confirmation`
+- `Web App / Financing Under Review` (`150:1198`) → `/user/contracts/register/plans/review`
+- `Web App / Financing Approved / Membership Required` (`912:106`) → `/user/contracts/register/plans/approved`
+- `Web App / Tenant Membership` (`195:322`) → `/user/contracts/register/plans/membership`
+- `Web App / Payment Return / Membership Success` (`175:754`) → `/user/contracts/register/plans/membership/result`
+- `Web App / Payment Return / Membership Failed` (`175:856`) → `/user/contracts/register/plans/membership/failed`
+- `Web App / Payment Return / Membership Pending` (`175:958`) → `/user/contracts/register/plans/membership/pending`
+- `Web App / Membership Payment / Success` (`912:278`) → `/user/contracts/register/plans/membership/payment-success`
+- `Web App / Membership Payment / Failed` (`912:382`) → `/user/contracts/register/plans/membership/payment-failed`
+- `Web App / Membership Payment / Pending` (`912:486`) → `/user/contracts/register/plans/membership/payment-pending`
+- `Web App / Financing Approved / Contribution Required` (`150:1317`) → `/user/contracts/register/plans/contribution`
+- `Web App / Contribution Paid / Final Confirmation` (`150:1489`) → `/user/contracts/register/plans/final-confirmation`
+- `Web App / Waiting for Owner Confirmation` (`171:211`) → `/user/contracts/register/plans/waiting-owner`
+- `Web App / Financing Not Approved` (`161:334`) → `/user/contracts/register/plans/not-approved`
 
-The receipt route implements the Figma transaction receipt, paid/payment badges, transaction metadata and contract context. `چاپ رسید`, `ذخیره تصویر رسید` and `اشتراک‌گذاری رسید` remain visual-only controls because no print/download/share behavior is specified or integrated yet.
+The lifecycle navigation is frontend-only. Eligibility, bank review, membership activation, payment processing, contribution settlement and owner confirmation are not implemented as business logic or external integrations.
 
-The account route implements the Figma account shell, profile summary, verified mobile state, empty IBAN state, identity information, membership summary and settings card. `تغییر تصویر` and `تغییر شماره موبایل` point to their frontend-only account subroutes; IBAN, legal/privacy, membership-detail and sign-out behavior remain visual-only until their exact Figma destination screens or behavior are implemented. All identity, membership and banking values shown here remain presentation fixtures.
+#### Owner contract lifecycle
 
-Known User Web App frames still requiring review/implementation include `Web App / Membership Payment / Success` (`912:278`) and any additional states on page `144:14` not yet enumerated in this document.
+- `Web App / Owner Contract Connected` (`170:278`) → `/user/contracts/123456789012/owner/connected`
+- `Web App / Owner Settlement Preference` (`150:1685`) → `/user/contracts/123456789012/owner/settlement-preference`
+- `Web App / Owner Final Contract Confirmation` (`150:1830`) → `/user/contracts/123456789012/owner/final-confirmation`
+- `Web App / Contract Terminated / Owner` (`173:219`) → `/user/contracts/123456789012/owner/terminated`
+
+These screens preserve the Figma owner-side waiting/process state, settlement-method comparison, final-confirmation state and terminated/financial-settlement state. The payout-method and fee figures are presentation fixtures only; they do not define fund, fee or settlement rules.
+
+### User Web inventory status
+
+The full set of 45 top-level frames currently enumerated on Figma page `05 - User Web App` (`144:14`) has a corresponding frontend route/state on `feature/platform-v1`. User Web top-level Figma coverage is therefore complete for the currently enumerated page inventory. Final pixel-level visual review and exact-asset vending remain pre-merge tasks.
 
 ## Implementation notes
 
 - The repository remains Next.js + TypeScript with plain CSS/CSS Modules; Tailwind has not been added.
-- Desktop dimensions, spacing, typography and colors are taken from the Figma design context. Responsive behavior below the provided desktop frames is a conservative implementation adaptation.
-- The Android download control is visual only because the Figma source does not provide an APK/download URL.
-- `/login` → `/otp-verification` → `/identity-verification` → `/user/home` navigation is frontend-only. Verification, identity validation, dashboard actions and post-login data loading are not connected to backend services yet.
-- User Web routes and fixture links are frontend-only; no contract, payment, financing, property, account or banking API behavior has been introduced.
-- Values shown in financing/payment/contract screens (names, national IDs, tracking/transaction numbers, amounts, dates, plan names, bank names, overdue counts, fees and statuses) are presentation fixtures copied from Figma, not domain or backend rules.
-- Figma-exported logo/icon/avatar asset URLs are currently referenced on the working branch. They are short-lived and must be vendored into the repository as the exact exported bytes (no redrawing) before the final merge.
-- Pixel-level visual regression has not yet been run; compile/typecheck CI is not a substitute for final visual review.
+- Desktop dimensions, spacing, typography and colors come from Figma design context. Responsive behavior below the supplied desktop frames is a conservative adaptation.
+- All names, national IDs, tracking/transaction numbers, amounts, dates, bank/plan names, overdue counts, rates, fees and statuses shown in these screens are Figma presentation fixtures, not domain/backend rules.
+- `/login` → authentication states → `/user/home` and all post-login flow navigation are frontend-only.
+- No contract lookup/Khodnevis, bank, credit, fund, organization, payment gateway, account, banking or partner API is connected yet.
+- Figma-exported logo/icon/avatar URLs are short-lived working references. Before final merge, their exact exported bytes must be vendored into the repository without redrawing/substituting assets.
+- Pixel-level visual regression has not yet been run; compile/typecheck/build CI is not a substitute for final visual review.
 
-No backend integration, database behavior or partner API behavior is introduced by these pages.
+No backend integration, database behavior or partner API behavior is introduced by these pages. After the remaining frontend Figma areas (including Bank Panel and Fund Panel) are completed, the project order remains Backend → Database → final test/review → Merge.
