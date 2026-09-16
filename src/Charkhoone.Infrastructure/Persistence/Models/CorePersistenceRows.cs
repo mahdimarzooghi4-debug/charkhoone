@@ -70,6 +70,7 @@ public sealed class VerificationRequestRow
     public string IdempotencyKey { get; set; } = string.Empty;
     public string? ExternalReference { get; set; }
     public string? ReasonCode { get; set; }
+    public int AttemptCount { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
     public DateTimeOffset UpdatedAtUtc { get; set; }
 }
