@@ -3,16 +3,26 @@ using Charkhoone.Infrastructure;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHealthChecks();
+builder.Services.AddOpenApi();
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = context =>
+        context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+});
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
 app.MapHealthChecks("/health");
-app.MapGet("/api/v1", () => Results.Ok(new
+app.MapOpenApi();
+
+var api = app.MapGroup("/api/v1");
+api.MapGet("", () => Results.Ok(new
 {
     service = "Charkhoone.Api",
     apiVersion = "v1",
-    status = "bootstrap"
+    status = "ready"
 }));
 
 app.Run();
