@@ -58,7 +58,10 @@ public sealed class PersistenceModelTests
 
     private static CharkhooneDbContext CreateContext()
     {
-        var options = new DbContextOptionsBuilder<CharkhooneDbContext>().Options;
+        var options = new DbContextOptionsBuilder<CharkhooneDbContext>()
+            .UseNpgsql("Host=localhost;Database=charkhoone_model_test;Username=test;Password=test")
+            .Options;
+
         return new CharkhooneDbContext(options);
     }
 }
