@@ -1,0 +1,30 @@
+.page { min-height: 100svh; display: grid; grid-template-columns: minmax(0, 2fr) minmax(360px, 1fr); direction: ltr; background: var(--ch-color-page); }
+.formArea { min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 52px; padding: 48px; direction: rtl; }
+.loginCard { width: min(640px, 100%); display: flex; flex-direction: column; gap: 28px; padding: 48px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 18px; }
+.headers { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right; }
+.headers h1, .headers p, .identityPanel h2, .identityPanel p, .securityNote h3, .securityNote p, .footer { margin: 0; }
+.headers h1 { color: var(--ch-color-text); font-size: 30px; font-weight: 700; }
+.headers p { color: #6b7280; font-size: 14px; }
+.form { display: flex; flex-direction: column; gap: 24px; }
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field label { color: #374151; font-size: 14px; font-weight: 500; text-align: right; }
+.inputLike { width: 100%; height: 54px; display: flex; align-items: center; justify-content: flex-end; padding: 0 18px; color: #9ca3af; font-size: 14px; background: #f9fafb; border: 1px solid var(--ch-color-border); border-radius: 10px; }
+.passwordValue { color: #6b7280; font-size: 15px; }
+.errorInput { border-color: #b91c1c; }
+.helper { color: #6b7280; font-size: 13px; line-height: 1.8; text-align: right; }
+.errorHelper { color: #b91c1c; }
+.submit { width: 100%; min-height: 54px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 15px; font-weight: 600; text-decoration: none; background: var(--ch-color-primary); border-radius: 10px; }
+.divider { width: 100%; height: 1px; display: block; }
+.accessNote { color: #6b7280; font-size: 13px; line-height: 1.7; text-align: center; }
+.footer { color: #9ca3af; font-size: 12px; text-align: center; }
+.identityPanel { min-height: 100svh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; padding: 48px 40px; direction: rtl; text-align: center; background: var(--ch-color-primary); }
+.logo { width: 180px; height: 78px; display: block; object-fit: cover; }
+.identityPanel h2 { color: #fff; font-size: 27px; font-weight: 700; }
+.identityPanel > p:nth-of-type(1) { color: var(--ch-color-accent); font-size: 15px; font-weight: 500; }
+.identityPanel > p:nth-of-type(2) { color: #d1d5db; font-size: 14px; line-height: 1.9; }
+.securityNote { width: min(350px, 100%); display: flex; flex-direction: column; gap: 6px; padding: 22px; text-align: right; background: #1e514a; border-radius: 14px; }
+.securityNote h3 { color: #fff; font-size: 16px; font-weight: 600; }
+.securityNote p { color: #d1d5db; font-size: 13px; line-height: 1.7; }
+.page a:focus-visible { outline: 3px solid rgb(255 138 0 / 35%); outline-offset: 3px; }
+@media (max-width: 980px) { .page { grid-template-columns: 1fr; } .identityPanel { min-height: auto; padding: 48px 24px; } .formArea { padding: 48px 24px; } }
+@media (max-width: 640px) { .formArea { padding: 32px 16px; gap: 32px; } .loginCard { padding: 28px 20px; } .headers h1 { font-size: 24px; } .identityPanel { padding: 36px 20px; } }
