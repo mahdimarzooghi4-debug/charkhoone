@@ -120,6 +120,19 @@ public sealed class DomainWorkflowTests
     }
 
     [Fact]
+    public void CancellationTrigger_IsLatchedAfterThirdConsecutiveMissedMonth()
+    {
+        var counter = new ConsecutiveMissedMonths();
+        counter.RegisterClosedMonth(false);
+        counter.RegisterClosedMonth(false);
+        counter.RegisterClosedMonth(false);
+
+        Assert.Throws<InvalidOperationException>(() => counter.RegisterClosedMonth(true));
+        Assert.Equal(3, counter.Count);
+        Assert.True(counter.RequiresCancellation);
+    }
+
+    [Fact]
     public void UnknownPayment_IsNotBlindlyReturnedToPending()
     {
         var status = PaymentInstructionStateMachine.Transition(PaymentInstructionStatus.Created, PaymentInstructionStatus.Pending);
