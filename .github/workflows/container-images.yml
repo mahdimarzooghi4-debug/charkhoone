@@ -18,7 +18,7 @@ jobs:
   base-image-pins:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Verify immutable build dependency locks
         run: |
           python3 scripts/release/verify-base-image-pins.py
@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: base-image-pins
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build API image
         run: |
           docker build \
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: base-image-pins
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build Worker image
         run: |
           docker build \
@@ -114,7 +114,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: base-image-pins
     steps:
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Build Web image
         run: |
           docker build \
@@ -175,7 +175,7 @@ jobs:
           test "$API_IMAGE_RESULT" = success
           test "$WORKER_IMAGE_RESULT" = success
           test "$WEB_IMAGE_RESULT" = success
-      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Write SHA-bound container evidence
         run: |
           mkdir -p artifacts/container-release
