@@ -74,7 +74,7 @@ def main() -> None:
         ],
         ROOT / "src" / "Charkhoone.Worker" / "Dockerfile": [
             lock["DOTNET_SDK"],
-            lock["DOTNET_RUNTIME"],
+            lock["DOTNET_ASPNET"],
         ],
         ROOT / "apps" / "web" / "Dockerfile": [
             lock["NODE_BUILD"],

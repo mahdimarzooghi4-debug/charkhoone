@@ -88,7 +88,7 @@ jobs:
             --file src/Charkhoone.Worker/Dockerfile \
             --tag "charkhoone-worker:${GITHUB_SHA}" \
             .
-      - name: Verify Worker image contract and process startup
+      - name: Verify Worker image contract and HTTP liveness
         run: |
           set -euo pipefail
           image="charkhoone-worker:${GITHUB_SHA}"
@@ -99,16 +99,38 @@ jobs:
           fi
           revision="$(docker image inspect "$image" --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}')"
           test "$revision" = "$GITHUB_SHA"
+          exposed_ports="$(docker image inspect "$image" --format '{{json .Config.ExposedPorts}}')"
+          grep -F '"8080/tcp"' <<< "$exposed_ports"
 
           docker run -d --name charkhoone-worker-smoke \
+            -p 127.0.0.1:18081:8080 \
             -e DOTNET_ENVIRONMENT=Development \
+            -e Release__GitSha="$GITHUB_SHA" \
             -e 'ConnectionStrings__Postgres=Host=127.0.0.1;Port=5432;Database=charkhoone;Username=charkhoone;Password=container_smoke;Timeout=1' \
             -e RabbitMq__Enabled=false \
             -e FinancialReconciliation__Enabled=false \
             "$image"
           trap 'docker logs charkhoone-worker-smoke || true; docker rm -f charkhoone-worker-smoke >/dev/null 2>&1 || true' EXIT
-          sleep 5
-          test "$(docker inspect charkhoone-worker-smoke --format '{{.State.Running}}')" = "true"
+
+          ready=false
+          for _ in $(seq 1 30); do
+            if curl --fail --silent --show-error \
+              --dump-header /tmp/charkhoone-worker-headers \
+              --output /tmp/charkhoone-worker-body \
+              http://127.0.0.1:18081/health/live; then
+              ready=true
+              break
+            fi
+            if [[ "$(docker inspect charkhoone-worker-smoke --format '{{.State.Running}}')" != "true" ]]; then
+              echo "Worker container exited before HTTP liveness succeeded" >&2
+              exit 1
+            fi
+            sleep 1
+          done
+          test "$ready" = true
+          grep -i -F "X-Charkhoone-Release-Sha: ${GITHUB_SHA}" /tmp/charkhoone-worker-headers
+          grep -F '"service":"Charkhoone.Worker"' /tmp/charkhoone-worker-body
+          grep -F '"status":"live"' /tmp/charkhoone-worker-body
 
   web-image:
     runs-on: ubuntu-latest
@@ -196,6 +218,9 @@ jobs:
           api_liveness_smoke=success
           worker_image_build=success
           worker_process_smoke=success
+          worker_http_liveness_smoke=success
+          worker_release_sha_header=verified
+          worker_readiness=not-claimed
           web_image_build=success
           web_http_smoke=success
           runtime_user=non-root-verified
