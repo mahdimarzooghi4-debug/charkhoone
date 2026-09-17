@@ -33,6 +33,13 @@ if (!builder.Environment.IsDevelopment())
             "Authentication:Authority must be configured outside the Development environment.");
     }
 
+    if (!Uri.TryCreate(authenticationAuthority, UriKind.Absolute, out var authorityUri)
+        || authorityUri.Scheme != Uri.UriSchemeHttps)
+    {
+        throw new InvalidOperationException(
+            "Authentication:Authority must be an absolute HTTPS URI outside the Development environment.");
+    }
+
     if (string.IsNullOrWhiteSpace(authenticationAudience))
     {
         throw new InvalidOperationException(
@@ -54,6 +61,9 @@ builder.Services
             options.Audience = authenticationAudience;
         }
 
+        // Application authorization explicitly relies on the OIDC `sub` claim.
+        // Preserve standard OIDC claim names rather than mapping them to WS-* claim URIs.
+        options.MapInboundClaims = false;
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     });
 builder.Services.AddAuthorization();
@@ -101,13 +111,15 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 });
 app.MapOpenApi();
 
-var api = app.MapGroup("/api/v1");
+// Secure the versioned API by default so newly added endpoints cannot accidentally
+// become anonymous. The service-info route is intentionally public.
+var api = app.MapGroup("/api/v1").RequireAuthorization();
 api.MapGet("", () => Results.Ok(new
 {
     service = "Charkhoone.Api",
     apiVersion = "v1",
     status = "ready"
-}));
+})).AllowAnonymous();
 api.MapCreditApplicationEndpoints();
 api.MapPaymentEndpoints();
 api.MapContractEndpoints();
