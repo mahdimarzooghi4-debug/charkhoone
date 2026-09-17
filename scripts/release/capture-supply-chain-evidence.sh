@@ -53,11 +53,12 @@ export SYFT_CHECK_FOR_APP_UPDATE=false
   npm sbom --sbom-format=cyclonedx --sbom-type=application \
     > "${EVIDENCE_DIR}/sbom/web-source.cdx.json"
 )
-(
-  cd "${ROOT}/apps/mobile"
-  npm sbom --sbom-format=cyclonedx --sbom-type=application \
-    > "${EVIDENCE_DIR}/sbom/mobile-source.cdx.json"
-)
+
+# npm 10.9.2 rejects Expo's installed optional peer override while `npm ci`
+# succeeds from the committed lockfile. Catalog the same lockfile-backed install
+# with Syft instead of weakening npm peer validation with bypass flags.
+"${BIN_DIR}/syft" "dir:${ROOT}/apps/mobile" \
+  -o "cyclonedx-json=${EVIDENCE_DIR}/sbom/mobile-source.cdx.json"
 
 "${BIN_DIR}/syft" "docker:${API_IMAGE}" \
   -o "cyclonedx-json=${EVIDENCE_DIR}/sbom/api-image.cdx.json"
