@@ -6,11 +6,17 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCharkhooneObservability(builder.Configuration, "Charkhoone.Worker");
+builder.Services.AddSingleton(TimeProvider.System);
 
 var rabbitMqOptions = RabbitMqWorkerOptions.FromConfiguration(builder.Configuration);
 builder.Services.AddSingleton(rabbitMqOptions);
+
+var financialReconciliationOptions = FinancialReconciliationWorkerOptions.FromConfiguration(builder.Configuration);
+builder.Services.AddSingleton(financialReconciliationOptions);
+
 builder.Services.AddHostedService<OutboxWorker>();
 builder.Services.AddHostedService<CreditApplicationSubmittedConsumer>();
+builder.Services.AddHostedService<FinancialReconciliationWorker>();
 
 var host = builder.Build();
 host.Run();
