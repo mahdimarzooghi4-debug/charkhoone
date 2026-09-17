@@ -84,6 +84,7 @@ public sealed class LeaseContractRowConfiguration : IEntityTypeConfiguration<Lea
         builder.HasIndex(x => x.OwnerUserId);
         builder.HasIndex(x => x.PropertyId);
         builder.HasIndex(x => x.CreditApplicationId).IsUnique();
+        builder.HasIndex(x => new { x.Status, x.UpdatedAtUtc, x.Id });
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(64).IsRequired();
         builder.Property(x => x.BankLoanPlanVersion).HasMaxLength(64);
         builder.Property(x => x.CreditGradePolicyVersion).HasMaxLength(64);
@@ -139,6 +140,8 @@ public sealed class OutboxMessageRowConfiguration : IEntityTypeConfiguration<Out
         builder.ToTable("outbox_messages");
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => new { x.ProcessedAtUtc, x.OccurredAtUtc });
+        builder.HasIndex(x => new { x.OccurredAtUtc, x.Id })
+            .HasFilter("\"ProcessedAtUtc\" IS NULL");
         builder.Property(x => x.Type).HasMaxLength(256).IsRequired();
         builder.Property(x => x.PayloadJson).HasColumnType("jsonb").IsRequired();
         builder.Property(x => x.LastError).HasColumnType("text");
