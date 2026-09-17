@@ -58,7 +58,23 @@ jobs:
           test -s artifacts/database/migrations-idempotent.sql
           grep -q '__EFMigrationsHistory' artifacts/database/migrations-idempotent.sql
       - name: Validate database operation scripts
-        run: for script in scripts/database/*.sh; do bash -n "$script"; done
+        shell: bash
+        run: |
+          for script in scripts/database/*.sh; do bash -n "$script"; done
+          python3 -m py_compile scripts/database/*.py
+          role_fixture=$(mktemp)
+          trap 'rm -f "$role_fixture"' EXIT
+          for code in \
+            database_create_privilege \
+            public_schema_create_privilege \
+            role_bypass_rls \
+            role_create_db \
+            role_create_role \
+            role_replication \
+            role_superuser; do
+            printf '%s\t0\n' "$code" >> "$role_fixture"
+          done
+          python3 scripts/database/verify-runtime-role.py "$role_fixture"
 
       - name: Real PostgreSQL backup and clean restore drill
         env:
