@@ -1,10 +1,12 @@
 using Charkhoone.Application.BankFunding;
+using Charkhoone.Application.Contracts;
 using Charkhoone.Application.CreditApplications;
 using Charkhoone.Application.CreditEligibility;
 using Charkhoone.Application.IdentityVerification;
 using Charkhoone.Application.Payments;
 using Charkhoone.Application.TenantContributionFunding;
 using Charkhoone.Infrastructure.BankFunding;
+using Charkhoone.Infrastructure.Contracts;
 using Charkhoone.Infrastructure.CreditApplications;
 using Charkhoone.Infrastructure.CreditEligibility;
 using Charkhoone.Infrastructure.IdentityVerification;
@@ -36,6 +38,7 @@ public static class DependencyInjection
         }
 
         services.AddScoped<IUserIdentityLookup, EfUserIdentityLookup>();
+        services.AddScoped<IContractReadService, EfContractReadService>();
         services.AddScoped<ICreditApplicationService, EfCreditApplicationService>();
         services.AddScoped<ICreditApplicationIdentityService, EfCreditApplicationIdentityService>();
         services.AddScoped<ICreditEligibilityService, EfCreditEligibilityService>();
