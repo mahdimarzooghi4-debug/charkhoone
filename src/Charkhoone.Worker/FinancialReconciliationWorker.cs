@@ -86,6 +86,9 @@ public sealed class FinancialReconciliationWorker(
         var coverageCandidates = await dbContext.MonthlyObligations
             .AsNoTracking()
             .Where(x => x.Status == MonthlyObligationStatus.Missed)
+            .Where(x => !dbContext.CoveragePayments.Any(coverage =>
+                coverage.MonthlyObligationId == x.Id
+                && coverage.Status == CoveragePaymentStatus.Failed))
             .OrderBy(x => x.DueAtUtc)
             .ThenBy(x => x.Id)
             .Select(x => x.Id)
@@ -95,6 +98,9 @@ public sealed class FinancialReconciliationWorker(
         var cancellationCandidates = await dbContext.LeaseContracts
             .AsNoTracking()
             .Where(x => x.Status == LeaseContractStatus.CancellationPending)
+            .Where(x => !dbContext.CancellationSettlements.Any(settlement =>
+                settlement.ContractId == x.Id
+                && settlement.Status == CancellationSettlementStatus.Failed))
             .OrderBy(x => x.UpdatedAtUtc)
             .ThenBy(x => x.Id)
             .Select(x => x.Id)
@@ -104,6 +110,10 @@ public sealed class FinancialReconciliationWorker(
         var normalSettlementCandidates = await dbContext.LeaseContracts
             .AsNoTracking()
             .Where(x => x.Status == LeaseContractStatus.SettlementPending)
+            .Where(x => !dbContext.NormalSettlements.Any(settlement =>
+                settlement.ContractId == x.Id
+                && (settlement.BankPrincipalStatus == NormalSettlementTransferStatus.Failed
+                    || settlement.TenantResidualStatus == NormalSettlementTransferStatus.Failed)))
             .OrderBy(x => x.UpdatedAtUtc)
             .ThenBy(x => x.Id)
             .Select(x => x.Id)
