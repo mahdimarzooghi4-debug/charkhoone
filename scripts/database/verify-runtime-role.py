@@ -5,13 +5,19 @@ import pathlib
 import sys
 
 EXPECTED = {
-    "role_superuser",
-    "role_create_role",
-    "role_create_db",
-    "role_replication",
-    "role_bypass_rls",
+    "application_function_owner",
+    "application_table_owner",
+    "application_table_trigger_privilege",
+    "application_table_truncate_privilege",
     "database_create_privilege",
+    "database_owner",
     "public_schema_create_privilege",
+    "public_schema_owner",
+    "role_bypass_rls",
+    "role_create_db",
+    "role_create_role",
+    "role_replication",
+    "role_superuser",
 }
 
 
@@ -52,7 +58,7 @@ def main() -> int:
         detail = ", ".join(f"{code}={count}" for code, count in sorted(failures.items()))
         raise SystemExit(f"runtime role is over-privileged: {detail}")
 
-    print("runtime role audit passed: all 7 least-privilege checks are zero")
+    print("runtime role audit passed: all 13 least-privilege checks are zero")
     return 0
 
 
