@@ -14,8 +14,8 @@ public sealed class BankApprovalRowConfiguration : IEntityTypeConfiguration<Bank
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
         builder.Property(x => x.Provider).HasMaxLength(128).IsRequired();
         builder.Property(x => x.Status).HasMaxLength(64).IsRequired();
-        builder.Property(x => x.MaximumEligibleLoanRial).HasPrecision(38, 18).IsRequired();
-        builder.Property(x => x.ApprovedLoanRial).HasPrecision(38, 18);
+        builder.Property(x => x.MaximumEligibleLoanRial).HasColumnType("numeric").IsRequired();
+        builder.Property(x => x.ApprovedLoanRial).HasColumnType("numeric");
         builder.Property(x => x.IdempotencyKey).HasMaxLength(256).IsRequired();
         builder.Property(x => x.ExternalReference).HasMaxLength(256);
         builder.Property(x => x.ReasonCode).HasMaxLength(256);
@@ -37,10 +37,10 @@ public sealed class FundingAllocationRowConfiguration : IEntityTypeConfiguration
         builder.HasIndex(x => x.ContractId).IsUnique();
         builder.Property(x => x.BankLoanPlanVersion).HasMaxLength(64).IsRequired();
         builder.Property(x => x.BankId).HasMaxLength(128).IsRequired();
-        builder.Property(x => x.FullDepositEquivalentRial).HasPrecision(38, 18).IsRequired();
-        builder.Property(x => x.MaximumEligibleLoanRial).HasPrecision(38, 18).IsRequired();
-        builder.Property(x => x.BankApprovedLoanRial).HasPrecision(38, 18).IsRequired();
-        builder.Property(x => x.TenantContributionRial).HasPrecision(38, 18).IsRequired();
+        builder.Property(x => x.FullDepositEquivalentRial).HasColumnType("numeric").IsRequired();
+        builder.Property(x => x.MaximumEligibleLoanRial).HasColumnType("numeric").IsRequired();
+        builder.Property(x => x.BankApprovedLoanRial).HasColumnType("numeric").IsRequired();
+        builder.Property(x => x.TenantContributionRial).HasColumnType("numeric").IsRequired();
 
         builder.HasOne<CreditApplicationRow>()
             .WithOne()
