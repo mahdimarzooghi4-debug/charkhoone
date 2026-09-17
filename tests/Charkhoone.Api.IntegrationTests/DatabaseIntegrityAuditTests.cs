@@ -44,56 +44,181 @@ public sealed class DatabaseIntegrityAuditTests(CharkhooneApiFactory factory)
         ('{debit}', '{entry}', '{account}', 10, 0), ('{credit}', '{entry}', '{account}', 0, 10);
         """;
 
-    [Theory]
-    [InlineData("journal_balance", "delete_line")]
-    [InlineData("journal_line_sides", "zero_sides")]
-    [InlineData("journal_line_sides", "negative_side")]
-    [InlineData("journal_line_sides", "two_positive_sides")]
-    [InlineData("journal_line_sides", "nan_side")]
-    [InlineData("canonical_currency", "currency")]
-    [InlineData("blank_idempotency_key", "blank_key")]
-    [InlineData("frozen_principal_orphan", "orphan")]
-    public async Task AuditDetectsCorruptionThatCurrentDatabaseConstraintsAllow(string code, string mutation)
+    private static async Task<(Guid Entry, Guid Account, Guid Debit, Guid Credit)> SeedCommittedJournalAsync(
+        NpgsqlConnection connection)
+    {
+        var entry = Guid.NewGuid();
+        var account = Guid.NewGuid();
+        var debit = Guid.NewGuid();
+        var credit = Guid.NewGuid();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await ExecuteAsync(connection, SeedJournal(entry, account, debit, credit));
+        await transaction.CommitAsync();
+        return (entry, account, debit, credit);
+    }
+
+    [Fact]
+    public async Task BalancedJournal_CommitsAndIsSealed()
     {
         await using var connection = await OpenAsync();
-        await using var transaction = await connection.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead);
-        var entry = Guid.NewGuid(); var account = Guid.NewGuid();
-        var debit = Guid.NewGuid(); var credit = Guid.NewGuid();
-        await ExecuteAsync(connection, SeedJournal(entry, account, debit, credit));
-        var before = await AuditAsync(connection);
-        var sql = mutation switch
-        {
-            "delete_line" => $"DELETE FROM journal_lines WHERE \"Id\" = '{debit}'",
-            "zero_sides" => $"UPDATE journal_lines SET \"DebitRial\" = 0 WHERE \"Id\" = '{debit}'",
-            "negative_side" => $"UPDATE journal_lines SET \"DebitRial\" = -10 WHERE \"Id\" = '{debit}'",
-            "two_positive_sides" => $"UPDATE journal_lines SET \"CreditRial\" = 10 WHERE \"Id\" = '{debit}'",
-            "nan_side" => $"UPDATE journal_lines SET \"DebitRial\" = 'NaN'::numeric WHERE \"Id\" = '{debit}'",
-            "currency" => $"UPDATE ledger_accounts SET \"Currency\" = 'TOMAN' WHERE \"Id\" = '{account}'",
-            "blank_key" => $"UPDATE journal_entries SET \"IdempotencyKey\" = '   ' WHERE \"Id\" = '{entry}'",
-            "orphan" => $"INSERT INTO frozen_principals (\"ContractId\", \"BankId\", \"AmountRial\", \"FundReference\", \"FrozenAtUtc\") VALUES ('{entry}', 'audit-bank', 10, 'audit', now())",
-            _ => throw new ArgumentException(mutation),
-        };
-        await ExecuteAsync(connection, sql);
-        var after = await AuditAsync(connection);
-        Assert.Equal(before[code] + 1, after[code]);
+        var journal = await SeedCommittedJournalAsync(connection);
+
+        await using var command = new NpgsqlCommand(
+            "SELECT count(*) FROM journal_entry_seals WHERE \"JournalEntryId\" = @id",
+            connection);
+        command.Parameters.AddWithValue("id", journal.Entry);
+        Assert.Equal(1L, await command.ExecuteScalarAsync());
+    }
+
+    [Fact]
+    public async Task UnbalancedJournal_IsRejectedAtTransactionCommit()
+    {
+        await using var connection = await OpenAsync();
+        var entry = Guid.NewGuid();
+        var account = Guid.NewGuid();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await ExecuteAsync(connection, $"""
+            INSERT INTO ledger_accounts ("Id", "Code", "Name", "Currency", "CreatedAtUtc")
+            VALUES ('{account}', 'audit-unbalanced-{account}', 'synthetic audit', 'IRR', now());
+            INSERT INTO journal_entries ("Id", "ReferenceType", "ReferenceId", "IdempotencyKey", "Description", "OccurredAtUtc", "PostedAtUtc")
+            VALUES ('{entry}', 'AuditFixture', '{entry}', 'audit-unbalanced-{entry}', 'synthetic audit', now(), now());
+            INSERT INTO journal_lines ("Id", "JournalEntryId", "LedgerAccountId", "DebitRial", "CreditRial") VALUES
+            ('{Guid.NewGuid()}', '{entry}', '{account}', 10, 0),
+            ('{Guid.NewGuid()}', '{entry}', '{account}', 0, 9);
+            """);
+
+        var exception = await Assert.ThrowsAsync<PostgresException>(() => transaction.CommitAsync());
+        Assert.Equal(PostgresErrorCodes.CheckViolation, exception.SqlState);
+    }
+
+    [Theory]
+    [InlineData("0", "0")]
+    [InlineData("-10", "0")]
+    [InlineData("10", "10")]
+    [InlineData("'NaN'::numeric", "0")]
+    public async Task JournalLineShapeCheck_RejectsInvalidSides(string debitSql, string creditSql)
+    {
+        await using var connection = await OpenAsync();
+        var entry = Guid.NewGuid();
+        var account = Guid.NewGuid();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await ExecuteAsync(connection, $"""
+            INSERT INTO ledger_accounts ("Id", "Code", "Name", "Currency", "CreatedAtUtc")
+            VALUES ('{account}', 'audit-line-shape-{account}', 'synthetic audit', 'IRR', now());
+            INSERT INTO journal_entries ("Id", "ReferenceType", "ReferenceId", "IdempotencyKey", "Description", "OccurredAtUtc", "PostedAtUtc")
+            VALUES ('{entry}', 'AuditFixture', '{entry}', 'audit-line-shape-{entry}', 'synthetic audit', now(), now());
+            """);
+
+        var exception = await Assert.ThrowsAsync<PostgresException>(() => ExecuteAsync(connection, $"""
+            INSERT INTO journal_lines ("Id", "JournalEntryId", "LedgerAccountId", "DebitRial", "CreditRial")
+            VALUES ('{Guid.NewGuid()}', '{entry}', '{account}', {debitSql}, {creditSql})
+            """));
+        Assert.Equal(PostgresErrorCodes.CheckViolation, exception.SqlState);
         await transaction.RollbackAsync();
     }
 
     [Fact]
-    public async Task PostedLedgerMutationAndCascadeDelete_AreDocumentedDatabaseProtectionGaps()
+    public async Task CanonicalCurrencyBlankIdempotencyAndFrozenPrincipalForeignKey_AreDatabaseEnforced()
     {
         await using var connection = await OpenAsync();
-        await using var transaction = await connection.BeginTransactionAsync();
-        var entry = Guid.NewGuid(); var account = Guid.NewGuid();
-        await ExecuteAsync(connection, SeedJournal(entry, account, Guid.NewGuid(), Guid.NewGuid()));
-        // Characterization of the audited baseline, NOT approval of this behavior.
-        // A future enforcement migration must replace these assertions with rejection tests.
-        await using var update = new NpgsqlCommand($"UPDATE journal_entries SET \"Description\" = 'changed' WHERE \"Id\" = '{entry}'", connection);
-        Assert.Equal(1, await update.ExecuteNonQueryAsync());
-        await ExecuteAsync(connection, $"DELETE FROM journal_entries WHERE \"Id\" = '{entry}'");
-        await using var count = new NpgsqlCommand($"SELECT count(*) FROM journal_lines WHERE \"JournalEntryId\" = '{entry}'", connection);
-        Assert.Equal(0L, await count.ExecuteScalarAsync());
-        await transaction.RollbackAsync();
+
+        var currency = await Assert.ThrowsAsync<PostgresException>(() => ExecuteAsync(connection, $"""
+            INSERT INTO ledger_accounts ("Id", "Code", "Name", "Currency", "CreatedAtUtc")
+            VALUES ('{Guid.NewGuid()}', 'audit-bad-currency-{Guid.NewGuid()}', 'synthetic audit', 'TOMAN', now())
+            """));
+        Assert.Equal(PostgresErrorCodes.CheckViolation, currency.SqlState);
+
+        var entry = Guid.NewGuid();
+        var blankKey = await Assert.ThrowsAsync<PostgresException>(() => ExecuteAsync(connection, $"""
+            INSERT INTO journal_entries ("Id", "ReferenceType", "ReferenceId", "IdempotencyKey", "Description", "OccurredAtUtc", "PostedAtUtc")
+            VALUES ('{entry}', 'AuditFixture', '{entry}', '   ', 'synthetic audit', now(), now())
+            """));
+        Assert.Equal(PostgresErrorCodes.CheckViolation, blankKey.SqlState);
+
+        var orphan = await Assert.ThrowsAsync<PostgresException>(() => ExecuteAsync(connection, $"""
+            INSERT INTO frozen_principals ("ContractId", "BankId", "AmountRial", "FundReference", "FrozenAtUtc")
+            VALUES ('{Guid.NewGuid()}', 'audit-bank', 10, 'audit', now())
+            """));
+        Assert.Equal(PostgresErrorCodes.ForeignKeyViolation, orphan.SqlState);
+    }
+
+    [Fact]
+    public async Task PostedJournalEntry_RawSqlUpdateAndDeleteAreRejected()
+    {
+        await using var connection = await OpenAsync();
+        var journal = await SeedCommittedJournalAsync(connection);
+
+        var update = await Assert.ThrowsAsync<PostgresException>(() => ExecuteAsync(connection,
+            $"UPDATE journal_entries SET \"Description\" = 'changed' WHERE \"Id\" = '{journal.Entry}'"));
+        Assert.Equal("55000", update.SqlState);
+
+        var delete = await Assert.ThrowsAsync<PostgresException>(() => ExecuteAsync(connection,
+            $"DELETE FROM journal_entries WHERE \"Id\" = '{journal.Entry}'"));
+        Assert.Equal("55000", delete.SqlState);
+    }
+
+    [Fact]
+    public async Task PostedJournalLines_RawSqlUpdateDeleteAndAppendAreRejected()
+    {
+        await using var connection = await OpenAsync();
+        var journal = await SeedCommittedJournalAsync(connection);
+
+        var update = await Assert.ThrowsAsync<PostgresException>(() => ExecuteAsync(connection,
+            $"UPDATE journal_lines SET \"DebitRial\" = 11 WHERE \"Id\" = '{journal.Debit}'"));
+        Assert.Equal("55000", update.SqlState);
+
+        var delete = await Assert.ThrowsAsync<PostgresException>(() => ExecuteAsync(connection,
+            $"DELETE FROM journal_lines WHERE \"Id\" = '{journal.Debit}'"));
+        Assert.Equal("55000", delete.SqlState);
+
+        var append = await Assert.ThrowsAsync<PostgresException>(() => ExecuteAsync(connection, $"""
+            INSERT INTO journal_lines ("Id", "JournalEntryId", "LedgerAccountId", "DebitRial", "CreditRial")
+            VALUES ('{Guid.NewGuid()}', '{journal.Entry}', '{journal.Account}', 1, 0)
+            """));
+        Assert.Equal("55000", append.SqlState);
+    }
+
+    [Fact]
+    public async Task LedgerProtectionTriggers_AreInstalledAndDeferredValidationIsDeferrable()
+    {
+        await using var connection = await OpenAsync();
+        await using var command = new NpgsqlCommand("""
+            SELECT tgname, tgdeferrable, tginitdeferred
+            FROM pg_trigger g
+            JOIN pg_class t ON t.oid = g.tgrelid
+            WHERE t.relnamespace = 'public'::regnamespace
+              AND NOT g.tgisinternal
+              AND tgname IN (
+                'trg_journal_entries_immutable',
+                'trg_journal_lines_immutable',
+                'trg_journal_lines_reject_after_seal',
+                'trg_journal_entry_seals_immutable',
+                'trg_journal_entry_balanced_deferred',
+                'trg_journal_line_balanced_deferred')
+            ORDER BY tgname
+            """, connection);
+        await using var reader = await command.ExecuteReaderAsync();
+        var triggers = new Dictionary<string, (bool Deferrable, bool InitiallyDeferred)>();
+        while (await reader.ReadAsync())
+        {
+            triggers.Add(reader.GetString(0), (reader.GetBoolean(1), reader.GetBoolean(2)));
+        }
+
+        Assert.Equal(6, triggers.Count);
+        Assert.Equal((true, true), triggers["trg_journal_entry_balanced_deferred"]);
+        Assert.Equal((true, true), triggers["trg_journal_line_balanced_deferred"]);
+        Assert.False(triggers["trg_journal_entries_immutable"].Deferrable);
+        Assert.False(triggers["trg_journal_lines_immutable"].Deferrable);
+        Assert.False(triggers["trg_journal_lines_reject_after_seal"].Deferrable);
+        Assert.False(triggers["trg_journal_entry_seals_immutable"].Deferrable);
+    }
+
+    [Fact]
+    public async Task FinancialIntegrityAudit_RemainsCleanAfterEnforcement()
+    {
+        await using var connection = await OpenAsync();
+        var audit = await AuditAsync(connection);
+        Assert.All(audit, check => Assert.Equal(0L, check.Value));
     }
 
     [Fact]
@@ -101,7 +226,8 @@ public sealed class DatabaseIntegrityAuditTests(CharkhooneApiFactory factory)
     {
         await using var connection = await OpenAsync();
         await using var transaction = await connection.BeginTransactionAsync();
-        var entry = Guid.NewGuid(); var account = Guid.NewGuid();
+        var entry = Guid.NewGuid();
+        var account = Guid.NewGuid();
         await ExecuteAsync(connection, SeedJournal(entry, account, Guid.NewGuid(), Guid.NewGuid()));
         await ExecuteAsync(connection, "SAVEPOINT probe");
         var fk = await Assert.ThrowsAsync<PostgresException>(() => ExecuteAsync(connection,
