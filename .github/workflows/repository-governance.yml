@@ -24,6 +24,8 @@ jobs:
         run: |
           python3 scripts/release/verify-ci-dependency-pins.py
           python3 scripts/release/verify-repository-governance.py
+          python3 -m py_compile scripts/release/verify-repository-ruleset-spec.py scripts/release/apply-repository-ruleset.py
+          python3 scripts/release/verify-repository-ruleset-spec.py
           bash -n scripts/release/check-base-image-drift.sh
           bash -n scripts/release/check-ci-dependency-drift.sh
           python3 scripts/release/verify-dependency-upstream-intake.py
@@ -38,12 +40,20 @@ jobs:
           base_image_drift_workflow_sha256="$(sha256sum .github/workflows/base-image-drift.yml | awk '{print $1}')"
           ci_dependency_drift_workflow_sha256="$(sha256sum .github/workflows/ci-dependency-drift.yml | awk '{print $1}')"
           ci_dependency_drift_script_sha256="$(sha256sum scripts/release/check-ci-dependency-drift.sh | awk '{print $1}')"
+          ruleset_spec_sha256="$(sha256sum deploy/repository-ruleset-main.json | awk '{print $1}')"
+          ruleset_spec_verifier_sha256="$(sha256sum scripts/release/verify-repository-ruleset-spec.py | awk '{print $1}')"
+          ruleset_apply_sha256="$(sha256sum scripts/release/apply-repository-ruleset.py | awk '{print $1}')"
           cat > artifacts/repository-governance/evidence.txt <<EOF
           release_sha=${GITHUB_SHA}
           protected_branch=main
           repository_contract=verified
           dependency_upstream_intake_contract=verified
+          repository_ruleset_spec=verified
+          repository_ruleset_name=charkhoone-main-release-gates
+          repository_ruleset_expected_enforcement=active
           required_status_checks=repository-governance-gate,release-ci-gate,container-release-gate,supply-chain-evidence-gate,mobile-export-build-gate
+          required_check_integration_id=15368
+          strict_required_status_checks_policy=true
           policy_sha256=${policy_sha256}
           verifier_sha256=${verifier_sha256}
           dependency_intake_verifier_sha256=${dependency_intake_verifier_sha256}
@@ -51,11 +61,15 @@ jobs:
           base_image_drift_workflow_sha256=${base_image_drift_workflow_sha256}
           ci_dependency_drift_workflow_sha256=${ci_dependency_drift_workflow_sha256}
           ci_dependency_drift_script_sha256=${ci_dependency_drift_script_sha256}
+          ruleset_spec_sha256=${ruleset_spec_sha256}
+          ruleset_spec_verifier_sha256=${ruleset_spec_verifier_sha256}
+          ruleset_apply_sha256=${ruleset_apply_sha256}
           github_branch_protection=enforcement-not-verified-by-workflow
-          github_ruleset=enforcement-not-verified-by-workflow
+          github_ruleset_live_enforcement=enforcement-not-verified-by-workflow
           review_approval_count=organization-policy-not-defined
           EOF
           cp deploy/repository-governance.json artifacts/repository-governance/repository-governance.json
+          cp deploy/repository-ruleset-main.json artifacts/repository-governance/repository-ruleset-main.json
       - name: Upload repository governance evidence
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
