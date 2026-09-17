@@ -69,12 +69,3 @@ public sealed class JournalLineRow
     public decimal DebitRial { get; set; }
     public decimal CreditRial { get; set; }
 }
-
-public sealed class JournalEntrySealRow
-{
-    public Guid JournalEntryId { get; set; }
-    public int LineCount { get; set; }
-    public decimal TotalDebitRial { get; set; }
-    public decimal TotalCreditRial { get; set; }
-    public DateTimeOffset SealedAtUtc { get; set; }
-}
