@@ -23,6 +23,7 @@ jobs:
         run: |
           python3 scripts/release/verify-base-image-pins.py
           python3 scripts/release/verify-ci-dependency-pins.py
+          python3 scripts/release/verify-node-dependency-locks.py
 
   api-image:
     runs-on: ubuntu-latest
@@ -166,12 +167,17 @@ jobs:
           mkdir -p artifacts/container-release
           base_image_lock_sha256="$(sha256sum deploy/base-images.lock | awk '{print $1}')"
           ci_dependency_lock_sha256="$(sha256sum deploy/ci-dependencies.lock | awk '{print $1}')"
+          web_lock_sha256="$(sha256sum apps/web/package-lock.json | awk '{print $1}')"
+          mobile_lock_sha256="$(sha256sum apps/mobile/package-lock.json | awk '{print $1}')"
           cat > artifacts/container-release/evidence.txt <<EOF
           release_sha=${GITHUB_SHA}
           base_image_pins=verified
           base_image_lock_sha256=${base_image_lock_sha256}
           ci_dependency_pins=verified
           ci_dependency_lock_sha256=${ci_dependency_lock_sha256}
+          node_dependency_locks=verified
+          web_package_lock_sha256=${web_lock_sha256}
+          mobile_package_lock_sha256=${mobile_lock_sha256}
           api_image_build=success
           api_liveness_smoke=success
           worker_image_build=success
