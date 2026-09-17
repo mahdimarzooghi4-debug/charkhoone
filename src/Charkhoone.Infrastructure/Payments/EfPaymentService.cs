@@ -391,6 +391,13 @@ public sealed class EfPaymentService(
             return new CloseMonthlyObligationResult(CloseMonthlyObligationOutcome.InvalidState, view);
         }
 
+        if (!await CanCloseChronologicallyAsync(obligation, cancellationToken))
+        {
+            var view = await ToObligationViewAsync(obligation, contract.Id, cancellationToken);
+            await transaction.RollbackAsync(cancellationToken);
+            return new CloseMonthlyObligationResult(CloseMonthlyObligationOutcome.InvalidState, view);
+        }
+
         var instructions = await dbContext.PaymentInstructions
             .Where(x => x.ObligationId == obligation.Id)
             .ToListAsync(cancellationToken);
@@ -434,10 +441,23 @@ public sealed class EfPaymentService(
             return new CloseMonthlyObligationResult(CloseMonthlyObligationOutcome.InvalidState, view);
         }
 
+        var priorClosedObligations = await dbContext.MonthlyObligations
+            .AsNoTracking()
+            .Where(x =>
+                x.ContractId == contract.Id
+                && x.ContractMonthNumber < obligation.ContractMonthNumber
+                && x.ClosedAtUtc != null
+                && x.Status != MonthlyObligationStatus.Open)
+            .Select(x => new ClosedMonthlyObligationSnapshot(x.ContractMonthNumber, x.Status))
+            .ToListAsync(cancellationToken);
+
         obligation.Status = MonthlyObligationStatus.Missed;
         obligation.ClosedAtUtc = occurredAtUtc;
         obligation.UpdatedAtUtc = occurredAtUtc;
-        delinquency.ConsecutiveMissedMonths = checked(delinquency.ConsecutiveMissedMonths + 1);
+        delinquency.ConsecutiveMissedMonths = MonthlyDelinquencySequencePolicy.CalculateConsecutiveMissedMonths(
+            obligation.ContractMonthNumber,
+            MonthlyObligationStatus.Missed,
+            priorClosedObligations);
         delinquency.UpdatedAtUtc = occurredAtUtc;
 
         var cancellationNowRequired = delinquency.ConsecutiveMissedMonths >= ConsecutiveMissedMonths.CancellationThreshold;
@@ -509,6 +529,31 @@ public sealed class EfPaymentService(
         return new CloseMonthlyObligationResult(
             CloseMonthlyObligationOutcome.Missed,
             await ToObligationViewAsync(obligation, contract.Id, cancellationToken));
+    }
+
+    private async Task<bool> CanCloseChronologicallyAsync(
+        MonthlyObligationRow obligation,
+        CancellationToken cancellationToken)
+    {
+        var earlierOpenExists = await dbContext.MonthlyObligations
+            .AsNoTracking()
+            .AnyAsync(
+                x => x.ContractId == obligation.ContractId
+                    && x.ContractMonthNumber < obligation.ContractMonthNumber
+                    && x.Status == MonthlyObligationStatus.Open,
+                cancellationToken);
+        if (earlierOpenExists)
+        {
+            return false;
+        }
+
+        return !await dbContext.MonthlyObligations
+            .AsNoTracking()
+            .AnyAsync(
+                x => x.ContractId == obligation.ContractId
+                    && x.ContractMonthNumber > obligation.ContractMonthNumber
+                    && x.ClosedAtUtc != null,
+                cancellationToken);
     }
 
     private void AddPaymentInstruction(
@@ -597,12 +642,14 @@ public sealed class EfPaymentService(
         DateTimeOffset occurredAtUtc,
         CancellationToken cancellationToken)
     {
+        var affectsCurrentDelinquencySequence = await CanCloseChronologicallyAsync(obligation, cancellationToken);
+
         obligation.Status = MonthlyObligationStatus.Paid;
         obligation.ClosedAtUtc = occurredAtUtc;
         obligation.UpdatedAtUtc = occurredAtUtc;
 
         var delinquency = await GetOrCreateDelinquencyAsync(contract.Id, occurredAtUtc, cancellationToken);
-        if (!delinquency.CancellationRequired)
+        if (!delinquency.CancellationRequired && affectsCurrentDelinquencySequence)
         {
             delinquency.ConsecutiveMissedMonths = 0;
             delinquency.UpdatedAtUtc = occurredAtUtc;
@@ -613,13 +660,16 @@ public sealed class EfPaymentService(
             contract.Id,
             "system:payment-reconciliation",
             "monthly_obligation_paid",
-            $"Contract month {obligation.ContractMonthNumber} was paid in full. Older debt, if any, was not automatically settled.",
+            affectsCurrentDelinquencySequence
+                ? $"Contract month {obligation.ContractMonthNumber} was paid in full and broke the current consecutive-miss chain. Older debt, if any, was not automatically settled."
+                : $"Contract month {obligation.ContractMonthNumber} was paid in full out of chronological closure order. Older debt and the current persisted delinquency chain were not rewritten.",
             occurredAtUtc);
         AddOutbox("monthly-obligation.paid.v1", occurredAtUtc, new
         {
             obligationId = obligation.Id,
             contractId = contract.Id,
             contractMonthNumber = obligation.ContractMonthNumber,
+            delinquencySequenceAffected = affectsCurrentDelinquencySequence,
             occurredAtUtc,
         });
     }
