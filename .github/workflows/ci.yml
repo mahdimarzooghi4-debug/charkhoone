@@ -58,7 +58,31 @@ jobs:
           test -s artifacts/database/migrations-idempotent.sql
           grep -q '__EFMigrationsHistory' artifacts/database/migrations-idempotent.sql
       - name: Validate database operation scripts
-        run: bash -n scripts/database/migrate.sh scripts/database/generate-idempotent-sql.sh
+        run: bash -n scripts/database/*.sh
+
+      - name: Real PostgreSQL backup and clean restore drill
+        env:
+          POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
+        run: bash scripts/database/ci-backup-restore.sh
+      - name: Smoke tests against restored data (no migrations or reseeding)
+        env:
+          CHARKHOONE_RESTORE_DRILL: "true"
+          CHARKHOONE_INTEGRATION_POSTGRES: Host=localhost;Port=5432;Database=charkhoone_restore_drill;Username=postgres;Password=postgres
+          ConnectionStrings__Postgres: Host=localhost;Port=5432;Database=charkhoone_restore_drill;Username=postgres;Password=postgres
+        run: >-
+          dotnet test tests/Charkhoone.Api.IntegrationTests/Charkhoone.Api.IntegrationTests.csproj
+          --configuration Release --no-build
+          --filter FullyQualifiedName~RestoredDatabaseSmokeTests
+          --logger "trx;LogFileName=restored-smoke.trx"
+          --results-directory artifacts/database/restore-drill
+      - name: Upload restore drill evidence (no database dump)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-restore-drill-${{ github.sha }}
+          path: artifacts/database/restore-drill/
+          if-no-files-found: warn
+          retention-days: 7
 
   web:
     runs-on: ubuntu-latest
