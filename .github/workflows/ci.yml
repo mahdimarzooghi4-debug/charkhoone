@@ -75,6 +75,18 @@ jobs:
           --filter FullyQualifiedName~RestoredDatabaseSmokeTests
           --logger "trx;LogFileName=restored-smoke.trx"
           --results-directory artifacts/database/restore-drill
+      - name: Audit financial integrity on source and restored databases
+        env:
+          POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
+        run: bash scripts/database/ci-integrity-audit.sh
+      - name: Upload integrity audit counts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-integrity-audit-${{ github.sha }}
+          path: artifacts/database/integrity-audit/
+          if-no-files-found: warn
+          retention-days: 7
       - name: Upload restore drill evidence (no database dump)
         if: always()
         uses: actions/upload-artifact@v4

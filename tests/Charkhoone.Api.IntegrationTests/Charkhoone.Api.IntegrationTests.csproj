@@ -20,4 +20,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="../../scripts/database/audit-financial-integrity.sql" Link="audit-financial-integrity.sql" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
