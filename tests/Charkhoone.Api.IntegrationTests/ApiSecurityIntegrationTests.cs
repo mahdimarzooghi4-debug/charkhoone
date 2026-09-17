@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Charkhoone.Api.Release;
 using Charkhoone.Api.Security;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -55,6 +56,34 @@ public sealed class ApiSecurityIntegrationTests
     }
 
     [Fact]
+    public async Task ApiResponses_ExposeNormalizedConfiguredReleaseGitSha()
+    {
+        const string configuredSha = "ABCDEF0123456789ABCDEF0123456789ABCDEF01";
+        const string expectedSha = "abcdef0123456789abcdef0123456789abcdef01";
+
+        await using var factory = new ReleaseIdentityFactory(configuredSha);
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/v1");
+
+        response.EnsureSuccessStatusCode();
+        AssertHeader(response, ReleaseIdentity.HeaderName, expectedSha);
+    }
+
+    [Fact]
+    public void ReleaseIdentity_RejectsNonFullGitSha()
+    {
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                [ReleaseIdentity.ConfigurationKey] = "not-a-full-sha",
+            })
+            .Build();
+
+        Assert.Throws<InvalidOperationException>(() => ReleaseIdentity.Resolve(configuration));
+    }
+
+    [Fact]
     public async Task SensitiveMutation_ReturnsProblemDetailsAfterRateLimitIsExhausted()
     {
         await using var factory = new LowRateLimitFactory();
@@ -95,6 +124,15 @@ public sealed class ApiSecurityIntegrationTests
                 "ConnectionStrings:Postgres",
                 Environment.GetEnvironmentVariable("CHARKHOONE_INTEGRATION_POSTGRES")
                 ?? "Host=localhost;Port=5432;Database=charkhoone_integration;Username=postgres;Password=postgres");
+        }
+    }
+
+    private sealed class ReleaseIdentityFactory(string gitSha) : DevelopmentFactory
+    {
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
+            base.ConfigureWebHost(builder);
+            builder.UseSetting(ReleaseIdentity.ConfigurationKey, gitSha);
         }
     }
 
