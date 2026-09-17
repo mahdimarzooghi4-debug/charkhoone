@@ -1,0 +1,39 @@
+name: generate-database-integrity-enforcement-migration
+
+on:
+  push:
+    branches: [feature/database-integrity-enforcement-v1]
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    if: ${{ !contains(github.event.head_commit.message, 'generated database integrity enforcement migration') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore
+        run: dotnet restore Charkhoone.slnx
+      - name: Build
+        run: dotnet build Charkhoone.slnx --configuration Release --no-restore
+      - name: Install EF CLI
+        run: dotnet tool install --global dotnet-ef --version 10.0.12
+      - name: Generate migration
+        run: >-
+          dotnet ef migrations add AddDatabaseIntegrityEnforcement
+          --project src/Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj
+          --startup-project src/Charkhoone.Api/Charkhoone.Api.csproj
+          --output-dir Persistence/Migrations
+      - name: Commit migration and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/Charkhoone.Infrastructure/Persistence/Migrations
+          git commit -m "generated database integrity enforcement migration"
+          git push
