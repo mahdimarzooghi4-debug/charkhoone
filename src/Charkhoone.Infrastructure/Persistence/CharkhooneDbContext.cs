@@ -28,6 +28,7 @@ public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> op
     public DbSet<LedgerAccountRow> LedgerAccounts => Set<LedgerAccountRow>();
     public DbSet<JournalEntryRow> JournalEntries => Set<JournalEntryRow>();
     public DbSet<JournalLineRow> JournalLines => Set<JournalLineRow>();
+    public DbSet<JournalEntrySealRow> JournalEntrySeals => Set<JournalEntrySealRow>();
     public DbSet<LeaseContractRow> LeaseContracts => Set<LeaseContractRow>();
     public DbSet<WorkflowTransitionRow> WorkflowTransitions => Set<WorkflowTransitionRow>();
     public DbSet<AuditEventRow> AuditEvents => Set<AuditEventRow>();
@@ -39,9 +40,41 @@ public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> op
     public DbSet<OutboxMessageRow> OutboxMessages => Set<OutboxMessageRow>();
     public DbSet<InboxMessageRow> InboxMessages => Set<InboxMessageRow>();
 
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        EnforcePostedLedgerImmutability();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
+    {
+        EnforcePostedLedgerImmutability();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CharkhooneDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
+    }
+
+    private void EnforcePostedLedgerImmutability()
+    {
+        ChangeTracker.DetectChanges();
+
+        var mutation = ChangeTracker.Entries()
+            .FirstOrDefault(entry =>
+                entry.State is EntityState.Modified or EntityState.Deleted
+                && (entry.Entity is JournalEntryRow
+                    || entry.Entity is JournalLineRow
+                    || entry.Entity is JournalEntrySealRow));
+
+        if (mutation is not null)
+        {
+            throw new InvalidOperationException(
+                "Posted journal entries, lines, and seals are immutable. Record corrections with a new reversal journal instead of updating or deleting posted ledger history.");
+        }
     }
 }
