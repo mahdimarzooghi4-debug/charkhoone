@@ -88,6 +88,11 @@ public sealed class LeaseContractRowConfiguration : IEntityTypeConfiguration<Lea
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(64).IsRequired();
         builder.Property(x => x.BankLoanPlanVersion).HasMaxLength(64);
         builder.Property(x => x.CreditGradePolicyVersion).HasMaxLength(64);
+
+        builder.HasOne<CreditApplicationRow>()
+            .WithOne()
+            .HasForeignKey<LeaseContractRow>(x => x.CreditApplicationId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
 
@@ -110,7 +115,15 @@ public sealed class PaymentInstructionRowConfiguration : IEntityTypeConfiguratio
 {
     public void Configure(EntityTypeBuilder<PaymentInstructionRow> builder)
     {
-        builder.ToTable("payment_instructions");
+        builder.ToTable("payment_instructions", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_payment_instructions_amount_positive_finite",
+                "\"AmountRial\" > 0 AND \"AmountRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity')");
+            table.HasCheckConstraint(
+                "CK_payment_instructions_idempotency_key_nonblank",
+                "btrim(\"IdempotencyKey\") <> ''");
+        });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
         builder.HasIndex(x => x.ObligationId);
@@ -125,11 +138,21 @@ public sealed class FrozenPrincipalRowConfiguration : IEntityTypeConfiguration<F
 {
     public void Configure(EntityTypeBuilder<FrozenPrincipalRow> builder)
     {
-        builder.ToTable("frozen_principals");
+        builder.ToTable("frozen_principals", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_frozen_principals_amount_positive_finite",
+                "\"AmountRial\" > 0 AND \"AmountRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity')");
+        });
         builder.HasKey(x => x.ContractId);
         builder.Property(x => x.BankId).HasMaxLength(128).IsRequired();
         builder.Property(x => x.AmountRial).HasColumnType("numeric").IsRequired();
         builder.Property(x => x.FundReference).HasMaxLength(256).IsRequired();
+
+        builder.HasOne<LeaseContractRow>()
+            .WithOne()
+            .HasForeignKey<FrozenPrincipalRow>(x => x.ContractId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
 
