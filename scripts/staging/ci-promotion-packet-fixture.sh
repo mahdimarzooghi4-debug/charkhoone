@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-for command_name in git mktemp mkdir rm sha256sum grep wc; do
+for command_name in git mktemp mkdir rm sha256sum grep wc awk tr; do
   command -v "$command_name" >/dev/null 2>&1 || { echo "$command_name is required" >&2; exit 1; }
 done
 
@@ -35,6 +35,7 @@ EOF
 cat > "$application_dir/summary.txt" <<EOF
 environment=staging
 git_sha=$expected_sha
+smoke_runner_git_sha=matched
 api_release_header=matched
 api_liveness=passed
 api_readiness=passed
@@ -92,6 +93,7 @@ test -s "$output_dir/promotion-readiness.txt"
 grep -Fxq "git_sha=$expected_sha" "$output_dir/promotion-readiness.txt"
 grep -Fxq 'database_rehearsal_hash_binding=matched' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'worker_deployment_evidence_hash_binding=matched' "$output_dir/promotion-readiness.txt"
+grep -Fxq 'worker_health=not-proven-no-http-health-surface' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'promotion_decision=human-required' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'deployment_action=none' "$output_dir/promotion-readiness.txt"
 [[ "$(wc -l < "$output_dir/evidence-manifest.tsv")" -eq 8 ]]
