@@ -16,6 +16,7 @@ Before a staging or production database change:
 8. Run `scripts/database/runtime-role-audit.sql` while connected as the exact application runtime role and require zero violations.
 9. Capture `scripts/database/runtime-observability.sql` before and after the staging migration and investigate unexpected lock waits, idle-in-transaction sessions, connection pressure or dead-row growth.
 10. Capture `scripts/database/pitr-evidence.sql` together with provider-native PITR retention/restore evidence. SQL output alone is not proof of managed-provider recovery capability.
+11. On representative staging data, capture and review the checked-in query-plan suite. CI query plans are compatibility evidence only.
 
 ## Runtime connection policy
 
@@ -89,6 +90,25 @@ scripts/database/migrate.sh
 
 Production additionally requires the explicit production acknowledgement implemented by the script. Connection strings must come from the deployment secret store and must not be committed or printed.
 
+## Staging database rehearsal
+
+For a release-candidate rehearsal, prefer the higher-level staging-only runner:
+
+```bash
+CHARKHOONE_STAGING_MIGRATION_CONNECTION='...' \
+CHARKHOONE_STAGING_RUNTIME_CONNECTION='...' \
+CHARKHOONE_STAGING_BACKUP_EVIDENCE='/secure/path/provider-backup-evidence.txt' \
+CHARKHOONE_STAGING_RESTORE_EVIDENCE='/secure/path/provider-restore-evidence.txt' \
+CHARKHOONE_EXPECTED_GIT_SHA="$(git rev-parse HEAD)" \
+CHARKHOONE_ALLOW_STAGING_REHEARSAL=true \
+CHARKHOONE_QUERY_PLAN_DATASET_CONFIRMED_REPRESENTATIVE=true \
+scripts/database/staging-rehearsal.sh
+```
+
+The migration and runtime identities must be distinct. The runner records hashes of the operator-supplied provider evidence rather than copying its contents, captures migration history before and after, runs the checked-in migration chain, executes post-migration readiness checks, and captures query-plan evidence. It never prints either connection string or role name.
+
+A successful database-only rehearsal is not sufficient for promotion. Authenticated API/application smoke evidence against the same released build and target remains mandatory.
+
 ## Post-migration verification
 
 After migration:
@@ -128,7 +148,11 @@ Before production load, review query plans for:
 - contract detail/audit reads;
 - journal and external-transaction idempotency lookups.
 
-Indexes should be introduced only from observed query patterns and checked into the EF model with a generated migration. Representative-volume `EXPLAIN (ANALYZE, BUFFERS)` must be executed on staging or another approved production-like dataset; CI fixture cardinality is not a performance proof.
+Use `scripts/database/capture-query-plans.sh` on staging only after an operator has confirmed that the dataset volume/distribution is representative. It records cardinalities beside `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` output and does not infer a pass/fail latency or index threshold.
+
+The exact Outbox `FOR UPDATE SKIP LOCKED` query is captured as non-executing static `EXPLAIN`; the analyzed companion plan omits row locking so evidence collection does not lock staging messages.
+
+Indexes should be introduced only from observed query patterns and checked into the EF model with a generated migration. Representative-volume query plans must be executed on staging or another approved production-like dataset; CI fixture cardinality is not a performance proof.
 
 ## Deferred business-policy items
 
