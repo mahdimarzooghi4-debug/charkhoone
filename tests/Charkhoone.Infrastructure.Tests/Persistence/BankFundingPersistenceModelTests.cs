@@ -38,12 +38,9 @@ public sealed class BankFundingPersistenceModelTests
         var approved = entity.FindProperty(nameof(FundingAllocationRow.BankApprovedLoanRial));
         var contribution = entity.FindProperty(nameof(FundingAllocationRow.TenantContributionRial));
 
-        Assert.Equal(38, maximum!.GetPrecision());
-        Assert.Equal(18, maximum.GetScale());
-        Assert.Equal(38, approved!.GetPrecision());
-        Assert.Equal(18, approved.GetScale());
-        Assert.Equal(38, contribution!.GetPrecision());
-        Assert.Equal(18, contribution.GetScale());
+        AssertUnscaledNumeric(maximum);
+        AssertUnscaledNumeric(approved);
+        AssertUnscaledNumeric(contribution);
     }
 
     [Fact]
@@ -63,6 +60,14 @@ public sealed class BankFundingPersistenceModelTests
         Assert.DoesNotContain(principal!.GetProperties(), property =>
             property.Name.Contains("Debit", StringComparison.OrdinalIgnoreCase)
             || property.Name.Contains("Available", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static void AssertUnscaledNumeric(Microsoft.EntityFrameworkCore.Metadata.IProperty? property)
+    {
+        Assert.NotNull(property);
+        Assert.Equal("numeric", property!.GetColumnType());
+        Assert.Null(property.GetPrecision());
+        Assert.Null(property.GetScale());
     }
 
     private static CharkhooneDbContext CreateContext()
