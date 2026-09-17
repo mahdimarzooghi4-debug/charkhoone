@@ -40,6 +40,7 @@ public static class DependencyInjection
         services.AddScoped<EfPaymentService>();
         services.AddScoped<IPaymentReconciliationService>(provider => provider.GetRequiredService<EfPaymentService>());
         services.AddScoped<IMonthlyObligationService>(provider => provider.GetRequiredService<EfPaymentService>());
+        services.AddScoped<ITenantContributionCoverageService, EfTenantContributionCoverageService>();
 
         var identityAdapterMode = configuration["ExternalAdapters:Identity:Mode"];
         if (string.Equals(identityAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
@@ -89,6 +90,16 @@ public static class DependencyInjection
         else
         {
             services.AddSingleton<IExternalPaymentReconciliationAdapter, UnavailablePaymentReconciliationAdapter>();
+        }
+
+        var coverageAdapterMode = configuration["ExternalAdapters:Coverage:Mode"];
+        if (string.Equals(coverageAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IExternalCoverageTransferAdapter, DevelopmentCoverageTransferAdapter>();
+        }
+        else
+        {
+            services.AddSingleton<IExternalCoverageTransferAdapter, UnavailableCoverageTransferAdapter>();
         }
 
         return services;
