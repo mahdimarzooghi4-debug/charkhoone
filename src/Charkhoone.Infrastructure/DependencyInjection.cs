@@ -17,6 +17,7 @@ using Charkhoone.Infrastructure.TenantContributionFunding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 
 namespace Charkhoone.Infrastructure;
 
@@ -38,7 +39,8 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration,
-        bool allowDevelopmentMocks = false)
+        bool allowDevelopmentMocks = false,
+        string databasePoolName = "Charkhoone.Postgres")
     {
         ValidateExternalAdapterModes(configuration, allowDevelopmentMocks);
 
@@ -47,9 +49,26 @@ public static class DependencyInjection
 
         if (!string.IsNullOrWhiteSpace(connectionString))
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(databasePoolName);
+            var databaseRuntimeOptions = DatabaseRuntimeOptions.FromConfiguration(configuration, connectionString);
+            var runtimeConnectionString = databaseRuntimeOptions
+                .ApplyTo(connectionString, databasePoolName)
+                .ConnectionString;
+
+            services.AddSingleton(databaseRuntimeOptions);
+            services.AddSingleton<NpgsqlDataSource>(_ =>
+            {
+                var dataSourceBuilder = new NpgsqlDataSourceBuilder(runtimeConnectionString)
+                {
+                    Name = databasePoolName.Trim(),
+                };
+                return dataSourceBuilder.Build();
+            });
             services.AddDbContext<CharkhooneDbContext>((provider, options) =>
                 options
-                    .UseNpgsql(connectionString)
+                    .UseNpgsql(
+                        provider.GetRequiredService<NpgsqlDataSource>(),
+                        npgsql => npgsql.CommandTimeout(databaseRuntimeOptions.CommandTimeoutSeconds))
                     .AddInterceptors(provider.GetRequiredService<LostFundReturnTrackingInterceptor>()));
         }
 
