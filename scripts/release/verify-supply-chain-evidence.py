@@ -101,6 +101,8 @@ def main() -> None:
 
     for token in (
         "npm sbom --sbom-format=cyclonedx --sbom-type=application",
+        '"${BIN_DIR}/syft" "dir:${ROOT}/apps/mobile"',
+        "mobile-source.cdx.json",
         "cyclonedx-json",
         "grype\" db update",
         "grype\" db status -o json",
@@ -119,6 +121,8 @@ def main() -> None:
     print("supply-chain-evidence-config=valid")
     print(f"syft_version={lock['SYFT_VERSION']}")
     print(f"grype_version={lock['GRYPE_VERSION']}")
+    print("web_source_sbom=npm-cyclonedx")
+    print("mobile_source_sbom=syft-lockfile-backed-install")
     print("vulnerability_policy_gate=not-defined")
 
 
