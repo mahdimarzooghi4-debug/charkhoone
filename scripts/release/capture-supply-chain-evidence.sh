@@ -9,6 +9,15 @@ API_IMAGE="${CHARKHOONE_API_IMAGE:-}"
 WORKER_IMAGE="${CHARKHOONE_WORKER_IMAGE:-}"
 WEB_IMAGE="${CHARKHOONE_WEB_IMAGE:-}"
 
+case "$EVIDENCE_DIR" in
+  /*) ;;
+  *) EVIDENCE_DIR="${ROOT}/${EVIDENCE_DIR}" ;;
+esac
+case "$BIN_DIR" in
+  /*) ;;
+  *) BIN_DIR="${ROOT}/${BIN_DIR}" ;;
+esac
+
 fail() {
   printf 'supply-chain-evidence-error: %s\n' "$*" >&2
   exit 1
