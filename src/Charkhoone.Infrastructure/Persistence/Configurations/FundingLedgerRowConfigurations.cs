@@ -56,7 +56,9 @@ public sealed class ExternalTransactionRowConfiguration : IEntityTypeConfigurati
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
         builder.HasIndex(x => new { x.AggregateType, x.AggregateId, x.CreatedAtUtc });
-        builder.HasIndex(x => new { x.AggregateType, x.OperationType, x.Status, x.UpdatedAtUtc, x.Id });
+        builder.HasIndex(x => new { x.AggregateType, x.AggregateId, x.UpdatedAtUtc, x.Id });
+        builder.HasIndex(x => new { x.UpdatedAtUtc, x.Id })
+            .HasFilter("\"AggregateType\" = 'PaymentInstruction' AND \"OperationType\" = 'payment_reconciliation' AND \"Status\" IN ('Pending','Unknown')");
         builder.Property(x => x.Provider).HasMaxLength(128).IsRequired();
         builder.Property(x => x.OperationType).HasMaxLength(128).IsRequired();
         builder.Property(x => x.AggregateType).HasMaxLength(64).IsRequired();
