@@ -13,6 +13,7 @@ public sealed class CancellationSettlementRowConfiguration : IEntityTypeConfigur
         builder.HasIndex(x => x.ContractId).IsUnique();
         builder.HasIndex(x => x.ExternalTransactionId).IsUnique();
         builder.HasIndex(x => x.JournalEntryId).IsUnique();
+        builder.HasIndex(x => new { x.Status, x.UpdatedAtUtc, x.Id });
         builder.Property(x => x.AmountRial).HasColumnType("numeric").IsRequired();
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(x => x.ExternalReference).HasMaxLength(256);
