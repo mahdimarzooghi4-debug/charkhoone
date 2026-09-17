@@ -56,6 +56,7 @@ public sealed class ExternalTransactionRowConfiguration : IEntityTypeConfigurati
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
         builder.HasIndex(x => new { x.AggregateType, x.AggregateId, x.CreatedAtUtc });
+        builder.HasIndex(x => new { x.AggregateType, x.OperationType, x.Status, x.UpdatedAtUtc, x.Id });
         builder.Property(x => x.Provider).HasMaxLength(128).IsRequired();
         builder.Property(x => x.OperationType).HasMaxLength(128).IsRequired();
         builder.Property(x => x.AggregateType).HasMaxLength(64).IsRequired();
