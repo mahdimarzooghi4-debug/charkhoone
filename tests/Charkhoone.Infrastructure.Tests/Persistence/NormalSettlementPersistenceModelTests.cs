@@ -31,10 +31,8 @@ public sealed class NormalSettlementPersistenceModelTests
         Assert.NotNull(entity);
         var principal = entity!.FindProperty(nameof(NormalSettlementRow.BankPrincipalAmountRial));
         var residual = entity.FindProperty(nameof(NormalSettlementRow.TenantResidualAmountRial));
-        Assert.Equal(38, principal!.GetPrecision());
-        Assert.Equal(18, principal.GetScale());
-        Assert.Equal(38, residual!.GetPrecision());
-        Assert.Equal(18, residual.GetScale());
+        AssertUnscaledNumeric(principal);
+        AssertUnscaledNumeric(residual);
         Assert.DoesNotContain(entity.GetProperties(), property =>
             property.Name.Contains("ReleaseFrozenPrincipal", StringComparison.OrdinalIgnoreCase)
             || property.Name.Contains("EarlyCancellation", StringComparison.OrdinalIgnoreCase));
@@ -59,6 +57,14 @@ public sealed class NormalSettlementPersistenceModelTests
             fk.PrincipalEntityType.ClrType == typeof(ExternalTransactionRow)));
         Assert.Equal(2, entity.GetForeignKeys().Count(fk =>
             fk.PrincipalEntityType.ClrType == typeof(JournalEntryRow)));
+    }
+
+    private static void AssertUnscaledNumeric(Microsoft.EntityFrameworkCore.Metadata.IProperty? property)
+    {
+        Assert.NotNull(property);
+        Assert.Equal("numeric", property!.GetColumnType());
+        Assert.Null(property.GetPrecision());
+        Assert.Null(property.GetScale());
     }
 
     private static void AssertUniqueIndex(Microsoft.EntityFrameworkCore.Metadata.IEntityType entity, string propertyName) =>
