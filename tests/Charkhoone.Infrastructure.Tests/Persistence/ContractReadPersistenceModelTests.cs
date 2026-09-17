@@ -35,6 +35,7 @@ public sealed class ContractReadPersistenceModelTests
                 nameof(AuditEventRow.AggregateType),
                 nameof(AuditEventRow.AggregateId),
                 nameof(AuditEventRow.OccurredAtUtc),
+                nameof(AuditEventRow.Id),
             }));
     }
 
