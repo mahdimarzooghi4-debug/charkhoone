@@ -14,6 +14,7 @@ public sealed class CoveragePaymentRowConfiguration : IEntityTypeConfiguration<C
         builder.HasIndex(x => x.ExternalTransactionId).IsUnique();
         builder.HasIndex(x => x.JournalEntryId).IsUnique();
         builder.HasIndex(x => new { x.ContractId, x.Status });
+        builder.HasIndex(x => new { x.MonthlyObligationId, x.Status });
         builder.Property(x => x.Kind).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(x => x.AmountRial).HasColumnType("numeric").IsRequired();
