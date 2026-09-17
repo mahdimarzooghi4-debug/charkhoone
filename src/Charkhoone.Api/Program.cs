@@ -62,7 +62,8 @@ builder.Services.AddCharkhooneApiSecurity(builder.Configuration);
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddInfrastructure(
     builder.Configuration,
-    allowDevelopmentMocks: builder.Environment.IsDevelopment());
+    allowDevelopmentMocks: builder.Environment.IsDevelopment(),
+    databasePoolName: "Charkhoone.Api.Postgres");
 builder.Services.AddCharkhooneObservability(builder.Configuration, "Charkhoone.Api");
 builder.Services
     .AddOpenTelemetry()
