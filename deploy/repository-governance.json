@@ -5,7 +5,8 @@
     "repository-governance-gate",
     "release-ci-gate",
     "container-release-gate",
-    "supply-chain-evidence-gate"
+    "supply-chain-evidence-gate",
+    "mobile-export-build-gate"
   ],
   "rules": {
     "require_pull_request": true,

@@ -15,6 +15,7 @@ EXPECTED_CHECKS = [
     "release-ci-gate",
     "container-release-gate",
     "supply-chain-evidence-gate",
+    "mobile-export-build-gate",
 ]
 
 REQUIRED_RULES = {
@@ -116,6 +117,16 @@ required_workflows = {
         "pull_request:",
         "permissions:\n  contents: read",
         "  governance:\n    name: repository-governance-gate",
+    ],
+    ".github/workflows/mobile-export-build.yml": [
+        "pull_request:",
+        "permissions:\n  contents: read",
+        "  mobile-export-build:\n    name: mobile-export-build-gate",
+        "npx expo export --platform android --output-dir dist/android",
+        "npx expo export --platform ios --output-dir dist/ios",
+        "android_production_export=success",
+        "ios_production_export=success",
+        "mobile-export-evidence-${{ github.sha }}",
     ],
 }
 
