@@ -1,6 +1,8 @@
 using Charkhoone.Infrastructure.Persistence;
 using Charkhoone.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Xunit;
 
 namespace Charkhoone.Infrastructure.Tests.Persistence;
@@ -11,10 +13,9 @@ public sealed class DatabaseIntegrityConstraintPersistenceModelTests
     public void PaymentInstruction_RequiresPositiveAmount()
     {
         using var context = CreateContext();
-        var entity = context.Model.FindEntityType(typeof(PaymentInstructionRow));
+        var entity = GetDesignTimeEntityType<PaymentInstructionRow>(context);
 
-        Assert.NotNull(entity);
-        Assert.Contains(entity!.GetCheckConstraints(), check =>
+        Assert.Contains(entity.GetCheckConstraints(), check =>
             check.Name == "CK_payment_instructions_amount_rial_positive"
             && check.Sql == "\"AmountRial\" > 0");
     }
@@ -23,10 +24,9 @@ public sealed class DatabaseIntegrityConstraintPersistenceModelTests
     public void ExternalTransaction_RequiresPositiveAmount()
     {
         using var context = CreateContext();
-        var entity = context.Model.FindEntityType(typeof(ExternalTransactionRow));
+        var entity = GetDesignTimeEntityType<ExternalTransactionRow>(context);
 
-        Assert.NotNull(entity);
-        Assert.Contains(entity!.GetCheckConstraints(), check =>
+        Assert.Contains(entity.GetCheckConstraints(), check =>
             check.Name == "CK_external_transactions_amount_rial_positive"
             && check.Sql == "\"AmountRial\" > 0");
     }
@@ -35,10 +35,9 @@ public sealed class DatabaseIntegrityConstraintPersistenceModelTests
     public void TenantContribution_RequiresPositiveInitialAmount()
     {
         using var context = CreateContext();
-        var entity = context.Model.FindEntityType(typeof(TenantContributionRow));
+        var entity = GetDesignTimeEntityType<TenantContributionRow>(context);
 
-        Assert.NotNull(entity);
-        Assert.Contains(entity!.GetCheckConstraints(), check =>
+        Assert.Contains(entity.GetCheckConstraints(), check =>
             check.Name == "CK_tenant_contributions_initial_amount_rial_positive"
             && check.Sql == "\"InitialAmountRial\" > 0");
     }
@@ -47,12 +46,18 @@ public sealed class DatabaseIntegrityConstraintPersistenceModelTests
     public void JournalLine_RequiresExactlyOnePositiveSide()
     {
         using var context = CreateContext();
-        var entity = context.Model.FindEntityType(typeof(JournalLineRow));
+        var entity = GetDesignTimeEntityType<JournalLineRow>(context);
 
-        Assert.NotNull(entity);
-        Assert.Contains(entity!.GetCheckConstraints(), check =>
+        Assert.Contains(entity.GetCheckConstraints(), check =>
             check.Name == "CK_journal_lines_single_sided_positive_amount"
             && check.Sql == "\"DebitRial\" >= 0 AND \"CreditRial\" >= 0 AND ((\"DebitRial\" > 0 AND \"CreditRial\" = 0) OR (\"CreditRial\" > 0 AND \"DebitRial\" = 0))");
+    }
+
+    private static IEntityType GetDesignTimeEntityType<TEntity>(CharkhooneDbContext context)
+    {
+        var entity = context.GetService<IDesignTimeModel>().Model.FindEntityType(typeof(TEntity));
+        Assert.NotNull(entity);
+        return entity!;
     }
 
     private static CharkhooneDbContext CreateContext()
