@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feature/container-release-packaging-v1
+      - feature/container-supply-chain-hardening-v1
   pull_request:
   workflow_dispatch:
 
@@ -16,8 +16,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  base-image-pins:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Verify immutable base-image lock
+        run: python3 scripts/release/verify-base-image-pins.py
+
   api-image:
     runs-on: ubuntu-latest
+    needs: base-image-pins
     steps:
       - uses: actions/checkout@v5
       - name: Build API image
@@ -68,6 +76,7 @@ jobs:
 
   worker-image:
     runs-on: ubuntu-latest
+    needs: base-image-pins
     steps:
       - uses: actions/checkout@v5
       - name: Build Worker image
@@ -101,6 +110,7 @@ jobs:
 
   web-image:
     runs-on: ubuntu-latest
+    needs: base-image-pins
     steps:
       - uses: actions/checkout@v5
       - name: Build Web image
@@ -144,15 +154,20 @@ jobs:
   container-release-evidence:
     runs-on: ubuntu-latest
     needs:
+      - base-image-pins
       - api-image
       - worker-image
       - web-image
     steps:
+      - uses: actions/checkout@v5
       - name: Write SHA-bound container evidence
         run: |
           mkdir -p artifacts/container-release
+          base_image_lock_sha256="$(sha256sum deploy/base-images.lock | awk '{print $1}')"
           cat > artifacts/container-release/evidence.txt <<EOF
           release_sha=${GITHUB_SHA}
+          base_image_pins=verified
+          base_image_lock_sha256=${base_image_lock_sha256}
           api_image_build=success
           api_liveness_smoke=success
           worker_image_build=success
@@ -165,8 +180,9 @@ jobs:
           staging_contacted=no
           production_contacted=no
           EOF
+          cp deploy/base-images.lock artifacts/container-release/base-images.lock
       - uses: actions/upload-artifact@v4
         with:
           name: container-release-evidence-${{ github.sha }}
-          path: artifacts/container-release/evidence.txt
+          path: artifacts/container-release
           if-no-files-found: error
