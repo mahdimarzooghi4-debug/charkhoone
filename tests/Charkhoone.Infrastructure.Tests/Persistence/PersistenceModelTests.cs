@@ -90,6 +90,10 @@ public sealed class PersistenceModelTests
         var audit = context.Model.FindEntityType(typeof(AuditEventRow));
         var outbox = context.Model.FindEntityType(typeof(OutboxMessageRow));
 
+        Assert.NotNull(workflow);
+        Assert.NotNull(audit);
+        Assert.NotNull(outbox);
+
         Assert.Equal("workflow_transitions", workflow!.GetTableName());
         Assert.Equal("audit_events", audit!.GetTableName());
         Assert.Equal("outbox_messages", outbox!.GetTableName());
