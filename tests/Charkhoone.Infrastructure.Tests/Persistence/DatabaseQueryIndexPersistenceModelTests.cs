@@ -24,9 +24,6 @@ public sealed class DatabaseQueryIndexPersistenceModelTests
             nameof(CoveragePaymentRow.MonthlyObligationId),
             nameof(CoveragePaymentRow.Status));
         AssertIndex(context, typeof(ExternalTransactionRow),
-            nameof(ExternalTransactionRow.AggregateType),
-            nameof(ExternalTransactionRow.OperationType),
-            nameof(ExternalTransactionRow.Status),
             nameof(ExternalTransactionRow.UpdatedAtUtc),
             nameof(ExternalTransactionRow.Id));
     }
@@ -39,6 +36,11 @@ public sealed class DatabaseQueryIndexPersistenceModelTests
         AssertIndex(context, typeof(OutboxMessageRow),
             nameof(OutboxMessageRow.OccurredAtUtc),
             nameof(OutboxMessageRow.Id));
+        AssertIndex(context, typeof(ExternalTransactionRow),
+            nameof(ExternalTransactionRow.AggregateType),
+            nameof(ExternalTransactionRow.AggregateId),
+            nameof(ExternalTransactionRow.UpdatedAtUtc),
+            nameof(ExternalTransactionRow.Id));
         AssertIndex(context, typeof(AuditEventRow),
             nameof(AuditEventRow.AggregateType),
             nameof(AuditEventRow.AggregateId),
