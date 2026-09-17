@@ -52,7 +52,15 @@ public sealed class ExternalTransactionRowConfiguration : IEntityTypeConfigurati
 {
     public void Configure(EntityTypeBuilder<ExternalTransactionRow> builder)
     {
-        builder.ToTable("external_transactions");
+        builder.ToTable("external_transactions", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_external_transactions_currency_irr",
+                "\"Currency\" = 'IRR'");
+            table.HasCheckConstraint(
+                "CK_external_transactions_idempotency_key_nonblank",
+                "btrim(\"IdempotencyKey\") <> ''");
+        });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
         builder.HasIndex(x => new { x.AggregateType, x.AggregateId, x.CreatedAtUtc });
@@ -75,7 +83,15 @@ public sealed class LedgerAccountRowConfiguration : IEntityTypeConfiguration<Led
 {
     public void Configure(EntityTypeBuilder<LedgerAccountRow> builder)
     {
-        builder.ToTable("ledger_accounts");
+        builder.ToTable("ledger_accounts", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_ledger_accounts_currency_irr",
+                "\"Currency\" = 'IRR'");
+            table.HasCheckConstraint(
+                "CK_ledger_accounts_code_nonblank",
+                "btrim(\"Code\") <> ''");
+        });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.Code).IsUnique();
         builder.HasIndex(x => x.ContractId);
@@ -94,7 +110,18 @@ public sealed class JournalEntryRowConfiguration : IEntityTypeConfiguration<Jour
 {
     public void Configure(EntityTypeBuilder<JournalEntryRow> builder)
     {
-        builder.ToTable("journal_entries");
+        builder.ToTable("journal_entries", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_journal_entries_posted_at_or_after_occurred_at",
+                "\"PostedAtUtc\" >= \"OccurredAtUtc\"");
+            table.HasCheckConstraint(
+                "CK_journal_entries_not_self_reversal",
+                "\"ReversalOfJournalEntryId\" IS NULL OR \"ReversalOfJournalEntryId\" <> \"Id\"");
+            table.HasCheckConstraint(
+                "CK_journal_entries_idempotency_key_nonblank",
+                "btrim(\"IdempotencyKey\") <> ''");
+        });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
         builder.HasIndex(x => new { x.ReferenceType, x.ReferenceId });
@@ -113,7 +140,12 @@ public sealed class JournalLineRowConfiguration : IEntityTypeConfiguration<Journ
 {
     public void Configure(EntityTypeBuilder<JournalLineRow> builder)
     {
-        builder.ToTable("journal_lines");
+        builder.ToTable("journal_lines", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_journal_lines_one_sided_positive_finite_amount",
+                "\"DebitRial\"::text NOT IN ('NaN','Infinity','-Infinity') AND \"CreditRial\"::text NOT IN ('NaN','Infinity','-Infinity') AND ((\"DebitRial\" > 0 AND \"CreditRial\" = 0) OR (\"CreditRial\" > 0 AND \"DebitRial\" = 0))");
+        });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.JournalEntryId);
         builder.HasIndex(x => x.LedgerAccountId);
@@ -123,7 +155,7 @@ public sealed class JournalLineRowConfiguration : IEntityTypeConfiguration<Journ
         builder.HasOne<JournalEntryRow>()
             .WithMany()
             .HasForeignKey(x => x.JournalEntryId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasOne<LedgerAccountRow>()
             .WithMany()
