@@ -20,10 +20,17 @@ jobs:
         run: dotnet restore Charkhoone.slnx
       - name: Install EF CLI
         run: dotnet tool install --global dotnet-ef --version 10.0.12
-      - name: Scaffold migration when absent
+      - name: Regenerate migration from the final model
         shell: bash
         run: |
-          if ! compgen -G 'src/Charkhoone.Infrastructure/Persistence/Migrations/*_AddDatabaseIntegrityEnforcementV2.cs' > /dev/null; then
+          migration=$(compgen -G 'src/Charkhoone.Infrastructure/Persistence/Migrations/*_AddDatabaseIntegrityEnforcementV2.cs' | head -n 1 || true)
+          if [[ -n "$migration" ]] && grep -q 'journal_entry_seals' "$migration"; then
+            dotnet ef migrations remove --force \
+              --project src/Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj \
+              --startup-project src/Charkhoone.Api/Charkhoone.Api.csproj
+            migration=''
+          fi
+          if [[ -z "$migration" ]]; then
             dotnet ef migrations add AddDatabaseIntegrityEnforcementV2 \
               --project src/Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj \
               --startup-project src/Charkhoone.Api/Charkhoone.Api.csproj \
@@ -39,7 +46,7 @@ jobs:
             echo "No generated migration changes to commit."
             exit 0
           fi
-          git commit -m "feat(database): add integrity enforcement migration"
+          git commit -m "feat(database): regenerate integrity enforcement migration"
           git push origin "HEAD:${GITHUB_REF_NAME}"
       - name: Upload generated migration
         uses: actions/upload-artifact@v4
