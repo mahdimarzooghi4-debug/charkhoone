@@ -1,0 +1,79 @@
+name: patch-api-security-endpoints
+
+on:
+  push:
+    branches:
+      - feature/api-security-hardening-v1
+    paths:
+      - .github/workflows/patch-api-security-endpoints.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: feature/api-security-hardening-v1
+      - name: Apply security endpoint metadata and config
+        shell: python
+        run: |
+          from pathlib import Path
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text()
+              if old not in text:
+                  raise SystemExit(f'replacement not found in {path}: {old[:80]!r}')
+              p.write_text(text.replace(old, new, 1))
+
+          # Contract mutation endpoint.
+          path = 'src/Charkhoone.Api/Endpoints/ContractEndpoints.cs'
+          replace_once(path,
+              'using System.Security.Claims;\nusing Charkhoone.Application.Contracts;',
+              'using System.Security.Claims;\nusing Charkhoone.Api.Security;\nusing Charkhoone.Application.Contracts;')
+          replace_once(path,
+              'api.MapPost("/contracts/{id:guid}/settlement/reconcile", ReconcileSettlementAsync)\n            .RequireAuthorization()\n            .WithName("ReconcileNormalContractSettlement")',
+              'api.MapPost("/contracts/{id:guid}/settlement/reconcile", ReconcileSettlementAsync)\n            .RequireAuthorization()\n            .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)\n            .WithName("ReconcileNormalContractSettlement")')
+          replace_once(path,
+              '.ProducesProblem(StatusCodes.Status404NotFound)\n            .ProducesProblem(StatusCodes.Status409Conflict);',
+              '.ProducesProblem(StatusCodes.Status404NotFound)\n            .ProducesProblem(StatusCodes.Status409Conflict)\n            .ProducesProblem(StatusCodes.Status429TooManyRequests);')
+
+          # Credit-application mutation endpoints.
+          path = 'src/Charkhoone.Api/Endpoints/CreditApplicationEndpoints.cs'
+          replace_once(path,
+              'using System.Security.Claims;\nusing Charkhoone.Application.CreditApplications;',
+              'using System.Security.Claims;\nusing Charkhoone.Api.Security;\nusing Charkhoone.Application.CreditApplications;')
+          replace_once(path,
+              'api.MapPost("/credit-applications", CreateCreditApplicationAsync)\n            .RequireAuthorization()\n            .WithName("CreateCreditApplication")',
+              'api.MapPost("/credit-applications", CreateCreditApplicationAsync)\n            .RequireAuthorization()\n            .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)\n            .WithName("CreateCreditApplication")')
+          replace_once(path,
+              '.ProducesProblem(StatusCodes.Status401Unauthorized)\n            .ProducesProblem(StatusCodes.Status403Forbidden);',
+              '.ProducesProblem(StatusCodes.Status401Unauthorized)\n            .ProducesProblem(StatusCodes.Status403Forbidden)\n            .ProducesProblem(StatusCodes.Status429TooManyRequests);')
+          replace_once(path,
+              'api.MapPost("/credit-applications/{id:guid}/submit", SubmitCreditApplicationAsync)\n            .RequireAuthorization()\n            .WithName("SubmitCreditApplication")',
+              'api.MapPost("/credit-applications/{id:guid}/submit", SubmitCreditApplicationAsync)\n            .RequireAuthorization()\n            .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)\n            .WithName("SubmitCreditApplication")')
+          replace_once(path,
+              '.ProducesProblem(StatusCodes.Status404NotFound)\n            .ProducesProblem(StatusCodes.Status409Conflict);',
+              '.ProducesProblem(StatusCodes.Status404NotFound)\n            .ProducesProblem(StatusCodes.Status409Conflict)\n            .ProducesProblem(StatusCodes.Status429TooManyRequests);')
+
+          env = Path('.env.example')
+          text = env.read_text()
+          marker = 'Observability__OtlpEndpoint=\n'
+          addition = ('Security__RateLimits__SensitiveMutation__PermitLimit=30\n'
+                      'Security__RateLimits__SensitiveMutation__WindowSeconds=60\n')
+          if addition not in text:
+              if marker not in text:
+                  raise SystemExit('env marker not found')
+              text = text.replace(marker, marker + addition, 1)
+          env.write_text(text)
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/Charkhoone.Api/Endpoints/ContractEndpoints.cs src/Charkhoone.Api/Endpoints/CreditApplicationEndpoints.cs .env.example
+          git diff --cached --quiet && exit 0
+          git commit -m "feat(security): protect sensitive API mutations"
+          git push origin HEAD:feature/api-security-hardening-v1
