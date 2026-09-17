@@ -110,7 +110,11 @@ public sealed class PaymentInstructionRowConfiguration : IEntityTypeConfiguratio
 {
     public void Configure(EntityTypeBuilder<PaymentInstructionRow> builder)
     {
-        builder.ToTable("payment_instructions");
+        builder.ToTable(
+            "payment_instructions",
+            table => table.HasCheckConstraint(
+                "CK_payment_instructions_amount_rial_positive",
+                "\"AmountRial\" > 0"));
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
         builder.HasIndex(x => x.ObligationId);

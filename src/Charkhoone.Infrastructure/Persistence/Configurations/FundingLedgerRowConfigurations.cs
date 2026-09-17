@@ -30,7 +30,11 @@ public sealed class TenantContributionRowConfiguration : IEntityTypeConfiguratio
 {
     public void Configure(EntityTypeBuilder<TenantContributionRow> builder)
     {
-        builder.ToTable("tenant_contributions");
+        builder.ToTable(
+            "tenant_contributions",
+            table => table.HasCheckConstraint(
+                "CK_tenant_contributions_initial_amount_rial_positive",
+                "\"InitialAmountRial\" > 0"));
         builder.HasKey(x => x.ContractId);
         builder.HasIndex(x => x.FundingAllocationId).IsUnique();
         builder.Property(x => x.InitialAmountRial).HasColumnType("numeric").IsRequired();
@@ -52,7 +56,11 @@ public sealed class ExternalTransactionRowConfiguration : IEntityTypeConfigurati
 {
     public void Configure(EntityTypeBuilder<ExternalTransactionRow> builder)
     {
-        builder.ToTable("external_transactions");
+        builder.ToTable(
+            "external_transactions",
+            table => table.HasCheckConstraint(
+                "CK_external_transactions_amount_rial_positive",
+                "\"AmountRial\" > 0"));
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
         builder.HasIndex(x => new { x.AggregateType, x.AggregateId, x.CreatedAtUtc });
@@ -113,7 +121,11 @@ public sealed class JournalLineRowConfiguration : IEntityTypeConfiguration<Journ
 {
     public void Configure(EntityTypeBuilder<JournalLineRow> builder)
     {
-        builder.ToTable("journal_lines");
+        builder.ToTable(
+            "journal_lines",
+            table => table.HasCheckConstraint(
+                "CK_journal_lines_single_sided_positive_amount",
+                "\"DebitRial\" >= 0 AND \"CreditRial\" >= 0 AND ((\"DebitRial\" > 0 AND \"CreditRial\" = 0) OR (\"CreditRial\" > 0 AND \"DebitRial\" = 0))"));
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.JournalEntryId);
         builder.HasIndex(x => x.LedgerAccountId);
