@@ -78,8 +78,7 @@ public sealed class AuthenticationConfigurationIntegrationTests
     [Fact]
     public async Task ApiRoot_IsExplicitlyAnonymousButVersionedEndpointsAreSecureByDefault()
     {
-        using var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder => builder.UseEnvironment("Development"));
+        using var factory = new CharkhooneApiFactory();
         using var client = factory.CreateClient();
 
         var root = await client.GetAsync("/api/v1");
