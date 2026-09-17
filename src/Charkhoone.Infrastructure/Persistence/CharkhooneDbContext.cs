@@ -1,4 +1,6 @@
 using Charkhoone.Infrastructure.Persistence.Models;
+using Charkhoone.Infrastructure.Persistence.LedgerProtection;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore;
 
 namespace Charkhoone.Infrastructure.Persistence;
@@ -39,8 +41,15 @@ public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> op
     public DbSet<OutboxMessageRow> OutboxMessages => Set<OutboxMessageRow>();
     public DbSet<InboxMessageRow> InboxMessages => Set<InboxMessageRow>();
 
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.ReplaceService<IMigrationsModelDiffer, LedgerProtectionModelDiffer>();
+        base.OnConfiguring(optionsBuilder);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasAnnotation(LedgerProtectionModelDiffer.Annotation, LedgerProtectionModelDiffer.Version);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CharkhooneDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
     }

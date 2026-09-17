@@ -94,7 +94,16 @@ public sealed class JournalEntryRowConfiguration : IEntityTypeConfiguration<Jour
 {
     public void Configure(EntityTypeBuilder<JournalEntryRow> builder)
     {
-        builder.ToTable("journal_entries");
+        builder.ToTable("journal_entries", table =>
+        {
+            table.HasCheckConstraint("CK_journal_entries_idempotency", "btrim(\"IdempotencyKey\") <> ''");
+            table.HasTrigger("ledger_entry_guard");
+            table.HasTrigger("ledger_seal");
+            table.HasTrigger("ledger_entry_no_truncate");
+        });
+        var seal = builder.Property<bool>("IsSealed").HasDefaultValue(true).ValueGeneratedOnAddOrUpdate();
+        seal.Metadata.SetBeforeSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
+        seal.Metadata.SetAfterSaveBehavior(Microsoft.EntityFrameworkCore.Metadata.PropertySaveBehavior.Ignore);
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
         builder.HasIndex(x => new { x.ReferenceType, x.ReferenceId });
@@ -113,7 +122,17 @@ public sealed class JournalLineRowConfiguration : IEntityTypeConfiguration<Journ
 {
     public void Configure(EntityTypeBuilder<JournalLineRow> builder)
     {
-        builder.ToTable("journal_lines");
+        builder.ToTable("journal_lines", table =>
+        {
+            table.HasCheckConstraint("CK_journal_lines_valid_sides", """
+                "DebitRial" >= 0 AND "CreditRial" >= 0
+                AND (("DebitRial" > 0 AND "CreditRial" = 0) OR ("CreditRial" > 0 AND "DebitRial" = 0))
+                AND "DebitRial"::text NOT IN ('NaN', 'Infinity', '-Infinity')
+                AND "CreditRial"::text NOT IN ('NaN', 'Infinity', '-Infinity')
+                """);
+            table.HasTrigger("ledger_line_guard");
+            table.HasTrigger("ledger_line_no_truncate");
+        });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.JournalEntryId);
         builder.HasIndex(x => x.LedgerAccountId);

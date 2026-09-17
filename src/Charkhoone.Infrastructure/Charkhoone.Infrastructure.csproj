@@ -15,4 +15,7 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Persistence/LedgerProtection/*.sql" />
+  </ItemGroup>
 </Project>

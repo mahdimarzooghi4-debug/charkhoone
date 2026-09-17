@@ -1,0 +1,32 @@
+name: temporary-ledger-migration
+on:
+  push:
+    branches: [feature/database-posted-ledger-protection-v1]
+    paths:
+      - .github/workflows/temporary-ledger-migration.yml
+      - src/Charkhoone.Infrastructure/Persistence/LedgerProtection/**
+permissions:
+  contents: write
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: feature/database-posted-ledger-protection-v1
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet tool install --global dotnet-ef --version 10.0.12
+      - name: Generate real EF migration
+        run: >-
+          dotnet ef migrations add ProtectPostedLedger
+          --project src/Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj
+          --startup-project src/Charkhoone.Api/Charkhoone.Api.csproj
+      - name: Commit generated EF outputs only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/Charkhoone.Infrastructure/Persistence/Migrations/
+          git commit -m 'chore(database): generate posted ledger protection migration with dotnet ef'
+          git push origin HEAD:feature/database-posted-ledger-protection-v1
