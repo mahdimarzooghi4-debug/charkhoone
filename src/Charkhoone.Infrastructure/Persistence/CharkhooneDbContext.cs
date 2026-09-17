@@ -39,9 +39,42 @@ public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> op
     public DbSet<OutboxMessageRow> OutboxMessages => Set<OutboxMessageRow>();
     public DbSet<InboxMessageRow> InboxMessages => Set<InboxMessageRow>();
 
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        EnsurePostedJournalImmutability();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(
+        bool acceptAllChangesOnSuccess,
+        CancellationToken cancellationToken = default)
+    {
+        EnsurePostedJournalImmutability();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(CharkhooneDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
+    }
+
+    private void EnsurePostedJournalImmutability()
+    {
+        var mutableEntry = ChangeTracker.Entries<JournalEntryRow>()
+            .FirstOrDefault(x => x.State is EntityState.Modified or EntityState.Deleted);
+        if (mutableEntry is not null)
+        {
+            throw new InvalidOperationException(
+                $"Posted journal entry {mutableEntry.Entity.Id:D} is immutable; post a reversal entry instead.");
+        }
+
+        var mutableLine = ChangeTracker.Entries<JournalLineRow>()
+            .FirstOrDefault(x => x.State is EntityState.Modified or EntityState.Deleted);
+        if (mutableLine is not null)
+        {
+            throw new InvalidOperationException(
+                $"Posted journal line {mutableLine.Entity.Id:D} is immutable; post a reversal entry instead.");
+        }
     }
 }
