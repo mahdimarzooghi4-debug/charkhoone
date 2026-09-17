@@ -30,6 +30,8 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - name: Verify immutable CI dependency lock
         run: python3 scripts/release/verify-ci-dependency-pins.py
+      - name: Verify deterministic Node dependency locks
+        run: python3 scripts/release/verify-node-dependency-locks.py
       - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
           dotnet-version: 10.0.x
@@ -151,9 +153,9 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
-      - name: Install
-        run: npm install
+          node-version: 22.13.1
+      - name: Install from lockfile
+        run: npm ci --no-audit --no-fund
       - name: Typecheck
         run: npm run typecheck
       - name: Build
@@ -168,9 +170,9 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22.13
-      - name: Install
-        run: npm install
+          node-version: 22.13.1
+      - name: Install from lockfile
+        run: npm ci --no-audit --no-fund
       - name: Typecheck
         run: npm run typecheck
 
@@ -195,6 +197,8 @@ jobs:
         run: |
           mkdir -p artifacts/release
           ci_dependency_lock_sha256="$(sha256sum deploy/ci-dependencies.lock | awk '{print $1}')"
+          web_lock_sha256="$(sha256sum apps/web/package-lock.json | awk '{print $1}')"
+          mobile_lock_sha256="$(sha256sum apps/mobile/package-lock.json | awk '{print $1}')"
           {
             printf 'environment=ci\n'
             printf 'git_sha=%s\n' "$GITHUB_SHA"
@@ -206,6 +210,10 @@ jobs:
             printf 'mobile_build=not-claimed\n'
             printf 'ci_dependency_pins=verified\n'
             printf 'ci_dependency_lock_sha256=%s\n' "$ci_dependency_lock_sha256"
+            printf 'node_dependency_locks=verified\n'
+            printf 'node_version=22.13.1\n'
+            printf 'web_package_lock_sha256=%s\n' "$web_lock_sha256"
+            printf 'mobile_package_lock_sha256=%s\n' "$mobile_lock_sha256"
           } > artifacts/release/release-ci-evidence.txt
           cp deploy/ci-dependencies.lock artifacts/release/ci-dependencies.lock
       - name: Upload release CI evidence
