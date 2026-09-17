@@ -338,7 +338,8 @@ public sealed class EfPaymentService(
                 .Where(x => x.ObligationId == lockedObligation.Id)
                 .AllAsync(x => x.Status == PaymentInstructionStatus.Succeeded, cancellationToken);
 
-            if (allPaid)
+            if (allPaid
+                && await CanCloseChronologicallyAsync(lockedObligation, cancellationToken))
             {
                 await MarkObligationPaidAsync(lockedObligation, lockedContract, occurredAtUtc, cancellationToken);
             }
@@ -391,6 +392,13 @@ public sealed class EfPaymentService(
             return new CloseMonthlyObligationResult(CloseMonthlyObligationOutcome.InvalidState, view);
         }
 
+        if (!await CanCloseChronologicallyAsync(obligation, cancellationToken))
+        {
+            var view = await ToObligationViewAsync(obligation, contract.Id, cancellationToken);
+            await transaction.RollbackAsync(cancellationToken);
+            return new CloseMonthlyObligationResult(CloseMonthlyObligationOutcome.InvalidState, view);
+        }
+
         var instructions = await dbContext.PaymentInstructions
             .Where(x => x.ObligationId == obligation.Id)
             .ToListAsync(cancellationToken);
@@ -437,7 +445,10 @@ public sealed class EfPaymentService(
         obligation.Status = MonthlyObligationStatus.Missed;
         obligation.ClosedAtUtc = occurredAtUtc;
         obligation.UpdatedAtUtc = occurredAtUtc;
-        delinquency.ConsecutiveMissedMonths = checked(delinquency.ConsecutiveMissedMonths + 1);
+        delinquency.ConsecutiveMissedMonths = await CalculateConsecutiveMissedMonthsAfterAsync(
+            obligation,
+            MonthlyObligationStatus.Missed,
+            cancellationToken);
         delinquency.UpdatedAtUtc = occurredAtUtc;
 
         var cancellationNowRequired = delinquency.ConsecutiveMissedMonths >= ConsecutiveMissedMonths.CancellationThreshold;
@@ -604,7 +615,10 @@ public sealed class EfPaymentService(
         var delinquency = await GetOrCreateDelinquencyAsync(contract.Id, occurredAtUtc, cancellationToken);
         if (!delinquency.CancellationRequired)
         {
-            delinquency.ConsecutiveMissedMonths = 0;
+            delinquency.ConsecutiveMissedMonths = await CalculateConsecutiveMissedMonthsAfterAsync(
+                obligation,
+                MonthlyObligationStatus.Paid,
+                cancellationToken);
             delinquency.UpdatedAtUtc = occurredAtUtc;
         }
 
@@ -622,6 +636,57 @@ public sealed class EfPaymentService(
             contractMonthNumber = obligation.ContractMonthNumber,
             occurredAtUtc,
         });
+    }
+
+    private async Task<bool> CanCloseChronologicallyAsync(
+        MonthlyObligationRow obligation,
+        CancellationToken cancellationToken)
+    {
+        var hasEarlierOpenMonth = await dbContext.MonthlyObligations
+            .AsNoTracking()
+            .AnyAsync(
+                x => x.ContractId == obligation.ContractId
+                    && x.ContractMonthNumber < obligation.ContractMonthNumber
+                    && x.Status == MonthlyObligationStatus.Open,
+                cancellationToken);
+
+        if (hasEarlierOpenMonth)
+        {
+            return false;
+        }
+
+        var hasLaterClosedMonth = await dbContext.MonthlyObligations
+            .AsNoTracking()
+            .AnyAsync(
+                x => x.ContractId == obligation.ContractId
+                    && x.ContractMonthNumber > obligation.ContractMonthNumber
+                    && x.Status != MonthlyObligationStatus.Open,
+                cancellationToken);
+
+        return !hasLaterClosedMonth;
+    }
+
+    private async Task<int> CalculateConsecutiveMissedMonthsAfterAsync(
+        MonthlyObligationRow obligation,
+        MonthlyObligationStatus closingStatus,
+        CancellationToken cancellationToken)
+    {
+        if (closingStatus == MonthlyObligationStatus.Open)
+        {
+            throw new ArgumentException("A closing status must be a closed monthly-obligation state.", nameof(closingStatus));
+        }
+
+        var priorClosedStatuses = await dbContext.MonthlyObligations
+            .AsNoTracking()
+            .Where(x => x.ContractId == obligation.ContractId
+                && x.ContractMonthNumber < obligation.ContractMonthNumber
+                && x.Status != MonthlyObligationStatus.Open)
+            .OrderByDescending(x => x.ContractMonthNumber)
+            .Select(x => x.Status)
+            .ToListAsync(cancellationToken);
+
+        return DelinquencySequence.CalculateCurrentStreak(
+            new[] { closingStatus }.Concat(priorClosedStatuses));
     }
 
     private async Task<ContractDelinquencyRow> GetOrCreateDelinquencyAsync(
