@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Charkhoone.Api.Security;
 using Charkhoone.Application.CreditApplications;
 
 namespace Charkhoone.Api.Endpoints;
@@ -9,19 +10,23 @@ public static class CreditApplicationEndpoints
     {
         api.MapPost("/credit-applications", CreateCreditApplicationAsync)
             .RequireAuthorization()
+            .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)
             .WithName("CreateCreditApplication")
             .Produces<CreditApplicationResponse>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden);
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         api.MapPost("/credit-applications/{id:guid}/submit", SubmitCreditApplicationAsync)
             .RequireAuthorization()
+            .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)
             .WithName("SubmitCreditApplication")
             .Produces<CreditApplicationResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         return api;
     }

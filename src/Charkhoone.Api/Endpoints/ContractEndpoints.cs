@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Charkhoone.Api.Security;
 using Charkhoone.Application.Contracts;
 using Charkhoone.Application.CreditApplications;
 using Charkhoone.Application.Payments;
@@ -19,12 +20,14 @@ public static class ContractEndpoints
 
         api.MapPost("/contracts/{id:guid}/settlement/reconcile", ReconcileSettlementAsync)
             .RequireAuthorization()
+            .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)
             .WithName("ReconcileNormalContractSettlement")
             .Produces<NormalSettlementReconciliationResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         api.MapGet("/contracts/{id:guid}/settlement", GetSettlementAsync)
             .RequireAuthorization()
