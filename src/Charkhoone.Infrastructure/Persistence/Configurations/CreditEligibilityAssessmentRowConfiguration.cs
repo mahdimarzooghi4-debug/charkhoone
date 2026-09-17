@@ -9,7 +9,12 @@ public sealed class CreditEligibilityAssessmentRowConfiguration
 {
     public void Configure(EntityTypeBuilder<CreditEligibilityAssessmentRow> builder)
     {
-        builder.ToTable("credit_eligibility_assessments");
+        builder.ToTable("credit_eligibility_assessments", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_credit_eligibility_assessments_idempotency_key_nonblank",
+                "btrim(\"IdempotencyKey\") <> ''");
+        });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.CreditApplicationId).IsUnique();
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
