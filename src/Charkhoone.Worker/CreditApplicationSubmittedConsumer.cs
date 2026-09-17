@@ -17,6 +17,7 @@ public sealed class CreditApplicationSubmittedConsumer(
     ILogger<CreditApplicationSubmittedConsumer> logger) : BackgroundService
 {
     private const string SubmittedEventType = "credit-application.submitted.v1";
+    private const string ReviewRequiredEventType = "identity-verification.review-required.v1";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -64,10 +65,23 @@ public sealed class CreditApplicationSubmittedConsumer(
             autoDelete: false,
             cancellationToken: stoppingToken);
 
+        await channel.QueueDeclareAsync(
+            queue: options.IdentityReviewQueue,
+            durable: true,
+            exclusive: false,
+            autoDelete: false,
+            cancellationToken: stoppingToken);
+
         await channel.QueueBindAsync(
             queue: options.IdentityQueue,
             exchange: options.Exchange,
             routingKey: SubmittedEventType,
+            cancellationToken: stoppingToken);
+
+        await channel.QueueBindAsync(
+            queue: options.IdentityReviewQueue,
+            exchange: options.Exchange,
+            routingKey: ReviewRequiredEventType,
             cancellationToken: stoppingToken);
 
         await channel.BasicQosAsync(
@@ -126,7 +140,9 @@ public sealed class CreditApplicationSubmittedConsumer(
                     return;
                 }
 
-                activity?.SetTag("charkhoone.processing.outcome", "acknowledge");
+                activity?.SetTag(
+                    "charkhoone.processing.outcome",
+                    outcome == DeliveryHandlingOutcome.ReviewQueued ? "review-queued" : "acknowledge");
                 activity?.SetStatus(ActivityStatusCode.Ok);
                 CharkhooneTelemetry.RecordInboxProcessed();
                 await channel.BasicAckAsync(
@@ -141,23 +157,34 @@ public sealed class CreditApplicationSubmittedConsumer(
             catch (Exception exception)
             {
                 activity?.SetStatus(ActivityStatusCode.Error, "processing_failed");
-                CharkhooneTelemetry.RecordInboxRetry();
 
                 logger.LogError(
                     exception,
                     "Processing submitted credit application message {MessageId} failed.",
                     messageId);
 
-                await RecordFailureAsync(messageId, exception, CancellationToken.None);
+                var reviewQueued = await RecordFailureAsync(messageId, exception, CancellationToken.None);
 
                 if (!stoppingToken.IsCancellationRequested)
                 {
-                    await Task.Delay(options.RetryDelay, stoppingToken);
-                    await channel.BasicNackAsync(
-                        delivery.DeliveryTag,
-                        multiple: false,
-                        requeue: true,
-                        stoppingToken);
+                    if (reviewQueued)
+                    {
+                        CharkhooneTelemetry.RecordInboxProcessed();
+                        await channel.BasicAckAsync(
+                            delivery.DeliveryTag,
+                            multiple: false,
+                            stoppingToken);
+                    }
+                    else
+                    {
+                        CharkhooneTelemetry.RecordInboxRetry();
+                        await Task.Delay(options.RetryDelay, stoppingToken);
+                        await channel.BasicNackAsync(
+                            delivery.DeliveryTag,
+                            multiple: false,
+                            requeue: true,
+                            stoppingToken);
+                    }
                 }
             }
         };
@@ -169,9 +196,10 @@ public sealed class CreditApplicationSubmittedConsumer(
             cancellationToken: stoppingToken);
 
         logger.LogInformation(
-            "RabbitMQ identity consumer is listening on queue {Queue} for {MessageType}.",
+            "RabbitMQ identity consumer is listening on queue {Queue} for {MessageType}; exhausted messages route to {ReviewQueue}.",
             options.IdentityQueue,
-            SubmittedEventType);
+            SubmittedEventType,
+            options.IdentityReviewQueue);
 
         await Task.Delay(Timeout.InfiniteTimeSpan, stoppingToken);
     }
@@ -225,6 +253,14 @@ public sealed class CreditApplicationSubmittedConsumer(
         if (result.Outcome == ProcessIdentityVerificationOutcome.Indeterminate)
         {
             inbox.LastError = "identity_verification_indeterminate";
+
+            if (inbox.AttemptCount >= options.MaxDeliveryAttempts)
+            {
+                QueueReview(dbContext, inbox, "identity_verification_indeterminate", receivedAtUtc);
+                await dbContext.SaveChangesAsync(cancellationToken);
+                return DeliveryHandlingOutcome.ReviewQueued;
+            }
+
             await dbContext.SaveChangesAsync(cancellationToken);
             return DeliveryHandlingOutcome.Retry;
         }
@@ -241,7 +277,7 @@ public sealed class CreditApplicationSubmittedConsumer(
         return DeliveryHandlingOutcome.Acknowledge;
     }
 
-    private async Task RecordFailureAsync(
+    private async Task<bool> RecordFailureAsync(
         Guid messageId,
         Exception exception,
         CancellationToken cancellationToken)
@@ -255,11 +291,20 @@ public sealed class CreditApplicationSubmittedConsumer(
 
             if (inbox is null || inbox.ProcessedAtUtc is not null)
             {
-                return;
+                return inbox?.ProcessedAtUtc is not null;
             }
 
             inbox.LastError = TruncateError(exception);
+
+            if (inbox.AttemptCount >= options.MaxDeliveryAttempts)
+            {
+                QueueReview(dbContext, inbox, "identity_verification_processing_failed", DateTimeOffset.UtcNow);
+                await dbContext.SaveChangesAsync(cancellationToken);
+                return true;
+            }
+
             await dbContext.SaveChangesAsync(cancellationToken);
+            return false;
         }
         catch (Exception recordException)
         {
@@ -267,7 +312,33 @@ public sealed class CreditApplicationSubmittedConsumer(
                 recordException,
                 "Could not persist inbox failure for message {MessageId}.",
                 messageId);
+            return false;
         }
+    }
+
+    private static void QueueReview(
+        CharkhooneDbContext dbContext,
+        InboxMessageRow inbox,
+        string reason,
+        DateTimeOffset occurredAtUtc)
+    {
+        inbox.ProcessedAtUtc = occurredAtUtc;
+        inbox.LastError = reason;
+
+        dbContext.OutboxMessages.Add(new OutboxMessageRow
+        {
+            Id = Guid.NewGuid(),
+            OccurredAtUtc = occurredAtUtc,
+            Type = ReviewRequiredEventType,
+            PayloadJson = JsonSerializer.Serialize(new
+            {
+                messageId = inbox.MessageId,
+                sourceType = inbox.Type,
+                reason,
+                attemptCount = inbox.AttemptCount,
+            }),
+            AttemptCount = 0,
+        });
     }
 
     private static bool TryReadApplicationId(string payload, out Guid applicationId)
@@ -309,5 +380,6 @@ public sealed class CreditApplicationSubmittedConsumer(
     {
         Acknowledge,
         Retry,
+        ReviewQueued,
     }
 }
