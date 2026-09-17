@@ -1,6 +1,8 @@
 using Charkhoone.Infrastructure.Persistence;
 using Charkhoone.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Xunit;
 
 namespace Charkhoone.Infrastructure.Tests.Persistence;
@@ -108,7 +110,8 @@ public sealed class DatabaseIntegrityEnforcementPersistenceTests
 
     private static void AssertCheck(CharkhooneDbContext context, Type entityType, string name)
     {
-        var entity = context.Model.FindEntityType(entityType);
+        var designTimeModel = context.GetService<IDesignTimeModel>().Model;
+        var entity = designTimeModel.FindEntityType(entityType);
         Assert.NotNull(entity);
         Assert.Contains(entity!.GetCheckConstraints(), constraint => constraint.Name == name);
     }
