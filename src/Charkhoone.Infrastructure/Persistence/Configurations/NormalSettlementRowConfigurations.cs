@@ -18,10 +18,10 @@ public sealed class NormalSettlementRowConfiguration : IEntityTypeConfiguration<
 
         builder.Property(x => x.BankId).HasMaxLength(128).IsRequired();
         builder.Property(x => x.FundReference).HasMaxLength(256).IsRequired();
-        builder.Property(x => x.BankPrincipalAmountRial).HasPrecision(38, 18).IsRequired();
+        builder.Property(x => x.BankPrincipalAmountRial).HasColumnType("numeric").IsRequired();
         builder.Property(x => x.BankPrincipalStatus).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(x => x.BankExternalReference).HasMaxLength(256);
-        builder.Property(x => x.TenantResidualAmountRial).HasPrecision(38, 18).IsRequired();
+        builder.Property(x => x.TenantResidualAmountRial).HasColumnType("numeric").IsRequired();
         builder.Property(x => x.TenantResidualStatus).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(x => x.TenantExternalReference).HasMaxLength(256);
 
