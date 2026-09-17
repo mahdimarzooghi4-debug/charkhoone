@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Metrics;
@@ -12,8 +11,7 @@ public static class ObservabilityServiceCollectionExtensions
     public static IServiceCollection AddCharkhooneObservability(
         this IServiceCollection services,
         IConfiguration configuration,
-        string serviceName,
-        bool instrumentAspNetCore)
+        string serviceName)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configuration);
@@ -21,7 +19,7 @@ public static class ObservabilityServiceCollectionExtensions
 
         var otlpEndpoint = ReadOptionalOtlpEndpoint(configuration);
 
-        var telemetry = services
+        services
             .AddOpenTelemetry()
             .ConfigureResource(resource => resource.AddService(serviceName))
             .WithTracing(tracing =>
@@ -29,15 +27,6 @@ public static class ObservabilityServiceCollectionExtensions
                 tracing
                     .AddSource(CharkhooneTelemetry.ActivitySourceName)
                     .AddHttpClientInstrumentation();
-
-                if (instrumentAspNetCore)
-                {
-                    tracing.AddAspNetCoreInstrumentation(options =>
-                    {
-                        options.Filter = context =>
-                            !context.Request.Path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase);
-                    });
-                }
 
                 if (otlpEndpoint is not null)
                 {
@@ -51,18 +40,12 @@ public static class ObservabilityServiceCollectionExtensions
                     .AddRuntimeInstrumentation()
                     .AddHttpClientInstrumentation();
 
-                if (instrumentAspNetCore)
-                {
-                    metrics.AddAspNetCoreInstrumentation();
-                }
-
                 if (otlpEndpoint is not null)
                 {
                     metrics.AddOtlpExporter(options => options.Endpoint = otlpEndpoint);
                 }
             });
 
-        _ = telemetry;
         return services;
     }
 
