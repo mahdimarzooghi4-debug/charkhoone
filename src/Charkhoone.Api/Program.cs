@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Charkhoone.Api.Endpoints;
 using Charkhoone.Api.Health;
+using Charkhoone.Api.Release;
 using Charkhoone.Api.Security;
 using Charkhoone.Infrastructure;
 using Charkhoone.Infrastructure.Observability;
@@ -10,6 +11,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
+var releaseGitSha = ReleaseIdentity.Resolve(builder.Configuration);
 
 builder.Services
     .AddHealthChecks()
@@ -82,6 +84,11 @@ app.Use(async (context, next) =>
 {
     context.Response.OnStarting(() =>
     {
+        if (releaseGitSha is not null)
+        {
+            context.Response.Headers[ReleaseIdentity.HeaderName] = releaseGitSha;
+        }
+
         if (Activity.Current is { } activity)
         {
             context.Response.Headers["X-Trace-Id"] = activity.TraceId.ToString();
