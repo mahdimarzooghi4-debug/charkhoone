@@ -23,7 +23,7 @@ trap cleanup EXIT
 
 mkdir -p "$fixture_root/database"
 cat > "$fixture_root/database/summary.txt" <<EOF
- environment=ci
+environment=ci
 git_sha=$sha
 migration_runtime_roles_distinct=true
 migration_runtime_database_name_match=true
@@ -35,8 +35,6 @@ post_migration_readiness=passed
 query_plan_evidence=captured-on-operator-confirmed-representative-dataset
 promotion_decision=not-made-by-script
 EOF
-# Remove the single deliberate indentation used to keep the heredoc visually separate.
-sed -i 's/^ environment=/environment=/' "$fixture_root/database/summary.txt"
 for name in provider-backup-evidence.sha256 provider-restore-evidence.sha256 migrations-idempotent.sha256 migrations-after.txt; do
   printf 'ci-fixture-only\n' > "$fixture_root/database/$name"
 done
@@ -123,7 +121,7 @@ CHARKHOONE_STAGING_DATABASE_REHEARSAL_DIR="$fixture_root/database" \
 CHARKHOONE_STAGING_API_RELEASE_EVIDENCE="$fixture_root/api-release.txt" \
 CHARKHOONE_STAGING_WORKER_RELEASE_EVIDENCE="$fixture_root/worker-release.txt" \
 CHARKHOONE_APPLICATION_EVIDENCE_DIR="${CHARKHOONE_APPLICATION_EVIDENCE_DIR:-artifacts/release/application-smoke}" \
-scripts/release/staging-application-smoke.sh
+bash scripts/release/staging-application-smoke.sh
 
 summary="${CHARKHOONE_APPLICATION_EVIDENCE_DIR:-artifacts/release/application-smoke}/ci/$sha/summary.txt"
 grep -Fxq 'environment=ci' "$summary"
