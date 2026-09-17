@@ -5,11 +5,16 @@ on:
     branches: ["feature/rial-precision-v1"]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: feature/rial-precision-v1
       - uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
@@ -24,8 +29,11 @@ jobs:
           --startup-project src/Charkhoone.Api/Charkhoone.Api.csproj
           --context CharkhooneDbContext
           --output-dir Persistence/Migrations
-      - name: Upload generated migration
-        uses: actions/upload-artifact@v4
-        with:
-          name: rial-precision-migration
-          path: src/Charkhoone.Infrastructure/Persistence/Migrations/
+      - name: Commit generated migration and remove generator
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/generate-rial-precision-migration.yml
+          git add src/Charkhoone.Infrastructure/Persistence/Migrations
+          git commit -m "fix(persistence): add generated unscaled rial migration"
+          git push origin HEAD:feature/rial-precision-v1
