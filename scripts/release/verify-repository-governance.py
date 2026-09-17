@@ -17,6 +17,7 @@ EXPECTED_CHECKS = [
     "supply-chain-evidence-gate",
     "mobile-export-build-gate",
 ]
+EXPECTED_CHECKS_CSV = ",".join(EXPECTED_CHECKS)
 
 REQUIRED_RULES = {
     "require_pull_request": True,
@@ -117,6 +118,7 @@ required_workflows = {
         "pull_request:",
         "permissions:\n  contents: read",
         "  governance:\n    name: repository-governance-gate",
+        f"required_status_checks={EXPECTED_CHECKS_CSV}",
     ],
     ".github/workflows/mobile-export-build.yml": [
         "pull_request:",
