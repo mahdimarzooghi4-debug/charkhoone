@@ -88,15 +88,16 @@ CHARKHOONE_ALLOW_DATABASE_MIGRATION=true \
 scripts/database/migrate.sh
 ```
 
-Production additionally requires the explicit production acknowledgement implemented by the script. Connection strings must come from the deployment secret store and must not be committed or printed.
+`CHARKHOONE_DATABASE_CONNECTION` for `migrate.sh` is an EF Core/Npgsql connection string. Production additionally requires the explicit production acknowledgement implemented by the script. Connection strings must come from the deployment secret store and must not be committed or printed.
 
 ## Staging database rehearsal
 
-For a release-candidate rehearsal, prefer the higher-level staging-only runner:
+For a release-candidate rehearsal, prefer the higher-level staging-only runner. EF Core/Npgsql and `psql` use different connection-string syntaxes, so the runner deliberately requires separate values instead of trying to translate credentials:
 
 ```bash
-CHARKHOONE_STAGING_MIGRATION_CONNECTION='...' \
-CHARKHOONE_STAGING_RUNTIME_CONNECTION='...' \
+CHARKHOONE_STAGING_MIGRATION_CONNECTION='Host=...;Database=...;Username=...;Password=...' \
+CHARKHOONE_STAGING_MIGRATION_PSQL_CONNECTION='postgresql://migration-user:...@host/database' \
+CHARKHOONE_STAGING_RUNTIME_PSQL_CONNECTION='postgresql://runtime-user:...@host/database' \
 CHARKHOONE_STAGING_BACKUP_EVIDENCE='/secure/path/provider-backup-evidence.txt' \
 CHARKHOONE_STAGING_RESTORE_EVIDENCE='/secure/path/provider-restore-evidence.txt' \
 CHARKHOONE_EXPECTED_GIT_SHA="$(git rev-parse HEAD)" \
@@ -105,7 +106,9 @@ CHARKHOONE_QUERY_PLAN_DATASET_CONFIRMED_REPRESENTATIVE=true \
 scripts/database/staging-rehearsal.sh
 ```
 
-The migration and runtime identities must be distinct. The runner records hashes of the operator-supplied provider evidence rather than copying its contents, captures migration history before and after, runs the checked-in migration chain, executes post-migration readiness checks, and captures query-plan evidence. It never prints either connection string or role name.
+The Npgsql migration connection and migration `psql` connection must represent the same authorized migration target. The migration and runtime `psql` identities must be distinct and resolve to the same database name. Before migration, the runtime role must pass the least-privilege audit and baseline observability/PITR SQL evidence is captured.
+
+The runner records hashes of the operator-supplied provider evidence rather than copying its contents, captures migration history before and after, runs the checked-in migration chain, executes post-migration readiness checks, and captures query-plan evidence. It never prints connection strings or resolved role names.
 
 A successful database-only rehearsal is not sufficient for promotion. Authenticated API/application smoke evidence against the same released build and target remains mandatory.
 
@@ -148,7 +151,7 @@ Before production load, review query plans for:
 - contract detail/audit reads;
 - journal and external-transaction idempotency lookups.
 
-Use `scripts/database/capture-query-plans.sh` on staging only after an operator has confirmed that the dataset volume/distribution is representative. It records cardinalities beside `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` output and does not infer a pass/fail latency or index threshold.
+Use `scripts/database/capture-query-plans.sh` on staging only after an operator has confirmed that the dataset volume/distribution is representative. `CHARKHOONE_DATABASE_CONNECTION` for this script must be a `psql`-compatible conninfo string or PostgreSQL URI. It records cardinalities beside `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` output and does not infer a pass/fail latency or index threshold.
 
 The exact Outbox `FOR UPDATE SKIP LOCKED` query is captured as non-executing static `EXPLAIN`; the analyzed companion plan omits row locking so evidence collection does not lock staging messages.
 
