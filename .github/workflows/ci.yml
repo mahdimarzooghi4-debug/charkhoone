@@ -126,7 +126,7 @@ jobs:
         run: bash scripts/database/capture-query-plans.sh
       - name: Upload integrity audit counts
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: database-integrity-audit-${{ github.sha }}
           path: artifacts/database/integrity-audit/
@@ -134,7 +134,7 @@ jobs:
           retention-days: 7
       - name: Upload runtime database evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: database-runtime-evidence-${{ github.sha }}
           path: artifacts/database/runtime-evidence/
@@ -142,7 +142,7 @@ jobs:
           retention-days: 7
       - name: Upload query-plan compatibility evidence
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: database-query-plan-compatibility-${{ github.sha }}
           path: artifacts/database/query-plans/
@@ -150,7 +150,7 @@ jobs:
           retention-days: 7
       - name: Upload restore drill evidence (no database dump)
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: database-restore-drill-${{ github.sha }}
           path: artifacts/database/restore-drill/
@@ -231,7 +231,7 @@ jobs:
           } > artifacts/release/release-ci-evidence.txt
           cp deploy/ci-dependencies.lock artifacts/release/ci-dependencies.lock
       - name: Upload release CI evidence
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: release-ci-evidence-${{ github.sha }}
           path: artifacts/release/
