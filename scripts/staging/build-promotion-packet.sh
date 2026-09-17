@@ -15,7 +15,7 @@ cd "$ROOT_DIR"
   exit 1
 }
 
-for command_name in git sha256sum awk grep date mkdir; do
+for command_name in git sha256sum awk grep date mkdir tr; do
   command -v "$command_name" >/dev/null 2>&1 || { echo "$command_name is required" >&2; exit 1; }
 done
 
@@ -72,6 +72,7 @@ require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'promotion_decisio
 
 require_line "$application_summary" 'environment=staging'
 require_line "$application_summary" "git_sha=$expected_sha"
+require_line "$application_summary" 'smoke_runner_git_sha=matched'
 require_line "$application_summary" 'api_release_header=matched'
 require_line "$application_summary" 'api_liveness=passed'
 require_line "$application_summary" 'api_readiness=passed'
