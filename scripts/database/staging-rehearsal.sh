@@ -37,6 +37,13 @@ if [[ "$actual_sha" != "$CHARKHOONE_EXPECTED_GIT_SHA" ]]; then
   exit 1
 fi
 
+output_root="${CHARKHOONE_DATABASE_EVIDENCE_DIR:-artifacts/database/staging-rehearsal}"
+output_dir="$output_root/$actual_sha"
+mkdir -p "$output_dir/pre-migration"
+
+CHARKHOONE_DATABASE_TARGET_IDENTITY_EVIDENCE_DIR="$output_dir/pre-migration/migration-target-identity" \
+scripts/database/verify-target-identity.sh
+
 migration_role="$(psql "$CHARKHOONE_STAGING_MIGRATION_PSQL_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 -c 'SELECT current_user')"
 runtime_role="$(psql "$CHARKHOONE_STAGING_RUNTIME_PSQL_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 -c 'SELECT current_user')"
 if [[ -z "$migration_role" || -z "$runtime_role" ]]; then
@@ -54,10 +61,6 @@ if [[ "$migration_database" != "$runtime_database" ]]; then
   echo 'Migration and runtime psql connections resolve to different database names; rehearsal blocked.' >&2
   exit 1
 fi
-
-output_root="${CHARKHOONE_DATABASE_EVIDENCE_DIR:-artifacts/database/staging-rehearsal}"
-output_dir="$output_root/$actual_sha"
-mkdir -p "$output_dir/pre-migration"
 
 capture_migration_history() {
   local output=$1
@@ -124,6 +127,7 @@ scripts/database/capture-query-plans.sh
   printf 'environment=staging\n'
   printf 'git_sha=%s\n' "$actual_sha"
   printf 'connection_formats=separate-npgsql-migration-and-psql-evidence-connections\n'
+  printf 'migration_npgsql_psql_target_identity=verified-by-advisory-lock-database-role-binding\n'
   printf 'migration_runtime_roles_distinct=true\n'
   printf 'migration_runtime_database_name_match=true\n'
   printf 'pre_migration_runtime_role=passed\n'

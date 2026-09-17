@@ -116,6 +116,10 @@ jobs:
         env:
           POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
         run: bash scripts/database/ci-runtime-role-audit.sh
+      - name: Validate Npgsql/psql migration target identity binding semantics
+        env:
+          POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
+        run: bash scripts/database/ci-target-identity.sh
       - name: Validate query-plan evidence SQL against CI PostgreSQL
         env:
           CHARKHOONE_DATABASE_CONNECTION: postgresql://postgres:postgres@localhost:5432/charkhoone_integration
