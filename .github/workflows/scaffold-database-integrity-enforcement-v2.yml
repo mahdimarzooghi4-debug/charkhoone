@@ -20,18 +20,11 @@ jobs:
         run: dotnet restore Charkhoone.slnx
       - name: Install EF CLI
         run: dotnet tool install --global dotnet-ef --version 10.0.12
-      - name: Regenerate migration from the final model
+      - name: Scaffold journal trigger migration when absent
         shell: bash
         run: |
-          migration=$(compgen -G 'src/Charkhoone.Infrastructure/Persistence/Migrations/*_AddDatabaseIntegrityEnforcementV2.cs' | head -n 1 || true)
-          if [[ -n "$migration" ]] && grep -q 'journal_entry_seals' "$migration"; then
-            dotnet ef migrations remove --force \
-              --project src/Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj \
-              --startup-project src/Charkhoone.Api/Charkhoone.Api.csproj
-            migration=''
-          fi
-          if [[ -z "$migration" ]]; then
-            dotnet ef migrations add AddDatabaseIntegrityEnforcementV2 \
+          if ! compgen -G 'src/Charkhoone.Infrastructure/Persistence/Migrations/*_AddJournalLedgerTriggers.cs' > /dev/null; then
+            dotnet ef migrations add AddJournalLedgerTriggers \
               --project src/Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj \
               --startup-project src/Charkhoone.Api/Charkhoone.Api.csproj \
               --output-dir Persistence/Migrations
@@ -46,14 +39,16 @@ jobs:
             echo "No generated migration changes to commit."
             exit 0
           fi
-          git commit -m "feat(database): regenerate integrity enforcement migration"
+          git commit -m "feat(database): scaffold journal ledger trigger migration"
           git push origin "HEAD:${GITHUB_REF_NAME}"
-      - name: Upload generated migration
+      - name: Upload generated migrations
         uses: actions/upload-artifact@v4
         with:
-          name: database-integrity-enforcement-v2-migration
+          name: database-integrity-enforcement-v2-migrations
           if-no-files-found: error
           path: |
             src/Charkhoone.Infrastructure/Persistence/Migrations/*_AddDatabaseIntegrityEnforcementV2.cs
             src/Charkhoone.Infrastructure/Persistence/Migrations/*_AddDatabaseIntegrityEnforcementV2.Designer.cs
+            src/Charkhoone.Infrastructure/Persistence/Migrations/*_AddJournalLedgerTriggers.cs
+            src/Charkhoone.Infrastructure/Persistence/Migrations/*_AddJournalLedgerTriggers.Designer.cs
             src/Charkhoone.Infrastructure/Persistence/Migrations/CharkhooneDbContextModelSnapshot.cs
