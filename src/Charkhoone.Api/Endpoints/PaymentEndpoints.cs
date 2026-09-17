@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Charkhoone.Api.Security;
 using Charkhoone.Application.CreditApplications;
 using Charkhoone.Application.Payments;
 
@@ -10,12 +11,14 @@ public static class PaymentEndpoints
     {
         api.MapPost("/payments/{id:guid}/reconcile", ReconcilePaymentAsync)
             .RequireAuthorization()
+            .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)
             .WithName("ReconcilePayment")
             .Produces<PaymentReconciliationResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status409Conflict);
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
         return api;
     }
