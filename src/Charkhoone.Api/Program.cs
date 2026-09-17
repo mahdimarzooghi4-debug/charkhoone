@@ -53,6 +53,7 @@ api.MapGet("", () => Results.Ok(new
 }));
 api.MapCreditApplicationEndpoints();
 api.MapPaymentEndpoints();
+api.MapContractEndpoints();
 
 app.Run();
 
