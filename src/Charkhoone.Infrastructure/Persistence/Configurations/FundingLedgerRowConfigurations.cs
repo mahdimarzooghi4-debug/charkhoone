@@ -168,24 +168,3 @@ public sealed class JournalLineRowConfiguration : IEntityTypeConfiguration<Journ
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
-
-public sealed class JournalEntrySealRowConfiguration : IEntityTypeConfiguration<JournalEntrySealRow>
-{
-    public void Configure(EntityTypeBuilder<JournalEntrySealRow> builder)
-    {
-        builder.ToTable("journal_entry_seals", table =>
-        {
-            table.HasCheckConstraint(
-                "CK_journal_entry_seals_balanced_positive_finite",
-                "\"LineCount\" >= 2 AND \"TotalDebitRial\" > 0 AND \"TotalCreditRial\" > 0 AND \"TotalDebitRial\" = \"TotalCreditRial\" AND \"TotalDebitRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity') AND \"TotalCreditRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity')");
-        });
-        builder.HasKey(x => x.JournalEntryId);
-        builder.Property(x => x.TotalDebitRial).HasColumnType("numeric").IsRequired();
-        builder.Property(x => x.TotalCreditRial).HasColumnType("numeric").IsRequired();
-
-        builder.HasOne<JournalEntryRow>()
-            .WithOne()
-            .HasForeignKey<JournalEntrySealRow>(x => x.JournalEntryId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-}
