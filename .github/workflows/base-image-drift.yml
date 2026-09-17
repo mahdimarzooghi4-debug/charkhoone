@@ -1,0 +1,40 @@
+name: base-image-drift
+
+on:
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: base-image-drift-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  drift:
+    name: base-image-drift-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Resolve registry digests and compare immutable lock
+        id: drift
+        continue-on-error: true
+        shell: bash
+        run: bash scripts/release/check-base-image-drift.sh artifacts/base-image-drift
+      - name: Upload base-image drift evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: base-image-drift-evidence-${{ github.sha }}-${{ github.run_id }}
+          path: artifacts/base-image-drift/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Fail when registry drift or resolution failure was detected
+        if: ${{ always() }}
+        shell: bash
+        env:
+          DRIFT_OUTCOME: ${{ steps.drift.outcome }}
+        run: test "$DRIFT_OUTCOME" = success
