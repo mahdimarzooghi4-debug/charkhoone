@@ -4,7 +4,9 @@ using Charkhoone.Worker;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(
+    builder.Configuration,
+    allowDevelopmentMocks: builder.Environment.IsDevelopment());
 builder.Services.AddCharkhooneObservability(builder.Configuration, "Charkhoone.Worker");
 builder.Services.AddSingleton(TimeProvider.System);
 
