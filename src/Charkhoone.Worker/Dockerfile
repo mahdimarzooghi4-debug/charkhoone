@@ -11,7 +11,7 @@ RUN dotnet publish src/Charkhoone.Worker/Charkhoone.Worker.csproj \
     --output /app/publish \
     /p:UseAppHost=false
 
-FROM mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled-extra@sha256:2345c0abcb73d3f538269860caf794baabab2b2eeed0b1ff1a6ee208d05f287b AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra@sha256:6385dc0eaef704fad88d3f65c334e791a371bbe448f52ca39d83d2df49251e28 AS runtime
 ARG VCS_REF=unknown
 LABEL org.opencontainers.image.source="https://github.com/mahdimarzooghi4-debug/charkhoone" \
       org.opencontainers.image.revision="$VCS_REF" \
@@ -19,6 +19,9 @@ LABEL org.opencontainers.image.source="https://github.com/mahdimarzooghi4-debug/
 
 WORKDIR /app
 COPY --from=build /app/publish ./
+
+ENV ASPNETCORE_HTTP_PORTS=8080
+EXPOSE 8080
 
 USER $APP_UID
 ENTRYPOINT ["dotnet", "Charkhoone.Worker.dll"]

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+<Project Sdk="Microsoft.NET.Sdk.Web">
   <ItemGroup>
     <ProjectReference Include="../Charkhoone.Application/Charkhoone.Application.csproj" />
     <ProjectReference Include="../Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj" />
