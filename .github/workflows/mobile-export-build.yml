@@ -1,0 +1,76 @@
+name: mobile-export-build
+
+on:
+  push:
+    branches: [main, "feature/**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-export-build:
+    name: mobile-export-build-gate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.13.1
+      - name: Install from lockfile
+        run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Export Android production bundle
+        env:
+          CI: "1"
+        run: npx expo export --platform android --output-dir dist/android
+      - name: Export iOS production bundle
+        env:
+          CI: "1"
+        run: npx expo export --platform ios --output-dir dist/ios
+      - name: Write SHA-bound mobile export evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d dist/android
+          test -d dist/ios
+          mkdir -p ../../artifacts/mobile-export
+          android_files="$(find dist/android -type f | wc -l | tr -d ' ')"
+          ios_files="$(find dist/ios -type f | wc -l | tr -d ' ')"
+          test "$android_files" -gt 0
+          test "$ios_files" -gt 0
+          (
+            cd dist/android
+            find . -type f -print0 | sort -z | xargs -0 sha256sum
+          ) > ../../artifacts/mobile-export/android-files.sha256
+          (
+            cd dist/ios
+            find . -type f -print0 | sort -z | xargs -0 sha256sum
+          ) > ../../artifacts/mobile-export/ios-files.sha256
+          {
+            printf 'environment=ci\n'
+            printf 'git_sha=%s\n' "$GITHUB_SHA"
+            printf 'workflow=mobile-export-build\n'
+            printf 'conclusion=success\n'
+            printf 'node_version=22.13.1\n'
+            printf 'mobile_typecheck=success\n'
+            printf 'android_production_export=success\n'
+            printf 'ios_production_export=success\n'
+            printf 'android_export_file_count=%s\n' "$android_files"
+            printf 'ios_export_file_count=%s\n' "$ios_files"
+            printf 'native_apk_build=not-claimed\n'
+            printf 'native_ipa_build=not-claimed\n'
+            printf 'signed_mobile_artifact=not-claimed\n'
+          } > ../../artifacts/mobile-export/mobile-export-evidence.txt
+      - name: Upload mobile export evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mobile-export-evidence-${{ github.sha }}
+          path: artifacts/mobile-export/
+          if-no-files-found: error
+          retention-days: 30
