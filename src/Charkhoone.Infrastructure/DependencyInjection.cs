@@ -22,10 +22,26 @@ namespace Charkhoone.Infrastructure;
 
 public static class DependencyInjection
 {
+    private static readonly string[] ExternalAdapterNames =
+    [
+        "Identity",
+        "CreditGrade",
+        "BankApproval",
+        "Fund",
+        "Payment",
+        "Coverage",
+        "CancellationSettlement",
+        "NormalSettlementBank",
+        "NormalSettlementTenant",
+    ];
+
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        bool allowDevelopmentMocks = false)
     {
+        ValidateExternalAdapterModes(configuration, allowDevelopmentMocks);
+
         var connectionString = configuration.GetConnectionString("Postgres");
         services.AddScoped<LostFundReturnTrackingInterceptor>();
 
@@ -52,7 +68,7 @@ public static class DependencyInjection
         services.AddScoped<INormalSettlementService, EfNormalSettlementService>();
 
         var identityAdapterMode = configuration["ExternalAdapters:Identity:Mode"];
-        if (string.Equals(identityAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        if (IsDevelopmentMock(identityAdapterMode))
         {
             services.AddSingleton<IIdentityVerificationAdapter, DevelopmentIdentityVerificationAdapter>();
         }
@@ -62,7 +78,7 @@ public static class DependencyInjection
         }
 
         var creditGradeAdapterMode = configuration["ExternalAdapters:CreditGrade:Mode"];
-        if (string.Equals(creditGradeAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        if (IsDevelopmentMock(creditGradeAdapterMode))
         {
             services.AddSingleton<IExternalCreditGradeAdapter, DevelopmentExternalCreditGradeAdapter>();
         }
@@ -72,7 +88,7 @@ public static class DependencyInjection
         }
 
         var bankApprovalAdapterMode = configuration["ExternalAdapters:BankApproval:Mode"];
-        if (string.Equals(bankApprovalAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        if (IsDevelopmentMock(bankApprovalAdapterMode))
         {
             services.AddSingleton<IExternalBankApprovalAdapter, DevelopmentBankApprovalAdapter>();
         }
@@ -82,7 +98,7 @@ public static class DependencyInjection
         }
 
         var fundAdapterMode = configuration["ExternalAdapters:Fund:Mode"];
-        if (string.Equals(fundAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        if (IsDevelopmentMock(fundAdapterMode))
         {
             services.AddSingleton<IExternalFundAdapter, DevelopmentFundAdapter>();
         }
@@ -92,7 +108,7 @@ public static class DependencyInjection
         }
 
         var paymentAdapterMode = configuration["ExternalAdapters:Payment:Mode"];
-        if (string.Equals(paymentAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        if (IsDevelopmentMock(paymentAdapterMode))
         {
             services.AddSingleton<IExternalPaymentReconciliationAdapter, DevelopmentPaymentReconciliationAdapter>();
         }
@@ -102,7 +118,7 @@ public static class DependencyInjection
         }
 
         var coverageAdapterMode = configuration["ExternalAdapters:Coverage:Mode"];
-        if (string.Equals(coverageAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        if (IsDevelopmentMock(coverageAdapterMode))
         {
             services.AddSingleton<IExternalCoverageTransferAdapter, DevelopmentCoverageTransferAdapter>();
         }
@@ -112,7 +128,7 @@ public static class DependencyInjection
         }
 
         var cancellationSettlementAdapterMode = configuration["ExternalAdapters:CancellationSettlement:Mode"];
-        if (string.Equals(cancellationSettlementAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        if (IsDevelopmentMock(cancellationSettlementAdapterMode))
         {
             services.AddSingleton<IExternalOwnerResidualTransferAdapter, DevelopmentOwnerResidualTransferAdapter>();
         }
@@ -122,7 +138,7 @@ public static class DependencyInjection
         }
 
         var normalSettlementBankMode = configuration["ExternalAdapters:NormalSettlementBank:Mode"];
-        if (string.Equals(normalSettlementBankMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        if (IsDevelopmentMock(normalSettlementBankMode))
         {
             services.AddSingleton<IExternalBankPrincipalReturnAdapter, DevelopmentBankPrincipalReturnAdapter>();
         }
@@ -132,7 +148,7 @@ public static class DependencyInjection
         }
 
         var normalSettlementTenantMode = configuration["ExternalAdapters:NormalSettlementTenant:Mode"];
-        if (string.Equals(normalSettlementTenantMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        if (IsDevelopmentMock(normalSettlementTenantMode))
         {
             services.AddSingleton<IExternalTenantResidualReturnAdapter, DevelopmentTenantResidualReturnAdapter>();
         }
@@ -143,4 +159,29 @@ public static class DependencyInjection
 
         return services;
     }
+
+    public static void ValidateExternalAdapterModes(
+        IConfiguration configuration,
+        bool allowDevelopmentMocks)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        if (allowDevelopmentMocks)
+        {
+            return;
+        }
+
+        foreach (var adapterName in ExternalAdapterNames)
+        {
+            var key = $"ExternalAdapters:{adapterName}:Mode";
+            if (IsDevelopmentMock(configuration[key]))
+            {
+                throw new InvalidOperationException(
+                    $"{key}=DevelopmentMock is allowed only in the Development environment.");
+            }
+        }
+    }
+
+    private static bool IsDevelopmentMock(string? mode) =>
+        string.Equals(mode?.Trim(), "DevelopmentMock", StringComparison.OrdinalIgnoreCase);
 }
