@@ -1,0 +1,86 @@
+.rejectedBadge,
+.approvedBadge {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+.rejectedBadge { color: #b91c1c; background: #fee2e2; }
+.approvedBadge { color: #166534; background: #e2f4e5; }
+.finalRejected,
+.finalApproved {
+  padding: 6px 14px;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 8px;
+}
+.finalRejected { color: #b91c1c; background: #fee2e2; }
+.finalApproved { color: #166534; background: rgb(33 150 89 / 12%); }
+.decisionResult {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  font-size: 13px;
+  text-align: right;
+  border: 1px solid;
+  border-radius: 8px;
+}
+.rejectedResult { background: #fef2f2; border-color: #fecaca; }
+.approvedResult { background: #f0fdf4; border-color: #bbf7d0; }
+.resultRow {
+  min-height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  direction: ltr;
+}
+.resultRow > span {
+  direction: rtl;
+  text-align: right;
+}
+.resultLabel { color: #6b7280; font-weight: 400; }
+.resultValue { color: var(--ch-color-text); font-weight: 500; }
+.resultRejected { color: #dc2626; font-weight: 600; }
+.resultApproved { color: #15803d; font-weight: 600; }
+.nextStep {
+  width: 100%;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 16px;
+  background: #f9fafb;
+  border: 1px solid var(--ch-color-border);
+  border-radius: 8px;
+  direction: ltr;
+}
+.nextStep p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 12px;
+  direction: rtl;
+  text-align: right;
+}
+.nextStepLink {
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding: 8px 16px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  background: var(--ch-color-primary);
+  border-radius: 10px;
+}
+@media (max-width: 620px) {
+  .resultRow { align-items: flex-start; flex-direction: column-reverse; gap: 4px; direction: rtl; }
+  .nextStep { align-items: stretch; flex-direction: column-reverse; direction: rtl; }
+  .nextStepLink { width: 100%; }
+}

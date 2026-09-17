@@ -1,0 +1,60 @@
+.kpis { width:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+.kpi { display:flex; flex-direction:column; align-items:flex-end; gap:8px; padding:16px 20px; background:#fff; border:1px solid var(--ch-color-border); border-radius:8px; text-align:right; }
+.kpi span { color:#6b7280; font-size:12px; }
+.kpi strong { color:var(--ch-color-text); font-size:18px; font-weight:700; }
+.card { width:100%; display:flex; flex-direction:column; gap:14px; padding:18px 20px; background:#fff; border:1px solid var(--ch-color-border); border-radius:8px; }
+.card h2,.historyTitle { margin:0; width:100%; color:var(--ch-color-text); font-size:15px; font-weight:600; text-align:right; }
+.divider { width:100%; height:1px; background:var(--ch-color-border); }
+.actionRow { width:100%; display:flex; flex-direction:column; gap:8px; padding:12px 16px; background:#f9fafb; border-radius:8px; }
+.actionTop { width:100%; min-height:54px; display:grid; grid-template-columns:auto auto 180px minmax(170px,1fr) auto; align-items:center; gap:18px; direction:ltr; }
+.actionTop > * { direction:rtl; }
+.primaryButton { display:inline-flex; align-items:center; justify-content:center; padding:8px 16px; color:#fff; font-size:13px; font-weight:600; text-decoration:none; background:var(--ch-color-primary); border-radius:10px; white-space:nowrap; }
+.readyBadge { justify-self:center; padding:4px 10px; color:#926012; font-size:11px; font-weight:600; background:#fff6de; border-radius:8px; white-space:nowrap; }
+.actionAmount { color:var(--ch-color-text); font-size:14px; font-weight:600; text-align:right; }
+.caseInfo { display:flex; flex-direction:column; align-items:flex-end; gap:2px; text-align:right; }
+.caseInfo strong { color:var(--ch-color-text); font-size:13px; font-weight:500; }
+.caseInfo small { color:#6b7280; font-size:11px; }
+.actionType { color:var(--ch-color-text); font-size:14px; font-weight:600; white-space:nowrap; }
+.checks { width:100%; display:flex; align-items:center; justify-content:flex-end; gap:18px; flex-wrap:wrap; color:#166534; font-size:11px; }
+.check { display:flex; align-items:center; gap:6px; }
+.check b { font-size:12px; }
+.operation { width:100%; min-height:64px; display:flex; align-items:center; justify-content:space-between; gap:24px; padding:10px 0; direction:ltr; }
+.opLeft { width:170px; display:flex; align-items:center; gap:12px; }
+.opLink { color:var(--ch-color-accent); font-size:12px; font-weight:600; text-decoration:none; }
+.badgeSuccess,.badgeProcessing,.badgeFailed { padding:4px 10px; font-size:11px; font-weight:600; border-radius:8px; white-space:nowrap; }
+.badgeSuccess { color:#166534; background:#e2f4e5; }
+.badgeProcessing { color:#264d99; background:#d9e5fa; }
+.badgeFailed { color:#b91c1c; background:#fee2e2; }
+.opRight { min-width:0; flex:1; display:flex; flex-direction:column; align-items:flex-end; gap:2px; direction:rtl; text-align:right; }
+.opRight strong { color:var(--ch-color-text); font-size:13px; font-weight:600; }
+.opRight span { color:#6b7280; font-size:11px; }
+.revenueCard { gap:9px; }
+.revenueLead { margin:0; width:100%; color:#6b7280; font-size:11px; text-align:right; }
+.revenueGrid { width:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
+.revenueItem { display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:5px; min-height:66px; padding:10px 12px; background:#f9fafb; border:1px solid var(--ch-color-border); border-radius:8px; }
+.revenueItem span { color:#6b7280; font-size:11px; }
+.revenueItem strong { color:var(--ch-color-text); font-size:13px; font-weight:600; }
+.revenueNote { padding:10px 12px; color:#6b7280; font-size:11px; text-align:right; background:#f7f8f8; border-radius:8px; }
+.historyToolbar { width:100%; display:flex; align-items:center; justify-content:space-between; gap:16px; direction:ltr; }
+.searchField { width:320px; max-width:100%; min-height:40px; display:flex; align-items:center; justify-content:flex-end; gap:8px; padding:8px 14px; color:#6b7280; font-size:12px; direction:rtl; background:#fff; border:1px solid var(--ch-color-border); border-radius:8px; }
+.filters { display:flex; gap:8px; flex-wrap:wrap; direction:rtl; }
+.filter,.filterActive { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; font-size:12px; border-radius:20px; white-space:nowrap; }
+.filter { color:#6b7280; border:1px solid var(--ch-color-border); }
+.filterActive { color:#fff; font-weight:600; background:var(--ch-color-primary); }
+.tableWrap { width:100%; overflow-x:auto; background:#fff; border:1px solid var(--ch-color-border); border-radius:8px; }
+.table { min-width:1120px; }
+.tableHeader,.tableRow { display:grid; grid-template-columns:80px 110px 130px 150px 150px 210px 1fr; align-items:center; padding:0 16px; direction:ltr; }
+.tableHeader { min-height:48px; color:#6b7280; font-size:12px; font-weight:600; background:#f7f8f8; border-bottom:1px solid var(--ch-color-border); }
+.tableRow { min-height:64px; border-bottom:1px solid var(--ch-color-border); }
+.tableRow:last-child { border-bottom:0; }
+.tableHeader > span,.tableRow > span,.tableRow > a { direction:rtl; text-align:right; }
+.rowAction { color:var(--ch-color-accent); font-size:12px; font-weight:600; text-decoration:none; }
+.status { justify-self:end; padding:3px 8px; font-size:11px; font-weight:600; border-radius:8px; }
+.done { color:#166534; background:#e2f4e5; }
+.processing { color:#264d99; background:#d9e5fa; }
+.failed { color:#b91c1c; background:#fee2e2; }
+.muted { color:#6b7280; font-size:12px; }
+.value { color:var(--ch-color-text); font-size:13px; font-weight:500; }
+@media (max-width:1050px) { .kpis,.revenueGrid { grid-template-columns:1fr; } .actionTop { grid-template-columns:1fr 1fr; } .actionType,.caseInfo { grid-column:1 / -1; } }
+@media (max-width:820px) { .historyToolbar { align-items:stretch; flex-direction:column; } .searchField { width:100%; } }
+@media (max-width:620px) { .actionTop { grid-template-columns:1fr; } .actionTop > * { justify-self:stretch; } .primaryButton { width:100%; } .readyBadge { justify-self:start; } .operation { align-items:flex-start; flex-direction:column-reverse; } .opLeft { width:auto; } }

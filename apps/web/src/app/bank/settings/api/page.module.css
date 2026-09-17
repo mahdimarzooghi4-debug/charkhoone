@@ -1,0 +1,22 @@
+.wrap { position:relative; min-height:100svh; }
+.backdrop { position:absolute; inset:0; z-index:20; background:rgb(0 0 0 / 42%); }
+.modal { position:fixed; z-index:30; top:50%; left:50%; width:min(560px,calc(100vw - 32px)); display:flex; flex-direction:column; gap:18px; padding:24px; direction:rtl; transform:translate(-50%,-50%); background:#fff; border:1px solid var(--ch-color-border); border-radius:16px; }
+.header { min-height:62px; display:flex; align-items:center; justify-content:space-between; gap:16px; direction:ltr; }
+.close { width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; color:var(--ch-color-primary); font-size:22px; font-weight:700; text-decoration:none; background:#fff; border:1px solid var(--ch-color-border); border-radius:10px; }
+.headerCopy { min-width:0; flex:1; display:flex; flex-direction:column; align-items:flex-end; gap:4px; direction:rtl; text-align:right; }
+.headerCopy h1,.headerCopy p,.status p { margin:0; }
+.headerCopy h1 { color:var(--ch-color-text); font-size:20px; font-weight:700; }
+.headerCopy p { color:#6b7380; font-size:12px; }
+.status { min-height:48px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:0 12px; direction:ltr; background:#f0f9f5; border-radius:10px; }
+.status strong { color:#0e5c40; font-size:13px; font-weight:700; direction:rtl; }
+.status span { color:#59666b; font-size:12px; direction:rtl; }
+.field { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+.field label { width:100%; color:#333d47; font-size:12px; font-weight:700; text-align:right; }
+.input { width:100%; min-height:44px; display:flex; align-items:center; justify-content:flex-end; padding:0 12px; color:#545e66; font-size:12px; background:#fbfcfc; border:1px solid #e0e3e3; border-radius:8px; }
+.note { min-height:44px; display:flex; align-items:center; justify-content:flex-end; padding:0 12px; color:#667075; font-size:11px; text-align:right; background:#f7f9f8; border-radius:8px; }
+.actions { min-height:48px; display:flex; align-items:center; justify-content:space-between; gap:12px; direction:ltr; }
+.action { min-height:48px; display:inline-flex; align-items:center; justify-content:center; padding:0 18px; color:var(--ch-color-primary); font-size:12px; font-weight:700; text-decoration:none; background:#fff; border:1px solid var(--ch-color-border); border-radius:10px; }
+.save { min-width:150px; }
+.test { min-width:120px; }
+.cancel { min-width:100px; }
+@media (max-width:520px) { .modal { gap:14px; padding:20px; } .actions { flex-direction:column-reverse; align-items:stretch; } .action { width:100%; } }

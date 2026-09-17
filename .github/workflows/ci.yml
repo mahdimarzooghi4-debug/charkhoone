@@ -2,13 +2,30 @@ name: ci
 
 on:
   push:
-    branches: [main, "bootstrap/**"]
+    branches: [main, "bootstrap/**", "feature/**"]
   pull_request:
     branches: [main]
 
 jobs:
   backend:
     runs-on: ubuntu-latest
+    env:
+      CHARKHOONE_INTEGRATION_POSTGRES: Host=localhost;Port=5432;Database=charkhoone_integration;Username=postgres;Password=postgres
+      ConnectionStrings__Postgres: Host=localhost;Port=5432;Database=charkhoone_integration;Username=postgres;Password=postgres
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: charkhoone_integration
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d charkhoone_integration"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-dotnet@v5
@@ -20,6 +37,108 @@ jobs:
         run: dotnet build Charkhoone.slnx --configuration Release --no-restore
       - name: Test
         run: dotnet test Charkhoone.slnx --configuration Release --no-build
+      - name: Install EF CLI
+        run: dotnet tool install --global dotnet-ef --version 10.0.12
+      - name: Verify no pending model changes
+        run: >-
+          dotnet ef migrations has-pending-model-changes
+          --project src/Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj
+          --startup-project src/Charkhoone.Api/Charkhoone.Api.csproj
+          --no-build
+          --configuration Release
+      - name: Generate idempotent migration SQL
+        run: |
+          mkdir -p artifacts/database
+          dotnet ef migrations script --idempotent \
+            --project src/Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj \
+            --startup-project src/Charkhoone.Api/Charkhoone.Api.csproj \
+            --no-build \
+            --configuration Release \
+            --output artifacts/database/migrations-idempotent.sql
+          test -s artifacts/database/migrations-idempotent.sql
+          grep -q '__EFMigrationsHistory' artifacts/database/migrations-idempotent.sql
+      - name: Validate database operation scripts
+        shell: bash
+        run: |
+          for script in scripts/database/*.sh; do bash -n "$script"; done
+          python3 -m py_compile scripts/database/*.py
+          role_fixture=$(mktemp)
+          trap 'rm -f "$role_fixture"' EXIT
+          for code in \
+            database_create_privilege \
+            public_schema_create_privilege \
+            role_bypass_rls \
+            role_create_db \
+            role_create_role \
+            role_replication \
+            role_superuser; do
+            printf '%s\t0\n' "$code" >> "$role_fixture"
+          done
+          python3 scripts/database/verify-runtime-role.py "$role_fixture"
+
+      - name: Real PostgreSQL backup and clean restore drill
+        env:
+          POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
+        run: bash scripts/database/ci-backup-restore.sh
+      - name: Smoke tests against restored data (no migrations or reseeding)
+        env:
+          CHARKHOONE_RESTORE_DRILL: "true"
+          CHARKHOONE_INTEGRATION_POSTGRES: Host=localhost;Port=5432;Database=charkhoone_restore_drill;Username=postgres;Password=postgres
+          ConnectionStrings__Postgres: Host=localhost;Port=5432;Database=charkhoone_restore_drill;Username=postgres;Password=postgres
+        run: >-
+          dotnet test tests/Charkhoone.Api.IntegrationTests/Charkhoone.Api.IntegrationTests.csproj
+          --configuration Release --no-build
+          --filter FullyQualifiedName~RestoredDatabaseSmokeTests
+          --logger "trx;LogFileName=restored-smoke.trx"
+          --results-directory artifacts/database/restore-drill
+      - name: Audit financial integrity on source and restored databases
+        env:
+          POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
+        run: bash scripts/database/ci-integrity-audit.sh
+      - name: Collect runtime PostgreSQL evidence
+        env:
+          POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
+        run: bash scripts/database/ci-runtime-evidence.sh
+      - name: Validate query-plan evidence SQL against CI PostgreSQL
+        env:
+          CHARKHOONE_DATABASE_CONNECTION: postgresql://postgres:postgres@localhost:5432/charkhoone_integration
+          CHARKHOONE_DATABASE_ENVIRONMENT: ci
+          CHARKHOONE_QUERY_PLAN_EVIDENCE_PURPOSE: compatibility
+          CHARKHOONE_ALLOW_QUERY_PLAN_EVIDENCE: "true"
+          CHARKHOONE_DATABASE_EVIDENCE_DIR: artifacts/database/query-plans
+        run: bash scripts/database/capture-query-plans.sh
+      - name: Upload integrity audit counts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-integrity-audit-${{ github.sha }}
+          path: artifacts/database/integrity-audit/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload runtime database evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-runtime-evidence-${{ github.sha }}
+          path: artifacts/database/runtime-evidence/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload query-plan compatibility evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-query-plan-compatibility-${{ github.sha }}
+          path: artifacts/database/query-plans/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload restore drill evidence (no database dump)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-restore-drill-${{ github.sha }}
+          path: artifacts/database/restore-drill/
+          if-no-files-found: warn
+          retention-days: 7
 
   web:
     runs-on: ubuntu-latest
@@ -37,3 +156,55 @@ jobs:
         run: npm run typecheck
       - name: Build
         run: npm run build
+
+  mobile:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.13
+      - name: Install
+        run: npm install
+      - name: Typecheck
+        run: npm run typecheck
+
+  release-evidence:
+    runs-on: ubuntu-latest
+    needs: [backend, web, mobile]
+    if: ${{ always() }}
+    steps:
+      - name: Require successful release CI jobs
+        shell: bash
+        env:
+          BACKEND_RESULT: ${{ needs.backend.result }}
+          WEB_RESULT: ${{ needs.web.result }}
+          MOBILE_RESULT: ${{ needs.mobile.result }}
+        run: |
+          test "$BACKEND_RESULT" = success
+          test "$WEB_RESULT" = success
+          test "$MOBILE_RESULT" = success
+      - name: Write SHA-bound release CI evidence
+        shell: bash
+        run: |
+          mkdir -p artifacts/release
+          {
+            printf 'environment=ci\n'
+            printf 'git_sha=%s\n' "$GITHUB_SHA"
+            printf 'workflow=ci\n'
+            printf 'conclusion=success\n'
+            printf 'backend=success\n'
+            printf 'web=success\n'
+            printf 'mobile_typecheck=success\n'
+            printf 'mobile_build=not-claimed\n'
+          } > artifacts/release/release-ci-evidence.txt
+      - name: Upload release CI evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-ci-evidence-${{ github.sha }}
+          path: artifacts/release/release-ci-evidence.txt
+          if-no-files-found: error
+          retention-days: 30

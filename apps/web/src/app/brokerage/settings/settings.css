@@ -1,0 +1,449 @@
+.brokerage-settings {
+  width: min(1220px, 100%);
+  min-height: 100vh;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 32px;
+  color: var(--ch-color-text);
+  direction: rtl;
+}
+
+.brokerage-settings__header {
+  width: 100%;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.brokerage-settings__header > div {
+  width: min(640px, 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  text-align: right;
+}
+
+.brokerage-settings__header h1,
+.brokerage-settings__section-copy h2 {
+  margin: 0;
+  color: #1f2937;
+}
+
+.brokerage-settings__header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.brokerage-settings__header p,
+.brokerage-settings__section-copy p {
+  margin: 0;
+  color: #6b7380;
+  font-size: 12px;
+  line-height: 1.75;
+}
+
+.brokerage-settings__top {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 370px) minmax(0, 1fr);
+  gap: 16px;
+  direction: ltr;
+}
+
+.brokerage-settings__users-summary,
+.brokerage-settings__connection,
+.brokerage-settings__panel-users,
+.brokerage-settings__policy {
+  direction: rtl;
+  background: #fff;
+  border: 1px solid #e5e7e6;
+  border-radius: 16px;
+}
+
+.brokerage-settings__users-summary,
+.brokerage-settings__connection {
+  height: 286px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.brokerage-settings__section-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: right;
+}
+
+.brokerage-settings__section-copy h2 {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.brokerage-settings__user-metrics {
+  min-height: 74px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  direction: ltr;
+}
+
+.brokerage-settings__user-metrics > div,
+.brokerage-settings__connection-metrics > div,
+.brokerage-settings__policy-grid > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  direction: rtl;
+  text-align: right;
+}
+
+.brokerage-settings__user-metrics > div {
+  min-height: 64px;
+  gap: 4px;
+}
+
+.brokerage-settings__user-metrics span,
+.brokerage-settings__connection-metrics span,
+.brokerage-settings__policy-grid span {
+  color: #6b7380;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.brokerage-settings__user-metrics strong,
+.brokerage-settings__connection-metrics strong {
+  color: #1f2937;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+.brokerage-settings__note {
+  min-height: 58px;
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  padding: 10px 12px;
+  color: #6b7380;
+  font-size: 11px;
+  line-height: 1.8;
+  text-align: right;
+  background: #f7faf9;
+  border-radius: 10px;
+}
+
+.brokerage-settings__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.brokerage-settings__button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 24px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 20px;
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: 9px;
+  transition: transform 120ms ease, border-color 120ms ease, background-color 120ms ease;
+}
+
+.brokerage-settings__button:hover {
+  transform: translateY(-1px);
+}
+
+.brokerage-settings__button:focus-visible {
+  outline: 2px solid rgb(255 138 0 / 65%);
+  outline-offset: 2px;
+}
+
+.brokerage-settings__button--primary {
+  color: #fff;
+  background: #0d3b36;
+  border: 1px solid #0d3b36;
+}
+
+.brokerage-settings__button--secondary {
+  color: #0d3b36;
+  background: #fff;
+  border: 1px solid #e5e7e6;
+}
+
+.brokerage-settings__connection-header {
+  min-height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  direction: ltr;
+}
+
+.brokerage-settings__connection-header .brokerage-settings__section-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+  direction: rtl;
+}
+
+.brokerage-settings__status {
+  width: max-content;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 18px;
+  white-space: nowrap;
+  border-radius: 8px;
+}
+
+.brokerage-settings__status--connected {
+  color: #127347;
+  background: #e8f5f0;
+}
+
+.brokerage-settings__status--inactive {
+  color: #6b7380;
+  background: #f2f2f2;
+}
+
+.brokerage-settings__connection-metrics {
+  min-height: 78px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  direction: ltr;
+}
+
+.brokerage-settings__connection-metrics > div {
+  min-height: 64px;
+  gap: 4px;
+}
+
+.brokerage-settings__connection-metrics small {
+  color: #6b7380;
+  font-size: 10px;
+  line-height: 1.7;
+}
+
+.brokerage-settings__connection-footer {
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  direction: ltr;
+}
+
+.brokerage-settings__connection-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brokerage-settings__connection-actions .brokerage-settings__button {
+  width: 116px;
+  padding-inline: 10px;
+}
+
+.brokerage-settings__note--wide {
+  width: min(470px, 100%);
+  min-height: 56px;
+  direction: rtl;
+}
+
+.brokerage-settings__panel-users {
+  min-height: 390px;
+  overflow: hidden;
+}
+
+.brokerage-settings__panel-users-header {
+  min-height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 20px 14px;
+  direction: ltr;
+}
+
+.brokerage-settings__panel-users-header .brokerage-settings__section-copy {
+  min-width: 0;
+  flex: 1 1 auto;
+  direction: rtl;
+}
+
+.brokerage-settings__panel-users-header .brokerage-settings__button {
+  width: 112px;
+  padding-inline: 12px;
+}
+
+.brokerage-settings-table {
+  width: 100%;
+  min-width: 900px;
+  direction: ltr;
+}
+
+.brokerage-settings-table__row {
+  min-height: 58px;
+  display: grid;
+  grid-template-columns: 120px 150px 210px 180px 160px minmax(236px, 1fr);
+  align-items: stretch;
+  color: #1f2937;
+  border-top: 1px solid #e5e7e6;
+}
+
+.brokerage-settings-table__row > span,
+.brokerage-settings-table__row > strong {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  direction: rtl;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.7;
+  text-align: center;
+}
+
+.brokerage-settings-table__row > strong {
+  justify-content: flex-start;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
+
+.brokerage-settings-table__head {
+  min-height: 44px;
+  background: #f9faf9;
+  border-top: 0;
+}
+
+.brokerage-settings-table__head > span {
+  color: #6b7380;
+  font-weight: 700;
+}
+
+.brokerage-settings-table__head > span:last-child {
+  justify-content: flex-start;
+  text-align: right;
+}
+
+.brokerage-settings-table__action a {
+  color: #0d3b36;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.brokerage-settings__policy {
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+}
+
+.brokerage-settings__policy-grid {
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  direction: ltr;
+}
+
+.brokerage-settings__policy-grid > div {
+  gap: 5px;
+}
+
+.brokerage-settings__policy-grid strong {
+  color: #1f2937;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.7;
+}
+
+@media (max-width: 1180px) {
+  .brokerage-settings__top {
+    grid-template-columns: 1fr;
+  }
+
+  .brokerage-settings__users-summary,
+  .brokerage-settings__connection {
+    height: auto;
+  }
+
+  .brokerage-settings__connection-footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .brokerage-settings__note--wide {
+    width: 100%;
+  }
+
+  .brokerage-settings__panel-users {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 860px) {
+  .brokerage-settings {
+    padding: 24px 20px;
+  }
+
+  .brokerage-settings__connection-metrics,
+  .brokerage-settings__policy-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .brokerage-settings {
+    padding: 20px 16px;
+  }
+
+  .brokerage-settings__header h1 {
+    font-size: 23px;
+  }
+
+  .brokerage-settings__connection-header,
+  .brokerage-settings__panel-users-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .brokerage-settings__connection-metrics,
+  .brokerage-settings__policy-grid,
+  .brokerage-settings__user-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .brokerage-settings__connection-actions {
+    width: 100%;
+  }
+
+  .brokerage-settings__connection-actions .brokerage-settings__button {
+    flex: 1 1 0;
+    width: auto;
+  }
+}

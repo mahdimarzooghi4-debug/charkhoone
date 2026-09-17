@@ -5,4 +5,6 @@
   <Project Path="src/Charkhoone.Api/Charkhoone.Api.csproj" />
   <Project Path="src/Charkhoone.Worker/Charkhoone.Worker.csproj" />
   <Project Path="tests/Charkhoone.Domain.Tests/Charkhoone.Domain.Tests.csproj" />
+  <Project Path="tests/Charkhoone.Infrastructure.Tests/Charkhoone.Infrastructure.Tests.csproj" />
+  <Project Path="tests/Charkhoone.Api.IntegrationTests/Charkhoone.Api.IntegrationTests.csproj" />
 </Solution>

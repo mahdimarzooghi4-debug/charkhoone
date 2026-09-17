@@ -1,0 +1,167 @@
+# PostgreSQL production readiness
+
+This runbook defines operational controls for Charkhoone PostgreSQL. It does not apply migrations automatically and does not contain credentials.
+
+## Release gates
+
+Before a staging or production database change:
+
+1. CI must pass the full backend test suite against PostgreSQL.
+2. `dotnet ef migrations has-pending-model-changes` must report no model drift.
+3. Generate and review the complete idempotent SQL migration script.
+4. Confirm the target environment and database endpoint independently from application configuration.
+5. Verify a recent usable backup and the configured point-in-time recovery window.
+6. Record release identifier, migration range, reviewer, start time, and target environment in the deployment record.
+7. Apply to staging first, then run the critical financial smoke tests before considering production.
+8. Run `scripts/database/runtime-role-audit.sql` while connected as the exact application runtime role and require zero violations.
+9. Capture `scripts/database/runtime-observability.sql` before and after the staging migration and investigate unexpected lock waits, idle-in-transaction sessions, connection pressure or dead-row growth.
+10. Capture `scripts/database/pitr-evidence.sql` together with provider-native PITR retention/restore evidence. SQL output alone is not proof of managed-provider recovery capability.
+11. On representative staging data, capture and review the checked-in query-plan suite. CI query plans are compatibility evidence only.
+
+## Runtime connection policy
+
+API and Worker use explicitly named Npgsql data sources so pool telemetry has stable non-secret pool names. Runtime settings are bounded under `Database:Runtime` and may be overridden per environment:
+
+- connection timeout;
+- command timeout;
+- cancellation timeout;
+- minimum/maximum pool size;
+- idle lifetime and pruning interval;
+- absolute connection lifetime;
+- keepalive interval.
+
+Existing explicit connection-string values remain the fallback when an override is absent. Infinite command/connection timeouts are not accepted by the runtime options. `No Reset On Close` is rejected because pooled session state must not leak between borrowers. API and Worker may still use deployment-specific `Application Name` values; otherwise stable service names are assigned.
+
+Choose target values from measured traffic, database capacity, transaction duration and network behavior. The checked-in example values mirror the library defaults; they are not a production sizing claim.
+
+## Runtime role separation
+
+The application runtime role must not be a database owner, superuser, role creator, database creator, replication role, BYPASSRLS role, or holder of CREATE on the application database/public schema. Migration execution uses a separately controlled deployment identity with only the privileges required by the reviewed migration.
+
+Run the least-privilege audit with the actual application role:
+
+```bash
+psql "$CHARKHOONE_DATABASE_CONNECTION" \
+  -v ON_ERROR_STOP=1 \
+  -f scripts/database/runtime-role-audit.sql
+```
+
+Every emitted violation count must be zero. CI runs the query against its disposable PostgreSQL superuser only as compatibility evidence; that result must never be presented as a passing production role audit.
+
+## Observability
+
+OpenTelemetry collects Npgsql command traces plus the Npgsql meter for client-operation and pool metrics. Database pool names are explicitly set to avoid connection strings being used as metric dimensions.
+
+The read-only runtime evidence query intentionally does not emit SQL text or bind/customer values. It reports connection capacity, session state grouped by application name, lock-wait/idle-transaction counts, oldest transaction age, and per-table dead-row/autovacuum/autoanalyze statistics.
+
+Production alerts and thresholds must be based on measured baseline/SLOs. Do not invent universal lock-wait, pool-saturation or dead-row thresholds in source code.
+
+## Backup and recovery requirements
+
+The PostgreSQL platform must provide:
+
+- automated base backups;
+- continuous WAL retention sufficient for the agreed recovery window;
+- encrypted backup storage separate from the application host;
+- documented retention and deletion policy;
+- periodic restore drills into an isolated environment;
+- recorded recovery point objective (RPO) and recovery time objective (RTO) based on measured restore drills, not assumptions.
+
+A backup is not considered operationally verified until a restore has succeeded and application-level integrity checks have passed. `pitr-evidence.sql` records PostgreSQL WAL/archive diagnostics but managed services can implement PITR differently; provider-native retention, restore-window and successful point-in-time restore evidence remains mandatory.
+
+## Migration execution
+
+Use checked-in EF Core migrations only. Do not edit historical generated migrations after they have shipped. Schema corrections are delivered as a new forward migration generated by `dotnet ef`.
+
+Generate reviewable SQL with:
+
+```bash
+scripts/database/generate-idempotent-sql.sh
+```
+
+The guarded migration runner requires an explicit target environment and confirmation:
+
+```bash
+CHARKHOONE_DATABASE_CONNECTION='...' \
+CHARKHOONE_DATABASE_ENVIRONMENT=staging \
+CHARKHOONE_ALLOW_DATABASE_MIGRATION=true \
+scripts/database/migrate.sh
+```
+
+`CHARKHOONE_DATABASE_CONNECTION` for `migrate.sh` is an EF Core/Npgsql connection string. Production additionally requires the explicit production acknowledgement implemented by the script. Connection strings must come from the deployment secret store and must not be committed or printed.
+
+## Staging database rehearsal
+
+For a release-candidate rehearsal, prefer the higher-level staging-only runner. EF Core/Npgsql and `psql` use different connection-string syntaxes, so the runner deliberately requires separate values instead of trying to translate credentials:
+
+```bash
+CHARKHOONE_STAGING_MIGRATION_CONNECTION='Host=...;Database=...;Username=...;Password=...' \
+CHARKHOONE_STAGING_MIGRATION_PSQL_CONNECTION='postgresql://migration-user:...@host/database' \
+CHARKHOONE_STAGING_RUNTIME_PSQL_CONNECTION='postgresql://runtime-user:...@host/database' \
+CHARKHOONE_STAGING_BACKUP_EVIDENCE='/secure/path/provider-backup-evidence.txt' \
+CHARKHOONE_STAGING_RESTORE_EVIDENCE='/secure/path/provider-restore-evidence.txt' \
+CHARKHOONE_EXPECTED_GIT_SHA="$(git rev-parse HEAD)" \
+CHARKHOONE_ALLOW_STAGING_REHEARSAL=true \
+CHARKHOONE_QUERY_PLAN_DATASET_CONFIRMED_REPRESENTATIVE=true \
+scripts/database/staging-rehearsal.sh
+```
+
+The Npgsql migration connection and migration `psql` connection must represent the same authorized migration target. The migration and runtime `psql` identities must be distinct and resolve to the same database name. Before migration, the runtime role must pass the least-privilege audit and baseline observability/PITR SQL evidence is captured.
+
+The runner records hashes of the operator-supplied provider evidence rather than copying its contents, captures migration history before and after, runs the checked-in migration chain, executes post-migration readiness checks, and captures query-plan evidence. It never prints connection strings or resolved role names.
+
+A successful database-only rehearsal is not sufficient for promotion. Authenticated API/application smoke evidence against the same released build and target remains mandatory.
+
+## Post-migration verification
+
+After migration:
+
+- confirm the expected migration ids in `__EFMigrationsHistory`;
+- start API and Worker against the target database and verify readiness;
+- verify authenticated contract reads;
+- exercise a non-destructive reconciliation/query path;
+- verify Outbox and Inbox queries are healthy;
+- inspect error rate, database connection failures, pool pressure, lock waits, long/idle transactions and query latency;
+- review `pg_stat_user_tables` for dead-row growth and autovacuum/autoanalyze activity;
+- confirm no unexpected pending migration/model drift exists in the released build.
+
+Financial production smoke tests must not fabricate payment success or external provider confirmation.
+
+## VACUUM / ANALYZE operating policy
+
+Keep PostgreSQL autovacuum and autoanalyze enabled unless a reviewed platform-specific exception exists. Do not schedule blind full-table `VACUUM FULL` as routine maintenance; it takes stronger locks and must be handled as a planned intervention when evidence justifies it.
+
+Use `runtime-observability.sql` and provider/database monitoring to identify tables with dead-row accumulation or stale maintenance activity. Changes to per-table autovacuum settings require staging evidence and representative write volume. Run `ANALYZE` after unusually large controlled data loads or migrations when planner statistics may be materially stale.
+
+## Rollback strategy
+
+For the financial schema, production rollback is not a blind `database update <old migration>` operation. Before deployment, classify each migration as backward-compatible or requiring coordinated application rollout. When a released migration is wrong, prefer a reviewed forward-fix migration, while restoring from backup/PITR is reserved for data-loss/corruption scenarios under incident control.
+
+Never delete or mutate posted ledger history as a rollback technique.
+
+## Query and index review
+
+Before production load, review query plans for:
+
+- unresolved payment reconciliation;
+- pending/unknown coverage reconciliation;
+- cancellation and normal settlement reconciliation;
+- Outbox dequeue (`ProcessedAtUtc`, chronology);
+- Inbox idempotency lookup;
+- contract detail/audit reads;
+- journal and external-transaction idempotency lookups.
+
+Use `scripts/database/capture-query-plans.sh` on staging only after an operator has confirmed that the dataset volume/distribution is representative. `CHARKHOONE_DATABASE_CONNECTION` for this script must be a `psql`-compatible conninfo string or PostgreSQL URI. It records cardinalities beside `EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON)` output and does not infer a pass/fail latency or index threshold.
+
+The exact Outbox `FOR UPDATE SKIP LOCKED` query is captured as non-executing static `EXPLAIN`; the analyzed companion plan omits row locking so evidence collection does not lock staging messages.
+
+Indexes should be introduced only from observed query patterns and checked into the EF model with a generated migration. Representative-volume query plans must be executed on staging or another approved production-like dataset; CI fixture cardinality is not a performance proof.
+
+## Deferred business-policy items
+
+Database readiness must not silently resolve business rules that are still undefined. In particular:
+
+- the 3% lost-fund-return day-count/daily calculation, rounding and partial allocation remain undefined;
+- partial-payment allocation remains undefined;
+- early-cancellation frozen-principal release timing remains dependent on bank/fund policy;
+- those gaps must remain explicit rather than encoded as database defaults or triggers.
