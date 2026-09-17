@@ -29,6 +29,11 @@ printf 'CI pg_restore elapsed: %s ms\n' "$restore_ms" | tee "$artifacts/restore-
 printf 'Logical CI restore only; not a production RTO/RPO or PITR result.\n' >> "$artifacts/restore-timing.txt"
 cat "$artifacts/restore-timing.txt" >> "$GITHUB_STEP_SUMMARY"
 psql_db "$restore_db" < scripts/database/drill-manifest.sql > "$scratch_dir/restored.manifest"
-cmp "$scratch_dir/source.manifest" "$scratch_dir/restored.manifest"
+if ! cmp "$scratch_dir/source.manifest" "$scratch_dir/restored.manifest"; then
+  # Report structural differences, but redact row contents even for synthetic fixtures.
+  diff -u "$scratch_dir/source.manifest" "$scratch_dir/restored.manifest" \
+    | sed -E 's/(\|)\{.*$/\1[redacted row]/' | head -80 || true
+  exit 1
+fi
 psql_db "$restore_db" < scripts/database/drill-integrity.sql
 printf 'All public table contents, migration history, constraints and indexes match.\n' | tee "$artifacts/integrity.txt"
