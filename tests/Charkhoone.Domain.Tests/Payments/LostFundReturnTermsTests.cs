@@ -15,12 +15,12 @@ public sealed class LostFundReturnTermsTests
         var exposure = LostFundReturnTerms.OpenExposure(
             contractId,
             coveragePaymentId,
-            12_345_678.901234567890123456m,
+            123_456_789.123456789012345678m,
             withdrawnAt);
 
         Assert.Equal(contractId, exposure.ContractId);
         Assert.Equal(coveragePaymentId, exposure.CoveragePaymentId);
-        Assert.Equal(12_345_678.901234567890123456m, exposure.WithdrawnAmount.Rial);
+        Assert.Equal(123_456_789.123456789012345678m, exposure.WithdrawnAmount.Rial);
         Assert.Equal(0.03m, exposure.MonthlyRate);
         Assert.Equal(withdrawnAt, exposure.WithdrawnAtUtc);
     }
