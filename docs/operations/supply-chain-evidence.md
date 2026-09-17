@@ -6,14 +6,16 @@ This phase produces SHA-bound software composition evidence without inventing a 
 
 The `supply-chain-evidence` workflow generates CycloneDX JSON SBOMs for six targets:
 
-- backend source dependency graph after .NET restore/build
-- web source dependency graph from the npm lockfile/install
-- mobile source dependency graph from the npm lockfile/install
+- backend source dependency graph after .NET restore/build, cataloged with Syft
+- web source dependency graph from the lockfile-backed npm install, emitted by native `npm sbom`
+- mobile source dependency graph from the lockfile-backed npm install, cataloged with Syft
 - API container image
 - Worker container image
 - Web container image
 
 Each SBOM is scanned with Grype and the raw JSON result is retained. `summary.tsv` contains component counts and vulnerability counts by reported severity for review. Those counts are evidence only; they are not a pass/fail release verdict because no approved severity threshold is defined in this repository.
+
+The mobile source deliberately uses Syft rather than `npm sbom`. With Node `22.13.1` / npm `10.9.2`, the committed mobile lockfile installs successfully with standard `npm ci`, but native `npm sbom` rejects Expo's installed optional peer override involving `expo-modules-core` and `react-native-worklets`. The workflow does not weaken npm peer validation with `--legacy-peer-deps` or `--force`; it catalogs the already-installed, lockfile-backed mobile tree with the pinned Syft binary instead.
 
 ## Tool identity
 
