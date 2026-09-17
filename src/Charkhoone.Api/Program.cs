@@ -60,7 +60,9 @@ builder.Services
 builder.Services.AddAuthorization();
 builder.Services.AddCharkhooneApiSecurity(builder.Configuration);
 builder.Services.AddSingleton(TimeProvider.System);
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(
+    builder.Configuration,
+    allowDevelopmentMocks: builder.Environment.IsDevelopment());
 builder.Services.AddCharkhooneObservability(builder.Configuration, "Charkhoone.Api");
 builder.Services
     .AddOpenTelemetry()
