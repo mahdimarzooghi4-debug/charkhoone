@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Text;
+using Charkhoone.Infrastructure.Observability;
 using Charkhoone.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
@@ -103,6 +105,14 @@ public sealed class OutboxWorker(
         {
             message.AttemptCount += 1;
 
+            using var activity = CharkhooneTelemetry.StartWorkerActivity(
+                "outbox.publish",
+                ActivityKind.Producer);
+            activity?.SetTag("messaging.system", "rabbitmq");
+            activity?.SetTag("messaging.destination.name", options.Exchange);
+            activity?.SetTag("messaging.operation.name", "publish");
+            activity?.SetTag("messaging.message.type", message.Type);
+
             try
             {
                 using var publishTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -127,6 +137,8 @@ public sealed class OutboxWorker(
 
                 message.ProcessedAtUtc = DateTimeOffset.UtcNow;
                 message.LastError = null;
+                activity?.SetStatus(ActivityStatusCode.Ok);
+                CharkhooneTelemetry.RecordOutboxPublished();
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -135,6 +147,8 @@ public sealed class OutboxWorker(
             catch (Exception exception)
             {
                 message.LastError = TruncateError(exception);
+                activity?.SetStatus(ActivityStatusCode.Error, "publish_failed");
+                CharkhooneTelemetry.RecordOutboxPublishFailure();
 
                 logger.LogWarning(
                     exception,
