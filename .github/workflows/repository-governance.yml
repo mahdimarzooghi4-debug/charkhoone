@@ -25,6 +25,7 @@ jobs:
           python3 scripts/release/verify-ci-dependency-pins.py
           python3 scripts/release/verify-repository-governance.py
           bash -n scripts/release/check-base-image-drift.sh
+          bash -n scripts/release/check-ci-dependency-drift.sh
           python3 scripts/release/verify-dependency-upstream-intake.py
       - name: Write SHA-bound governance evidence
         shell: bash
@@ -35,6 +36,8 @@ jobs:
           dependency_intake_verifier_sha256="$(sha256sum scripts/release/verify-dependency-upstream-intake.py | awk '{print $1}')"
           dependabot_config_sha256="$(sha256sum .github/dependabot.yml | awk '{print $1}')"
           base_image_drift_workflow_sha256="$(sha256sum .github/workflows/base-image-drift.yml | awk '{print $1}')"
+          ci_dependency_drift_workflow_sha256="$(sha256sum .github/workflows/ci-dependency-drift.yml | awk '{print $1}')"
+          ci_dependency_drift_script_sha256="$(sha256sum scripts/release/check-ci-dependency-drift.sh | awk '{print $1}')"
           cat > artifacts/repository-governance/evidence.txt <<EOF
           release_sha=${GITHUB_SHA}
           protected_branch=main
@@ -46,6 +49,8 @@ jobs:
           dependency_intake_verifier_sha256=${dependency_intake_verifier_sha256}
           dependabot_config_sha256=${dependabot_config_sha256}
           base_image_drift_workflow_sha256=${base_image_drift_workflow_sha256}
+          ci_dependency_drift_workflow_sha256=${ci_dependency_drift_workflow_sha256}
+          ci_dependency_drift_script_sha256=${ci_dependency_drift_script_sha256}
           github_branch_protection=enforcement-not-verified-by-workflow
           github_ruleset=enforcement-not-verified-by-workflow
           review_approval_count=organization-policy-not-defined

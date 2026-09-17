@@ -1,0 +1,40 @@
+name: ci-dependency-drift
+
+on:
+  schedule:
+    - cron: '43 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-dependency-drift-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  drift:
+    name: ci-dependency-drift-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Resolve approved CI dependency identities and compare immutable lock
+        id: drift
+        continue-on-error: true
+        shell: bash
+        run: bash scripts/release/check-ci-dependency-drift.sh artifacts/ci-dependency-drift
+      - name: Upload CI dependency drift evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ci-dependency-drift-evidence-${{ github.sha }}-${{ github.run_id }}
+          path: artifacts/ci-dependency-drift/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Fail when CI dependency drift or resolution failure was detected
+        if: ${{ always() }}
+        shell: bash
+        env:
+          DRIFT_OUTCOME: ${{ steps.drift.outcome }}
+        run: test "$DRIFT_OUTCOME" = success
