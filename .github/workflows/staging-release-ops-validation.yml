@@ -1,0 +1,29 @@
+name: staging-release-ops-validation
+
+on:
+  push:
+    branches: ["feature/**"]
+    paths:
+      - "scripts/staging/**"
+      - "docs/staging-release-promotion-evidence-v1.md"
+      - ".github/workflows/staging-release-ops-validation.yml"
+  pull_request:
+    paths:
+      - "scripts/staging/**"
+      - "docs/staging-release-promotion-evidence-v1.md"
+      - ".github/workflows/staging-release-ops-validation.yml"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate staging shell syntax
+        shell: bash
+        run: |
+          for script in scripts/staging/*.sh; do
+            bash -n "$script"
+          done
+      - name: Exercise promotion packet hash bindings
+        shell: bash
+        run: bash scripts/staging/ci-promotion-packet-fixture.sh
