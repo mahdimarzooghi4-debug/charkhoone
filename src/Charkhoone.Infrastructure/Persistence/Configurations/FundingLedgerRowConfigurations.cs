@@ -94,7 +94,15 @@ public sealed class JournalEntryRowConfiguration : IEntityTypeConfiguration<Jour
 {
     public void Configure(EntityTypeBuilder<JournalEntryRow> builder)
     {
-        builder.ToTable("journal_entries");
+        builder.ToTable("journal_entries", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_journal_entries_posted_at_or_after_occurred_at",
+                "\"PostedAtUtc\" >= \"OccurredAtUtc\"");
+            table.HasCheckConstraint(
+                "CK_journal_entries_not_self_reversal",
+                "\"ReversalOfJournalEntryId\" IS NULL OR \"ReversalOfJournalEntryId\" <> \"Id\"");
+        });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
         builder.HasIndex(x => new { x.ReferenceType, x.ReferenceId });
@@ -113,7 +121,12 @@ public sealed class JournalLineRowConfiguration : IEntityTypeConfiguration<Journ
 {
     public void Configure(EntityTypeBuilder<JournalLineRow> builder)
     {
-        builder.ToTable("journal_lines");
+        builder.ToTable("journal_lines", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_journal_lines_one_sided_positive_amount",
+                "(\"DebitRial\" > 0 AND \"CreditRial\" = 0) OR (\"CreditRial\" > 0 AND \"DebitRial\" = 0)");
+        });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.JournalEntryId);
         builder.HasIndex(x => x.LedgerAccountId);
