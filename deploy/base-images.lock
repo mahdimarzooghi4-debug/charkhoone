@@ -1,8 +1,8 @@
 # Generated from registry manifest metadata.
 # Keep Dockerfiles/Compose pinned to these exact immutable references.
 DOTNET_SDK=mcr.microsoft.com/dotnet/sdk:10.0@sha256:2fa828c68761b1b8c23d7662dc134421b9d3b59fe1425fdbc80804e390cdb24d
-DOTNET_ASPNET=mcr.microsoft.com/dotnet/aspnet:10.0@sha256:6a94333d37514e385650a3c81a55e5350b67253dbe136e9cf17e499c35606a8c
-DOTNET_RUNTIME=mcr.microsoft.com/dotnet/runtime:10.0@sha256:8a153b5889d796b6450295b383596b13308c24c230515f8a7770ce1b94e0c460
+DOTNET_ASPNET=mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled-extra@sha256:6385dc0eaef704fad88d3f65c334e791a371bbe448f52ca39d83d2df49251e28
+DOTNET_RUNTIME=mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled-extra@sha256:2345c0abcb73d3f538269860caf794baabab2b2eeed0b1ff1a6ee208d05f287b
 NODE_BUILD=node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32
 WEB_NODE_RUNTIME=gcr.io/distroless/nodejs22-debian13:nonroot@sha256:5e9868cc8ef163e86378ff90de23ca031f5bb8b2023d4f3288a5e740698919d4
 NGINX_RUNTIME=nginx:1.29-alpine@sha256:5616878291a2eed594aee8db4dade5878cf7edcb475e59193904b198d9b830de
