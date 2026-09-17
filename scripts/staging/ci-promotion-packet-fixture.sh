@@ -83,7 +83,7 @@ run_packet() {
   CHARKHOONE_RELEASE_CI_EVIDENCE="$ci_evidence" \
   CHARKHOONE_ALLOW_STAGING_PROMOTION_PACKET=true \
   CHARKHOONE_STAGING_PROMOTION_PACKET_DIR="$packet_root" \
-  scripts/staging/build-promotion-packet.sh
+  bash scripts/staging/build-promotion-packet.sh
 }
 
 run_packet >/dev/null
