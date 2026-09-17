@@ -17,13 +17,19 @@ cd "$ROOT_DIR"
   exit 1
 }
 
-for command_name in curl sha256sum awk grep sed date; do
+for command_name in git curl sha256sum awk grep sed date tr; do
   command -v "$command_name" >/dev/null 2>&1 || { echo "$command_name is required" >&2; exit 1; }
 done
 
 expected_sha="${CHARKHOONE_EXPECTED_GIT_SHA,,}"
 if [[ ! "$expected_sha" =~ ^[0-9a-f]{40}$ ]]; then
   echo 'CHARKHOONE_EXPECTED_GIT_SHA must be a full 40-character hexadecimal git SHA.' >&2
+  exit 1
+fi
+
+actual_sha="$(git rev-parse HEAD | tr '[:upper:]' '[:lower:]')"
+if [[ "$actual_sha" != "$expected_sha" ]]; then
+  echo 'Checked-out git SHA does not match CHARKHOONE_EXPECTED_GIT_SHA; application smoke blocked.' >&2
   exit 1
 fi
 
@@ -149,6 +155,7 @@ request authenticated_audit "/api/v1/contracts/$CHARKHOONE_STAGING_CONTRACT_ID/a
 {
   printf 'environment=staging\n'
   printf 'git_sha=%s\n' "$expected_sha"
+  printf 'smoke_runner_git_sha=matched\n'
   printf 'api_release_header=matched\n'
   printf 'api_liveness=passed\n'
   printf 'api_readiness=passed\n'
