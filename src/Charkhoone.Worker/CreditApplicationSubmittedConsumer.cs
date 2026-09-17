@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using Charkhoone.Application.IdentityVerification;
+using Charkhoone.Infrastructure.Observability;
 using Charkhoone.Infrastructure.Persistence;
 using Charkhoone.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
@@ -96,6 +98,15 @@ public sealed class CreditApplicationSubmittedConsumer(
                 return;
             }
 
+            using var activity = CharkhooneTelemetry.StartWorkerActivity(
+                "credit-application.submitted.consume",
+                ActivityKind.Consumer);
+            activity?.SetTag("messaging.system", "rabbitmq");
+            activity?.SetTag("messaging.destination.name", options.IdentityQueue);
+            activity?.SetTag("messaging.operation.name", "process");
+            activity?.SetTag("messaging.message.type", SubmittedEventType);
+            activity?.SetTag("messaging.rabbitmq.redelivered", delivery.Redelivered);
+
             var payload = Encoding.UTF8.GetString(delivery.Body.ToArray());
 
             try
@@ -104,6 +115,8 @@ public sealed class CreditApplicationSubmittedConsumer(
 
                 if (outcome == DeliveryHandlingOutcome.Retry)
                 {
+                    activity?.SetTag("charkhoone.processing.outcome", "retry");
+                    CharkhooneTelemetry.RecordInboxRetry();
                     await Task.Delay(options.RetryDelay, cancellationToken);
                     await channel.BasicNackAsync(
                         delivery.DeliveryTag,
@@ -113,6 +126,9 @@ public sealed class CreditApplicationSubmittedConsumer(
                     return;
                 }
 
+                activity?.SetTag("charkhoone.processing.outcome", "acknowledge");
+                activity?.SetStatus(ActivityStatusCode.Ok);
+                CharkhooneTelemetry.RecordInboxProcessed();
                 await channel.BasicAckAsync(
                     delivery.DeliveryTag,
                     multiple: false,
@@ -124,6 +140,9 @@ public sealed class CreditApplicationSubmittedConsumer(
             }
             catch (Exception exception)
             {
+                activity?.SetStatus(ActivityStatusCode.Error, "processing_failed");
+                CharkhooneTelemetry.RecordInboxRetry();
+
                 logger.LogError(
                     exception,
                     "Processing submitted credit application message {MessageId} failed.",
