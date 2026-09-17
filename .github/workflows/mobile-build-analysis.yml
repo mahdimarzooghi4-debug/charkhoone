@@ -1,0 +1,49 @@
+name: mobile-build-analysis
+
+on:
+  push:
+    branches: [feature/mobile-build-release-evidence-v1]
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.13.1
+      - name: Install from lockfile
+        run: npm ci --no-audit --no-fund
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Export Android production bundle
+        env:
+          CI: "1"
+        run: npx expo export --platform android --output-dir dist/android
+      - name: Export iOS production bundle
+        env:
+          CI: "1"
+        run: npx expo export --platform ios --output-dir dist/ios
+      - name: Verify exports
+        shell: bash
+        run: |
+          test -d dist/android
+          test -d dist/ios
+          android_files=$(find dist/android -type f | wc -l)
+          ios_files=$(find dist/ios -type f | wc -l)
+          test "$android_files" -gt 0
+          test "$ios_files" -gt 0
+          printf 'android_export_files=%s\nios_export_files=%s\n' "$android_files" "$ios_files" | tee ../../mobile-build-analysis.txt
+      - name: Upload analysis evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: mobile-build-analysis-${{ github.sha }}
+          path: mobile-build-analysis.txt
+          if-no-files-found: error
+          retention-days: 7
