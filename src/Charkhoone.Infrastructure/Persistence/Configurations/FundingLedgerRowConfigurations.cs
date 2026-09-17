@@ -33,7 +33,7 @@ public sealed class TenantContributionRowConfiguration : IEntityTypeConfiguratio
         builder.ToTable("tenant_contributions");
         builder.HasKey(x => x.ContractId);
         builder.HasIndex(x => x.FundingAllocationId).IsUnique();
-        builder.Property(x => x.InitialAmountRial).HasPrecision(38, 18).IsRequired();
+        builder.Property(x => x.InitialAmountRial).HasColumnType("numeric").IsRequired();
         builder.Property(x => x.FundReference).HasMaxLength(256).IsRequired();
 
         builder.HasOne<FundingAllocationRow>()
@@ -60,7 +60,7 @@ public sealed class ExternalTransactionRowConfiguration : IEntityTypeConfigurati
         builder.Property(x => x.OperationType).HasMaxLength(128).IsRequired();
         builder.Property(x => x.AggregateType).HasMaxLength(64).IsRequired();
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
-        builder.Property(x => x.AmountRial).HasPrecision(38, 18).IsRequired();
+        builder.Property(x => x.AmountRial).HasColumnType("numeric").IsRequired();
         builder.Property(x => x.Currency).HasMaxLength(8).IsRequired();
         builder.Property(x => x.IdempotencyKey).HasMaxLength(256).IsRequired();
         builder.Property(x => x.ExternalReference).HasMaxLength(256);
@@ -114,8 +114,8 @@ public sealed class JournalLineRowConfiguration : IEntityTypeConfiguration<Journ
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.JournalEntryId);
         builder.HasIndex(x => x.LedgerAccountId);
-        builder.Property(x => x.DebitRial).HasPrecision(38, 18).IsRequired();
-        builder.Property(x => x.CreditRial).HasPrecision(38, 18).IsRequired();
+        builder.Property(x => x.DebitRial).HasColumnType("numeric").IsRequired();
+        builder.Property(x => x.CreditRial).HasColumnType("numeric").IsRequired();
 
         builder.HasOne<JournalEntryRow>()
             .WithMany()
