@@ -6,7 +6,8 @@ var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddInfrastructure(
     builder.Configuration,
-    allowDevelopmentMocks: builder.Environment.IsDevelopment());
+    allowDevelopmentMocks: builder.Environment.IsDevelopment(),
+    databasePoolName: "Charkhoone.Worker.Postgres");
 builder.Services.AddCharkhooneObservability(builder.Configuration, "Charkhoone.Worker");
 builder.Services.AddSingleton(TimeProvider.System);
 
