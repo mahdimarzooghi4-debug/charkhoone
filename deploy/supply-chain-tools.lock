@@ -1,0 +1,6 @@
+# Immutable Linux amd64 release assets used for SBOM and vulnerability evidence.
+# Versions and archive SHA-256 values are reviewed together; do not replace with latest URLs.
+SYFT_VERSION=1.52.0
+SYFT_LINUX_AMD64_SHA256=caeedb81fb0491615f1ebd1761e4145d41ee86dd2cc7bf80669f9f5ad9d6133d
+GRYPE_VERSION=0.119.0
+GRYPE_LINUX_AMD64_SHA256=3fa2dc4b924621ab65404cf08d0b8438d896d80ab949c9d5a4ca283c36004c9b
