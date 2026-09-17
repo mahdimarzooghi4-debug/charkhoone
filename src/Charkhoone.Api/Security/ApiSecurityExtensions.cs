@@ -23,7 +23,7 @@ public static class ApiSecurityExtensions
             {
                 if (context.Lease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
                 {
-                    context.HttpContext.Response.Headers.RetryAfter = Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds))
+                    context.HttpContext.Response.Headers["Retry-After"] = Math.Max(1, (int)Math.Ceiling(retryAfter.TotalSeconds))
                         .ToString(CultureInfo.InvariantCulture);
                 }
 
@@ -69,14 +69,14 @@ public static class ApiSecurityExtensions
         {
             context.Response.OnStarting(() =>
             {
-                context.Response.Headers.XContentTypeOptions = "nosniff";
-                context.Response.Headers.XFrameOptions = "DENY";
-                context.Response.Headers.ReferrerPolicy = "no-referrer";
+                context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+                context.Response.Headers["X-Frame-Options"] = "DENY";
+                context.Response.Headers["Referrer-Policy"] = "no-referrer";
 
                 if (context.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase))
                 {
-                    context.Response.Headers.CacheControl = "no-store";
-                    context.Response.Headers.Pragma = "no-cache";
+                    context.Response.Headers["Cache-Control"] = "no-store";
+                    context.Response.Headers["Pragma"] = "no-cache";
                 }
 
                 return Task.CompletedTask;
