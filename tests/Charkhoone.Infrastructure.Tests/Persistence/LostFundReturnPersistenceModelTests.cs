@@ -38,13 +38,11 @@ public sealed class LostFundReturnPersistenceModelTests
         var rate = entity.FindProperty(nameof(LostFundReturnRow.MonthlyRate));
         var calculated = entity.FindProperty(nameof(LostFundReturnRow.CalculatedReturnRial));
 
-        Assert.Equal(38, withdrawn!.GetPrecision());
-        Assert.Equal(18, withdrawn.GetScale());
+        AssertUnscaledNumeric(withdrawn);
         Assert.Equal(10, rate!.GetPrecision());
         Assert.Equal(8, rate.GetScale());
-        Assert.Equal(38, calculated!.GetPrecision());
-        Assert.Equal(18, calculated.GetScale());
-        Assert.True(calculated.IsNullable);
+        AssertUnscaledNumeric(calculated);
+        Assert.True(calculated!.IsNullable);
         Assert.True(entity.FindProperty(nameof(LostFundReturnRow.ReplacedAtUtc))!.IsNullable);
         Assert.True(entity.FindProperty(nameof(LostFundReturnRow.CalculationPeriodEndUtc))!.IsNullable);
         Assert.True(entity.FindProperty(nameof(LostFundReturnRow.CalculationPolicyVersion))!.IsNullable);
@@ -61,6 +59,14 @@ public sealed class LostFundReturnPersistenceModelTests
             property.Name.Contains("FrozenPrincipal", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(entity.GetProperties(), property =>
             property.Name.Contains("JournalEntry", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static void AssertUnscaledNumeric(Microsoft.EntityFrameworkCore.Metadata.IProperty? property)
+    {
+        Assert.NotNull(property);
+        Assert.Equal("numeric", property!.GetColumnType());
+        Assert.Null(property.GetPrecision());
+        Assert.Null(property.GetScale());
     }
 
     private static CharkhooneDbContext CreateContext()
