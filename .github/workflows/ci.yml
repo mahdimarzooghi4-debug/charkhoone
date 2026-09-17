@@ -101,7 +101,7 @@ jobs:
         run: bash scripts/database/ci-runtime-evidence.sh
       - name: Validate query-plan evidence SQL against CI PostgreSQL
         env:
-          CHARKHOONE_DATABASE_CONNECTION: Host=localhost;Port=5432;Database=charkhoone_integration;Username=postgres;Password=postgres
+          CHARKHOONE_DATABASE_CONNECTION: postgresql://postgres:postgres@localhost:5432/charkhoone_integration
           CHARKHOONE_DATABASE_ENVIRONMENT: ci
           CHARKHOONE_QUERY_PLAN_EVIDENCE_PURPOSE: compatibility
           CHARKHOONE_ALLOW_QUERY_PLAN_EVIDENCE: "true"
