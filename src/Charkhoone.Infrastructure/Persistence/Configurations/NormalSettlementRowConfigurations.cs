@@ -15,6 +15,8 @@ public sealed class NormalSettlementRowConfiguration : IEntityTypeConfiguration<
         builder.HasIndex(x => x.TenantExternalTransactionId).IsUnique();
         builder.HasIndex(x => x.BankJournalEntryId).IsUnique();
         builder.HasIndex(x => x.TenantJournalEntryId).IsUnique();
+        builder.HasIndex(x => new { x.BankPrincipalStatus, x.UpdatedAtUtc, x.Id });
+        builder.HasIndex(x => new { x.TenantResidualStatus, x.UpdatedAtUtc, x.Id });
 
         builder.Property(x => x.BankId).HasMaxLength(128).IsRequired();
         builder.Property(x => x.FundReference).HasMaxLength(256).IsRequired();
