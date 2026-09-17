@@ -12,21 +12,36 @@ builder.Services.AddProblemDetails(options =>
         context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
 });
 
+var authenticationAuthority = builder.Configuration["Authentication:Authority"]?.Trim();
+var authenticationAudience = builder.Configuration["Authentication:Audience"]?.Trim();
+
+if (!builder.Environment.IsDevelopment())
+{
+    if (string.IsNullOrWhiteSpace(authenticationAuthority))
+    {
+        throw new InvalidOperationException(
+            "Authentication:Authority must be configured outside the Development environment.");
+    }
+
+    if (string.IsNullOrWhiteSpace(authenticationAudience))
+    {
+        throw new InvalidOperationException(
+            "Authentication:Audience must be configured outside the Development environment.");
+    }
+}
+
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        var authority = builder.Configuration["Authentication:Authority"];
-        var audience = builder.Configuration["Authentication:Audience"];
-
-        if (!string.IsNullOrWhiteSpace(authority))
+        if (!string.IsNullOrWhiteSpace(authenticationAuthority))
         {
-            options.Authority = authority;
+            options.Authority = authenticationAuthority;
         }
 
-        if (!string.IsNullOrWhiteSpace(audience))
+        if (!string.IsNullOrWhiteSpace(authenticationAudience))
         {
-            options.Audience = audience;
+            options.Audience = authenticationAudience;
         }
 
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
