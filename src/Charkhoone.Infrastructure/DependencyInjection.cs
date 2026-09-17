@@ -10,6 +10,7 @@ using Charkhoone.Infrastructure.CreditEligibility;
 using Charkhoone.Infrastructure.IdentityVerification;
 using Charkhoone.Infrastructure.Payments;
 using Charkhoone.Infrastructure.Persistence;
+using Charkhoone.Infrastructure.Persistence.Interceptors;
 using Charkhoone.Infrastructure.TenantContributionFunding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -24,11 +25,14 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         var connectionString = configuration.GetConnectionString("Postgres");
+        services.AddScoped<LostFundReturnTrackingInterceptor>();
 
         if (!string.IsNullOrWhiteSpace(connectionString))
         {
-            services.AddDbContext<CharkhooneDbContext>(options =>
-                options.UseNpgsql(connectionString));
+            services.AddDbContext<CharkhooneDbContext>((provider, options) =>
+                options
+                    .UseNpgsql(connectionString)
+                    .AddInterceptors(provider.GetRequiredService<LostFundReturnTrackingInterceptor>()));
         }
 
         services.AddScoped<IUserIdentityLookup, EfUserIdentityLookup>();
