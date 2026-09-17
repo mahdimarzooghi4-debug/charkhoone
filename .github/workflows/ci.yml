@@ -99,6 +99,14 @@ jobs:
         env:
           POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
         run: bash scripts/database/ci-runtime-evidence.sh
+      - name: Validate query-plan evidence SQL against CI PostgreSQL
+        env:
+          CHARKHOONE_DATABASE_CONNECTION: Host=localhost;Port=5432;Database=charkhoone_integration;Username=postgres;Password=postgres
+          CHARKHOONE_DATABASE_ENVIRONMENT: ci
+          CHARKHOONE_QUERY_PLAN_EVIDENCE_PURPOSE: compatibility
+          CHARKHOONE_ALLOW_QUERY_PLAN_EVIDENCE: "true"
+          CHARKHOONE_DATABASE_EVIDENCE_DIR: artifacts/database/query-plans
+        run: bash scripts/database/capture-query-plans.sh
       - name: Upload integrity audit counts
         if: always()
         uses: actions/upload-artifact@v4
@@ -113,6 +121,14 @@ jobs:
         with:
           name: database-runtime-evidence-${{ github.sha }}
           path: artifacts/database/runtime-evidence/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload query-plan compatibility evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-query-plan-compatibility-${{ github.sha }}
+          path: artifacts/database/query-plans/
           if-no-files-found: warn
           retention-days: 7
       - name: Upload restore drill evidence (no database dump)
