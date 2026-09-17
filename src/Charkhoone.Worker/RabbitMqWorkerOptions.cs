@@ -15,7 +15,9 @@ public sealed class RabbitMqWorkerOptions
     public string VirtualHost { get; init; } = "/";
     public string Exchange { get; init; } = "charkhoone.events";
     public string IdentityQueue { get; init; } = "charkhoone.identity-verification";
+    public string IdentityReviewQueue { get; init; } = "charkhoone.identity-verification.review";
     public ushort PrefetchCount { get; init; } = 4;
+    public int MaxDeliveryAttempts { get; init; } = 5;
     public int OutboxBatchSize { get; init; } = 32;
     public int OutboxPollMilliseconds { get; init; } = 1000;
     public int RetryDelayMilliseconds { get; init; } = 30000;
@@ -40,7 +42,9 @@ public sealed class RabbitMqWorkerOptions
             VirtualHost = RequiredOrDefault(section["VirtualHost"], "/"),
             Exchange = RequiredOrDefault(section["Exchange"], "charkhoone.events"),
             IdentityQueue = RequiredOrDefault(section["IdentityQueue"], "charkhoone.identity-verification"),
+            IdentityReviewQueue = RequiredOrDefault(section["IdentityReviewQueue"], "charkhoone.identity-verification.review"),
             PrefetchCount = (ushort)PositiveInt(section["PrefetchCount"], 4, 1, ushort.MaxValue),
+            MaxDeliveryAttempts = PositiveInt(section["MaxDeliveryAttempts"], 5, 1, 100),
             OutboxBatchSize = PositiveInt(section["OutboxBatchSize"], 32, 1, 500),
             OutboxPollMilliseconds = PositiveInt(section["OutboxPollMilliseconds"], 1000, 100, 60000),
             RetryDelayMilliseconds = PositiveInt(section["RetryDelayMilliseconds"], 30000, 1000, 600000),
