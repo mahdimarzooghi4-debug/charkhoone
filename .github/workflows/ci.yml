@@ -14,7 +14,7 @@ jobs:
       ConnectionStrings__Postgres: Host=localhost;Port=5432;Database=charkhoone_integration;Username=postgres;Password=postgres
     services:
       postgres:
-        image: postgres:17-alpine
+        image: postgres:17-alpine@sha256:18cfe3ef5e6815560c98237d6216d1e5119702fb0f3894c8785dd58b8bbe5d73
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -27,8 +27,10 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-dotnet@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Verify immutable CI dependency lock
+        run: python3 scripts/release/verify-ci-dependency-pins.py
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
           dotnet-version: 10.0.x
       - name: Restore
@@ -109,7 +111,7 @@ jobs:
         run: bash scripts/database/capture-query-plans.sh
       - name: Upload integrity audit counts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: database-integrity-audit-${{ github.sha }}
           path: artifacts/database/integrity-audit/
@@ -117,7 +119,7 @@ jobs:
           retention-days: 7
       - name: Upload runtime database evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: database-runtime-evidence-${{ github.sha }}
           path: artifacts/database/runtime-evidence/
@@ -125,7 +127,7 @@ jobs:
           retention-days: 7
       - name: Upload query-plan compatibility evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: database-query-plan-compatibility-${{ github.sha }}
           path: artifacts/database/query-plans/
@@ -133,7 +135,7 @@ jobs:
           retention-days: 7
       - name: Upload restore drill evidence (no database dump)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: database-restore-drill-${{ github.sha }}
           path: artifacts/database/restore-drill/
@@ -146,8 +148,8 @@ jobs:
       run:
         working-directory: apps/web
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
       - name: Install
@@ -163,8 +165,8 @@ jobs:
       run:
         working-directory: apps/mobile
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22.13
       - name: Install
@@ -187,10 +189,12 @@ jobs:
           test "$BACKEND_RESULT" = success
           test "$WEB_RESULT" = success
           test "$MOBILE_RESULT" = success
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - name: Write SHA-bound release CI evidence
         shell: bash
         run: |
           mkdir -p artifacts/release
+          ci_dependency_lock_sha256="$(sha256sum deploy/ci-dependencies.lock | awk '{print $1}')"
           {
             printf 'environment=ci\n'
             printf 'git_sha=%s\n' "$GITHUB_SHA"
@@ -200,11 +204,14 @@ jobs:
             printf 'web=success\n'
             printf 'mobile_typecheck=success\n'
             printf 'mobile_build=not-claimed\n'
+            printf 'ci_dependency_pins=verified\n'
+            printf 'ci_dependency_lock_sha256=%s\n' "$ci_dependency_lock_sha256"
           } > artifacts/release/release-ci-evidence.txt
+          cp deploy/ci-dependencies.lock artifacts/release/ci-dependencies.lock
       - name: Upload release CI evidence
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: release-ci-evidence-${{ github.sha }}
-          path: artifacts/release/release-ci-evidence.txt
+          path: artifacts/release/
           if-no-files-found: error
           retention-days: 30
