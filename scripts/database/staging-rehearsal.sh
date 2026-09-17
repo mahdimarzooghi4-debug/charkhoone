@@ -4,8 +4,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-: "${CHARKHOONE_STAGING_MIGRATION_CONNECTION:?staging migration connection is required}"
-: "${CHARKHOONE_STAGING_RUNTIME_CONNECTION:?staging runtime connection is required}"
+: "${CHARKHOONE_STAGING_MIGRATION_CONNECTION:?Npgsql staging migration connection is required}"
+: "${CHARKHOONE_STAGING_MIGRATION_PSQL_CONNECTION:?psql-compatible staging migration conninfo/URI is required}"
+: "${CHARKHOONE_STAGING_RUNTIME_PSQL_CONNECTION:?psql-compatible staging runtime conninfo/URI is required}"
 : "${CHARKHOONE_STAGING_BACKUP_EVIDENCE:?path to provider-native backup/PITR evidence is required}"
 : "${CHARKHOONE_STAGING_RESTORE_EVIDENCE:?path to provider-native restore-drill evidence is required}"
 : "${CHARKHOONE_EXPECTED_GIT_SHA:?expected release git SHA is required}"
@@ -36,8 +37,8 @@ if [[ "$actual_sha" != "$CHARKHOONE_EXPECTED_GIT_SHA" ]]; then
   exit 1
 fi
 
-migration_role="$(psql "$CHARKHOONE_STAGING_MIGRATION_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 -c 'SELECT current_user')"
-runtime_role="$(psql "$CHARKHOONE_STAGING_RUNTIME_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 -c 'SELECT current_user')"
+migration_role="$(psql "$CHARKHOONE_STAGING_MIGRATION_PSQL_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 -c 'SELECT current_user')"
+runtime_role="$(psql "$CHARKHOONE_STAGING_RUNTIME_PSQL_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 -c 'SELECT current_user')"
 if [[ -z "$migration_role" || -z "$runtime_role" ]]; then
   echo 'Could not resolve staging database roles.' >&2
   exit 1
@@ -47,10 +48,10 @@ if [[ "$migration_role" == "$runtime_role" ]]; then
   exit 1
 fi
 
-migration_database="$(psql "$CHARKHOONE_STAGING_MIGRATION_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 -c 'SELECT current_database()')"
-runtime_database="$(psql "$CHARKHOONE_STAGING_RUNTIME_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 -c 'SELECT current_database()')"
+migration_database="$(psql "$CHARKHOONE_STAGING_MIGRATION_PSQL_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 -c 'SELECT current_database()')"
+runtime_database="$(psql "$CHARKHOONE_STAGING_RUNTIME_PSQL_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 -c 'SELECT current_database()')"
 if [[ "$migration_database" != "$runtime_database" ]]; then
-  echo 'Migration and runtime connections resolve to different database names; rehearsal blocked.' >&2
+  echo 'Migration and runtime psql connections resolve to different database names; rehearsal blocked.' >&2
   exit 1
 fi
 
@@ -61,10 +62,10 @@ mkdir -p "$output_dir/pre-migration"
 capture_migration_history() {
   local output=$1
   local exists
-  exists="$(psql "$CHARKHOONE_STAGING_MIGRATION_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 \
+  exists="$(psql "$CHARKHOONE_STAGING_MIGRATION_PSQL_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 \
     -c "SELECT to_regclass('public.\"__EFMigrationsHistory\"') IS NOT NULL")"
   if [[ "$exists" == t ]]; then
-    psql "$CHARKHOONE_STAGING_MIGRATION_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 \
+    psql "$CHARKHOONE_STAGING_MIGRATION_PSQL_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 \
       -c 'SELECT "MigrationId" FROM "__EFMigrationsHistory" ORDER BY "MigrationId"' > "$output"
   else
     printf '<no-migration-history-table>\n' > "$output"
@@ -79,7 +80,7 @@ run_runtime_read_only() {
     echo "SET LOCAL statement_timeout = '30s';"
     cat "$script"
     echo 'COMMIT;'
-  } | psql "$CHARKHOONE_STAGING_RUNTIME_CONNECTION" -X -q -A -t -F $'\t' \
+  } | psql "$CHARKHOONE_STAGING_RUNTIME_PSQL_CONNECTION" -X -q -A -t -F $'\t' \
       -v ON_ERROR_STOP=1 > "$output"
   test -s "$output"
 }
@@ -105,13 +106,13 @@ scripts/database/migrate.sh
 
 capture_migration_history "$output_dir/migrations-after.txt"
 
-CHARKHOONE_DATABASE_CONNECTION="$CHARKHOONE_STAGING_RUNTIME_CONNECTION" \
+CHARKHOONE_DATABASE_CONNECTION="$CHARKHOONE_STAGING_RUNTIME_PSQL_CONNECTION" \
 CHARKHOONE_DATABASE_ENVIRONMENT=staging \
 CHARKHOONE_ALLOW_DATABASE_READINESS_AUDIT=true \
 CHARKHOONE_DATABASE_EVIDENCE_DIR="$output_dir/readiness" \
 scripts/database/target-readiness.sh
 
-CHARKHOONE_DATABASE_CONNECTION="$CHARKHOONE_STAGING_RUNTIME_CONNECTION" \
+CHARKHOONE_DATABASE_CONNECTION="$CHARKHOONE_STAGING_RUNTIME_PSQL_CONNECTION" \
 CHARKHOONE_DATABASE_ENVIRONMENT=staging \
 CHARKHOONE_ALLOW_QUERY_PLAN_EVIDENCE=true \
 CHARKHOONE_QUERY_PLAN_EVIDENCE_PURPOSE=staging \
@@ -122,6 +123,7 @@ scripts/database/capture-query-plans.sh
 {
   printf 'environment=staging\n'
   printf 'git_sha=%s\n' "$actual_sha"
+  printf 'connection_formats=separate-npgsql-migration-and-psql-evidence-connections\n'
   printf 'migration_runtime_roles_distinct=true\n'
   printf 'migration_runtime_database_name_match=true\n'
   printf 'pre_migration_runtime_role=passed\n'
