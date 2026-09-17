@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Charkhoone.Api.Endpoints;
 using Charkhoone.Api.Health;
+using Charkhoone.Api.Security;
 using Charkhoone.Infrastructure;
 using Charkhoone.Infrastructure.Observability;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -57,6 +58,7 @@ builder.Services
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     });
 builder.Services.AddAuthorization();
+builder.Services.AddCharkhooneApiSecurity(builder.Configuration);
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddCharkhooneObservability(builder.Configuration, "Charkhoone.Api");
@@ -72,6 +74,7 @@ builder.Services
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.UseCharkhooneApiSecurityHeaders();
 app.Use(async (context, next) =>
 {
     context.Response.OnStarting(() =>
@@ -87,6 +90,7 @@ app.Use(async (context, next) =>
     await next();
 });
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 var livenessOptions = new HealthCheckOptions
