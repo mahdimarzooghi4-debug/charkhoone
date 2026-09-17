@@ -26,7 +26,8 @@ public static class ObservabilityServiceCollectionExtensions
             {
                 tracing
                     .AddSource(CharkhooneTelemetry.ActivitySourceName)
-                    .AddHttpClientInstrumentation();
+                    .AddHttpClientInstrumentation()
+                    .AddNpgsql();
 
                 if (otlpEndpoint is not null)
                 {
@@ -37,6 +38,7 @@ public static class ObservabilityServiceCollectionExtensions
             {
                 metrics
                     .AddMeter(CharkhooneTelemetry.MeterName)
+                    .AddMeter("Npgsql")
                     .AddRuntimeInstrumentation()
                     .AddHttpClientInstrumentation();
 
