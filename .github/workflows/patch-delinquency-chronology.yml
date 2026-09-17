@@ -1,0 +1,65 @@
+name: patch-delinquency-chronology
+
+on:
+  push:
+    branches:
+      - feature/delinquency-chronology-hardening-v1
+    paths:
+      - .github/workflows/patch-delinquency-chronology.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: feature/delinquency-chronology-hardening-v1
+      - name: Patch chronological delinquency handling
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path('src/Charkhoone.Infrastructure/Payments/EfPaymentService.cs')
+          text = path.read_text()
+
+          old = '''        if (occurredAtUtc < obligation.DueAtUtc || contract.Status != LeaseContractStatus.Active)\n        {\n            var view = await ToObligationViewAsync(obligation, contract.Id, cancellationToken);\n            await transaction.RollbackAsync(cancellationToken);\n            return new CloseMonthlyObligationResult(CloseMonthlyObligationOutcome.InvalidState, view);\n        }\n\n        var instructions = await dbContext.PaymentInstructions'''
+          new = '''        if (occurredAtUtc < obligation.DueAtUtc || contract.Status != LeaseContractStatus.Active)\n        {\n            var view = await ToObligationViewAsync(obligation, contract.Id, cancellationToken);\n            await transaction.RollbackAsync(cancellationToken);\n            return new CloseMonthlyObligationResult(CloseMonthlyObligationOutcome.InvalidState, view);\n        }\n\n        if (!await CanCloseChronologicallyAsync(obligation, cancellationToken))\n        {\n            var view = await ToObligationViewAsync(obligation, contract.Id, cancellationToken);\n            await transaction.RollbackAsync(cancellationToken);\n            return new CloseMonthlyObligationResult(CloseMonthlyObligationOutcome.InvalidState, view);\n        }\n\n        var instructions = await dbContext.PaymentInstructions'''
+          if old not in text:
+              raise SystemExit('close chronology insertion point not found')
+          text = text.replace(old, new, 1)
+
+          old = '''            if (allPaid)\n            {\n                await MarkObligationPaidAsync(lockedObligation, lockedContract, occurredAtUtc, cancellationToken);\n            }'''
+          new = '''            if (allPaid\n                && await CanCloseChronologicallyAsync(lockedObligation, cancellationToken))\n            {\n                await MarkObligationPaidAsync(lockedObligation, lockedContract, occurredAtUtc, cancellationToken);\n            }'''
+          if old not in text:
+              raise SystemExit('reconcile paid closure insertion point not found')
+          text = text.replace(old, new, 1)
+
+          old = '''        obligation.Status = MonthlyObligationStatus.Missed;\n        obligation.ClosedAtUtc = occurredAtUtc;\n        obligation.UpdatedAtUtc = occurredAtUtc;\n        delinquency.ConsecutiveMissedMonths = checked(delinquency.ConsecutiveMissedMonths + 1);\n        delinquency.UpdatedAtUtc = occurredAtUtc;\n\n        var cancellationNowRequired = delinquency.ConsecutiveMissedMonths >= ConsecutiveMissedMonths.CancellationThreshold;'''
+          new = '''        obligation.Status = MonthlyObligationStatus.Missed;\n        obligation.ClosedAtUtc = occurredAtUtc;\n        obligation.UpdatedAtUtc = occurredAtUtc;\n        delinquency.ConsecutiveMissedMonths = await CalculateConsecutiveMissedMonthsAfterAsync(\n            obligation,\n            MonthlyObligationStatus.Missed,\n            cancellationToken);\n        delinquency.UpdatedAtUtc = occurredAtUtc;\n\n        var cancellationNowRequired = delinquency.ConsecutiveMissedMonths >= ConsecutiveMissedMonths.CancellationThreshold;'''
+          if old not in text:
+              raise SystemExit('missed increment replacement point not found')
+          text = text.replace(old, new, 1)
+
+          old = '''        var delinquency = await GetOrCreateDelinquencyAsync(contract.Id, occurredAtUtc, cancellationToken);\n        if (!delinquency.CancellationRequired)\n        {\n            delinquency.ConsecutiveMissedMonths = 0;\n            delinquency.UpdatedAtUtc = occurredAtUtc;\n        }'''
+          new = '''        var delinquency = await GetOrCreateDelinquencyAsync(contract.Id, occurredAtUtc, cancellationToken);\n        if (!delinquency.CancellationRequired)\n        {\n            delinquency.ConsecutiveMissedMonths = await CalculateConsecutiveMissedMonthsAfterAsync(\n                obligation,\n                MonthlyObligationStatus.Paid,\n                cancellationToken);\n            delinquency.UpdatedAtUtc = occurredAtUtc;\n        }'''
+          if old not in text:
+              raise SystemExit('paid reset replacement point not found')
+          text = text.replace(old, new, 1)
+
+          marker = '''    private async Task<ContractDelinquencyRow> GetOrCreateDelinquencyAsync(\n'''
+          helpers = '''    private async Task<bool> CanCloseChronologicallyAsync(\n        MonthlyObligationRow obligation,\n        CancellationToken cancellationToken)\n    {\n        var hasEarlierOpenMonth = await dbContext.MonthlyObligations\n            .AsNoTracking()\n            .AnyAsync(\n                x => x.ContractId == obligation.ContractId\n                    && x.ContractMonthNumber < obligation.ContractMonthNumber\n                    && x.Status == MonthlyObligationStatus.Open,\n                cancellationToken);\n\n        if (hasEarlierOpenMonth)\n        {\n            return false;\n        }\n\n        var hasLaterClosedMonth = await dbContext.MonthlyObligations\n            .AsNoTracking()\n            .AnyAsync(\n                x => x.ContractId == obligation.ContractId\n                    && x.ContractMonthNumber > obligation.ContractMonthNumber\n                    && x.Status != MonthlyObligationStatus.Open,\n                cancellationToken);\n\n        return !hasLaterClosedMonth;\n    }\n\n    private async Task<int> CalculateConsecutiveMissedMonthsAfterAsync(\n        MonthlyObligationRow obligation,\n        MonthlyObligationStatus closingStatus,\n        CancellationToken cancellationToken)\n    {\n        if (closingStatus == MonthlyObligationStatus.Open)\n        {\n            throw new ArgumentException("A closing status must be a closed monthly-obligation state.", nameof(closingStatus));\n        }\n\n        var priorClosedStatuses = await dbContext.MonthlyObligations\n            .AsNoTracking()\n            .Where(x => x.ContractId == obligation.ContractId\n                && x.ContractMonthNumber < obligation.ContractMonthNumber\n                && x.Status != MonthlyObligationStatus.Open)\n            .OrderByDescending(x => x.ContractMonthNumber)\n            .Select(x => x.Status)\n            .ToListAsync(cancellationToken);\n\n        return DelinquencySequence.CalculateCurrentStreak(\n            new[] { closingStatus }.Concat(priorClosedStatuses));\n    }\n\n'''
+          if marker not in text:
+              raise SystemExit('helper insertion marker not found')
+          text = text.replace(marker, helpers + marker, 1)
+          path.write_text(text)
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/Charkhoone.Infrastructure/Payments/EfPaymentService.cs
+          git diff --cached --quiet && exit 0
+          git commit -m "fix(payments): enforce chronological delinquency closure"
+          git push origin HEAD:feature/delinquency-chronology-hardening-v1
