@@ -8,7 +8,12 @@ public sealed class VerificationRequestRowConfiguration : IEntityTypeConfigurati
 {
     public void Configure(EntityTypeBuilder<VerificationRequestRow> builder)
     {
-        builder.ToTable("verification_requests");
+        builder.ToTable("verification_requests", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_verification_requests_idempotency_key_nonblank",
+                "btrim(\"IdempotencyKey\") <> ''");
+        });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
         builder.HasIndex(x => new { x.CreditApplicationId, x.Type, x.CreatedAtUtc });
