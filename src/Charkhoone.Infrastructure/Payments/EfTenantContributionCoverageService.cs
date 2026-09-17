@@ -379,14 +379,14 @@ public sealed class EfTenantContributionCoverageService(
         CancellationToken cancellationToken)
     {
         var snapshot = await (
-            from coverage in dbContext.CoveragePayments.AsNoTracking()
-            join transaction in dbContext.ExternalTransactions.AsNoTracking()
-                on coverage.ExternalTransactionId equals transaction.Id
-            where coverage.Id == coveragePaymentId
+            from coverageRow in dbContext.CoveragePayments.AsNoTracking()
+            join externalRow in dbContext.ExternalTransactions.AsNoTracking()
+                on coverageRow.ExternalTransactionId equals externalRow.Id
+            where coverageRow.Id == coveragePaymentId
             select new
             {
-                Coverage = coverage,
-                transaction.IdempotencyKey,
+                Coverage = coverageRow,
+                externalRow.IdempotencyKey,
             })
             .SingleAsync(cancellationToken);
 
