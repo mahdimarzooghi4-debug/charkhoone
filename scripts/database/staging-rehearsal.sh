@@ -56,7 +56,7 @@ fi
 
 output_root="${CHARKHOONE_DATABASE_EVIDENCE_DIR:-artifacts/database/staging-rehearsal}"
 output_dir="$output_root/$actual_sha"
-mkdir -p "$output_dir"
+mkdir -p "$output_dir/pre-migration"
 
 capture_migration_history() {
   local output=$1
@@ -71,7 +71,25 @@ capture_migration_history() {
   fi
 }
 
+run_runtime_read_only() {
+  local script=$1
+  local output=$2
+  {
+    echo 'BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY;'
+    echo "SET LOCAL statement_timeout = '30s';"
+    cat "$script"
+    echo 'COMMIT;'
+  } | psql "$CHARKHOONE_STAGING_RUNTIME_CONNECTION" -X -q -A -t -F $'\t' \
+      -v ON_ERROR_STOP=1 > "$output"
+  test -s "$output"
+}
+
 capture_migration_history "$output_dir/migrations-before.txt"
+
+run_runtime_read_only scripts/database/runtime-role-audit.sql "$output_dir/pre-migration/runtime-role.tsv"
+python3 scripts/database/verify-runtime-role.py "$output_dir/pre-migration/runtime-role.tsv"
+run_runtime_read_only scripts/database/runtime-observability.sql "$output_dir/pre-migration/runtime-observability.tsv"
+run_runtime_read_only scripts/database/pitr-evidence.sql "$output_dir/pre-migration/pitr-evidence.tsv"
 
 migration_sql="$output_dir/migrations-idempotent.sql"
 scripts/database/generate-idempotent-sql.sh "$migration_sql" >/dev/null
@@ -106,6 +124,9 @@ scripts/database/capture-query-plans.sh
   printf 'git_sha=%s\n' "$actual_sha"
   printf 'migration_runtime_roles_distinct=true\n'
   printf 'migration_runtime_database_name_match=true\n'
+  printf 'pre_migration_runtime_role=passed\n'
+  printf 'pre_migration_observability=captured\n'
+  printf 'pre_migration_pitr_sql_evidence=captured-provider-native-proof-separate\n'
   printf 'provider_backup_evidence=operator-supplied-hash-recorded\n'
   printf 'provider_restore_evidence=operator-supplied-hash-recorded\n'
   printf 'migration=completed\n'
