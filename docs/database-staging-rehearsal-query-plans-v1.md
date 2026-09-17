@@ -33,6 +33,16 @@ The runtime queries were copied from the current worker/read-service shapes rath
 
 The script does not emit customer rows or the database connection string. Plan artifacts can still contain table/index names and SQL predicates, so they remain operational evidence and should follow normal artifact access controls.
 
+## Connection formats
+
+EF Core/Npgsql and `psql` do not accept the same connection-string syntax. The staging rehearsal therefore requires explicit connection values for each consumer instead of attempting a lossy conversion:
+
+- `CHARKHOONE_STAGING_MIGRATION_CONNECTION`: Npgsql-format migration connection used only by `dotnet ef database update`;
+- `CHARKHOONE_STAGING_MIGRATION_PSQL_CONNECTION`: `psql` conninfo/URI for migration-history and identity checks;
+- `CHARKHOONE_STAGING_RUNTIME_PSQL_CONNECTION`: `psql` conninfo/URI for runtime-role, observability, PITR and query-plan evidence.
+
+The migration Npgsql connection and migration `psql` connection must target the same authorized migration identity/database. The runner additionally verifies that the migration and runtime `psql` identities are distinct and resolve to the same database name. Connection values and role names are not printed.
+
 ## Representative-data gate
 
 A staging plan run is blocked unless the operator explicitly sets:
@@ -51,15 +61,13 @@ CI may run the same SQL in `compatibility:ci` mode against disposable PostgreSQL
 
 - explicit opt-in `CHARKHOONE_ALLOW_STAGING_REHEARSAL=true`;
 - exact checked-out release SHA matching `CHARKHOONE_EXPECTED_GIT_SHA`;
-- a dedicated staging migration connection;
-- a distinct staging runtime connection;
+- an Npgsql staging migration connection plus the matching `psql` migration connection;
+- a distinct `psql` staging runtime connection;
 - operator-supplied, non-empty provider-native backup/PITR evidence;
 - operator-supplied, non-empty provider-native restore-drill evidence;
 - an operator-confirmed representative staging dataset.
 
-The runner records hashes of the provider evidence rather than copying its content, generates and hashes the idempotent migration SQL, records migration history before and after, invokes the guarded staging migration runner, runs post-migration financial/runtime-role readiness checks, and captures the query-plan suite.
-
-The migration and runtime role names and connection strings are not printed. The runner verifies that the two database identities are distinct and point to the same database name.
+Before migration, the runtime connection must already pass the least-privilege audit; runtime observability and PostgreSQL PITR diagnostics are captured as a baseline. The runner then records hashes of the provider evidence rather than copying its content, generates and hashes the idempotent migration SQL, records migration history before and after, invokes the guarded staging migration runner, runs post-migration financial/runtime-role readiness checks, and captures the query-plan suite.
 
 ## Deliberate boundaries
 
