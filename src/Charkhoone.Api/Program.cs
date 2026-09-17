@@ -1,15 +1,25 @@
+using System.Diagnostics;
 using Charkhoone.Api.Endpoints;
+using Charkhoone.Api.Health;
 using Charkhoone.Infrastructure;
+using Charkhoone.Infrastructure.Observability;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddHealthChecks();
+builder.Services
+    .AddHealthChecks()
+    .AddCheck<PostgresReadinessHealthCheck>("postgres", tags: ["ready"])
+    .AddCheck<RabbitMqReadinessHealthCheck>("rabbitmq", tags: ["ready"]);
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails(options =>
 {
     options.CustomizeProblemDetails = context =>
-        context.ProblemDetails.Extensions["traceId"] = context.HttpContext.TraceIdentifier;
+        context.ProblemDetails.Extensions["traceId"] =
+            Activity.Current?.TraceId.ToString() ?? context.HttpContext.TraceIdentifier;
 });
 
 var authenticationAuthority = builder.Configuration["Authentication:Authority"]?.Trim();
@@ -49,14 +59,45 @@ builder.Services
 builder.Services.AddAuthorization();
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddCharkhooneObservability(builder.Configuration, "Charkhoone.Api");
+builder.Services
+    .AddOpenTelemetry()
+    .WithTracing(tracing => tracing.AddAspNetCoreInstrumentation(options =>
+    {
+        options.Filter = context =>
+            !context.Request.Path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase);
+    }))
+    .WithMetrics(metrics => metrics.AddAspNetCoreInstrumentation());
 
 var app = builder.Build();
 
 app.UseExceptionHandler();
+app.Use(async (context, next) =>
+{
+    context.Response.OnStarting(() =>
+    {
+        if (Activity.Current is { } activity)
+        {
+            context.Response.Headers["X-Trace-Id"] = activity.TraceId.ToString();
+        }
+
+        return Task.CompletedTask;
+    });
+
+    await next();
+});
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = _ => false,
+});
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = registration => registration.Tags.Contains("ready"),
+});
 app.MapOpenApi();
 
 var api = app.MapGroup("/api/v1");
