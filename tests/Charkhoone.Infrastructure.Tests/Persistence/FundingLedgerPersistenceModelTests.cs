@@ -39,8 +39,7 @@ public sealed class FundingLedgerPersistenceModelTests
             && index.Properties[0].Name == nameof(ExternalTransactionRow.IdempotencyKey));
 
         var amount = entity.FindProperty(nameof(ExternalTransactionRow.AmountRial));
-        Assert.Equal(38, amount!.GetPrecision());
-        Assert.Equal(18, amount.GetScale());
+        AssertUnscaledNumeric(amount);
     }
 
     [Fact]
@@ -82,10 +81,16 @@ public sealed class FundingLedgerPersistenceModelTests
         Assert.NotNull(line);
         var debit = line!.FindProperty(nameof(JournalLineRow.DebitRial));
         var credit = line.FindProperty(nameof(JournalLineRow.CreditRial));
-        Assert.Equal(38, debit!.GetPrecision());
-        Assert.Equal(18, debit.GetScale());
-        Assert.Equal(38, credit!.GetPrecision());
-        Assert.Equal(18, credit.GetScale());
+        AssertUnscaledNumeric(debit);
+        AssertUnscaledNumeric(credit);
+    }
+
+    private static void AssertUnscaledNumeric(Microsoft.EntityFrameworkCore.Metadata.IProperty? property)
+    {
+        Assert.NotNull(property);
+        Assert.Equal("numeric", property!.GetColumnType());
+        Assert.Null(property.GetPrecision());
+        Assert.Null(property.GetScale());
     }
 
     private static CharkhooneDbContext CreateContext()
