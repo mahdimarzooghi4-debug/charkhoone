@@ -13,6 +13,47 @@ Before a staging or production database change:
 5. Verify a recent usable backup and the configured point-in-time recovery window.
 6. Record release identifier, migration range, reviewer, start time, and target environment in the deployment record.
 7. Apply to staging first, then run the critical financial smoke tests before considering production.
+8. Run `scripts/database/runtime-role-audit.sql` while connected as the exact application runtime role and require zero violations.
+9. Capture `scripts/database/runtime-observability.sql` before and after the staging migration and investigate unexpected lock waits, idle-in-transaction sessions, connection pressure or dead-row growth.
+10. Capture `scripts/database/pitr-evidence.sql` together with provider-native PITR retention/restore evidence. SQL output alone is not proof of managed-provider recovery capability.
+
+## Runtime connection policy
+
+API and Worker use explicitly named Npgsql data sources so pool telemetry has stable non-secret pool names. Runtime settings are bounded under `Database:Runtime` and may be overridden per environment:
+
+- connection timeout;
+- command timeout;
+- cancellation timeout;
+- minimum/maximum pool size;
+- idle lifetime and pruning interval;
+- absolute connection lifetime;
+- keepalive interval.
+
+Existing explicit connection-string values remain the fallback when an override is absent. Infinite command/connection timeouts are not accepted by the runtime options. `No Reset On Close` is rejected because pooled session state must not leak between borrowers. API and Worker may still use deployment-specific `Application Name` values; otherwise stable service names are assigned.
+
+Choose target values from measured traffic, database capacity, transaction duration and network behavior. The checked-in example values mirror the library defaults; they are not a production sizing claim.
+
+## Runtime role separation
+
+The application runtime role must not be a database owner, superuser, role creator, database creator, replication role, BYPASSRLS role, or holder of CREATE on the application database/public schema. Migration execution uses a separately controlled deployment identity with only the privileges required by the reviewed migration.
+
+Run the least-privilege audit with the actual application role:
+
+```bash
+psql "$CHARKHOONE_DATABASE_CONNECTION" \
+  -v ON_ERROR_STOP=1 \
+  -f scripts/database/runtime-role-audit.sql
+```
+
+Every emitted violation count must be zero. CI runs the query against its disposable PostgreSQL superuser only as compatibility evidence; that result must never be presented as a passing production role audit.
+
+## Observability
+
+OpenTelemetry collects Npgsql command traces plus the Npgsql meter for client-operation and pool metrics. Database pool names are explicitly set to avoid connection strings being used as metric dimensions.
+
+The read-only runtime evidence query intentionally does not emit SQL text or bind/customer values. It reports connection capacity, session state grouped by application name, lock-wait/idle-transaction counts, oldest transaction age, and per-table dead-row/autovacuum/autoanalyze statistics.
+
+Production alerts and thresholds must be based on measured baseline/SLOs. Do not invent universal lock-wait, pool-saturation or dead-row thresholds in source code.
 
 ## Backup and recovery requirements
 
@@ -25,7 +66,7 @@ The PostgreSQL platform must provide:
 - periodic restore drills into an isolated environment;
 - recorded recovery point objective (RPO) and recovery time objective (RTO) based on measured restore drills, not assumptions.
 
-A backup is not considered operationally verified until a restore has succeeded and application-level integrity checks have passed.
+A backup is not considered operationally verified until a restore has succeeded and application-level integrity checks have passed. `pitr-evidence.sql` records PostgreSQL WAL/archive diagnostics but managed services can implement PITR differently; provider-native retention, restore-window and successful point-in-time restore evidence remains mandatory.
 
 ## Migration execution
 
@@ -57,10 +98,17 @@ After migration:
 - verify authenticated contract reads;
 - exercise a non-destructive reconciliation/query path;
 - verify Outbox and Inbox queries are healthy;
-- inspect error rate, database connection failures, lock waits, and query latency;
+- inspect error rate, database connection failures, pool pressure, lock waits, long/idle transactions and query latency;
+- review `pg_stat_user_tables` for dead-row growth and autovacuum/autoanalyze activity;
 - confirm no unexpected pending migration/model drift exists in the released build.
 
 Financial production smoke tests must not fabricate payment success or external provider confirmation.
+
+## VACUUM / ANALYZE operating policy
+
+Keep PostgreSQL autovacuum and autoanalyze enabled unless a reviewed platform-specific exception exists. Do not schedule blind full-table `VACUUM FULL` as routine maintenance; it takes stronger locks and must be handled as a planned intervention when evidence justifies it.
+
+Use `runtime-observability.sql` and provider/database monitoring to identify tables with dead-row accumulation or stale maintenance activity. Changes to per-table autovacuum settings require staging evidence and representative write volume. Run `ANALYZE` after unusually large controlled data loads or migrations when planner statistics may be materially stale.
 
 ## Rollback strategy
 
@@ -80,12 +128,13 @@ Before production load, review query plans for:
 - contract detail/audit reads;
 - journal and external-transaction idempotency lookups.
 
-Indexes should be introduced only from observed query patterns and checked into the EF model with a generated migration. Query-plan validation and index hardening are a separate database phase.
+Indexes should be introduced only from observed query patterns and checked into the EF model with a generated migration. Representative-volume `EXPLAIN (ANALYZE, BUFFERS)` must be executed on staging or another approved production-like dataset; CI fixture cardinality is not a performance proof.
 
 ## Deferred business-policy items
 
 Database readiness must not silently resolve business rules that are still undefined. In particular:
 
 - the 3% lost-fund-return day-count/daily calculation, rounding and partial allocation remain undefined;
+- partial-payment allocation remains undefined;
 - early-cancellation frozen-principal release timing remains dependent on bank/fund policy;
 - those gaps must remain explicit rather than encoded as database defaults or triggers.
