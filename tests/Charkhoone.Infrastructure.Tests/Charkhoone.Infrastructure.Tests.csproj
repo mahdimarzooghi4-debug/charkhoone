@@ -6,6 +6,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Charkhoone.Domain/Charkhoone.Domain.csproj" />
     <ProjectReference Include="../../src/Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj" />
+    <ProjectReference Include="../../src/Charkhoone.Worker/Charkhoone.Worker.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
