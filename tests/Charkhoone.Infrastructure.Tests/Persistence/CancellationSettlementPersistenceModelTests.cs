@@ -38,10 +38,8 @@ public sealed class CancellationSettlementPersistenceModelTests
         Assert.NotNull(entity);
         var amount = entity!.FindProperty(nameof(CancellationSettlementRow.AmountRial));
         var remaining = entity.FindProperty(nameof(CancellationSettlementRow.RemainingTenantContributionRial));
-        Assert.Equal(38, amount!.GetPrecision());
-        Assert.Equal(18, amount.GetScale());
-        Assert.Equal(38, remaining!.GetPrecision());
-        Assert.Equal(18, remaining.GetScale());
+        AssertUnscaledNumeric(amount);
+        AssertUnscaledNumeric(remaining);
         Assert.DoesNotContain(entity.GetProperties(), property =>
             property.Name.Contains("FrozenPrincipal", StringComparison.OrdinalIgnoreCase));
         Assert.DoesNotContain(entity.GetForeignKeys(), fk =>
@@ -67,6 +65,14 @@ public sealed class CancellationSettlementPersistenceModelTests
         Assert.Contains(entity.GetForeignKeys(), fk =>
             fk.PrincipalEntityType.ClrType == typeof(JournalEntryRow)
             && fk.Properties.Single().Name == nameof(CancellationSettlementRow.JournalEntryId));
+    }
+
+    private static void AssertUnscaledNumeric(Microsoft.EntityFrameworkCore.Metadata.IProperty? property)
+    {
+        Assert.NotNull(property);
+        Assert.Equal("numeric", property!.GetColumnType());
+        Assert.Null(property.GetPrecision());
+        Assert.Null(property.GetScale());
     }
 
     private static CharkhooneDbContext CreateContext()
