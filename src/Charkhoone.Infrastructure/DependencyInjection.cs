@@ -46,7 +46,7 @@ public static class DependencyInjection
         services.AddScoped<ITenantContributionFundingService, EfTenantContributionFundingService>();
         services.AddScoped<EfPaymentService>();
         services.AddScoped<IPaymentReconciliationService>(provider => provider.GetRequiredService<EfPaymentService>());
-        services.AddScoped<IMonthlyObligationService>(provider => provider.GetRequiredService<EfPaymentService>());
+        services.AddScoped<IMonthlyObligationService, ChronologicalMonthlyObligationService>();
         services.AddScoped<ITenantContributionCoverageService, EfTenantContributionCoverageService>();
         services.AddScoped<ICancellationSettlementService, EfCancellationSettlementService>();
         services.AddScoped<INormalSettlementService, EfNormalSettlementService>();
