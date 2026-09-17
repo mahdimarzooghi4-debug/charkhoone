@@ -5,11 +5,13 @@ on:
     branches: ["feature/**"]
     paths:
       - "scripts/staging/**"
+      - "docs/staging-application-smoke-release-gate-v1.md"
       - "docs/staging-release-promotion-evidence-v1.md"
       - ".github/workflows/staging-release-ops-validation.yml"
   pull_request:
     paths:
       - "scripts/staging/**"
+      - "docs/staging-application-smoke-release-gate-v1.md"
       - "docs/staging-release-promotion-evidence-v1.md"
       - ".github/workflows/staging-release-ops-validation.yml"
 

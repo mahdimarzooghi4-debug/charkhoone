@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-for command_name in git mktemp mkdir rm sha256sum grep wc awk tr; do
+for command_name in git mktemp mkdir rm sha256sum grep wc awk tr cp mv; do
   command -v "$command_name" >/dev/null 2>&1 || { echo "$command_name is required" >&2; exit 1; }
 done
 
@@ -44,7 +44,10 @@ authenticated_contract_read=passed
 authenticated_contract_audit_read=passed
 database_rehearsal=matched-release-and-passed
 worker_release_sha=matched-operator-platform-evidence
-worker_health_probe=not-available-worker-has-no-http-health-surface
+worker_http_release_header=matched
+worker_http_liveness=passed
+worker_http_identity=matched
+worker_deployment_evidence=hash-recorded
 financial_mutations=not-exercised
 response_bodies=not-retained
 access_token=not-retained
@@ -58,6 +61,7 @@ health_ready=200
 anonymous_contract=401
 authenticated_contract=200
 authenticated_audit=200
+worker_health_live=200
 EOF
 
 printf 'provider=fixture\ngit_sha=%s\nstatus=deployed\n' "$expected_sha" > "$worker_evidence"
@@ -93,10 +97,20 @@ test -s "$output_dir/promotion-readiness.txt"
 grep -Fxq "git_sha=$expected_sha" "$output_dir/promotion-readiness.txt"
 grep -Fxq 'database_rehearsal_hash_binding=matched' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'worker_deployment_evidence_hash_binding=matched' "$output_dir/promotion-readiness.txt"
-grep -Fxq 'worker_health=not-proven-no-http-health-surface' "$output_dir/promotion-readiness.txt"
+grep -Fxq 'worker_http_release_header=validated' "$output_dir/promotion-readiness.txt"
+grep -Fxq 'worker_http_liveness=validated' "$output_dir/promotion-readiness.txt"
+grep -Fxq 'worker_http_identity=validated' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'promotion_decision=human-required' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'deployment_action=none' "$output_dir/promotion-readiness.txt"
 [[ "$(wc -l < "$output_dir/evidence-manifest.tsv")" -eq 8 ]]
+
+cp "$application_dir/summary.txt" "$application_dir/summary.valid.txt"
+grep -v '^worker_http_liveness=passed$' "$application_dir/summary.valid.txt" > "$application_dir/summary.txt"
+if run_packet >/dev/null 2>&1; then
+  echo 'Promotion packet unexpectedly accepted application evidence without Worker HTTP liveness proof.' >&2
+  exit 1
+fi
+mv "$application_dir/summary.valid.txt" "$application_dir/summary.txt"
 
 printf '\ntampered-after-smoke=true\n' >> "$worker_evidence"
 if run_packet >/dev/null 2>&1; then
