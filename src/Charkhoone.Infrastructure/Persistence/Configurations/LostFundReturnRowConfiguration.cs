@@ -12,6 +12,8 @@ public sealed class LostFundReturnRowConfiguration : IEntityTypeConfiguration<Lo
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.CoveragePaymentId).IsUnique();
         builder.HasIndex(x => new { x.ContractId, x.WithdrawnAtUtc });
+        builder.HasIndex(x => x.ContractId)
+            .HasFilter("\"CalculatedReturnRial\" IS NULL");
 
         builder.Property(x => x.WithdrawnAmountRial).HasColumnType("numeric").IsRequired();
         builder.Property(x => x.MonthlyRate).HasPrecision(10, 8).IsRequired();
