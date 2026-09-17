@@ -11,6 +11,7 @@ public sealed class MonthlyObligationRowConfiguration : IEntityTypeConfiguration
         builder.ToTable("monthly_obligations");
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => new { x.ContractId, x.ContractMonthNumber }).IsUnique();
+        builder.HasIndex(x => new { x.Status, x.DueAtUtc, x.Id });
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.HasOne<LeaseContractRow>()
             .WithMany()
