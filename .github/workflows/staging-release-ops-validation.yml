@@ -13,6 +13,9 @@ on:
       - "docs/staging-release-promotion-evidence-v1.md"
       - ".github/workflows/staging-release-ops-validation.yml"
 
+permissions:
+  contents: read
+
 jobs:
   validate:
     runs-on: ubuntu-latest

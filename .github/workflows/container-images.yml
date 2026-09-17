@@ -154,13 +154,27 @@ jobs:
           test "$ready" = true
 
   container-release-evidence:
+    name: container-release-gate
     runs-on: ubuntu-latest
     needs:
       - base-image-pins
       - api-image
       - worker-image
       - web-image
+    if: ${{ always() }}
     steps:
+      - name: Require successful container jobs
+        shell: bash
+        env:
+          BASE_IMAGE_PINS_RESULT: ${{ needs.base-image-pins.result }}
+          API_IMAGE_RESULT: ${{ needs.api-image.result }}
+          WORKER_IMAGE_RESULT: ${{ needs.worker-image.result }}
+          WEB_IMAGE_RESULT: ${{ needs.web-image.result }}
+        run: |
+          test "$BASE_IMAGE_PINS_RESULT" = success
+          test "$API_IMAGE_RESULT" = success
+          test "$WORKER_IMAGE_RESULT" = success
+          test "$WEB_IMAGE_RESULT" = success
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - name: Write SHA-bound container evidence
         run: |
