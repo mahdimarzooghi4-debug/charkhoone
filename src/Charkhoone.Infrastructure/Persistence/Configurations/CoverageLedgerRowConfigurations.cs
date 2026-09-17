@@ -16,9 +16,9 @@ public sealed class CoveragePaymentRowConfiguration : IEntityTypeConfiguration<C
         builder.HasIndex(x => new { x.ContractId, x.Status });
         builder.Property(x => x.Kind).HasConversion<string>().HasMaxLength(32).IsRequired();
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(32).IsRequired();
-        builder.Property(x => x.AmountRial).HasPrecision(38, 18).IsRequired();
+        builder.Property(x => x.AmountRial).HasColumnType("numeric").IsRequired();
         builder.Property(x => x.BeneficiaryId).HasMaxLength(256).IsRequired();
-        builder.Property(x => x.RemainingTenantContributionRial).HasPrecision(38, 18);
+        builder.Property(x => x.RemainingTenantContributionRial).HasColumnType("numeric");
 
         builder.HasOne<LeaseContractRow>()
             .WithMany()
@@ -52,8 +52,8 @@ public sealed class TenantContributionReplenishmentRowConfiguration : IEntityTyp
         builder.HasIndex(x => x.ExternalTransactionId).IsUnique();
         builder.HasIndex(x => x.JournalEntryId).IsUnique();
         builder.HasIndex(x => new { x.ContractId, x.ReplenishedAtUtc });
-        builder.Property(x => x.AmountRial).HasPrecision(38, 18).IsRequired();
-        builder.Property(x => x.RemainingTenantContributionRial).HasPrecision(38, 18).IsRequired();
+        builder.Property(x => x.AmountRial).HasColumnType("numeric").IsRequired();
+        builder.Property(x => x.RemainingTenantContributionRial).HasColumnType("numeric").IsRequired();
         builder.Property(x => x.ExternalReference).HasMaxLength(256).IsRequired();
 
         builder.HasOne<LeaseContractRow>()
