@@ -23,6 +23,7 @@ public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> op
     public DbSet<CoveragePaymentRow> CoveragePayments => Set<CoveragePaymentRow>();
     public DbSet<LostFundReturnRow> LostFundReturns => Set<LostFundReturnRow>();
     public DbSet<CancellationSettlementRow> CancellationSettlements => Set<CancellationSettlementRow>();
+    public DbSet<NormalSettlementRow> NormalSettlements => Set<NormalSettlementRow>();
     public DbSet<ExternalTransactionRow> ExternalTransactions => Set<ExternalTransactionRow>();
     public DbSet<LedgerAccountRow> LedgerAccounts => Set<LedgerAccountRow>();
     public DbSet<JournalEntryRow> JournalEntries => Set<JournalEntryRow>();

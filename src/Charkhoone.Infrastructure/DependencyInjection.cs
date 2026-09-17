@@ -46,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<IMonthlyObligationService>(provider => provider.GetRequiredService<EfPaymentService>());
         services.AddScoped<ITenantContributionCoverageService, EfTenantContributionCoverageService>();
         services.AddScoped<ICancellationSettlementService, EfCancellationSettlementService>();
+        services.AddScoped<INormalSettlementService, EfNormalSettlementService>();
 
         var identityAdapterMode = configuration["ExternalAdapters:Identity:Mode"];
         if (string.Equals(identityAdapterMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
@@ -115,6 +116,26 @@ public static class DependencyInjection
         else
         {
             services.AddSingleton<IExternalOwnerResidualTransferAdapter, UnavailableOwnerResidualTransferAdapter>();
+        }
+
+        var normalSettlementBankMode = configuration["ExternalAdapters:NormalSettlementBank:Mode"];
+        if (string.Equals(normalSettlementBankMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IExternalBankPrincipalReturnAdapter, DevelopmentBankPrincipalReturnAdapter>();
+        }
+        else
+        {
+            services.AddSingleton<IExternalBankPrincipalReturnAdapter, UnavailableBankPrincipalReturnAdapter>();
+        }
+
+        var normalSettlementTenantMode = configuration["ExternalAdapters:NormalSettlementTenant:Mode"];
+        if (string.Equals(normalSettlementTenantMode, "DevelopmentMock", StringComparison.OrdinalIgnoreCase))
+        {
+            services.AddSingleton<IExternalTenantResidualReturnAdapter, DevelopmentTenantResidualReturnAdapter>();
+        }
+        else
+        {
+            services.AddSingleton<IExternalTenantResidualReturnAdapter, UnavailableTenantResidualReturnAdapter>();
         }
 
         return services;
