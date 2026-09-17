@@ -1,0 +1,80 @@
+name: supply-chain-evidence
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supply-chain-evidence-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Verify immutable dependency and evidence configuration
+        run: |
+          python3 scripts/release/verify-ci-dependency-pins.py
+          python3 scripts/release/verify-base-image-pins.py
+          python3 scripts/release/verify-node-dependency-locks.py
+          python3 scripts/release/verify-supply-chain-evidence.py
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          dotnet-version: 10.0.x
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.13.1
+      - name: Restore and build .NET dependency graph
+        run: |
+          dotnet restore Charkhoone.slnx
+          dotnet build Charkhoone.slnx --configuration Release --no-restore
+      - name: Install web dependencies from lockfile
+        working-directory: apps/web
+        run: npm ci --no-audit --no-fund
+      - name: Install mobile dependencies from lockfile
+        working-directory: apps/mobile
+        run: npm ci --no-audit --no-fund
+      - name: Build SHA-bound application images
+        run: |
+          docker build \
+            --build-arg VCS_REF="${GITHUB_SHA}" \
+            --file src/Charkhoone.Api/Dockerfile \
+            --tag "charkhoone-api:${GITHUB_SHA}" \
+            .
+          docker build \
+            --build-arg VCS_REF="${GITHUB_SHA}" \
+            --file src/Charkhoone.Worker/Dockerfile \
+            --tag "charkhoone-worker:${GITHUB_SHA}" \
+            .
+          docker build \
+            --build-arg VCS_REF="${GITHUB_SHA}" \
+            --file apps/web/Dockerfile \
+            --tag "charkhoone-web:${GITHUB_SHA}" \
+            apps/web
+      - name: Install checksum-verified supply-chain tools
+        env:
+          CHARKHOONE_SUPPLY_CHAIN_BIN_DIR: ${{ runner.temp }}/charkhoone-supply-chain-bin
+        run: bash scripts/release/install-supply-chain-tools.sh
+      - name: Capture SBOM and vulnerability evidence
+        env:
+          CHARKHOONE_RELEASE_SHA: ${{ github.sha }}
+          CHARKHOONE_SUPPLY_CHAIN_BIN_DIR: ${{ runner.temp }}/charkhoone-supply-chain-bin
+          CHARKHOONE_SUPPLY_CHAIN_EVIDENCE_DIR: artifacts/supply-chain
+          CHARKHOONE_API_IMAGE: charkhoone-api:${{ github.sha }}
+          CHARKHOONE_WORKER_IMAGE: charkhoone-worker:${{ github.sha }}
+          CHARKHOONE_WEB_IMAGE: charkhoone-web:${{ github.sha }}
+        run: bash scripts/release/capture-supply-chain-evidence.sh
+      - name: Upload SHA-bound supply-chain evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: supply-chain-evidence-${{ github.sha }}
+          path: artifacts/supply-chain/
+          if-no-files-found: error
+          retention-days: 30
