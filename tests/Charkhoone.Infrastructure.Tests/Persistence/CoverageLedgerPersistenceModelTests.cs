@@ -34,10 +34,8 @@ public sealed class CoverageLedgerPersistenceModelTests
         Assert.NotNull(entity);
         var amount = entity!.FindProperty(nameof(CoveragePaymentRow.AmountRial));
         var remaining = entity.FindProperty(nameof(CoveragePaymentRow.RemainingTenantContributionRial));
-        Assert.Equal(38, amount!.GetPrecision());
-        Assert.Equal(18, amount.GetScale());
-        Assert.Equal(38, remaining!.GetPrecision());
-        Assert.Equal(18, remaining.GetScale());
+        AssertUnscaledNumeric(amount);
+        AssertUnscaledNumeric(remaining);
         Assert.DoesNotContain(entity.GetProperties(), property =>
             property.Name.Contains("FrozenPrincipal", StringComparison.OrdinalIgnoreCase));
     }
@@ -79,10 +77,16 @@ public sealed class CoverageLedgerPersistenceModelTests
 
         var amount = entity.FindProperty(nameof(TenantContributionReplenishmentRow.AmountRial));
         var remaining = entity.FindProperty(nameof(TenantContributionReplenishmentRow.RemainingTenantContributionRial));
-        Assert.Equal(38, amount!.GetPrecision());
-        Assert.Equal(18, amount.GetScale());
-        Assert.Equal(38, remaining!.GetPrecision());
-        Assert.Equal(18, remaining.GetScale());
+        AssertUnscaledNumeric(amount);
+        AssertUnscaledNumeric(remaining);
+    }
+
+    private static void AssertUnscaledNumeric(Microsoft.EntityFrameworkCore.Metadata.IProperty? property)
+    {
+        Assert.NotNull(property);
+        Assert.Equal("numeric", property!.GetColumnType());
+        Assert.Null(property.GetPrecision());
+        Assert.Null(property.GetScale());
     }
 
     private static CharkhooneDbContext CreateContext()
