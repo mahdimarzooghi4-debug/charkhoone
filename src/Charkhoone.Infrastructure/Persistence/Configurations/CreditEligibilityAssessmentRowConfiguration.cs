@@ -16,9 +16,9 @@ public sealed class CreditEligibilityAssessmentRowConfiguration
         builder.Property(x => x.Provider).HasMaxLength(128).IsRequired();
         builder.Property(x => x.Status).HasMaxLength(64).IsRequired();
         builder.Property(x => x.ExternalSubGrade).HasMaxLength(16);
-        builder.Property(x => x.FullDepositEquivalentRial).HasPrecision(38, 18).IsRequired();
+        builder.Property(x => x.FullDepositEquivalentRial).HasColumnType("numeric").IsRequired();
         builder.Property(x => x.LoanRatio).HasPrecision(10, 8);
-        builder.Property(x => x.MaximumEligibleLoanRial).HasPrecision(38, 18);
+        builder.Property(x => x.MaximumEligibleLoanRial).HasColumnType("numeric");
         builder.Property(x => x.IdempotencyKey).HasMaxLength(256).IsRequired();
         builder.Property(x => x.ExternalReference).HasMaxLength(256);
         builder.Property(x => x.ReasonCode).HasMaxLength(256);
