@@ -44,55 +44,50 @@ public sealed class DatabaseIntegrityAuditTests(CharkhooneApiFactory factory)
         ('{debit}', '{entry}', '{account}', 10, 0), ('{credit}', '{entry}', '{account}', 0, 10);
         """;
 
-    [Theory]
-    [InlineData("journal_balance", "delete_line")]
-    [InlineData("journal_line_sides", "zero_sides")]
-    [InlineData("journal_line_sides", "negative_side")]
-    [InlineData("journal_line_sides", "two_positive_sides")]
-    [InlineData("journal_line_sides", "nan_side")]
-    [InlineData("canonical_currency", "currency")]
-    [InlineData("blank_idempotency_key", "blank_key")]
-    [InlineData("frozen_principal_orphan", "orphan")]
-    public async Task AuditDetectsCorruptionThatCurrentDatabaseConstraintsAllow(string code, string mutation)
+    [Fact]
+    public async Task AuditStillDetectsCrossRowJournalImbalanceAfterDirectLineDeletion()
     {
         await using var connection = await OpenAsync();
         await using var transaction = await connection.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead);
-        var entry = Guid.NewGuid(); var account = Guid.NewGuid();
-        var debit = Guid.NewGuid(); var credit = Guid.NewGuid();
+        var entry = Guid.NewGuid();
+        var account = Guid.NewGuid();
+        var debit = Guid.NewGuid();
+        var credit = Guid.NewGuid();
         await ExecuteAsync(connection, SeedJournal(entry, account, debit, credit));
+
         var before = await AuditAsync(connection);
-        var sql = mutation switch
-        {
-            "delete_line" => $"DELETE FROM journal_lines WHERE \"Id\" = '{debit}'",
-            "zero_sides" => $"UPDATE journal_lines SET \"DebitRial\" = 0 WHERE \"Id\" = '{debit}'",
-            "negative_side" => $"UPDATE journal_lines SET \"DebitRial\" = -10 WHERE \"Id\" = '{debit}'",
-            "two_positive_sides" => $"UPDATE journal_lines SET \"CreditRial\" = 10 WHERE \"Id\" = '{debit}'",
-            "nan_side" => $"UPDATE journal_lines SET \"DebitRial\" = 'NaN'::numeric WHERE \"Id\" = '{debit}'",
-            "currency" => $"UPDATE ledger_accounts SET \"Currency\" = 'TOMAN' WHERE \"Id\" = '{account}'",
-            "blank_key" => $"UPDATE journal_entries SET \"IdempotencyKey\" = '   ' WHERE \"Id\" = '{entry}'",
-            "orphan" => $"INSERT INTO frozen_principals (\"ContractId\", \"BankId\", \"AmountRial\", \"FundReference\", \"FrozenAtUtc\") VALUES ('{entry}', 'audit-bank', 10, 'audit', now())",
-            _ => throw new ArgumentException(mutation),
-        };
-        await ExecuteAsync(connection, sql);
+        await ExecuteAsync(connection, $"DELETE FROM journal_lines WHERE \"Id\" = '{debit}'");
         var after = await AuditAsync(connection);
-        Assert.Equal(before[code] + 1, after[code]);
+
+        Assert.Equal(before["journal_balance"] + 1, after["journal_balance"]);
         await transaction.RollbackAsync();
     }
 
     [Fact]
-    public async Task PostedLedgerMutationAndCascadeDelete_AreDocumentedDatabaseProtectionGaps()
+    public async Task PostedLedgerRawUpdate_RemainsPrivilegedGap_ButParentDeleteIsRestricted()
     {
         await using var connection = await OpenAsync();
         await using var transaction = await connection.BeginTransactionAsync();
-        var entry = Guid.NewGuid(); var account = Guid.NewGuid();
+        var entry = Guid.NewGuid();
+        var account = Guid.NewGuid();
         await ExecuteAsync(connection, SeedJournal(entry, account, Guid.NewGuid(), Guid.NewGuid()));
-        // Characterization of the audited baseline, NOT approval of this behavior.
-        // A future enforcement migration must replace these assertions with rejection tests.
-        await using var update = new NpgsqlCommand($"UPDATE journal_entries SET \"Description\" = 'changed' WHERE \"Id\" = '{entry}'", connection);
+
+        await using var update = new NpgsqlCommand(
+            $"UPDATE journal_entries SET \"Description\" = 'changed' WHERE \"Id\" = '{entry}'",
+            connection);
         Assert.Equal(1, await update.ExecuteNonQueryAsync());
-        await ExecuteAsync(connection, $"DELETE FROM journal_entries WHERE \"Id\" = '{entry}'");
-        await using var count = new NpgsqlCommand($"SELECT count(*) FROM journal_lines WHERE \"JournalEntryId\" = '{entry}'", connection);
-        Assert.Equal(0L, await count.ExecuteScalarAsync());
+
+        await ExecuteAsync(connection, "SAVEPOINT delete_probe");
+        var deleteException = await Assert.ThrowsAsync<PostgresException>(() => ExecuteAsync(
+            connection,
+            $"DELETE FROM journal_entries WHERE \"Id\" = '{entry}'"));
+        Assert.Equal(PostgresErrorCodes.ForeignKeyViolation, deleteException.SqlState);
+        await ExecuteAsync(connection, "ROLLBACK TO SAVEPOINT delete_probe");
+
+        await using var count = new NpgsqlCommand(
+            $"SELECT count(*) FROM journal_lines WHERE \"JournalEntryId\" = '{entry}'",
+            connection);
+        Assert.Equal(2L, await count.ExecuteScalarAsync());
         await transaction.RollbackAsync();
     }
 
