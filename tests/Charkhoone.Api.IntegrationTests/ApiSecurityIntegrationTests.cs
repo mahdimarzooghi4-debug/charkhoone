@@ -88,8 +88,14 @@ public sealed class ApiSecurityIntegrationTests
 
     private class DevelopmentFactory : WebApplicationFactory<Program>
     {
-        protected override void ConfigureWebHost(IWebHostBuilder builder) =>
+        protected override void ConfigureWebHost(IWebHostBuilder builder)
+        {
             builder.UseEnvironment("Development");
+            builder.UseSetting(
+                "ConnectionStrings:Postgres",
+                Environment.GetEnvironmentVariable("CHARKHOONE_INTEGRATION_POSTGRES")
+                ?? "Host=localhost;Port=5432;Database=charkhoone_integration;Username=postgres;Password=postgres");
+        }
     }
 
     private sealed class LowRateLimitFactory : DevelopmentFactory
