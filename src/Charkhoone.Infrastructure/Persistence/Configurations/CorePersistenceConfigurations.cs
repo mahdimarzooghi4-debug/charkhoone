@@ -114,7 +114,7 @@ public sealed class PaymentInstructionRowConfiguration : IEntityTypeConfiguratio
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
         builder.HasIndex(x => x.ObligationId);
         builder.Property(x => x.BeneficiaryId).HasMaxLength(256).IsRequired();
-        builder.Property(x => x.AmountRial).HasPrecision(38, 18).IsRequired();
+        builder.Property(x => x.AmountRial).HasColumnType("numeric").IsRequired();
         builder.Property(x => x.IdempotencyKey).HasMaxLength(256).IsRequired();
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(64).IsRequired();
     }
@@ -127,7 +127,7 @@ public sealed class FrozenPrincipalRowConfiguration : IEntityTypeConfiguration<F
         builder.ToTable("frozen_principals");
         builder.HasKey(x => x.ContractId);
         builder.Property(x => x.BankId).HasMaxLength(128).IsRequired();
-        builder.Property(x => x.AmountRial).HasPrecision(38, 18).IsRequired();
+        builder.Property(x => x.AmountRial).HasColumnType("numeric").IsRequired();
         builder.Property(x => x.FundReference).HasMaxLength(256).IsRequired();
     }
 }
