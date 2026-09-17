@@ -89,11 +89,12 @@ app.Use(async (context, next) =>
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapHealthChecks("/health");
-app.MapHealthChecks("/health/live", new HealthCheckOptions
+var livenessOptions = new HealthCheckOptions
 {
     Predicate = _ => false,
-});
+};
+app.MapHealthChecks("/health", livenessOptions);
+app.MapHealthChecks("/health/live", livenessOptions);
 app.MapHealthChecks("/health/ready", new HealthCheckOptions
 {
     Predicate = registration => registration.Tags.Contains("ready"),
