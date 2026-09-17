@@ -8,7 +8,18 @@ public sealed class BankApprovalRowConfiguration : IEntityTypeConfiguration<Bank
 {
     public void Configure(EntityTypeBuilder<BankApprovalRow> builder)
     {
-        builder.ToTable("bank_approvals");
+        builder.ToTable("bank_approvals", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_bank_approvals_maximum_eligible_nonnegative_finite",
+                "\"MaximumEligibleLoanRial\"::text NOT IN ('NaN','Infinity','-Infinity') AND \"MaximumEligibleLoanRial\" >= 0");
+            table.HasCheckConstraint(
+                "CK_bank_approvals_approved_amount_valid",
+                "\"ApprovedLoanRial\" IS NULL OR (\"ApprovedLoanRial\"::text NOT IN ('NaN','Infinity','-Infinity') AND \"ApprovedLoanRial\" > 0 AND \"ApprovedLoanRial\" <= \"MaximumEligibleLoanRial\")");
+            table.HasCheckConstraint(
+                "CK_bank_approvals_idempotency_key_nonblank",
+                "btrim(\"IdempotencyKey\") <> ''");
+        });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.CreditApplicationId).IsUnique();
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
@@ -31,7 +42,18 @@ public sealed class FundingAllocationRowConfiguration : IEntityTypeConfiguration
 {
     public void Configure(EntityTypeBuilder<FundingAllocationRow> builder)
     {
-        builder.ToTable("funding_allocations");
+        builder.ToTable("funding_allocations", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_funding_allocations_amounts_and_equation",
+                "\"FullDepositEquivalentRial\"::text NOT IN ('NaN','Infinity','-Infinity') AND \"MaximumEligibleLoanRial\"::text NOT IN ('NaN','Infinity','-Infinity') AND \"BankApprovedLoanRial\"::text NOT IN ('NaN','Infinity','-Infinity') AND \"TenantContributionRial\"::text NOT IN ('NaN','Infinity','-Infinity') AND \"FullDepositEquivalentRial\" >= 0 AND \"MaximumEligibleLoanRial\" >= 0 AND \"BankApprovedLoanRial\" > 0 AND \"BankApprovedLoanRial\" <= \"MaximumEligibleLoanRial\" AND \"BankApprovedLoanRial\" <= \"FullDepositEquivalentRial\" AND \"TenantContributionRial\" >= 0 AND \"TenantContributionRial\" = \"FullDepositEquivalentRial\" - \"BankApprovedLoanRial\"");
+            table.HasCheckConstraint(
+                "CK_funding_allocations_bank_id_nonblank",
+                "btrim(\"BankId\") <> ''");
+            table.HasCheckConstraint(
+                "CK_funding_allocations_plan_version_nonblank",
+                "btrim(\"BankLoanPlanVersion\") <> ''");
+        });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.CreditApplicationId).IsUnique();
         builder.HasIndex(x => x.ContractId).IsUnique();
@@ -58,7 +80,12 @@ public sealed class FundPrincipalFreezeRowConfiguration : IEntityTypeConfigurati
 {
     public void Configure(EntityTypeBuilder<FundPrincipalFreezeRow> builder)
     {
-        builder.ToTable("fund_principal_freezes");
+        builder.ToTable("fund_principal_freezes", table =>
+        {
+            table.HasCheckConstraint(
+                "CK_fund_principal_freezes_idempotency_key_nonblank",
+                "btrim(\"IdempotencyKey\") <> ''");
+        });
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.FundingAllocationId).IsUnique();
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
