@@ -9,6 +9,14 @@ public static class ContractEndpoints
 {
     public static RouteGroupBuilder MapContractEndpoints(this RouteGroupBuilder api)
     {
+        api.MapGet("/contracts/{id:guid}", GetContractAsync)
+            .RequireAuthorization()
+            .WithName("GetContract")
+            .Produces<ContractDetailResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound);
+
         api.MapPost("/contracts/{id:guid}/settlement/reconcile", ReconcileSettlementAsync)
             .RequireAuthorization()
             .WithName("ReconcileNormalContractSettlement")
@@ -36,6 +44,29 @@ public static class ContractEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         return api;
+    }
+
+    private static async Task<IResult> GetContractAsync(
+        Guid id,
+        ClaimsPrincipal principal,
+        IUserIdentityLookup userIdentityLookup,
+        IContractReadService contracts,
+        CancellationToken cancellationToken)
+    {
+        var identity = await ResolveUserAsync(principal, userIdentityLookup, cancellationToken);
+        if (identity.Error is not null)
+        {
+            return identity.Error;
+        }
+
+        var detail = await contracts.GetDetailAsync(
+            id,
+            identity.UserId!.Value,
+            cancellationToken);
+
+        return detail is null
+            ? ContractNotFound()
+            : Results.Ok(ToResponse(detail));
     }
 
     private static async Task<IResult> ReconcileSettlementAsync(
@@ -224,6 +255,83 @@ public static class ContractEndpoints
                 ["code"] = "contract_not_found",
             });
 
+    private static ContractDetailResponse ToResponse(ContractDetailView detail) =>
+        new(
+            detail.ContractId,
+            detail.TenantUserId,
+            detail.OwnerUserId,
+            detail.PropertyId,
+            detail.CreditApplicationId,
+            detail.Status.ToString(),
+            detail.BankLoanPlanId,
+            detail.BankLoanPlanVersion,
+            detail.CreditGradePolicyVersion,
+            detail.CreatedAtUtc,
+            detail.UpdatedAtUtc,
+            detail.Delinquency is null
+                ? null
+                : new ContractDelinquencyResponse(
+                    detail.Delinquency.ConsecutiveMissedMonths,
+                    detail.Delinquency.CancellationRequired,
+                    detail.Delinquency.UpdatedAtUtc),
+            detail.FrozenPrincipal is null
+                ? null
+                : new FrozenPrincipalResponse(
+                    detail.FrozenPrincipal.BankId,
+                    detail.FrozenPrincipal.AmountRial,
+                    detail.FrozenPrincipal.FundReference,
+                    detail.FrozenPrincipal.FrozenAtUtc),
+            detail.TenantContribution is null
+                ? null
+                : new TenantContributionBalanceResponse(
+                    detail.TenantContribution.InitialAmountRial,
+                    detail.TenantContribution.ConfirmedReplenishmentsRial,
+                    detail.TenantContribution.ConfirmedCoverageRial,
+                    detail.TenantContribution.AvailableBalanceRial,
+                    detail.TenantContribution.FundReference,
+                    detail.TenantContribution.FundedAtUtc),
+            detail.MonthlyObligations.Select(obligation => new ContractMonthlyObligationResponse(
+                obligation.Id,
+                obligation.ContractMonthNumber,
+                obligation.DueAtUtc,
+                obligation.Status.ToString(),
+                obligation.Components.Select(component => new ContractPaymentComponentResponse(
+                    component.PaymentInstructionId,
+                    component.Kind.ToString(),
+                    component.BeneficiaryId,
+                    component.AmountRial,
+                    component.PaymentStatus.ToString(),
+                    component.ExternalTransactionStatus?.ToString(),
+                    component.Provider,
+                    component.ExternalReference,
+                    component.ReasonCode,
+                    component.UpdatedAtUtc)).ToArray(),
+                obligation.UpdatedAtUtc,
+                obligation.ClosedAtUtc)).ToArray(),
+            detail.PaymentsRequiringReconciliation.Select(payment => new PaymentReconciliationAttentionResponse(
+                payment.PaymentInstructionId,
+                payment.MonthlyObligationId,
+                payment.ContractMonthNumber,
+                payment.Kind.ToString(),
+                payment.AmountRial,
+                payment.PaymentStatus.ToString(),
+                payment.ExternalTransactionStatus?.ToString(),
+                payment.Provider,
+                payment.ExternalReference,
+                payment.ReasonCode,
+                payment.UpdatedAtUtc)).ToArray(),
+            detail.Settlement is null
+                ? null
+                : new ContractNormalSettlementResponse(
+                    detail.Settlement.Id,
+                    detail.Settlement.BankPrincipalAmountRial,
+                    detail.Settlement.BankPrincipalStatus.ToString(),
+                    detail.Settlement.TenantResidualAmountRial,
+                    detail.Settlement.TenantResidualStatus.ToString(),
+                    detail.Settlement.UpdatedAtUtc,
+                    detail.Settlement.CompletedAtUtc),
+            detail.OpenLostFundReturnExposureCount);
+
     private static NormalSettlementResponse ToResponse(NormalSettlementView settlement) =>
         new(
             settlement.Id,
@@ -243,6 +351,88 @@ public static class ContractEndpoints
             settlement.UpdatedAtUtc,
             settlement.CompletedAtUtc);
 }
+
+public sealed record ContractDetailResponse(
+    Guid ContractId,
+    Guid TenantUserId,
+    Guid OwnerUserId,
+    Guid PropertyId,
+    Guid? CreditApplicationId,
+    string Status,
+    Guid? BankLoanPlanId,
+    string? BankLoanPlanVersion,
+    string? CreditGradePolicyVersion,
+    DateTimeOffset CreatedAtUtc,
+    DateTimeOffset UpdatedAtUtc,
+    ContractDelinquencyResponse? Delinquency,
+    FrozenPrincipalResponse? FrozenPrincipal,
+    TenantContributionBalanceResponse? TenantContribution,
+    IReadOnlyList<ContractMonthlyObligationResponse> MonthlyObligations,
+    IReadOnlyList<PaymentReconciliationAttentionResponse> PaymentsRequiringReconciliation,
+    ContractNormalSettlementResponse? Settlement,
+    int OpenLostFundReturnExposureCount);
+
+public sealed record ContractDelinquencyResponse(
+    int ConsecutiveMissedMonths,
+    bool CancellationRequired,
+    DateTimeOffset UpdatedAtUtc);
+
+public sealed record FrozenPrincipalResponse(
+    string BankId,
+    decimal AmountRial,
+    string FundReference,
+    DateTimeOffset FrozenAtUtc);
+
+public sealed record TenantContributionBalanceResponse(
+    decimal InitialAmountRial,
+    decimal ConfirmedReplenishmentsRial,
+    decimal ConfirmedCoverageRial,
+    decimal AvailableBalanceRial,
+    string FundReference,
+    DateTimeOffset FundedAtUtc);
+
+public sealed record ContractMonthlyObligationResponse(
+    Guid Id,
+    int ContractMonthNumber,
+    DateTimeOffset DueAtUtc,
+    string Status,
+    IReadOnlyList<ContractPaymentComponentResponse> Components,
+    DateTimeOffset UpdatedAtUtc,
+    DateTimeOffset? ClosedAtUtc);
+
+public sealed record ContractPaymentComponentResponse(
+    Guid PaymentInstructionId,
+    string Kind,
+    string BeneficiaryId,
+    decimal AmountRial,
+    string PaymentStatus,
+    string? ExternalTransactionStatus,
+    string? Provider,
+    string? ExternalReference,
+    string? ReasonCode,
+    DateTimeOffset UpdatedAtUtc);
+
+public sealed record PaymentReconciliationAttentionResponse(
+    Guid PaymentInstructionId,
+    Guid MonthlyObligationId,
+    int ContractMonthNumber,
+    string Kind,
+    decimal AmountRial,
+    string PaymentStatus,
+    string? ExternalTransactionStatus,
+    string? Provider,
+    string? ExternalReference,
+    string? ReasonCode,
+    DateTimeOffset UpdatedAtUtc);
+
+public sealed record ContractNormalSettlementResponse(
+    Guid Id,
+    decimal BankPrincipalAmountRial,
+    string BankPrincipalStatus,
+    decimal TenantResidualAmountRial,
+    string TenantResidualStatus,
+    DateTimeOffset UpdatedAtUtc,
+    DateTimeOffset? CompletedAtUtc);
 
 public sealed record NormalSettlementReconciliationResponse(
     string Outcome,
