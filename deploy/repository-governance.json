@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "protected_branch": "main",
+  "required_status_checks": [
+    "repository-governance-gate",
+    "release-ci-gate",
+    "container-release-gate",
+    "supply-chain-evidence-gate"
+  ],
+  "rules": {
+    "require_pull_request": true,
+    "require_status_checks_to_pass": true,
+    "require_branch_up_to_date": true,
+    "block_force_pushes": true,
+    "block_branch_deletion": true
+  },
+  "review_approval_count": "organization-policy-not-defined"
+}
