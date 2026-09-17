@@ -789,31 +789,6 @@ namespace Charkhoone.Infrastructure.Persistence.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.JournalEntrySealRow", b =>
-                {
-                    b.Property<Guid>("JournalEntryId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("LineCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("SealedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("TotalCreditRial")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalDebitRial")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("JournalEntryId");
-
-                    b.ToTable("journal_entry_seals", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_journal_entry_seals_balanced_positive_finite", "\"LineCount\" >= 2 AND \"TotalDebitRial\" > 0 AND \"TotalCreditRial\" > 0 AND \"TotalDebitRial\" = \"TotalCreditRial\" AND \"TotalDebitRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity') AND \"TotalCreditRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity')");
-                        });
-                });
-
             modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.JournalLineRow", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1622,15 +1597,6 @@ namespace Charkhoone.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("ReversalOfJournalEntryId")
                         .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.JournalEntrySealRow", b =>
-                {
-                    b.HasOne("Charkhoone.Infrastructure.Persistence.Models.JournalEntryRow", null)
-                        .WithOne()
-                        .HasForeignKey("Charkhoone.Infrastructure.Persistence.Models.JournalEntrySealRow", "JournalEntryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.JournalLineRow", b =>

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Charkhoone.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(CharkhooneDbContext))]
-    [Migration("20260917152215_AddDatabaseIntegrityEnforcementV2")]
+    [Migration("20260917153332_AddDatabaseIntegrityEnforcementV2")]
     partial class AddDatabaseIntegrityEnforcementV2
     {
         /// <inheritdoc />
@@ -789,31 +789,6 @@ namespace Charkhoone.Infrastructure.Persistence.Migrations
                             t.HasCheckConstraint("CK_journal_entries_not_self_reversal", "\"ReversalOfJournalEntryId\" IS NULL OR \"ReversalOfJournalEntryId\" <> \"Id\"");
 
                             t.HasCheckConstraint("CK_journal_entries_posted_at_or_after_occurred_at", "\"PostedAtUtc\" >= \"OccurredAtUtc\"");
-                        });
-                });
-
-            modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.JournalEntrySealRow", b =>
-                {
-                    b.Property<Guid>("JournalEntryId")
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("LineCount")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTimeOffset>("SealedAtUtc")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("TotalCreditRial")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("TotalDebitRial")
-                        .HasColumnType("numeric");
-
-                    b.HasKey("JournalEntryId");
-
-                    b.ToTable("journal_entry_seals", null, t =>
-                        {
-                            t.HasCheckConstraint("CK_journal_entry_seals_balanced_positive_finite", "\"LineCount\" >= 2 AND \"TotalDebitRial\" > 0 AND \"TotalCreditRial\" > 0 AND \"TotalDebitRial\" = \"TotalCreditRial\" AND \"TotalDebitRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity') AND \"TotalCreditRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity')");
                         });
                 });
 
@@ -1625,15 +1600,6 @@ namespace Charkhoone.Infrastructure.Persistence.Migrations
                         .WithMany()
                         .HasForeignKey("ReversalOfJournalEntryId")
                         .OnDelete(DeleteBehavior.Restrict);
-                });
-
-            modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.JournalEntrySealRow", b =>
-                {
-                    b.HasOne("Charkhoone.Infrastructure.Persistence.Models.JournalEntryRow", null)
-                        .WithOne()
-                        .HasForeignKey("Charkhoone.Infrastructure.Persistence.Models.JournalEntrySealRow", "JournalEntryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.JournalLineRow", b =>

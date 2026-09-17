@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -14,28 +13,6 @@ namespace Charkhoone.Infrastructure.Persistence.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_journal_lines_journal_entries_JournalEntryId",
                 table: "journal_lines");
-
-            migrationBuilder.CreateTable(
-                name: "journal_entry_seals",
-                columns: table => new
-                {
-                    JournalEntryId = table.Column<Guid>(type: "uuid", nullable: false),
-                    LineCount = table.Column<int>(type: "integer", nullable: false),
-                    TotalDebitRial = table.Column<decimal>(type: "numeric", nullable: false),
-                    TotalCreditRial = table.Column<decimal>(type: "numeric", nullable: false),
-                    SealedAtUtc = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_journal_entry_seals", x => x.JournalEntryId);
-                    table.CheckConstraint("CK_journal_entry_seals_balanced_positive_finite", "\"LineCount\" >= 2 AND \"TotalDebitRial\" > 0 AND \"TotalCreditRial\" > 0 AND \"TotalDebitRial\" = \"TotalCreditRial\" AND \"TotalDebitRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity') AND \"TotalCreditRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity')");
-                    table.ForeignKey(
-                        name: "FK_journal_entry_seals_journal_entries_JournalEntryId",
-                        column: x => x.JournalEntryId,
-                        principalTable: "journal_entries",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
 
             migrationBuilder.AddCheckConstraint(
                 name: "CK_verification_requests_idempotency_key_nonblank",
@@ -166,9 +143,6 @@ namespace Charkhoone.Infrastructure.Persistence.Migrations
             migrationBuilder.DropForeignKey(
                 name: "FK_lease_contracts_credit_applications_CreditApplicationId",
                 table: "lease_contracts");
-
-            migrationBuilder.DropTable(
-                name: "journal_entry_seals");
 
             migrationBuilder.DropCheckConstraint(
                 name: "CK_verification_requests_idempotency_key_nonblank",
