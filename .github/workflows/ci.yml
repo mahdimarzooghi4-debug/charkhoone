@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CHARKHOONE_INTEGRATION_POSTGRES: Host=localhost;Port=5432;Database=charkhoone_integration;Username=postgres;Password=postgres
+      ConnectionStrings__Postgres: Host=localhost;Port=5432;Database=charkhoone_integration;Username=postgres;Password=postgres
     services:
       postgres:
         image: postgres:17-alpine
@@ -36,6 +37,28 @@ jobs:
         run: dotnet build Charkhoone.slnx --configuration Release --no-restore
       - name: Test
         run: dotnet test Charkhoone.slnx --configuration Release --no-build
+      - name: Install EF CLI
+        run: dotnet tool install --global dotnet-ef --version 10.0.12
+      - name: Verify no pending model changes
+        run: >-
+          dotnet ef migrations has-pending-model-changes
+          --project src/Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj
+          --startup-project src/Charkhoone.Api/Charkhoone.Api.csproj
+          --no-build
+          --configuration Release
+      - name: Generate idempotent migration SQL
+        run: |
+          mkdir -p artifacts/database
+          dotnet ef migrations script --idempotent \
+            --project src/Charkhoone.Infrastructure/Charkhoone.Infrastructure.csproj \
+            --startup-project src/Charkhoone.Api/Charkhoone.Api.csproj \
+            --no-build \
+            --configuration Release \
+            --output artifacts/database/migrations-idempotent.sql
+          test -s artifacts/database/migrations-idempotent.sql
+          grep -q '__EFMigrationsHistory' artifacts/database/migrations-idempotent.sql
+      - name: Validate database operation scripts
+        run: bash -n scripts/database/migrate.sh scripts/database/generate-idempotent-sql.sh
 
   web:
     runs-on: ubuntu-latest
