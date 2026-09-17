@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -28,7 +29,7 @@ public static class ApiSecurityExtensions
                 }
 
                 context.HttpContext.Response.ContentType = "application/problem+json";
-                await context.HttpContext.Response.WriteAsJsonAsync(new
+                var payload = JsonSerializer.Serialize(new
                 {
                     type = "about:blank",
                     title = "Too many requests.",
@@ -36,7 +37,8 @@ public static class ApiSecurityExtensions
                     code = "rate_limit_exceeded",
                     traceId = System.Diagnostics.Activity.Current?.TraceId.ToString()
                         ?? context.HttpContext.TraceIdentifier,
-                }, cancellationToken);
+                });
+                await context.HttpContext.Response.WriteAsync(payload, cancellationToken);
             };
 
             options.AddPolicy(ApiRateLimitPolicies.SensitiveMutation, httpContext =>
