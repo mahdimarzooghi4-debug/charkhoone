@@ -11,7 +11,8 @@ EXPECTED_KEYS = {
     "DOTNET_SDK",
     "DOTNET_ASPNET",
     "DOTNET_RUNTIME",
-    "NODE_RUNTIME",
+    "NODE_BUILD",
+    "WEB_NODE_RUNTIME",
     "NGINX_RUNTIME",
 }
 PINNED_REF = re.compile(r"^[^\s@]+(?::[^\s@]+)?@sha256:[0-9a-f]{64}$")
@@ -76,9 +77,9 @@ def main() -> None:
             lock["DOTNET_RUNTIME"],
         ],
         ROOT / "apps" / "web" / "Dockerfile": [
-            lock["NODE_RUNTIME"],
-            lock["NODE_RUNTIME"],
-            lock["NODE_RUNTIME"],
+            lock["NODE_BUILD"],
+            lock["NODE_BUILD"],
+            lock["WEB_NODE_RUNTIME"],
         ],
     }
 
