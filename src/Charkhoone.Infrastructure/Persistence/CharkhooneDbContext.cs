@@ -28,7 +28,6 @@ public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> op
     public DbSet<LedgerAccountRow> LedgerAccounts => Set<LedgerAccountRow>();
     public DbSet<JournalEntryRow> JournalEntries => Set<JournalEntryRow>();
     public DbSet<JournalLineRow> JournalLines => Set<JournalLineRow>();
-    public DbSet<JournalEntrySealRow> JournalEntrySeals => Set<JournalEntrySealRow>();
     public DbSet<LeaseContractRow> LeaseContracts => Set<LeaseContractRow>();
     public DbSet<WorkflowTransitionRow> WorkflowTransitions => Set<WorkflowTransitionRow>();
     public DbSet<AuditEventRow> AuditEvents => Set<AuditEventRow>();
@@ -67,14 +66,12 @@ public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> op
         var mutation = ChangeTracker.Entries()
             .FirstOrDefault(entry =>
                 entry.State is EntityState.Modified or EntityState.Deleted
-                && (entry.Entity is JournalEntryRow
-                    || entry.Entity is JournalLineRow
-                    || entry.Entity is JournalEntrySealRow));
+                && (entry.Entity is JournalEntryRow || entry.Entity is JournalLineRow));
 
         if (mutation is not null)
         {
             throw new InvalidOperationException(
-                "Posted journal entries, lines, and seals are immutable. Record corrections with a new reversal journal instead of updating or deleting posted ledger history.");
+                "Posted journal entries and lines are immutable. Record corrections with a new reversal journal instead of updating or deleting posted ledger history.");
         }
     }
 }
