@@ -79,12 +79,24 @@ jobs:
         env:
           POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
         run: bash scripts/database/ci-integrity-audit.sh
+      - name: Collect runtime PostgreSQL evidence
+        env:
+          POSTGRES_CONTAINER_ID: ${{ job.services.postgres.id }}
+        run: bash scripts/database/ci-runtime-evidence.sh
       - name: Upload integrity audit counts
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: database-integrity-audit-${{ github.sha }}
           path: artifacts/database/integrity-audit/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Upload runtime database evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: database-runtime-evidence-${{ github.sha }}
+          path: artifacts/database/runtime-evidence/
           if-no-files-found: warn
           retention-days: 7
       - name: Upload restore drill evidence (no database dump)
