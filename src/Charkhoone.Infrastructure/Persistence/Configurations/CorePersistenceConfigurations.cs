@@ -113,6 +113,7 @@ public sealed class PaymentInstructionRowConfiguration : IEntityTypeConfiguratio
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.IdempotencyKey).IsUnique();
         builder.HasIndex(x => x.ObligationId);
+        builder.HasIndex(x => new { x.Status, x.UpdatedAtUtc, x.Id });
         builder.Property(x => x.BeneficiaryId).HasMaxLength(256).IsRequired();
         builder.Property(x => x.AmountRial).HasColumnType("numeric").IsRequired();
         builder.Property(x => x.IdempotencyKey).HasMaxLength(256).IsRequired();
@@ -138,7 +139,7 @@ public sealed class OutboxMessageRowConfiguration : IEntityTypeConfiguration<Out
     {
         builder.ToTable("outbox_messages");
         builder.HasKey(x => x.Id);
-        builder.HasIndex(x => new { x.ProcessedAtUtc, x.OccurredAtUtc });
+        builder.HasIndex(x => new { x.ProcessedAtUtc, x.OccurredAtUtc, x.Id });
         builder.Property(x => x.Type).HasMaxLength(256).IsRequired();
         builder.Property(x => x.PayloadJson).HasColumnType("jsonb").IsRequired();
         builder.Property(x => x.LastError).HasColumnType("text");
