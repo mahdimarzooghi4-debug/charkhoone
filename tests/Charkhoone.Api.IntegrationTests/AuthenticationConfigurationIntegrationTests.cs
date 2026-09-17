@@ -30,6 +30,32 @@ public sealed class AuthenticationConfigurationIntegrationTests
         Assert.Contains("Authentication:Audience", exception.ToString(), StringComparison.Ordinal);
     }
 
+    [Theory]
+    [InlineData("Identity")]
+    [InlineData("CreditGrade")]
+    [InlineData("BankApproval")]
+    [InlineData("Fund")]
+    [InlineData("Payment")]
+    [InlineData("Coverage")]
+    [InlineData("CancellationSettlement")]
+    [InlineData("NormalSettlementBank")]
+    [InlineData("NormalSettlementTenant")]
+    public void ProductionStartup_RejectsDevelopmentMockAdapters(string adapterName)
+    {
+        using var factory = new ProductionAuthenticationFactory(
+            authority: "https://identity.example.test/realms/charkhoone",
+            audience: "charkhoone-api",
+            adapterName: adapterName,
+            adapterMode: "DevelopmentMock");
+
+        var exception = Assert.ThrowsAny<Exception>(() => factory.CreateClient());
+
+        Assert.Contains(
+            $"ExternalAdapters:{adapterName}:Mode=DevelopmentMock",
+            exception.ToString(),
+            StringComparison.Ordinal);
+    }
+
     [Fact]
     public async Task ProductionStartup_WithAuthorityAndAudience_ExposesHealthEndpoint()
     {
@@ -45,7 +71,9 @@ public sealed class AuthenticationConfigurationIntegrationTests
 
     private sealed class ProductionAuthenticationFactory(
         string? authority,
-        string? audience)
+        string? audience,
+        string? adapterName = null,
+        string? adapterMode = null)
         : WebApplicationFactory<Program>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -53,6 +81,11 @@ public sealed class AuthenticationConfigurationIntegrationTests
             builder.UseEnvironment("Production");
             builder.UseSetting("Authentication:Authority", authority);
             builder.UseSetting("Authentication:Audience", audience);
+
+            if (!string.IsNullOrWhiteSpace(adapterName))
+            {
+                builder.UseSetting($"ExternalAdapters:{adapterName}:Mode", adapterMode);
+            }
         }
     }
 }
