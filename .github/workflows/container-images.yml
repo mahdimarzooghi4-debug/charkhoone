@@ -1,0 +1,172 @@
+name: container-images
+
+on:
+  push:
+    branches:
+      - main
+      - feature/container-release-packaging-v1
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: container-images-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build API image
+        run: |
+          docker build \
+            --build-arg VCS_REF="${GITHUB_SHA}" \
+            --file src/Charkhoone.Api/Dockerfile \
+            --tag "charkhoone-api:${GITHUB_SHA}" \
+            .
+      - name: Verify API image contract and liveness
+        run: |
+          set -euo pipefail
+          image="charkhoone-api:${GITHUB_SHA}"
+          configured_user="$(docker image inspect "$image" --format '{{.Config.User}}')"
+          if [[ -z "$configured_user" || "$configured_user" == "0" || "$configured_user" == "root" ]]; then
+            echo "API image must run as a configured non-root user; got '$configured_user'" >&2
+            exit 1
+          fi
+          revision="$(docker image inspect "$image" --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}')"
+          test "$revision" = "$GITHUB_SHA"
+
+          docker run -d --name charkhoone-api-smoke \
+            -p 127.0.0.1:18080:8080 \
+            -e ASPNETCORE_ENVIRONMENT=Development \
+            -e Release__GitSha="$GITHUB_SHA" \
+            -e 'ConnectionStrings__Postgres=Host=127.0.0.1;Port=5432;Database=charkhoone;Username=charkhoone;Password=container_smoke;Timeout=1' \
+            -e RabbitMq__Enabled=false \
+            "$image"
+          trap 'docker logs charkhoone-api-smoke || true; docker rm -f charkhoone-api-smoke >/dev/null 2>&1 || true' EXIT
+
+          ready=false
+          for _ in $(seq 1 30); do
+            if curl --fail --silent --show-error \
+              --dump-header /tmp/charkhoone-api-headers \
+              --output /dev/null \
+              http://127.0.0.1:18080/health/live; then
+              ready=true
+              break
+            fi
+            if [[ "$(docker inspect charkhoone-api-smoke --format '{{.State.Running}}')" != "true" ]]; then
+              echo "API container exited before liveness succeeded" >&2
+              exit 1
+            fi
+            sleep 1
+          done
+          test "$ready" = true
+          grep -i -F "X-Charkhoone-Release-Sha: ${GITHUB_SHA}" /tmp/charkhoone-api-headers
+
+  worker-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build Worker image
+        run: |
+          docker build \
+            --build-arg VCS_REF="${GITHUB_SHA}" \
+            --file src/Charkhoone.Worker/Dockerfile \
+            --tag "charkhoone-worker:${GITHUB_SHA}" \
+            .
+      - name: Verify Worker image contract and process startup
+        run: |
+          set -euo pipefail
+          image="charkhoone-worker:${GITHUB_SHA}"
+          configured_user="$(docker image inspect "$image" --format '{{.Config.User}}')"
+          if [[ -z "$configured_user" || "$configured_user" == "0" || "$configured_user" == "root" ]]; then
+            echo "Worker image must run as a configured non-root user; got '$configured_user'" >&2
+            exit 1
+          fi
+          revision="$(docker image inspect "$image" --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}')"
+          test "$revision" = "$GITHUB_SHA"
+
+          docker run -d --name charkhoone-worker-smoke \
+            -e DOTNET_ENVIRONMENT=Development \
+            -e 'ConnectionStrings__Postgres=Host=127.0.0.1;Port=5432;Database=charkhoone;Username=charkhoone;Password=container_smoke;Timeout=1' \
+            -e RabbitMq__Enabled=false \
+            -e FinancialReconciliation__Enabled=false \
+            "$image"
+          trap 'docker logs charkhoone-worker-smoke || true; docker rm -f charkhoone-worker-smoke >/dev/null 2>&1 || true' EXIT
+          sleep 5
+          test "$(docker inspect charkhoone-worker-smoke --format '{{.State.Running}}')" = "true"
+
+  web-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Build Web image
+        run: |
+          docker build \
+            --build-arg VCS_REF="${GITHUB_SHA}" \
+            --file apps/web/Dockerfile \
+            --tag "charkhoone-web:${GITHUB_SHA}" \
+            apps/web
+      - name: Verify Web image contract and HTTP startup
+        run: |
+          set -euo pipefail
+          image="charkhoone-web:${GITHUB_SHA}"
+          configured_user="$(docker image inspect "$image" --format '{{.Config.User}}')"
+          if [[ -z "$configured_user" || "$configured_user" == "0" || "$configured_user" == "root" ]]; then
+            echo "Web image must run as a configured non-root user; got '$configured_user'" >&2
+            exit 1
+          fi
+          revision="$(docker image inspect "$image" --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}')"
+          test "$revision" = "$GITHUB_SHA"
+
+          docker run -d --name charkhoone-web-smoke \
+            -p 127.0.0.1:13000:3000 \
+            "$image"
+          trap 'docker logs charkhoone-web-smoke || true; docker rm -f charkhoone-web-smoke >/dev/null 2>&1 || true' EXIT
+
+          ready=false
+          for _ in $(seq 1 30); do
+            if curl --fail --silent --show-error --output /dev/null http://127.0.0.1:13000/; then
+              ready=true
+              break
+            fi
+            if [[ "$(docker inspect charkhoone-web-smoke --format '{{.State.Running}}')" != "true" ]]; then
+              echo "Web container exited before HTTP startup succeeded" >&2
+              exit 1
+            fi
+            sleep 1
+          done
+          test "$ready" = true
+
+  container-release-evidence:
+    runs-on: ubuntu-latest
+    needs:
+      - api-image
+      - worker-image
+      - web-image
+    steps:
+      - name: Write SHA-bound container evidence
+        run: |
+          mkdir -p artifacts/container-release
+          cat > artifacts/container-release/evidence.txt <<EOF
+          release_sha=${GITHUB_SHA}
+          api_image_build=success
+          api_liveness_smoke=success
+          worker_image_build=success
+          worker_process_smoke=success
+          web_image_build=success
+          web_http_smoke=success
+          runtime_user=non-root-verified
+          registry_push=not-claimed
+          deployment=not-performed
+          staging_contacted=no
+          production_contacted=no
+          EOF
+      - uses: actions/upload-artifact@v4
+        with:
+          name: container-release-evidence-${{ github.sha }}
+          path: artifacts/container-release/evidence.txt
+          if-no-files-found: error

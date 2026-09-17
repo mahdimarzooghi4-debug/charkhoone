@@ -1,0 +1,57 @@
+name: charkhoone-release
+
+services:
+  api:
+    image: ${CHARKHOONE_API_IMAGE:?set an immutable API image reference}
+    restart: unless-stopped
+    stop_grace_period: 30s
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${CHARKHOONE_ENVIRONMENT:?set Staging or Production}
+      Release__GitSha: ${CHARKHOONE_RELEASE_SHA:?set the exact 40-character release SHA}
+      ConnectionStrings__Postgres: ${CHARKHOONE_POSTGRES_CONNECTION:?set the runtime PostgreSQL connection}
+      Authentication__Authority: ${CHARKHOONE_AUTHORITY:?set the HTTPS OIDC authority}
+      Authentication__Audience: ${CHARKHOONE_AUDIENCE:?set the OIDC audience}
+      Observability__OtlpEndpoint: ${CHARKHOONE_OTLP_ENDPOINT:-}
+      RabbitMq__Enabled: "true"
+      RabbitMq__Host: ${CHARKHOONE_RABBITMQ_HOST:?set the RabbitMQ host}
+      RabbitMq__Port: ${CHARKHOONE_RABBITMQ_PORT:-5672}
+      RabbitMq__UserName: ${CHARKHOONE_RABBITMQ_USERNAME:?set the RabbitMQ username}
+      RabbitMq__Password: ${CHARKHOONE_RABBITMQ_PASSWORD:?set the RabbitMQ password}
+      RabbitMq__VirtualHost: ${CHARKHOONE_RABBITMQ_VHOST:-/}
+    expose:
+      - "8080"
+
+  worker:
+    image: ${CHARKHOONE_WORKER_IMAGE:?set an immutable Worker image reference}
+    restart: unless-stopped
+    stop_grace_period: 30s
+    environment:
+      DOTNET_ENVIRONMENT: ${CHARKHOONE_ENVIRONMENT:?set Staging or Production}
+      ConnectionStrings__Postgres: ${CHARKHOONE_POSTGRES_CONNECTION:?set the runtime PostgreSQL connection}
+      Observability__OtlpEndpoint: ${CHARKHOONE_OTLP_ENDPOINT:-}
+      RabbitMq__Enabled: "true"
+      RabbitMq__Host: ${CHARKHOONE_RABBITMQ_HOST:?set the RabbitMQ host}
+      RabbitMq__Port: ${CHARKHOONE_RABBITMQ_PORT:-5672}
+      RabbitMq__UserName: ${CHARKHOONE_RABBITMQ_USERNAME:?set the RabbitMQ username}
+      RabbitMq__Password: ${CHARKHOONE_RABBITMQ_PASSWORD:?set the RabbitMQ password}
+      RabbitMq__VirtualHost: ${CHARKHOONE_RABBITMQ_VHOST:-/}
+      FinancialReconciliation__Enabled: ${CHARKHOONE_FINANCIAL_RECONCILIATION_ENABLED:-false}
+    depends_on:
+      - api
+
+  web:
+    image: ${CHARKHOONE_WEB_IMAGE:?set an immutable Web image reference}
+    restart: unless-stopped
+    expose:
+      - "3000"
+
+  nginx:
+    image: nginx:1.29-alpine
+    restart: unless-stopped
+    depends_on:
+      - api
+      - web
+    ports:
+      - "${CHARKHOONE_HTTP_BIND:-127.0.0.1:8080}:80"
+    volumes:
+      - ./nginx/charkhoone.conf:/etc/nginx/conf.d/default.conf:ro
