@@ -13,6 +13,8 @@ namespace Charkhoone.Api.IntegrationTests;
 
 public sealed class CharkhooneApiFactory : WebApplicationFactory<Program>
 {
+    private static readonly SemaphoreSlim MigrationLock = new(1, 1);
+
     public const string TestAuthenticationScheme = "IntegrationTest";
 
     public string ConnectionString { get; } =
@@ -43,10 +45,18 @@ public sealed class CharkhooneApiFactory : WebApplicationFactory<Program>
 
     public async Task MigrateAsync(CancellationToken cancellationToken = default)
     {
-        _ = Server;
-        await using var scope = Services.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
-        await dbContext.Database.MigrateAsync(cancellationToken);
+        await MigrationLock.WaitAsync(cancellationToken);
+        try
+        {
+            _ = Server;
+            await using var scope = Services.CreateAsyncScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+            await dbContext.Database.MigrateAsync(cancellationToken);
+        }
+        finally
+        {
+            MigrationLock.Release();
+        }
     }
 
     public HttpClient CreateAuthenticatedClient(string oidcSubject)
