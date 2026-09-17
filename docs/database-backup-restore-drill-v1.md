@@ -7,7 +7,7 @@ CI runs this drill after the regular PostgreSQL integration tests have migrated 
 `scripts/database/ci-backup-restore.sh` requires GitHub Actions CI and its explicit PostgreSQL service container ID. It uses the PostgreSQL 17 service's own `pg_dump`, `createdb`, `pg_restore`, and `psql`, avoiding client/server version mismatch. Database names are fixed. The source has no concurrent test/API/worker writers during capture.
 
 1. Require nonempty financial and messaging fixtures and verify source integrity.
-2. Capture an exact, sorted representation of every public table, including EF migration history and full numeric values, plus constraints and indexes.
+2. Capture an exact, sorted representation of every public table, including EF migration history and full numeric values, plus constraints and indexes. Partial-index predicates are reparsed by PostgreSQL through a temporary view before comparison because dump/restore can change array-cast expression rendering without changing meaning. The predicate is retained, not removed from verification.
 3. Make a custom-format logical dump, including schema and data.
 4. Create a separate database from `template0`. An existing target causes failure; the script never drops or overwrites databases.
 5. Restore with `--exit-on-error --single-transaction`, without owner/ACL restoration.

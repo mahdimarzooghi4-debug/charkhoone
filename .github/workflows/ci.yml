@@ -58,7 +58,7 @@ jobs:
           test -s artifacts/database/migrations-idempotent.sql
           grep -q '__EFMigrationsHistory' artifacts/database/migrations-idempotent.sql
       - name: Validate database operation scripts
-        run: bash -n scripts/database/*.sh
+        run: for script in scripts/database/*.sh; do bash -n "$script"; done
 
       - name: Real PostgreSQL backup and clean restore drill
         env:
