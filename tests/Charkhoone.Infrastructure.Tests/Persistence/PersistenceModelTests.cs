@@ -29,18 +29,35 @@ public sealed class PersistenceModelTests
     }
 
     [Fact]
-    public void PaymentInstruction_UsesLosslessDecimalStorageAndUniqueIdempotencyKey()
+    public void RialAmounts_UseUnscaledPostgresNumericStorage()
+    {
+        using var context = CreateContext();
+
+        var rialProperties = context.Model.GetEntityTypes()
+            .SelectMany(entity => entity.GetProperties())
+            .Where(property =>
+                (property.ClrType == typeof(decimal)
+                    || Nullable.GetUnderlyingType(property.ClrType) == typeof(decimal))
+                && property.Name.EndsWith("Rial", StringComparison.Ordinal))
+            .ToList();
+
+        Assert.NotEmpty(rialProperties);
+        foreach (var property in rialProperties)
+        {
+            Assert.Equal("numeric", property.GetColumnType());
+            Assert.Null(property.GetPrecision());
+            Assert.Null(property.GetScale());
+        }
+    }
+
+    [Fact]
+    public void PaymentInstruction_UsesUniqueIdempotencyKey()
     {
         using var context = CreateContext();
         var entity = context.Model.FindEntityType(typeof(PaymentInstructionRow));
 
         Assert.NotNull(entity);
         Assert.Equal("payment_instructions", entity!.GetTableName());
-
-        var amount = entity.FindProperty(nameof(PaymentInstructionRow.AmountRial));
-        Assert.NotNull(amount);
-        Assert.Equal(38, amount!.GetPrecision());
-        Assert.Equal(18, amount.GetScale());
 
         var idempotencyIndex = entity.GetIndexes().Single(index =>
             index.Properties.Count == 1 &&
@@ -113,8 +130,9 @@ public sealed class PersistenceModelTests
 
         var maximumLoan = entity.FindProperty(nameof(CreditEligibilityAssessmentRow.MaximumEligibleLoanRial));
         Assert.NotNull(maximumLoan);
-        Assert.Equal(38, maximumLoan!.GetPrecision());
-        Assert.Equal(18, maximumLoan.GetScale());
+        Assert.Equal("numeric", maximumLoan!.GetColumnType());
+        Assert.Null(maximumLoan.GetPrecision());
+        Assert.Null(maximumLoan.GetScale());
 
         var idempotencyIndex = entity.GetIndexes().Single(index =>
             index.Properties.Count == 1 &&
