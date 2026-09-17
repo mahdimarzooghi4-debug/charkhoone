@@ -73,6 +73,8 @@ public sealed class DatabaseIntegrityEnforcementIntegrationTests(CharkhooneApiFa
     [Fact]
     public async Task FundingAllocation_RejectsContributionThatDoesNotMatchApprovedLoan()
     {
+        var tenantId = Guid.NewGuid();
+        var ownerId = Guid.NewGuid();
         var applicationId = Guid.NewGuid();
         var contractId = Guid.NewGuid();
         var allocationId = Guid.NewGuid();
@@ -81,10 +83,23 @@ public sealed class DatabaseIntegrityEnforcementIntegrationTests(CharkhooneApiFa
         await using (var scope = factory.Services.CreateAsyncScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+            dbContext.Users.AddRange(
+                new UserRow
+                {
+                    Id = tenantId,
+                    OidcSubject = $"integrity-tenant-{tenantId:D}",
+                    CreatedAtUtc = now,
+                },
+                new UserRow
+                {
+                    Id = ownerId,
+                    OidcSubject = $"integrity-owner-{ownerId:D}",
+                    CreatedAtUtc = now,
+                });
             dbContext.CreditApplications.Add(new CreditApplicationRow
             {
                 Id = applicationId,
-                ApplicantUserId = Guid.NewGuid(),
+                ApplicantUserId = tenantId,
                 Status = CreditApplicationStatus.ApprovedFunded,
                 CreatedAtUtc = now,
                 UpdatedAtUtc = now,
@@ -92,8 +107,8 @@ public sealed class DatabaseIntegrityEnforcementIntegrationTests(CharkhooneApiFa
             dbContext.LeaseContracts.Add(new LeaseContractRow
             {
                 Id = contractId,
-                TenantUserId = Guid.NewGuid(),
-                OwnerUserId = Guid.NewGuid(),
+                TenantUserId = tenantId,
+                OwnerUserId = ownerId,
                 PropertyId = Guid.NewGuid(),
                 CreditApplicationId = applicationId,
                 Status = LeaseContractStatus.Active,
