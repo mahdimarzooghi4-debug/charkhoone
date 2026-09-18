@@ -25,6 +25,22 @@ jobs:
           python3 scripts/release/verify-ci-dependency-pins.py
           python3 scripts/release/verify-node-dependency-locks.py
           python3 scripts/release/verify-admin-release-wiring.py
+      - name: Render provider-neutral release compose
+        shell: bash
+        env:
+          CHARKHOONE_API_IMAGE: example.invalid/charkhoone-api:ci
+          CHARKHOONE_WORKER_IMAGE: example.invalid/charkhoone-worker:ci
+          CHARKHOONE_WEB_IMAGE: example.invalid/charkhoone-web:ci
+          CHARKHOONE_RELEASE_SHA: 0123456789abcdef0123456789abcdef01234567
+          CHARKHOONE_ENVIRONMENT: Staging
+          CHARKHOONE_POSTGRES_CONNECTION: Host=postgres.example.internal;Port=5432;Database=charkhoone;Username=runtime;Password=fixture
+          CHARKHOONE_AUTHORITY: https://identity.example.test/realms/charkhoone
+          CHARKHOONE_AUDIENCE: charkhoone-api
+          CHARKHOONE_ADMIN_OIDC_LOGIN_URL: https://identity.example.test/admin/login
+          CHARKHOONE_RABBITMQ_HOST: rabbitmq.example.internal
+          CHARKHOONE_RABBITMQ_USERNAME: runtime
+          CHARKHOONE_RABBITMQ_PASSWORD: fixture
+        run: docker compose -f deploy/compose.release.yaml config --quiet
 
   api-image:
     runs-on: ubuntu-latest
