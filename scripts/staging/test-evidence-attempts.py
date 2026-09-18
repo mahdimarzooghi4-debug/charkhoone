@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run the real smoke script with a local curl stand-in; never contact a provider."""
 import fcntl
+import json
 import os
 from pathlib import Path
 import signal
@@ -25,6 +26,7 @@ body = pathlib.Path(args[args.index("--output") + 1])
 headers = pathlib.Path(args[args.index("--dump-header") + 1])
 name = body.stem
 scenario = os.environ.get("SMOKE_FIXTURE_SCENARIO", "success")
+pathlib.Path(os.environ["SMOKE_FIXTURE_CURL_CALLED"]).touch()
 if scenario == "hold" and name == "worker_health_live":
     pathlib.Path(os.environ["SMOKE_FIXTURE_WAITING"]).touch()
     while True: time.sleep(0.1)
@@ -36,8 +38,42 @@ sys.stdout.write("401" if name == "anonymous_contract" else "200")
     fake.chmod(0o755)
     token = temp / "token"
     token.write_text("synthetic-not-a-real-token\n")
+    target_manifest = temp / "target-manifest.json"
+    target_manifest.write_text(json.dumps({
+        "schema_version": 1,
+        "environment": "staging",
+        "database": {
+            "provider": "fixture-db",
+            "scope_id": "workspace-a",
+            "resource_id": "postgres-a",
+            "database_name": "charkhoone_staging",
+        },
+        "message_broker": {
+            "provider": "fixture-mq",
+            "scope_id": "workspace-a",
+            "resource_id": "rabbitmq-a",
+        },
+        "api": {
+            "provider": "fixture-compute",
+            "scope_id": "workspace-a",
+            "resource_id": "api-a",
+            "base_url": "https://api.invalid",
+        },
+        "worker": {
+            "provider": "fixture-compute",
+            "scope_id": "workspace-a",
+            "resource_id": "worker-a",
+            "health_url": "https://worker.invalid/health/live",
+        },
+    }), encoding="utf-8")
+    target_output = subprocess.check_output(
+        ["python3", "scripts/staging/verify-target-manifest.py", str(target_manifest)],
+        cwd=ROOT, text=True)
+    target_hash = dict(line.split("=", 1) for line in target_output.splitlines())["staging_target_binding_sha256"]
     database = temp / "database.txt"
-    database.write_text(f"environment=staging\ngit_sha={SHA}\nmigration=completed\npost_migration_readiness=passed\n")
+    database.write_text(
+        f"environment=staging\ngit_sha={SHA}\nstaging_target_binding_sha256={target_hash}\n"
+        "staging_target_database_name_match=true\nmigration=completed\npost_migration_readiness=passed\n")
     worker = temp / "worker.txt"
     worker.write_text("synthetic-provider-evidence-only\n")
     output = temp / "evidence" / SHA
@@ -51,9 +87,11 @@ sys.stdout.write("401" if name == "anonymous_contract" else "200")
         CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY=str(database),
         CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE=str(worker),
         CHARKHOONE_STAGING_WORKER_GIT_SHA=SHA,
+        CHARKHOONE_STAGING_TARGET_MANIFEST=str(target_manifest),
         CHARKHOONE_ALLOW_STAGING_APPLICATION_SMOKE="true",
         CHARKHOONE_STAGING_EVIDENCE_DIR=str(output.parent),
-        SMOKE_FIXTURE_WAITING=str(temp / "waiting"))
+        SMOKE_FIXTURE_WAITING=str(temp / "waiting"),
+        SMOKE_FIXTURE_CURL_CALLED=str(temp / "curl-called"))
 
     def run(changes=None):
         return subprocess.run(SMOKE, cwd=ROOT, env=env | (changes or {}), capture_output=True, text=True, timeout=20)
@@ -75,12 +113,27 @@ sys.stdout.write("401" if name == "anonymous_contract" else "200")
         {"CHARKHOONE_STAGING_WORKER_GIT_SHA": "0" * 40},
         {"CHARKHOONE_STAGING_ACCESS_TOKEN_FILE": str(temp / "missing-token")},
         {"CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY": str(temp / "missing-summary")},
+        {"CHARKHOONE_STAGING_TARGET_MANIFEST": str(temp / "missing-target-manifest")},
     ]:
         success()
         result = run(changes)
         assert result.returncode != 0
         assert not (output / "summary.txt").exists(), "Failed rerun retained prior completion"
         assert not list(output.glob(".attempt.*")), "Failed attempt was not cleaned"
+
+    # A database rehearsal from another target must be rejected before any HTTP request.
+    success()
+    wrong_database = temp / "wrong-database-target.txt"
+    wrong_database.write_text(
+        f"environment=staging\ngit_sha={SHA}\nstaging_target_binding_sha256={'b' * 64}\n"
+        "staging_target_database_name_match=true\nmigration=completed\npost_migration_readiness=passed\n")
+    curl_called = temp / "curl-called"
+    curl_called.unlink(missing_ok=True)
+    result = run({"CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY": str(wrong_database)})
+    assert result.returncode != 0
+    assert not curl_called.exists(), "Target mismatch reached curl instead of failing closed"
+    assert not (output / "summary.txt").exists()
+    assert not list(output.glob(".attempt.*"))
 
     # A busy directory rejects the new attempt without invalidating an active reader's evidence.
     success()

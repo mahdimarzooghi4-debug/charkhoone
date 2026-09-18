@@ -34,6 +34,7 @@ begin_evidence_attempt "$output_root/$expected_sha" 'summary.txt'
 : "${CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY:?path to the completed database rehearsal summary is required}"
 : "${CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE:?path to deployment-platform worker evidence is required}"
 : "${CHARKHOONE_STAGING_WORKER_GIT_SHA:?worker deployed git SHA is required}"
+: "${CHARKHOONE_STAGING_TARGET_MANIFEST:?path to non-secret staging target manifest is required}"
 
 actual_sha="$(git rev-parse HEAD | tr '[:upper:]' '[:lower:]')"
 if [[ "$actual_sha" != "$expected_sha" ]]; then
@@ -47,9 +48,26 @@ if [[ "$worker_sha" != "$expected_sha" ]]; then
   exit 1
 fi
 
+[[ -f "$CHARKHOONE_STAGING_TARGET_MANIFEST" && -s "$CHARKHOONE_STAGING_TARGET_MANIFEST" ]] || {
+  echo 'Required staging target manifest is missing or empty.' >&2
+  exit 1
+}
+target_manifest_info="$(python3 scripts/staging/verify-target-manifest.py "$CHARKHOONE_STAGING_TARGET_MANIFEST")"
+target_binding_sha="$(printf '%s\n' "$target_manifest_info" | awk -F= '$1 == "staging_target_binding_sha256" { sub(/^[^=]*=/, ""); print; exit }')"
+manifest_api_base_url="$(printf '%s\n' "$target_manifest_info" | awk -F= '$1 == "api_base_url" { sub(/^[^=]*=/, ""); print; exit }')"
+manifest_worker_health_url="$(printf '%s\n' "$target_manifest_info" | awk -F= '$1 == "worker_health_url" { sub(/^[^=]*=/, ""); print; exit }')"
+if [[ ! "$target_binding_sha" =~ ^[0-9a-f]{64}$ || -z "$manifest_api_base_url" || -z "$manifest_worker_health_url" ]]; then
+  echo 'Staging target manifest verifier returned incomplete application identity evidence.' >&2
+  exit 1
+fi
+
 base_url="${CHARKHOONE_STAGING_API_BASE_URL%/}"
 if [[ ! "$base_url" =~ ^https:// ]]; then
   echo 'CHARKHOONE_STAGING_API_BASE_URL must use HTTPS.' >&2
+  exit 1
+fi
+if [[ "$base_url" != "$manifest_api_base_url" ]]; then
+  echo 'Staging API base URL does not match the staging target manifest; smoke blocked.' >&2
   exit 1
 fi
 
@@ -75,6 +93,10 @@ elif parsed.scheme == "http":
 else:
     raise SystemExit("Worker health URL must use HTTPS, or HTTP only on loopback.")
 PY
+if [[ "$worker_health_url" != "$manifest_worker_health_url" ]]; then
+  echo 'Staging Worker health URL does not match the staging target manifest; smoke blocked.' >&2
+  exit 1
+fi
 
 if [[ ! "$CHARKHOONE_STAGING_CONTRACT_ID" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
   echo 'CHARKHOONE_STAGING_CONTRACT_ID must be a GUID.' >&2
@@ -93,6 +115,8 @@ done
 
 if ! grep -Fxq 'environment=staging' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
   || ! grep -Fxq "git_sha=$expected_sha" "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
+  || ! grep -Fxq "staging_target_binding_sha256=$target_binding_sha" "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
+  || ! grep -Fxq 'staging_target_database_name_match=true' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
   || ! grep -Fxq 'migration=completed' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
   || ! grep -Fxq 'post_migration_readiness=passed' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY"; then
   echo 'Database rehearsal summary is incomplete or does not match the expected release SHA.' >&2
@@ -108,6 +132,7 @@ fi
 
 sha256sum "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" | awk '{print $1}' > "$attempt_dir/database-rehearsal-summary.sha256"
 sha256sum "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE" | awk '{print $1}' > "$attempt_dir/worker-deployment-evidence.sha256"
+printf '%s\n' "$target_binding_sha" > "$attempt_dir/staging-target-binding.sha256"
 
 temp_dir="$(mktemp -d)"
 trap 'rm -rf "$temp_dir" "$attempt_dir"' EXIT
@@ -214,6 +239,9 @@ PY
 {
   printf 'environment=staging\n'
   printf 'git_sha=%s\n' "$expected_sha"
+  printf 'staging_target_binding_sha256=%s\n' "$target_binding_sha"
+  printf 'staging_target_api_url=matched\n'
+  printf 'staging_target_worker_health_url=matched\n'
   printf 'smoke_runner_git_sha=matched\n'
   printf 'api_release_header=matched\n'
   printf 'api_liveness=passed\n'
