@@ -99,6 +99,7 @@ public enum ProcessBankFundingOutcome
     BankDeclined,
     FundingIndeterminate,
     NotFound,
+    Conflict,
     InvalidState,
 }
 
@@ -122,6 +123,7 @@ public interface IBankFundingService
 {
     Task<ProcessBankFundingResult> ProcessAsync(
         Guid applicationId,
+        Guid applicantUserId,
         DateTimeOffset occurredAtUtc,
         CancellationToken cancellationToken = default);
 }
