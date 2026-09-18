@@ -20,6 +20,30 @@ public sealed record SubmitCreditApplicationResult(
     SubmitCreditApplicationOutcome Outcome,
     CreditApplicationView? Application);
 
+public enum SelectBankLoanPlanOutcome
+{
+    Selected,
+    AlreadySelected,
+    NotFound,
+    PlanNotFound,
+    PlanUnavailable,
+    Conflict,
+    InvalidState,
+}
+
+public sealed record BankLoanPlanSelectionView(
+    Guid CreditApplicationId,
+    CreditApplicationStatus ApplicationStatus,
+    Guid PlanId,
+    string PlanVersion,
+    string BankId,
+    string Title,
+    DateTimeOffset UpdatedAtUtc);
+
+public sealed record SelectBankLoanPlanResult(
+    SelectBankLoanPlanOutcome Outcome,
+    BankLoanPlanSelectionView? Selection);
+
 public interface IUserIdentityLookup
 {
     Task<Guid?> FindInternalUserIdAsync(
@@ -37,6 +61,14 @@ public interface ICreditApplicationService
     Task<SubmitCreditApplicationResult> SubmitAsync(
         Guid applicationId,
         Guid applicantUserId,
+        DateTimeOffset occurredAtUtc,
+        CancellationToken cancellationToken = default);
+
+    Task<SelectBankLoanPlanResult> SelectBankLoanPlanAsync(
+        Guid applicationId,
+        Guid applicantUserId,
+        Guid planId,
+        string planVersion,
         DateTimeOffset occurredAtUtc,
         CancellationToken cancellationToken = default);
 }
