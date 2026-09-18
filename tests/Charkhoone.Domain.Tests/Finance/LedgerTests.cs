@@ -6,11 +6,11 @@ namespace Charkhoone.Domain.Tests.Finance;
 public sealed class LedgerTests
 {
     [Fact]
-    public void BalancedJournalEntry_PreservesExactRialAmount()
+    public void BalancedJournalEntry_PreservesExactWholeRialAmount()
     {
         var debitAccount = Guid.NewGuid();
         var creditAccount = Guid.NewGuid();
-        const decimal amount = 123456789.123456789m;
+        const decimal amount = 123_456_789m;
 
         var entry = JournalEntryDraft.Create(
         [
@@ -21,6 +21,13 @@ public sealed class LedgerTests
         Assert.Equal(amount, entry.TotalDebit.Rial);
         Assert.Equal(amount, entry.TotalCredit.Rial);
         Assert.Equal(2, entry.Lines.Count);
+    }
+
+    [Fact]
+    public void JournalLine_RejectsFractionalRialPosting()
+    {
+        Assert.Throws<ArgumentException>(() =>
+            JournalLineDraft.Create(Guid.NewGuid(), 100.5m, 0m));
     }
 
     [Fact]

@@ -2,25 +2,26 @@ namespace Charkhoone.Domain.Finance;
 
 public static class CreditAllocationCalculator
 {
-    public static decimal CalculateMaximumLoan(decimal fullDeposit, string externalSubGrade)
+    public static decimal CalculateMaximumLoan(decimal fullDepositRial, string externalSubGrade)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(fullDeposit);
-        return fullDeposit * CreditGradePolicy.GetLoanRatio(externalSubGrade);
+        RialAmountPolicy.RequireWholeNonNegative(fullDepositRial, nameof(fullDepositRial));
+        return RialAmountPolicy.FloorToWholeRial(
+            fullDepositRial * CreditGradePolicy.GetLoanRatio(externalSubGrade));
     }
 
-    public static decimal CalculateTenantContribution(decimal fullDeposit, decimal bankApprovedLoan)
+    public static decimal CalculateTenantContribution(decimal fullDepositRial, decimal bankApprovedLoanRial)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(fullDeposit);
-        ArgumentOutOfRangeException.ThrowIfNegative(bankApprovedLoan);
+        RialAmountPolicy.RequireWholeNonNegative(fullDepositRial, nameof(fullDepositRial));
+        RialAmountPolicy.RequireWholeNonNegative(bankApprovedLoanRial, nameof(bankApprovedLoanRial));
 
-        if (bankApprovedLoan > fullDeposit)
+        if (bankApprovedLoanRial > fullDepositRial)
         {
             throw new ArgumentOutOfRangeException(
-                nameof(bankApprovedLoan),
-                bankApprovedLoan,
+                nameof(bankApprovedLoanRial),
+                bankApprovedLoanRial,
                 "Bank-approved loan cannot exceed the full-deposit amount.");
         }
 
-        return fullDeposit - bankApprovedLoan;
+        return fullDepositRial - bankApprovedLoanRial;
     }
 }

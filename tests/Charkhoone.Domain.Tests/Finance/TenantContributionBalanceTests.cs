@@ -19,16 +19,14 @@ public sealed class TenantContributionBalanceTests
     }
 
     [Fact]
-    public void Balance_DoesNotRoundFractionalRialValues()
+    public void Balance_RejectsFractionalRialValues()
     {
-        var balance = TenantContributionBalanceSnapshot.Calculate(
-            100.125m,
-            10.005m,
-            20.001m,
-            5.0005m);
-
-        Assert.Equal(90.129m, balance.PostedBalance.Rial);
-        Assert.Equal(85.1285m, balance.AvailableForCoverage.Rial);
+        Assert.Throws<ArgumentException>(() =>
+            TenantContributionBalanceSnapshot.Calculate(
+                100.125m,
+                10m,
+                20m,
+                5m));
     }
 
     [Fact]

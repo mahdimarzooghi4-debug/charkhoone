@@ -1,8 +1,9 @@
 namespace Charkhoone.Domain.Finance;
 
 /// <summary>
-/// Monetary value in the platform reference unit (rial). This type deliberately does not round;
-/// the approved rounding points are still an open P0 decision.
+/// Monetary value in the platform reference unit (rial). Decimal precision is allowed while a
+/// calculation is in progress. Contractual/payable/posting boundaries must explicitly pass through
+/// <see cref="RialAmountPolicy"/> so fractional rials are never silently persisted or transferred.
 /// </summary>
 public readonly record struct Money(decimal Rial)
 {
