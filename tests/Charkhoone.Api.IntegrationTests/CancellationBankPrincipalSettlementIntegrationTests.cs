@@ -163,14 +163,17 @@ public sealed class CancellationBankPrincipalSettlementIntegrationTests(Charkhoo
                 && x.DebitRial == 0m
                 && x.CreditRial == frozenBankPrincipalRial);
 
-            Assert.Equal(
-                1,
-                await db.OutboxMessages.CountAsync(x =>
-                    x.Type == "lease-contract.cancellation-bank-principal-returned.v1"));
-            Assert.Equal(
-                1,
-                await db.OutboxMessages.CountAsync(x =>
-                    x.Type == "lease-contract.cancelled-bank-notification-requested.v1"));
+            var principalReturnedEvents = await db.OutboxMessages.AsNoTracking()
+                .Where(x => x.Type == "lease-contract.cancellation-bank-principal-returned.v1")
+                .ToListAsync();
+            var bankNotificationRequests = await db.OutboxMessages.AsNoTracking()
+                .Where(x => x.Type == "lease-contract.cancelled-bank-notification-requested.v1")
+                .ToListAsync();
+
+            Assert.Single(principalReturnedEvents.Where(x =>
+                x.PayloadJson.Contains(contractId.ToString("D"), StringComparison.OrdinalIgnoreCase)));
+            Assert.Single(bankNotificationRequests.Where(x =>
+                x.PayloadJson.Contains(contractId.ToString("D"), StringComparison.OrdinalIgnoreCase)));
             Assert.Equal(
                 1,
                 await db.AuditEvents.CountAsync(x =>
