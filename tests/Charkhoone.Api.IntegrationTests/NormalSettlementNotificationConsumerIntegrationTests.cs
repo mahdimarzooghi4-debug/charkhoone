@@ -76,7 +76,7 @@ public sealed class NormalSettlementNotificationConsumerIntegrationTests(Charkho
                     bankId = fixture.BankId,
                     amountRial = fixture.FrozenPrincipalRial,
                     externalTransactionId = fixture.BankExternalTransactionId,
-                    journalEntryId = fixture.BankJournalEntryId,
+                    journalEntryId = (Guid?)null,
                     occurredAtUtc = now,
                 }),
             },
@@ -278,7 +278,6 @@ public sealed class NormalSettlementNotificationConsumerIntegrationTests(Charkho
         var fundFreezeId = Guid.NewGuid();
         var settlementId = Guid.NewGuid();
         var bankExternalTransactionId = Guid.NewGuid();
-        var bankJournalEntryId = Guid.NewGuid();
 
         const decimal frozenPrincipalRial = 700_000_000m;
         const string bankId = "normal-consumer-bank";
@@ -388,7 +387,6 @@ public sealed class NormalSettlementNotificationConsumerIntegrationTests(Charkho
             BankPrincipalStatus = NormalSettlementTransferStatus.Succeeded,
             BankExternalTransactionId = bankExternalTransactionId,
             BankExternalReference = $"normal-consumer-bank-return:{bankExternalTransactionId:D}",
-            BankJournalEntryId = bankJournalEntryId,
             BankPrincipalReturnedAtUtc = now.AddHours(-1),
             TenantResidualAmountRial = 0m,
             TenantResidualStatus = NormalSettlementTransferStatus.NotRequired,
@@ -405,7 +403,6 @@ public sealed class NormalSettlementNotificationConsumerIntegrationTests(Charkho
             ownerId,
             settlementId,
             bankExternalTransactionId,
-            bankJournalEntryId,
             bankId,
             fundProvider,
             fundReference,
@@ -498,7 +495,6 @@ public sealed class NormalSettlementNotificationConsumerIntegrationTests(Charkho
         Guid OwnerId,
         Guid SettlementId,
         Guid BankExternalTransactionId,
-        Guid BankJournalEntryId,
         string BankId,
         string FundProvider,
         string FundReference,
