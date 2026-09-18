@@ -5,6 +5,7 @@ using Charkhoone.Domain.Payments;
 using Charkhoone.Infrastructure.Persistence;
 using Charkhoone.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Charkhoone.Infrastructure.Payments;
 
@@ -72,6 +73,7 @@ public sealed class EfMonthlyScheduleProvisioningService(CharkhooneDbContext dbC
         if (!HasValidSnapshot(terms, schedule))
         {
             return await ConflictAsync(
+                transaction,
                 contract.Id,
                 "The trusted contract schedule snapshot is incomplete or invalid and cannot be materialized.",
                 occurredAtUtc,
@@ -87,6 +89,7 @@ public sealed class EfMonthlyScheduleProvisioningService(CharkhooneDbContext dbC
         if (existingObligations.Any(x => x.ContractMonthNumber is < 1 or > 12))
         {
             return await ConflictAsync(
+                transaction,
                 contract.Id,
                 "Existing monthly obligations contain a contract month outside the immutable 1 through 12 schedule.",
                 occurredAtUtc,
@@ -122,6 +125,7 @@ public sealed class EfMonthlyScheduleProvisioningService(CharkhooneDbContext dbC
                     existingComponents))
             {
                 return await ConflictAsync(
+                    transaction,
                     contract.Id,
                     $"Existing contract month {obligation.ContractMonthNumber} does not match the trusted immutable schedule snapshot.",
                     occurredAtUtc,
@@ -247,6 +251,7 @@ public sealed class EfMonthlyScheduleProvisioningService(CharkhooneDbContext dbC
     }
 
     private async Task<ProvisionMonthlyScheduleResult> ConflictAsync(
+        IDbContextTransaction transaction,
         Guid contractId,
         string reason,
         DateTimeOffset occurredAtUtc,
@@ -274,11 +279,11 @@ public sealed class EfMonthlyScheduleProvisioningService(CharkhooneDbContext dbC
                     occurredAtUtc,
                 });
             await dbContext.SaveChangesAsync(cancellationToken);
-            await dbContext.Database.CommitTransactionAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
         }
         else
         {
-            await dbContext.Database.RollbackTransactionAsync(cancellationToken);
+            await transaction.RollbackAsync(cancellationToken);
         }
 
         return new ProvisionMonthlyScheduleResult(
