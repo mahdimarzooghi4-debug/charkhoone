@@ -41,6 +41,8 @@ public sealed class EfLeaseFundingLifecycleService(CharkhooneDbContext dbContext
                 0);
         }
 
+        var initialStatus = contract.Status;
+
         if (contract.Status is LeaseContractStatus.Active
             or LeaseContractStatus.SettlementPending
             or LeaseContractStatus.Settled
@@ -61,13 +63,13 @@ public sealed class EfLeaseFundingLifecycleService(CharkhooneDbContext dbContext
             or LeaseContractStatus.AwaitingCompletion))
         {
             await transaction.RollbackAsync(cancellationToken);
-            return Invalid(contract, 0);
+            return Invalid(contract.Id, initialStatus);
         }
 
         if (contract.CreditApplicationId is null)
         {
             await transaction.RollbackAsync(cancellationToken);
-            return Invalid(contract, 0);
+            return Invalid(contract.Id, initialStatus);
         }
 
         var application = await dbContext.CreditApplications
@@ -75,7 +77,7 @@ public sealed class EfLeaseFundingLifecycleService(CharkhooneDbContext dbContext
         if (application is null || application.ApplicantUserId != contract.TenantUserId)
         {
             await transaction.RollbackAsync(cancellationToken);
-            return Invalid(contract, 0);
+            return Invalid(contract.Id, initialStatus);
         }
 
         var allocation = await dbContext.FundingAllocations
@@ -99,7 +101,7 @@ public sealed class EfLeaseFundingLifecycleService(CharkhooneDbContext dbContext
         if (!HasValidAllocationBinding(contract, allocation))
         {
             await transaction.RollbackAsync(cancellationToken);
-            return Invalid(contract, 0);
+            return Invalid(contract.Id, initialStatus);
         }
 
         var appliedTransitions = 0;
@@ -142,13 +144,13 @@ public sealed class EfLeaseFundingLifecycleService(CharkhooneDbContext dbContext
             if (principal is null || freeze is null)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return Invalid(contract, 0);
+                return Invalid(contract.Id, initialStatus);
             }
 
             if (!HasValidFrozenPrincipalEvidence(allocation, principal, freeze))
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return Invalid(contract, 0);
+                return Invalid(contract.Id, initialStatus);
             }
 
             ApplyTransition(
@@ -181,7 +183,7 @@ public sealed class EfLeaseFundingLifecycleService(CharkhooneDbContext dbContext
             if (tenantReady == FundingReadiness.Invalid)
             {
                 await transaction.RollbackAsync(cancellationToken);
-                return Invalid(contract, 0);
+                return Invalid(contract.Id, initialStatus);
             }
 
             if (tenantReady == FundingReadiness.NotReady)
@@ -282,7 +284,6 @@ public sealed class EfLeaseFundingLifecycleService(CharkhooneDbContext dbContext
             && external.AmountRial == allocation.TenantContributionRial
             && external.Currency == "IRR"
             && external.IdempotencyKey == expectedExternalKey
-            && !string.IsNullOrWhiteSpace(external.ExternalReference)
             && journal.ReferenceType == "ExternalTransaction"
             && journal.ReferenceId == external.Id;
 
@@ -397,13 +398,13 @@ public sealed class EfLeaseFundingLifecycleService(CharkhooneDbContext dbContext
             appliedTransitions);
 
     private static AdvanceLeaseFundingLifecycleResult Invalid(
-        LeaseContractRow contract,
-        int appliedTransitions) =>
+        Guid contractId,
+        LeaseContractStatus persistedStatus) =>
         new(
             AdvanceLeaseFundingLifecycleOutcome.InvalidState,
-            contract.Id,
-            contract.Status,
-            appliedTransitions);
+            contractId,
+            persistedStatus,
+            0);
 
     private enum FundingReadiness
     {
