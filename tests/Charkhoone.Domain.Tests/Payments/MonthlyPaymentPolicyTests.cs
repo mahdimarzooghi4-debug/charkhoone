@@ -32,6 +32,22 @@ public sealed class MonthlyPaymentPolicyTests
     }
 
     [Fact]
+    public void CreatedPayment_CanBecomeTerminallyBlockedByOlderArrears()
+    {
+        var state = PaymentInstructionStateMachine.Transition(
+            PaymentInstructionStatus.Created,
+            PaymentInstructionStatus.ArrearsBlocked);
+
+        Assert.Equal(PaymentInstructionStatus.ArrearsBlocked, state);
+        Assert.False(PaymentInstructionStateMachine.CanTransition(
+            state,
+            PaymentInstructionStatus.Pending));
+        Assert.False(PaymentInstructionStateMachine.CanTransition(
+            state,
+            PaymentInstructionStatus.Succeeded));
+    }
+
+    [Fact]
     public void UnknownPayment_CanMoveToReconciliationRequiredWithoutBecomingSuccess()
     {
         var state = PaymentInstructionStateMachine.Transition(

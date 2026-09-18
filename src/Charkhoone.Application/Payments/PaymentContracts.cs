@@ -88,6 +88,31 @@ public interface IMonthlyScheduleProvisioningService
         CancellationToken cancellationToken = default);
 }
 
+public enum ProcessMonthlyDueOutcome
+{
+    Paid,
+    Missed,
+    AlreadyClosed,
+    ReconciliationRequired,
+    NotDue,
+    NotFound,
+    InvalidState,
+}
+
+public sealed record ProcessMonthlyDueResult(
+    ProcessMonthlyDueOutcome Outcome,
+    Guid MonthlyObligationId,
+    int ReconciliationAttempts,
+    MonthlyObligationView? Obligation);
+
+public interface IMonthlyDueLifecycleService
+{
+    Task<ProcessMonthlyDueResult> ProcessAsync(
+        Guid monthlyObligationId,
+        DateTimeOffset occurredAtUtc,
+        CancellationToken cancellationToken = default);
+}
+
 public enum CloseMonthlyObligationOutcome
 {
     Paid,

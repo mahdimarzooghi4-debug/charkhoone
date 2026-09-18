@@ -180,6 +180,13 @@ public sealed class EfPaymentService(
                 return new ReconcilePaymentResult(ReconcilePaymentOutcome.InvalidState, view);
             }
 
+            if (instruction.Status == PaymentInstructionStatus.ArrearsBlocked)
+            {
+                var view = await ToPaymentViewAsync(instruction, obligation, contract, cancellationToken);
+                await transaction.RollbackAsync(cancellationToken);
+                return new ReconcilePaymentResult(ReconcilePaymentOutcome.ArrearsOutstanding, view);
+            }
+
             if (instruction.Status == PaymentInstructionStatus.Created)
             {
                 var delinquency = await dbContext.ContractDelinquencies
@@ -430,6 +437,42 @@ public sealed class EfPaymentService(
             return new CloseMonthlyObligationResult(CloseMonthlyObligationOutcome.InvalidState, view);
         }
 
+        var hasEarlierOutstandingTenantDebt = await HasEarlierOutstandingTenantDebtAsync(
+            obligation,
+            cancellationToken);
+        var arrearsBlockedAny = false;
+
+        if (hasEarlierOutstandingTenantDebt)
+        {
+            foreach (var instruction in instructions.Where(x =>
+                         x.Status == PaymentInstructionStatus.Created))
+            {
+                instruction.Status = PaymentInstructionStateMachine.Transition(
+                    instruction.Status,
+                    PaymentInstructionStatus.ArrearsBlocked);
+                instruction.UpdatedAtUtc = occurredAtUtc;
+                arrearsBlockedAny = true;
+
+                AddAudit(
+                    "PaymentInstruction",
+                    instruction.Id,
+                    "system:delinquency",
+                    "payment_blocked_by_older_arrears",
+                    $"Contract month {obligation.ContractMonthNumber} payment was not started because older tenant debt must be settled first.",
+                    occurredAtUtc);
+                AddOutbox("payment-instruction.arrears-blocked.v1", occurredAtUtc, new
+                {
+                    paymentInstructionId = instruction.Id,
+                    monthlyObligationId = obligation.Id,
+                    contractId = contract.Id,
+                    contractMonthNumber = obligation.ContractMonthNumber,
+                    instruction.AmountRial,
+                    instruction.BeneficiaryId,
+                    occurredAtUtc,
+                });
+            }
+        }
+
         var hasUnresolvedPayment = instructions.Any(x => x.Status is
             PaymentInstructionStatus.Created or
             PaymentInstructionStatus.Pending or
@@ -439,14 +482,23 @@ public sealed class EfPaymentService(
         if (hasUnresolvedPayment)
         {
             var view = await ToObligationViewAsync(obligation, contract.Id, cancellationToken);
-            await transaction.RollbackAsync(cancellationToken);
+            if (arrearsBlockedAny)
+            {
+                await dbContext.SaveChangesAsync(cancellationToken);
+                await transaction.CommitAsync(cancellationToken);
+            }
+            else
+            {
+                await transaction.RollbackAsync(cancellationToken);
+            }
+
             return new CloseMonthlyObligationResult(CloseMonthlyObligationOutcome.ReconciliationRequired, view);
         }
 
         var allPaid = instructions.All(x => x.Status == PaymentInstructionStatus.Succeeded);
         if (allPaid)
         {
-            if (await HasEarlierOutstandingTenantDebtAsync(obligation, cancellationToken))
+            if (hasEarlierOutstandingTenantDebt)
             {
                 var view = await ToObligationViewAsync(obligation, contract.Id, cancellationToken);
                 await transaction.RollbackAsync(cancellationToken);

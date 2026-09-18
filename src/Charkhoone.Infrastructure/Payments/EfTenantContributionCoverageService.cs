@@ -86,7 +86,9 @@ public sealed class EfTenantContributionCoverageService(
             }
 
             var coverableTargets = targets
-                .Where(x => x.PaymentStatus is PaymentInstructionStatus.Failed or PaymentInstructionStatus.Reversed)
+                .Where(x => x.PaymentStatus is PaymentInstructionStatus.Failed
+                    or PaymentInstructionStatus.ArrearsBlocked
+                    or PaymentInstructionStatus.Reversed)
                 .ToArray();
 
             if (coverableTargets.Length == 0)
@@ -716,7 +718,9 @@ public sealed class EfTenantContributionCoverageService(
                 .SingleAsync(cancellationToken);
             var targets = await LoadCoverageTargetsAsync(obligation.Id, cancellationToken);
             var coverableIds = targets
-                .Where(x => x.PaymentStatus is PaymentInstructionStatus.Failed or PaymentInstructionStatus.Reversed)
+                .Where(x => x.PaymentStatus is PaymentInstructionStatus.Failed
+                    or PaymentInstructionStatus.ArrearsBlocked
+                    or PaymentInstructionStatus.Reversed)
                 .Select(x => x.PaymentInstructionId)
                 .ToArray();
             var coverageRows = await dbContext.CoveragePayments

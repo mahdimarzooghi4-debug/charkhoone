@@ -144,6 +144,7 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
         Assert.Equal(0, result.LeaseFundingCandidates);
         Assert.Equal(0, result.ScheduleProvisioningCandidates);
         Assert.Equal(0, result.PaymentCandidates);
+        Assert.Equal(0, result.DueLifecycleCandidates);
         Assert.Equal(0, result.CoverageCandidates);
         Assert.Equal(0, result.CancellationCandidates);
         Assert.Equal(0, result.CancellationBankPrincipalCandidates);
@@ -288,7 +289,7 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
                 {
                     ContractId = contractId,
                     ContractMonthNumber = month,
-                    DueAtUtc = workerAt.AddMonths(month - 1),
+                    DueAtUtc = workerAt.AddDays(1).AddMonths(month - 1),
                     OwnerPaymentRial = 0m,
                     BankInterestRial = 1_000_000m,
                 });
@@ -314,6 +315,7 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
         Assert.Equal(1, first.LeaseFundingCandidates);
         Assert.Equal(1, first.ScheduleProvisioningCandidates);
         Assert.Equal(0, first.PaymentCandidates);
+        Assert.Equal(0, first.DueLifecycleCandidates);
         Assert.Equal(0, first.CoverageCandidates);
         Assert.Equal(0, first.CancellationCandidates);
         Assert.Equal(0, first.CancellationBankPrincipalCandidates);
@@ -358,13 +360,102 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
 
         Assert.Equal(0, second.LeaseFundingCandidates);
         Assert.Equal(0, second.ScheduleProvisioningCandidates);
+        Assert.Equal(0, second.DueLifecycleCandidates);
         Assert.Equal(0, second.NormalMaturityCandidates);
         Assert.Equal(0, normalSettlement.CallCount);
     }
 
+    [Fact]
+    public async Task Worker_DelegatesOnlyDueOpenMonth_ToMonthlyDueLifecycle()
+    {
+        var workerAt = DateTimeOffset.Parse("2026-09-18T17:00:00+00:00");
+        var tenantId = Guid.NewGuid();
+        var ownerId = Guid.NewGuid();
+        var contractId = Guid.NewGuid();
+        var dueObligationId = Guid.NewGuid();
+
+        await using (var db = CreateDbContext())
+        {
+            db.Users.AddRange(
+                new UserRow
+                {
+                    Id = tenantId,
+                    OidcSubject = $"due-worker-tenant-{tenantId:D}",
+                    CreatedAtUtc = workerAt.AddMonths(-2),
+                },
+                new UserRow
+                {
+                    Id = ownerId,
+                    OidcSubject = $"due-worker-owner-{ownerId:D}",
+                    CreatedAtUtc = workerAt.AddMonths(-2),
+                });
+
+            db.LeaseContracts.Add(new LeaseContractRow
+            {
+                Id = contractId,
+                TenantUserId = tenantId,
+                OwnerUserId = ownerId,
+                PropertyId = Guid.NewGuid(),
+                Status = LeaseContractStatus.Active,
+                CreatedAtUtc = workerAt.AddMonths(-2),
+                UpdatedAtUtc = workerAt.AddDays(-1),
+            });
+
+            db.MonthlyObligations.AddRange(
+                new MonthlyObligationRow
+                {
+                    Id = dueObligationId,
+                    ContractId = contractId,
+                    ContractMonthNumber = 1,
+                    DueAtUtc = workerAt.AddMinutes(-1),
+                    Status = MonthlyObligationStatus.Open,
+                    CreatedAtUtc = workerAt.AddMonths(-1),
+                    UpdatedAtUtc = workerAt.AddMonths(-1),
+                },
+                new MonthlyObligationRow
+                {
+                    Id = Guid.NewGuid(),
+                    ContractId = contractId,
+                    ContractMonthNumber = 2,
+                    DueAtUtc = workerAt.AddDays(1),
+                    Status = MonthlyObligationStatus.Open,
+                    CreatedAtUtc = workerAt.AddDays(-1),
+                    UpdatedAtUtc = workerAt.AddDays(-1),
+                });
+
+            await db.SaveChangesAsync();
+        }
+
+        var normalSettlement = new RecordingNormalSettlementService();
+        var dueLifecycle = new RecordingMonthlyDueLifecycleService();
+        await using var provider = BuildWorkerServiceProvider(
+            normalSettlement,
+            workerAt,
+            dueLifecycle);
+        var worker = new CharkhooneWorker.FinancialReconciliationWorker(
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            new CharkhooneWorker.FinancialReconciliationWorkerOptions
+            {
+                Enabled = true,
+                BatchSize = 32,
+            },
+            provider.GetRequiredService<TimeProvider>(),
+            provider.GetRequiredService<ILogger<CharkhooneWorker.FinancialReconciliationWorker>>());
+
+        var result = await worker.ReconcileOnceAsync();
+
+        Assert.Equal(1, result.DueLifecycleCandidates);
+        Assert.Equal(1, dueLifecycle.CallCount);
+        Assert.Equal(dueObligationId, dueLifecycle.LastObligationId);
+        Assert.Equal(0, result.CoverageCandidates);
+        Assert.Equal(0, result.CancellationCandidates);
+        Assert.Equal(0, result.NormalMaturityCandidates);
+    }
+
     private ServiceProvider BuildWorkerServiceProvider(
         INormalSettlementService normalSettlement,
-        DateTimeOffset workerAt)
+        DateTimeOffset workerAt,
+        IMonthlyDueLifecycleService? dueLifecycle = null)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -373,6 +464,8 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
         services.AddSingleton<TimeProvider>(new FixedTimeProvider(workerAt));
         services.AddScoped<ILeaseFundingLifecycleService, EfLeaseFundingLifecycleService>();
         services.AddScoped<IMonthlyScheduleProvisioningService, EfMonthlyScheduleProvisioningService>();
+        services.AddSingleton<IMonthlyDueLifecycleService>(
+            dueLifecycle ?? new NoOpMonthlyDueLifecycleService());
         services.AddScoped<INormalMaturityService, EfNormalMaturityService>();
         services.AddSingleton(normalSettlement);
         services.AddSingleton<INormalSettlementService>(normalSettlement);
@@ -394,6 +487,39 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
     private sealed class FixedTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {
         public override DateTimeOffset GetUtcNow() => utcNow;
+    }
+
+    private sealed class NoOpMonthlyDueLifecycleService : IMonthlyDueLifecycleService
+    {
+        public Task<ProcessMonthlyDueResult> ProcessAsync(
+            Guid monthlyObligationId,
+            DateTimeOffset occurredAtUtc,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new ProcessMonthlyDueResult(
+                ProcessMonthlyDueOutcome.InvalidState,
+                monthlyObligationId,
+                0,
+                null));
+    }
+
+    private sealed class RecordingMonthlyDueLifecycleService : IMonthlyDueLifecycleService
+    {
+        public int CallCount { get; private set; }
+        public Guid? LastObligationId { get; private set; }
+
+        public Task<ProcessMonthlyDueResult> ProcessAsync(
+            Guid monthlyObligationId,
+            DateTimeOffset occurredAtUtc,
+            CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            LastObligationId = monthlyObligationId;
+            return Task.FromResult(new ProcessMonthlyDueResult(
+                ProcessMonthlyDueOutcome.ReconciliationRequired,
+                monthlyObligationId,
+                0,
+                null));
+        }
     }
 
     private sealed class RecordingNormalSettlementService : INormalSettlementService

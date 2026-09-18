@@ -193,6 +193,7 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
 
         Assert.Equal(0, first.LeaseFundingCandidates);
         Assert.Equal(0, first.PaymentCandidates);
+        Assert.Equal(0, first.DueLifecycleCandidates);
         Assert.Equal(0, first.CoverageCandidates);
         Assert.Equal(0, first.CancellationCandidates);
         Assert.Equal(1, first.CancellationBankPrincipalCandidates);
@@ -245,6 +246,7 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
         services.AddScoped<ICancellationBankPrincipalSettlementService, EfCancellationBankPrincipalSettlementService>();
         services.AddScoped<ILeaseFundingLifecycleService, NoOpLeaseFundingLifecycleService>();
         services.AddScoped<IMonthlyScheduleProvisioningService, EfMonthlyScheduleProvisioningService>();
+        services.AddScoped<IMonthlyDueLifecycleService, NoOpMonthlyDueLifecycleService>();
         services.AddScoped<INormalMaturityService, NoOpNormalMaturityService>();
         services.AddScoped<IPaymentReconciliationService, NoOpPaymentReconciliationService>();
         services.AddScoped<ITenantContributionCoverageService, NoOpCoverageService>();
@@ -350,6 +352,19 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
                 contractId,
                 null,
                 0));
+    }
+
+    private sealed class NoOpMonthlyDueLifecycleService : IMonthlyDueLifecycleService
+    {
+        public Task<ProcessMonthlyDueResult> ProcessAsync(
+            Guid monthlyObligationId,
+            DateTimeOffset occurredAtUtc,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new ProcessMonthlyDueResult(
+                ProcessMonthlyDueOutcome.InvalidState,
+                monthlyObligationId,
+                0,
+                null));
     }
 
     private sealed class NoOpNormalMaturityService : INormalMaturityService
