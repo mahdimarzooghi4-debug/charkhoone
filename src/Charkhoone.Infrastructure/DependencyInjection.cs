@@ -88,6 +88,7 @@ public static class DependencyInjection
         services.AddScoped<ILeaseFundingLifecycleService, EfLeaseFundingLifecycleService>();
         services.AddScoped<INormalMaturityService, EfNormalMaturityService>();
         services.AddScoped<ICreditApplicationService, EfCreditApplicationService>();
+        services.AddScoped<IBankLoanPlanReadService, EfBankLoanPlanReadService>();
         services.AddScoped<ICreditApplicationIdentityService, EfCreditApplicationIdentityService>();
         services.AddScoped<ICreditEligibilityService, EfCreditEligibilityService>();
         services.AddScoped<IBankFundingService, EfBankFundingService>();

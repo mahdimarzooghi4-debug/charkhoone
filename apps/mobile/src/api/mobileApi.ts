@@ -24,6 +24,33 @@ export type MobilePaymentSummary = {
   updatedAtUtc: string;
 };
 
+
+export type MobileFinancingPlan = {
+  planId: string;
+  version: string;
+  bankId: string;
+  title: string;
+  interestTerms: string;
+  termMonths: number;
+};
+
+export type MobileFinancingPlansResponse = {
+  creditApplicationId: string;
+  applicationStatus: string;
+  items: MobileFinancingPlan[];
+};
+
+export type MobileFinancingPlanSelectionResponse = {
+  outcome: string;
+  creditApplicationId: string;
+  applicationStatus: string;
+  planId: string;
+  planVersion: string;
+  bankId: string;
+  title: string;
+  updatedAtUtc: string;
+};
+
 export type MobileBootstrapResponse = {
   userId: string;
   latestCreditApplication: MobileCreditApplicationSummary | null;
@@ -35,6 +62,36 @@ type ApiRequest = <T>(path: string, init?: RequestInit) => Promise<T>;
 
 export function getMobileBootstrap(apiRequest: ApiRequest) {
   return apiRequest<MobileBootstrapResponse>("/api/v1/mobile/bootstrap");
+}
+
+
+export function getMobileFinancingPlans(
+  apiRequest: ApiRequest,
+  creditApplicationId: string,
+) {
+  return apiRequest<MobileFinancingPlansResponse>(
+    `/api/v1/credit-applications/${encodeURIComponent(creditApplicationId)}/loan-plans`,
+  );
+}
+
+export function selectMobileFinancingPlan(
+  apiRequest: ApiRequest,
+  creditApplicationId: string,
+  plan: Pick<MobileFinancingPlan, "planId" | "version">,
+) {
+  return apiRequest<MobileFinancingPlanSelectionResponse>(
+    `/api/v1/credit-applications/${encodeURIComponent(creditApplicationId)}/loan-plan`,
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        planId: plan.planId,
+        version: plan.version,
+      }),
+    },
+  );
 }
 
 export function formatRial(value: string) {

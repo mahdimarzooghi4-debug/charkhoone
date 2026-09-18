@@ -1,88 +1,198 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { AppButton } from "@/components/AppButton";
 import { AppHeader } from "@/components/AppHeader";
+import { useMobileAuth } from "@/auth/MobileAuthProvider";
+import {
+  getMobileFinancingPlans,
+  selectMobileFinancingPlan,
+  type MobileFinancingPlan,
+} from "@/api/mobileApi";
 import { colors, fonts, radii } from "@/theme";
 
-function SummaryRow({ label, value, emphasis, success }: { label: string; value: string; emphasis?: boolean; success?: boolean }) {
+function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <View style={styles.summaryRow}>
-      <Text style={[styles.summaryValue, emphasis && styles.emphasis, success && styles.success]}>{value}</Text>
-      <Text style={[styles.summaryLabel, success && styles.success]}>{label}</Text>
+    <View style={styles.detailRow}>
+      <Text selectable style={styles.detailValue}>{value}</Text>
+      <Text style={styles.detailLabel}>{label}</Text>
     </View>
   );
 }
 
-function Step({ number, label, active }: { number: string; label: string; active?: boolean }) {
-  return (
-    <View style={styles.stepRow}>
-      <Text style={[styles.stepLabel, active && styles.stepLabelActive]}>{label}</Text>
-      <View style={[styles.stepCircle, active && styles.stepCircleActive]}><Text style={[styles.stepNumber, active && styles.stepNumberActive]}>{number}</Text></View>
-    </View>
-  );
+function first(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
 }
 
 export default function PlanConfirmationScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{
+    applicationId?: string | string[];
+    planId?: string | string[];
+    version?: string | string[];
+  }>();
+  const { status, apiRequest } = useMobileAuth();
+  const [plan, setPlan] = useState<MobileFinancingPlan | null>(null);
   const [confirmed, setConfirmed] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const applicationId = useMemo(() => first(params.applicationId)?.trim() ?? "", [params.applicationId]);
+  const planId = useMemo(() => first(params.planId)?.trim() ?? "", [params.planId]);
+  const version = useMemo(() => first(params.version)?.trim() ?? "", [params.version]);
+
+  useEffect(() => {
+    if (status === "unauthenticated" || status === "config-error") {
+      router.replace("/(auth)/login");
+      return;
+    }
+
+    if (status !== "authenticated") return;
+
+    if (!applicationId || !planId || !version) {
+      setPlan(null);
+      setError("mobile_financing_plan_route_invalid");
+      setLoading(false);
+      return;
+    }
+
+    let active = true;
+    setLoading(true);
+    getMobileFinancingPlans(apiRequest, applicationId)
+      .then((response) => {
+        if (!active) return;
+        const authoritative = response.items.find(
+          (item) => item.planId === planId && item.version === version,
+        );
+        if (!authoritative) {
+          setPlan(null);
+          setError("mobile_financing_plan_not_available");
+          return;
+        }
+
+        setPlan(authoritative);
+        setError(null);
+      })
+      .catch((reason: unknown) => {
+        if (!active) return;
+        setPlan(null);
+        setError(
+          reason instanceof Error
+            ? reason.message
+            : "mobile_financing_plan_confirmation_failed",
+        );
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [apiRequest, applicationId, planId, router, status, version]);
+
+  const submit = async () => {
+    if (!plan || !applicationId || submitting) return;
+
+    setSubmitting(true);
+    setError(null);
+    try {
+      const result = await selectMobileFinancingPlan(apiRequest, applicationId, plan);
+      if (
+        result.planId !== plan.planId ||
+        result.planVersion !== plan.version ||
+        (result.outcome !== "Selected" && result.outcome !== "AlreadySelected")
+      ) {
+        throw new Error("mobile_financing_plan_selection_response_invalid");
+      }
+
+      router.replace("/(tenant)/home");
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "mobile_financing_plan_selection_failed",
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
-      <AppHeader title="تایید درخواست" />
+      <AppHeader title="تأیید نسخه طرح" />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.intro}>
-          <Text style={styles.title}>جزئیات درخواست خود را بررسی کنید</Text>
-          <Text style={styles.description}>پیش از ارسال درخواست، اطلاعات قرارداد و شرایط طرح انتخاب‌شده را بررسی کنید.</Text>
+          <Text style={styles.title}>نسخه authoritative را بررسی کنید</Text>
+          <Text style={styles.description}>
+            اطلاعات این صفحه دوباره از backend خوانده می‌شود؛ پارامترهای route به‌تنهایی برای نمایش یا انتخاب طرح قابل اعتماد نیستند.
+          </Text>
         </View>
 
-        <View style={styles.card}>
-          <View style={styles.badgeRow}>
-            <View style={styles.selectedBadge}><Text style={styles.selectedBadgeText}>طرح انتخاب‌شده</Text></View>
-            <View style={styles.specialBadge}><Text style={styles.specialBadgeText}>شرایط ویژه</Text></View>
+        {loading ? <Text style={styles.stateText}>در حال تأیید طرح با backend...</Text> : null}
+
+        {error ? (
+          <View style={styles.errorCard}>
+            <Text style={styles.errorTitle}>طرح قابل تأیید نیست</Text>
+            <Text style={styles.errorText}>{error}</Text>
           </View>
-          <Text style={styles.planTitle}>طرح ویژه تأمین مسکن</Text>
-          <Text style={styles.muted}>بانک ملت</Text>
-        </View>
+        ) : null}
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>خلاصه مالی طرح</Text>
-          <SummaryRow label="مبلغ قابل تأمین" value="۴۵۰٬۰۰۰٬۰۰۰ تومان" emphasis />
-          <SummaryRow label="آورده موردنیاز شما" value="۱۸۰٬۰۰۰٬۰۰۰ تومان" />
-          <SummaryRow label="نرخ طرح" value="۴٪" />
-          <SummaryRow label="پرداخت ماهانه تأمین مالی" value="۱۸٬۵۰۰٬۰۰۰ تومان" emphasis />
-          <SummaryRow label="اجاره ماهانه قرارداد" value="۲۰٬۰۰۰٬۰۰۰ تومان" />
-          <SummaryRow label="صرفه‌جویی تقریبی" value="۶۵٬۰۰۰٬۰۰۰ تومان" success />
-          <Text style={styles.supporting}>براساس مقایسه با شرایط عمومی</Text>
-        </View>
+        {plan ? (
+          <>
+            <View style={styles.card}>
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>Published • Public • 12 months</Text>
+              </View>
+              <Text style={styles.planTitle}>{plan.title}</Text>
+              <DetailRow label="شناسه بانک" value={plan.bankId} />
+              <DetailRow label="Plan ID" value={plan.planId} />
+              <DetailRow label="نسخه دقیق" value={plan.version} />
+              <DetailRow label="مدت" value={`${plan.termMonths.toLocaleString("fa-IR")} ماه`} />
+            </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>قرارداد مرتبط</Text>
-          <View style={styles.contractGrid}>
-            <View style={styles.contractField}><Text style={styles.fieldLabel}>کد رهگیری</Text><Text style={styles.fieldValue}>۱۲۳۴۵۶۷۸۹۰۱۲</Text></View>
-            <View style={styles.contractField}><Text style={styles.fieldLabel}>تاریخ شروع</Text><Text style={styles.fieldValue}>۱۵ مهر ۱۴۰۵</Text></View>
-          </View>
-          <View style={styles.contractField}><Text style={styles.fieldLabel}>تاریخ پایان</Text><Text style={styles.fieldValue}>۱۵ مهر ۱۴۰۶</Text></View>
-          <View style={styles.contractField}><Text style={styles.fieldLabel}>آدرس ملک</Text><Text style={styles.fieldValue}>تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴، واحد ۳</Text></View>
-        </View>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>شرایط ثبت‌شده طرح</Text>
+              <Text style={styles.termsText}>{plan.interestTerms}</Text>
+              <Text style={styles.note}>
+                این endpoint مبلغ وام، آورده، قسط یا نرخ عددی جداگانه‌ای برنمی‌گرداند؛ اپ نیز چنین مقادیری را حدس یا محاسبه نمی‌کند.
+              </Text>
+            </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>پس از ارسال درخواست</Text>
-          <Step number="۱" label="بررسی اطلاعات و اعتبار" active />
-          <View style={[styles.connector, styles.connectorActive]} />
-          <Step number="۲" label="بررسی و تصمیم‌گیری بانک" />
-          <View style={styles.connector} />
-          <Step number="۳" label="اعلام نتیجه در چارخونه" />
-        </View>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>اثر انتخاب</Text>
+              <Text style={styles.bodyText}>
+                با تأیید، mutation موجود انتخاب طرح اجرا می‌شود. backend مالکیت application، Published/Public بودن همین نسخه و وضعیت PlanSelectionPending را دوباره بررسی می‌کند و audit/outbox authoritative ثبت می‌شود.
+              </Text>
+            </View>
 
-        <View style={styles.infoNotice}><Text style={styles.infoNoticeText}>مبالغ نمایش‌داده‌شده براساس شرایط فعلی محاسبه شده‌اند و شرایط نهایی پس از بررسی درخواست مشخص می‌شود.</Text><Text style={styles.infoIcon}>ⓘ</Text></View>
+            <Pressable
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: confirmed }}
+              onPress={() => setConfirmed((value) => !value)}
+              style={styles.confirmRow}
+            >
+              <Text style={styles.confirmText}>
+                شناسه بانک، عنوان، نسخه و شرایط ثبت‌شده این طرح را بررسی کرده‌ام.
+              </Text>
+              <View style={[styles.checkbox, confirmed && styles.checkboxChecked]}>
+                {confirmed ? <Text style={styles.checkmark}>✓</Text> : null}
+              </View>
+            </Pressable>
 
-        <Pressable onPress={() => setConfirmed((value) => !value)} style={styles.confirmRow}>
-          <Text style={styles.confirmText}>اطلاعات قرارداد و شرایط طرح را بررسی کرده‌ام و درخواست بررسی را تأیید می‌کنم.</Text>
-          <View style={[styles.checkbox, confirmed && styles.checkboxChecked]}>{confirmed ? <Text style={styles.checkmark}>✓</Text> : null}</View>
-        </Pressable>
+            <AppButton
+              disabled={!confirmed || submitting}
+              onPress={submit}
+            >
+              {submitting ? "در حال ثبت انتخاب..." : "ثبت انتخاب این نسخه"}
+            </AppButton>
+          </>
+        ) : null}
 
-        <AppButton disabled={!confirmed} onPress={() => router.replace("/(tenant)/financing-under-review")}>ارسال درخواست برای بررسی</AppButton>
+        <AppButton variant="outline" onPress={() => router.replace("/(tenant)/financing-plans")}>
+          بازگشت به فهرست طرح‌ها
+        </AppButton>
       </ScrollView>
     </SafeAreaView>
   );
@@ -93,38 +203,22 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 40, gap: 16 },
   intro: { gap: 8 },
   title: { color: colors.page, fontFamily: fonts.semibold, fontSize: 20, lineHeight: 28, textAlign: "right", writingDirection: "rtl" },
-  description: { color: colors.muted, fontFamily: fonts.regular, fontSize: 13, lineHeight: 20, textAlign: "right", writingDirection: "rtl" },
+  description: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, lineHeight: 20, textAlign: "right", writingDirection: "rtl" },
+  stateText: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, textAlign: "right", writingDirection: "rtl" },
+  errorCard: { backgroundColor: "#FEE2E2", borderRadius: radii.md, padding: 14, gap: 6 },
+  errorTitle: { color: "#991B1B", fontFamily: fonts.semibold, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
+  errorText: { color: "#991B1B", fontFamily: fonts.regular, fontSize: 11, lineHeight: 18, textAlign: "right" },
   card: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radii.lg, padding: 16, gap: 12 },
-  badgeRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  selectedBadge: { backgroundColor: colors.successSoft, paddingHorizontal: 12, paddingVertical: 6, borderRadius: radii.sm },
-  selectedBadgeText: { color: colors.primary, fontFamily: fonts.medium, fontSize: 12, writingDirection: "rtl" },
-  specialBadge: { backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.accent, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  specialBadgeText: { color: colors.accent, fontFamily: fonts.medium, fontSize: 11, writingDirection: "rtl" },
-  planTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 16, textAlign: "right", writingDirection: "rtl" },
-  muted: { color: colors.muted, fontFamily: fonts.regular, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
-  cardTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 15, textAlign: "right", writingDirection: "rtl" },
-  summaryRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  summaryValue: { color: colors.text, fontFamily: fonts.semibold, fontSize: 14 },
-  summaryLabel: { color: "#4B5563", fontFamily: fonts.regular, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
-  emphasis: { color: colors.primary },
-  success: { color: "#10B981" },
-  supporting: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "right", writingDirection: "rtl" },
-  contractGrid: { flexDirection: "row", gap: 12 },
-  contractField: { flex: 1, gap: 4, alignItems: "flex-end" },
-  fieldLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, writingDirection: "rtl" },
-  fieldValue: { color: colors.text, fontFamily: fonts.medium, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
-  stepRow: { flexDirection: "row", gap: 12, alignItems: "center", justifyContent: "flex-end" },
-  stepLabel: { flex: 1, color: "#4B5563", fontFamily: fonts.medium, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
-  stepLabelActive: { color: colors.text },
-  stepCircle: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.border, alignItems: "center", justifyContent: "center" },
-  stepCircleActive: { backgroundColor: colors.primary },
-  stepNumber: { color: colors.muted, fontFamily: fonts.bold, fontSize: 12 },
-  stepNumberActive: { color: colors.surface },
-  connector: { width: 2, height: 16, backgroundColor: colors.border, alignSelf: "flex-end", marginRight: 11 },
-  connectorActive: { backgroundColor: colors.primary },
-  infoNotice: { backgroundColor: "#F2F7FA", borderWidth: 1, borderColor: "#D9E5ED", borderRadius: radii.md, paddingHorizontal: 16, paddingVertical: 12, flexDirection: "row", gap: 8 },
-  infoNoticeText: { flex: 1, color: "#597385", fontFamily: fonts.regular, fontSize: 12, lineHeight: 21, textAlign: "right", writingDirection: "rtl" },
-  infoIcon: { color: "#668CA6", fontSize: 16 },
+  badge: { alignSelf: "flex-end", backgroundColor: colors.successSoft, borderRadius: radii.sm, paddingHorizontal: 9, paddingVertical: 4 },
+  badgeText: { color: colors.primary, fontFamily: fonts.medium, fontSize: 10 },
+  planTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 17, textAlign: "right", writingDirection: "rtl" },
+  cardTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 14, textAlign: "right", writingDirection: "rtl" },
+  detailRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  detailLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "right", writingDirection: "rtl" },
+  detailValue: { flex: 1, color: colors.text, fontFamily: fonts.medium, fontSize: 11, textAlign: "left" },
+  termsText: { color: colors.text, fontFamily: fonts.regular, fontSize: 13, lineHeight: 21, textAlign: "right", writingDirection: "rtl" },
+  note: { color: colors.muted, fontFamily: fonts.regular, fontSize: 10, lineHeight: 17, textAlign: "right", writingDirection: "rtl" },
+  bodyText: { color: colors.text, fontFamily: fonts.regular, fontSize: 12, lineHeight: 20, textAlign: "right", writingDirection: "rtl" },
   confirmRow: { flexDirection: "row", gap: 12, alignItems: "flex-start", paddingVertical: 8 },
   confirmText: { flex: 1, color: colors.page, fontFamily: fonts.regular, fontSize: 13, lineHeight: 20, textAlign: "right", writingDirection: "rtl" },
   checkbox: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: colors.muted, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" },
