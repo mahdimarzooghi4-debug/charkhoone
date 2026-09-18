@@ -2,6 +2,7 @@ using System.Text.Json;
 using Charkhoone.Application.Contracts;
 using Charkhoone.Domain.Contracts;
 using Charkhoone.Domain.CreditApplications;
+using Charkhoone.Domain.Finance;
 using Charkhoone.Domain.Payments;
 using Charkhoone.Infrastructure.Persistence;
 using Charkhoone.Infrastructure.Persistence.Models;
@@ -192,6 +193,22 @@ public sealed class EfLeaseFundingLifecycleService(CharkhooneDbContext dbContext
                 return AdvancedOrNotReady(contract, appliedTransitions);
             }
 
+            var termsReady = await ValidateContractTermsSnapshotAsync(
+                allocation,
+                contract.Id,
+                cancellationToken);
+            if (termsReady == FundingReadiness.Invalid)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return Invalid(contract.Id, initialStatus);
+            }
+
+            if (termsReady == FundingReadiness.NotReady)
+            {
+                await CommitAsync(cancellationToken);
+                return AdvancedOrNotReady(contract, appliedTransitions);
+            }
+
             ApplyTransition(
                 contract,
                 LeaseContractStatus.Active,
@@ -233,6 +250,67 @@ public sealed class EfLeaseFundingLifecycleService(CharkhooneDbContext dbContext
             await dbContext.SaveChangesAsync(token);
             await transaction.CommitAsync(token);
         }
+    }
+
+    private async Task<FundingReadiness> ValidateContractTermsSnapshotAsync(
+        FundingAllocationRow allocation,
+        Guid contractId,
+        CancellationToken cancellationToken)
+    {
+        var terms = await dbContext.LeaseContractTerms
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.ContractId == contractId, cancellationToken);
+        if (terms is null)
+        {
+            return FundingReadiness.NotReady;
+        }
+
+        var schedule = await dbContext.LeaseContractScheduleMonths
+            .AsNoTracking()
+            .Where(x => x.ContractId == contractId)
+            .OrderBy(x => x.ContractMonthNumber)
+            .ToListAsync(cancellationToken);
+
+        if (terms.Calendar != "Persian"
+            || terms.TermMonths != 12
+            || terms.FullDepositEquivalentRial != allocation.FullDepositEquivalentRial
+            || terms.CashDepositRial < 0m
+            || terms.MonthlyRentRial < 0m
+            || terms.CashDepositRial != decimal.Truncate(terms.CashDepositRial)
+            || terms.MonthlyRentRial != decimal.Truncate(terms.MonthlyRentRial)
+            || terms.FullDepositEquivalentRial != decimal.Truncate(terms.FullDepositEquivalentRial)
+            || string.IsNullOrWhiteSpace(terms.OwnerBeneficiaryId)
+            || string.IsNullOrWhiteSpace(terms.BankBeneficiaryId)
+            || string.IsNullOrWhiteSpace(terms.SourceReference)
+            || schedule.Count != 12)
+        {
+            return FundingReadiness.Invalid;
+        }
+
+        var expectedFullDeposit = FullDepositCalculator.Calculate(
+            terms.CashDepositRial,
+            terms.MonthlyRentRial);
+        if (expectedFullDeposit != terms.FullDepositEquivalentRial)
+        {
+            return FundingReadiness.Invalid;
+        }
+
+        for (var index = 0; index < schedule.Count; index++)
+        {
+            var month = schedule[index];
+            if (month.ContractMonthNumber != index + 1
+                || month.OwnerPaymentRial < 0m
+                || month.BankInterestRial < 0m
+                || month.OwnerPaymentRial != decimal.Truncate(month.OwnerPaymentRial)
+                || month.BankInterestRial != decimal.Truncate(month.BankInterestRial)
+                || (month.OwnerPaymentRial == 0m && month.BankInterestRial == 0m)
+                || (index > 0 && schedule[index - 1].DueAtUtc >= month.DueAtUtc))
+            {
+                return FundingReadiness.Invalid;
+            }
+        }
+
+        return FundingReadiness.Ready;
     }
 
     private async Task<FundingReadiness> ValidatePositiveContributionStateAsync(
