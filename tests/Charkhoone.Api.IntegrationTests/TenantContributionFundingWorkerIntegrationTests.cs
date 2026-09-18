@@ -407,10 +407,10 @@ public sealed class TenantContributionFundingWorkerIntegrationTests(CharkhooneAp
                 null,
                 Array.Empty<CoveragePaymentView>()));
 
-        public Task<TenantContributionBalanceView?> GetBalanceAsync(
+        public Task<Charkhoone.Application.Payments.TenantContributionBalanceView?> GetBalanceAsync(
             Guid contractId,
             CancellationToken cancellationToken = default) =>
-            Task.FromResult<TenantContributionBalanceView?>(null);
+            Task.FromResult<Charkhoone.Application.Payments.TenantContributionBalanceView?>(null);
 
         public Task<PostConfirmedReplenishmentResult> PostConfirmedReplenishmentAsync(
             Guid externalTransactionId,
