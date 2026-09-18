@@ -14,6 +14,7 @@ public sealed class FinancialReconciliationWorker(
     ILogger<FinancialReconciliationWorker> logger) : BackgroundService
 {
     private const string PaymentReconciliationOperationType = "payment_reconciliation";
+    private const string CancellationBankPrincipalOperationType = "cancellation_bank_principal_return";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -29,10 +30,11 @@ public sealed class FinancialReconciliationWorker(
             {
                 var result = await ReconcileOnceAsync(stoppingToken);
                 logger.LogInformation(
-                    "Financial reconciliation batch completed: {Payments} payments, {Coverage} coverage obligations, {Cancellations} cancellation settlements, {NormalSettlements} normal settlements.",
+                    "Financial reconciliation batch completed: {Payments} payments, {Coverage} coverage obligations, {Cancellations} cancellation settlements, {CancellationBankPrincipals} cancellation bank-principal returns, {NormalSettlements} normal settlements.",
                     result.PaymentCandidates,
                     result.CoverageCandidates,
                     result.CancellationCandidates,
+                    result.CancellationBankPrincipalCandidates,
                     result.NormalSettlementCandidates);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -107,6 +109,30 @@ public sealed class FinancialReconciliationWorker(
             .Take(options.BatchSize)
             .ToListAsync(cancellationToken);
 
+        var cancellationBankPrincipalCandidates = await dbContext.LeaseContracts
+            .AsNoTracking()
+            .Where(x => x.Status == LeaseContractStatus.Cancelled)
+            .Where(x => dbContext.CancellationSettlements.Any(settlement =>
+                settlement.ContractId == x.Id
+                && settlement.Status == CancellationSettlementStatus.Completed
+                && settlement.CompletedAtUtc != null))
+            .Where(x => dbContext.FrozenPrincipals.Any(principal =>
+                principal.ContractId == x.Id
+                && principal.AmountRial > 0m))
+            .Where(x => !dbContext.NormalSettlements.Any(settlement =>
+                settlement.ContractId == x.Id))
+            .Where(x => !dbContext.ExternalTransactions.Any(external =>
+                external.AggregateType == "LeaseContract"
+                && external.AggregateId == x.Id
+                && external.OperationType == CancellationBankPrincipalOperationType
+                && (external.Status == ExternalTransactionStatus.Succeeded
+                    || external.Status == ExternalTransactionStatus.Failed)))
+            .OrderBy(x => x.UpdatedAtUtc)
+            .ThenBy(x => x.Id)
+            .Select(x => x.Id)
+            .Take(options.BatchSize)
+            .ToListAsync(cancellationToken);
+
         var normalSettlementCandidates = await dbContext.LeaseContracts
             .AsNoTracking()
             .Where(x => x.Status == LeaseContractStatus.SettlementPending)
@@ -151,6 +177,19 @@ public sealed class FinancialReconciliationWorker(
                 () => cancellationService.SettleAsync(contractId, occurredAtUtc, cancellationToken));
         }
 
+        var cancellationBankPrincipalService = scope.ServiceProvider
+            .GetRequiredService<ICancellationBankPrincipalSettlementService>();
+        foreach (var contractId in cancellationBankPrincipalCandidates)
+        {
+            await RunCandidateAsync(
+                "cancellation-bank-principal",
+                contractId,
+                () => cancellationBankPrincipalService.SettleAsync(
+                    contractId,
+                    occurredAtUtc,
+                    cancellationToken));
+        }
+
         var normalSettlementService = scope.ServiceProvider.GetRequiredService<INormalSettlementService>();
         foreach (var contractId in normalSettlementCandidates)
         {
@@ -163,12 +202,16 @@ public sealed class FinancialReconciliationWorker(
         activity?.SetTag("charkhoone.reconciliation.payment_candidates", paymentCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.coverage_candidates", coverageCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.cancellation_candidates", cancellationCandidates.Count);
+        activity?.SetTag(
+            "charkhoone.reconciliation.cancellation_bank_principal_candidates",
+            cancellationBankPrincipalCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.normal_settlement_candidates", normalSettlementCandidates.Count);
 
         return new FinancialReconciliationBatchResult(
             paymentCandidates.Count,
             coverageCandidates.Count,
             cancellationCandidates.Count,
+            cancellationBankPrincipalCandidates.Count,
             normalSettlementCandidates.Count);
     }
 
@@ -206,4 +249,5 @@ public sealed record FinancialReconciliationBatchResult(
     int PaymentCandidates,
     int CoverageCandidates,
     int CancellationCandidates,
+    int CancellationBankPrincipalCandidates,
     int NormalSettlementCandidates);
