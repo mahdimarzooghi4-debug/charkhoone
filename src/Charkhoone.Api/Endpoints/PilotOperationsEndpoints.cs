@@ -26,8 +26,8 @@ public static class PilotOperationsEndpoints
 
     private static async Task<IResult> ListPaymentsAsync(
         [FromQuery] string? status,
-        [FromQuery] int page,
-        [FromQuery] int pageSize,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
         IPilotOperationsService service,
         CancellationToken cancellationToken)
     {
@@ -48,8 +48,8 @@ public static class PilotOperationsEndpoints
             parsedStatus = value;
         }
 
-        var normalizedPage = page <= 0 ? 1 : page;
-        var normalizedPageSize = pageSize <= 0 ? 50 : pageSize;
+        var normalizedPage = page is null or <= 0 ? 1 : page.Value;
+        var normalizedPageSize = pageSize is null or <= 0 ? 50 : pageSize.Value;
         if (normalizedPageSize > 200)
         {
             return Results.Problem(
