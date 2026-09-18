@@ -16,6 +16,8 @@ public sealed class RabbitMqWorkerOptions
     public string Exchange { get; init; } = "charkhoone.events";
     public string IdentityQueue { get; init; } = "charkhoone.identity-verification";
     public string IdentityReviewQueue { get; init; } = "charkhoone.identity-verification.review";
+    public string CancellationNotificationQueue { get; init; } = "charkhoone.cancellation-notifications";
+    public string CancellationNotificationReviewQueue { get; init; } = "charkhoone.cancellation-notifications.review";
     public ushort PrefetchCount { get; init; } = 4;
     public int MaxDeliveryAttempts { get; init; } = 5;
     public int OutboxBatchSize { get; init; } = 32;
@@ -43,6 +45,8 @@ public sealed class RabbitMqWorkerOptions
             Exchange = RequiredOrDefault(section["Exchange"], "charkhoone.events"),
             IdentityQueue = RequiredOrDefault(section["IdentityQueue"], "charkhoone.identity-verification"),
             IdentityReviewQueue = RequiredOrDefault(section["IdentityReviewQueue"], "charkhoone.identity-verification.review"),
+            CancellationNotificationQueue = RequiredOrDefault(section["CancellationNotificationQueue"], "charkhoone.cancellation-notifications"),
+            CancellationNotificationReviewQueue = RequiredOrDefault(section["CancellationNotificationReviewQueue"], "charkhoone.cancellation-notifications.review"),
             PrefetchCount = (ushort)PositiveInt(section["PrefetchCount"], 4, 1, ushort.MaxValue),
             MaxDeliveryAttempts = PositiveInt(section["MaxDeliveryAttempts"], 5, 1, 100),
             OutboxBatchSize = PositiveInt(section["OutboxBatchSize"], 32, 1, 500),

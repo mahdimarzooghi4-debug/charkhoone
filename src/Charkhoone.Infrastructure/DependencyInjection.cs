@@ -32,6 +32,7 @@ public static class DependencyInjection
         "Payment",
         "Coverage",
         "CancellationSettlement",
+        "CancellationNotification",
         "NormalSettlementBank",
         "NormalSettlementTenant",
     ];
@@ -155,6 +156,16 @@ public static class DependencyInjection
         else
         {
             services.AddSingleton<IExternalOwnerResidualTransferAdapter, UnavailableOwnerResidualTransferAdapter>();
+        }
+
+        var cancellationNotificationMode = configuration["ExternalAdapters:CancellationNotification:Mode"];
+        if (IsDevelopmentMock(cancellationNotificationMode))
+        {
+            services.AddSingleton<IExternalCancellationNotificationAdapter, DevelopmentCancellationNotificationAdapter>();
+        }
+        else
+        {
+            services.AddSingleton<IExternalCancellationNotificationAdapter, UnavailableCancellationNotificationAdapter>();
         }
 
         var normalSettlementBankMode = configuration["ExternalAdapters:NormalSettlementBank:Mode"];
