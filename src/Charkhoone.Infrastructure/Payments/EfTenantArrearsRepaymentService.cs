@@ -417,19 +417,29 @@ public sealed class EfTenantArrearsRepaymentService(
         DateTimeOffset quoteAtUtc,
         CancellationToken cancellationToken)
     {
-        var coveredItems = await (
+        var coveredRows = await (
             from coverage in dbContext.CoveragePayments.AsNoTracking()
             join obligation in dbContext.MonthlyObligations.AsNoTracking()
                 on coverage.MonthlyObligationId equals obligation.Id
             where coverage.ContractId == contractId
                 && coverage.Status == CoveragePaymentStatus.Succeeded
             orderby obligation.ContractMonthNumber, coverage.Kind, coverage.Id
-            select new TenantArrearsItem(
+            select new
+            {
                 coverage.Id,
                 obligation.ContractMonthNumber,
-                (int)coverage.Kind,
-                coverage.AmountRial))
+                coverage.Kind,
+                coverage.AmountRial,
+            })
             .ToListAsync(cancellationToken);
+
+        var coveredItems = coveredRows
+            .Select(x => new TenantArrearsItem(
+                x.Id,
+                x.ContractMonthNumber,
+                (int)x.Kind,
+                x.AmountRial))
+            .ToArray();
 
         var previouslyReplenishedRial = await dbContext.TenantContributionReplenishments
             .AsNoTracking()
