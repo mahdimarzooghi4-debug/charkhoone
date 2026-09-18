@@ -31,6 +31,7 @@ public sealed class NormalSettlementNotificationEvidenceIntegrationTests(Charkho
         var fundFreezeId = Guid.NewGuid();
 
         const decimal frozenPrincipalRial = 700_000_000m;
+        const decimal tenantResidualRial = 200_000_000m;
         const string bankId = "normal-notification-bank";
         const string fundProvider = "normal-notification-fund";
         var fundReference = $"normal-notification-fund-{contractId:D}";
@@ -83,7 +84,7 @@ public sealed class NormalSettlementNotificationEvidenceIntegrationTests(Charkho
                 FullDepositEquivalentRial = frozenPrincipalRial,
                 MaximumEligibleLoanRial = frozenPrincipalRial,
                 BankApprovedLoanRial = frozenPrincipalRial,
-                TenantContributionRial = 0m,
+                TenantContributionRial = tenantResidualRial,
                 CreatedAtUtc = occurredAt.AddMonths(-12),
                 UpdatedAtUtc = occurredAt.AddMonths(-12),
             });
@@ -115,16 +116,36 @@ public sealed class NormalSettlementNotificationEvidenceIntegrationTests(Charkho
             {
                 ContractId = contractId,
                 FundingAllocationId = fundingAllocationId,
-                InitialAmountRial = 0m,
+                InitialAmountRial = tenantResidualRial,
                 FundReference = fundReference,
                 FundedAtUtc = occurredAt.AddMonths(-12),
             });
+
+            db.LedgerAccounts.AddRange(
+                new LedgerAccountRow
+                {
+                    Id = Guid.NewGuid(),
+                    Code = $"contract:{contractId:D}:fund-held-tenant-contribution",
+                    Name = "Fund-held tenant contribution",
+                    Currency = "IRR",
+                    ContractId = contractId,
+                    CreatedAtUtc = occurredAt.AddMonths(-12),
+                },
+                new LedgerAccountRow
+                {
+                    Id = Guid.NewGuid(),
+                    Code = $"contract:{contractId:D}:tenant-contribution-balance",
+                    Name = "Tenant contribution balance",
+                    Currency = "IRR",
+                    ContractId = contractId,
+                    CreatedAtUtc = occurredAt.AddMonths(-12),
+                });
 
             await db.SaveChangesAsync();
         }
 
         var bankAdapter = new ConfirmingBankAdapter();
-        var tenantAdapter = new RejectUnexpectedTenantAdapter();
+        var tenantAdapter = new ConfirmingTenantAdapter();
 
         SettleNormalContractResult first;
         await using (var db = CreateDbContext())
@@ -136,10 +157,10 @@ public sealed class NormalSettlementNotificationEvidenceIntegrationTests(Charkho
         Assert.Equal(SettleNormalContractOutcome.Completed, first.Outcome);
         Assert.NotNull(first.Settlement);
         Assert.Equal(1, bankAdapter.CallCount);
-        Assert.Equal(0, tenantAdapter.CallCount);
-        Assert.Equal(0m, first.Settlement!.TenantResidualAmountRial);
+        Assert.Equal(1, tenantAdapter.CallCount);
+        Assert.Equal(tenantResidualRial, first.Settlement!.TenantResidualAmountRial);
         Assert.Equal(
-            Charkhoone.Domain.Payments.NormalSettlementTransferStatus.NotRequired,
+            Charkhoone.Domain.Payments.NormalSettlementTransferStatus.Succeeded,
             first.Settlement.TenantResidualStatus);
 
         await using (var db = CreateDbContext())
@@ -152,7 +173,7 @@ public sealed class NormalSettlementNotificationEvidenceIntegrationTests(Charkho
                 .SingleAsync(x => x.ContractId == contractId);
             Assert.NotNull(settlement.CompletedAtUtc);
             Assert.Equal(frozenPrincipalRial, settlement.BankPrincipalAmountRial);
-            Assert.Equal(0m, settlement.TenantResidualAmountRial);
+            Assert.Equal(tenantResidualRial, settlement.TenantResidualAmountRial);
 
             var owner = await db.OutboxMessages.AsNoTracking()
                 .SingleAsync(x => x.Type == "lease-contract.normal-settlement-owner-notification-requested.v1");
@@ -168,7 +189,8 @@ public sealed class NormalSettlementNotificationEvidenceIntegrationTests(Charkho
             using (var payload = JsonDocument.Parse(tenant.PayloadJson))
             {
                 Assert.Equal(tenantId, payload.RootElement.GetProperty("tenantUserId").GetGuid());
-                Assert.Equal(0m, payload.RootElement.GetProperty("tenantResidualAmountRial").GetDecimal());
+                Assert.Equal(tenantResidualRial, payload.RootElement.GetProperty("tenantResidualAmountRial").GetDecimal());
+                Assert.Equal(settlement.TenantJournalEntryId, payload.RootElement.GetProperty("tenantJournalEntryId").GetGuid());
             }
 
             var bank = await db.OutboxMessages.AsNoTracking()
@@ -260,7 +282,7 @@ public sealed class NormalSettlementNotificationEvidenceIntegrationTests(Charkho
         }
     }
 
-    private sealed class RejectUnexpectedTenantAdapter : IExternalTenantResidualReturnAdapter
+    private sealed class ConfirmingTenantAdapter : IExternalTenantResidualReturnAdapter
     {
         public string Provider => "normal-notification-tenant-provider";
 
@@ -271,7 +293,11 @@ public sealed class NormalSettlementNotificationEvidenceIntegrationTests(Charkho
             CancellationToken cancellationToken = default)
         {
             CallCount++;
-            throw new InvalidOperationException("Tenant adapter must not be called for zero residual.");
+            return Task.FromResult(new ExternalTenantResidualReturnResponse(
+                ExternalNormalSettlementTransferStatus.Confirmed,
+                Provider,
+                request.ExpectedAmountRial,
+                $"normal-notification-tenant-return:{request.SettlementId:D}"));
         }
     }
 }
