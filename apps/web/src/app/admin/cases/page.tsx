@@ -150,7 +150,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams: S
   const page = parsePage(firstValue(query.page));
   const status = parseStatus(firstValue(query.status));
 
-  let response;
+  let response: Awaited<ReturnType<typeof getPilotCases>>;
   try {
     response = await getPilotCases(page, PAGE_SIZE, status);
   } catch (error) {
