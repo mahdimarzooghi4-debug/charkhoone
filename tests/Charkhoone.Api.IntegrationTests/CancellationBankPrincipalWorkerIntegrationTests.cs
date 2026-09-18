@@ -11,6 +11,7 @@ using CharkhooneWorker = worker::Charkhoone.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 using Xunit;
 
 namespace Charkhoone.Api.IntegrationTests;
@@ -19,10 +20,55 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
     : IClassFixture<CharkhooneApiFactory>, IAsyncLifetime
 {
     private readonly CharkhooneApiFactory _factory = factory;
+    private string? _isolatedConnectionString;
+    private string? _isolatedDatabaseName;
 
-    public Task InitializeAsync() => _factory.MigrateAsync();
+    public async Task InitializeAsync()
+    {
+        var databaseName = $"charkhoone_worker_{Guid.NewGuid():N}";
+        var adminBuilder = new NpgsqlConnectionStringBuilder(_factory.ConnectionString)
+        {
+            Database = "postgres",
+        };
 
-    public Task DisposeAsync() => Task.CompletedTask;
+        await using (var connection = new NpgsqlConnection(adminBuilder.ConnectionString))
+        {
+            await connection.OpenAsync();
+            await using var command = connection.CreateCommand();
+            command.CommandText = $"CREATE DATABASE \"{databaseName}\"";
+            await command.ExecuteNonQueryAsync();
+        }
+
+        var isolatedBuilder = new NpgsqlConnectionStringBuilder(_factory.ConnectionString)
+        {
+            Database = databaseName,
+        };
+        _isolatedDatabaseName = databaseName;
+        _isolatedConnectionString = isolatedBuilder.ConnectionString;
+
+        await using var db = CreateDbContext();
+        await db.Database.MigrateAsync();
+    }
+
+    public async Task DisposeAsync()
+    {
+        if (_isolatedDatabaseName is null)
+        {
+            return;
+        }
+
+        NpgsqlConnection.ClearAllPools();
+        var adminBuilder = new NpgsqlConnectionStringBuilder(_factory.ConnectionString)
+        {
+            Database = "postgres",
+        };
+
+        await using var connection = new NpgsqlConnection(adminBuilder.ConnectionString);
+        await connection.OpenAsync();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"DROP DATABASE IF EXISTS \"{_isolatedDatabaseName}\" WITH (FORCE)";
+        await command.ExecuteNonQueryAsync();
+    }
 
     [Fact]
     public async Task Worker_ReconcilesCompletedCancellationBankPrincipal_AndDoesNotRequeueSucceededReturn()
@@ -151,7 +197,7 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
         var services = new ServiceCollection();
         services.AddLogging();
         services.AddDbContext<CharkhooneDbContext>(options =>
-            options.UseNpgsql(_factory.ConnectionString));
+            options.UseNpgsql(_isolatedConnectionString ?? _factory.ConnectionString));
         services.AddSingleton<TimeProvider>(new FixedTimeProvider(workerAt));
         services.AddSingleton(adapter);
         services.AddScoped<ICancellationBankPrincipalSettlementService, EfCancellationBankPrincipalSettlementService>();
@@ -165,7 +211,7 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
     private CharkhooneDbContext CreateDbContext()
     {
         var options = new DbContextOptionsBuilder<CharkhooneDbContext>()
-            .UseNpgsql(_factory.ConnectionString)
+            .UseNpgsql(_isolatedConnectionString ?? _factory.ConnectionString)
             .Options;
         return new CharkhooneDbContext(options);
     }
