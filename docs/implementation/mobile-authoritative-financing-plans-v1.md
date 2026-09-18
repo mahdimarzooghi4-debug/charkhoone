@@ -120,3 +120,7 @@ The existing required mobile gate still runs locked dependency installation, Typ
 This slice does not provision bank-plan administration, a real bank provider, organizational eligibility, staging, production, or OIDC tenant configuration.
 
 Organizational plans remain intentionally excluded from applicant self-selection because the current authoritative selection mutation supports only Public plans. Extending that boundary requires an explicit organization-membership/eligibility model and must not be inferred in the mobile client.
+
+## Follow-up
+
+Application review, approval, rejection, bank-approval evidence, and funding-allocation display are covered by `mobile-authoritative-financing-status-v1.md`. That follow-up removes the remaining synthetic status/approval content and does not invent membership semantics.

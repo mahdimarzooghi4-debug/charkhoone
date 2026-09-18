@@ -1,7 +1,38 @@
+export type MobileSelectedPlanSummary = {
+  planId: string;
+  version: string;
+  bankId: string;
+  title: string;
+  interestTerms: string;
+  termMonths: number;
+};
+
+export type MobileBankApprovalSummary = {
+  provider: string;
+  status: string;
+  maximumEligibleLoanRial: string;
+  approvedLoanRial: string | null;
+  reasonCode: string | null;
+  updatedAtUtc: string;
+};
+
+export type MobileFundingAllocationSummary = {
+  contractId: string;
+  bankId: string;
+  fullDepositEquivalentRial: string;
+  maximumEligibleLoanRial: string;
+  bankApprovedLoanRial: string;
+  tenantContributionRial: string;
+  updatedAtUtc: string;
+};
+
 export type MobileCreditApplicationSummary = {
   creditApplicationId: string;
   status: string;
   updatedAtUtc: string;
+  selectedPlan: MobileSelectedPlanSummary | null;
+  bankApproval: MobileBankApprovalSummary | null;
+  fundingAllocation: MobileFundingAllocationSummary | null;
 };
 
 export type MobileContractSummary = {

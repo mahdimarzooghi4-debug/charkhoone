@@ -1,67 +1,114 @@
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect } from "react";
+import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AppButton } from "@/components/AppButton";
 import { AppHeader } from "@/components/AppHeader";
+import { useMobileBootstrap } from "@/api/useMobileBootstrap";
+import { formatRial } from "@/api/mobileApi";
 import { colors, fonts, radii } from "@/theme";
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
+function Row({ label, value }: { label: string; value: string }) {
   return (
-    <View style={styles.summaryRow}>
-      <Text style={styles.summaryValue}>{value}</Text>
-      <Text style={styles.summaryLabel}>{label}</Text>
+    <View style={styles.row}>
+      <Text selectable style={styles.value}>{value}</Text>
+      <Text style={styles.label}>{label}</Text>
     </View>
   );
 }
 
 export default function FinancingNotApprovedScreen() {
   const router = useRouter();
+  const { status, data, error, loading } = useMobileBootstrap();
+  const application = data?.latestCreditApplication ?? null;
+  const plan = application?.selectedPlan ?? null;
+  const approval = application?.bankApproval ?? null;
+  const rejected = application?.status === "Rejected";
+
+  useEffect(() => {
+    if (status === "unauthenticated" || status === "config-error") {
+      router.replace("/(auth)/login");
+    }
+  }, [router, status]);
 
   return (
     <SafeAreaView style={styles.safe}>
       <AppHeader title="وضعیت درخواست" />
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.decisionCard}>
-          <Text style={styles.decisionTitle}>درخواست تأمین مالی تأیید نشد</Text>
-          <Text style={styles.decisionDescription}>نتیجه بررسی این درخواست از طرف بانک تأیید نشده است.</Text>
-          <View style={styles.rejectedBadge}>
-            <Text style={styles.rejectedBadgeText}>تأیید نشد</Text>
+        {loading ? <Text style={styles.stateText}>در حال دریافت نتیجه persisted...</Text> : null}
+
+        {error ? (
+          <View style={styles.errorCard}>
+            <Text style={styles.errorTitle}>دریافت نتیجه ناموفق بود</Text>
+            <Text style={styles.errorText}>{error}</Text>
           </View>
-        </View>
+        ) : null}
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>خلاصه درخواست</Text>
-          <SummaryRow label="طرح انتخاب‌شده" value="طرح ویژه کارکنان" />
-          <SummaryRow label="بانک صادرکننده" value="بانک نمونه" />
-          <SummaryRow label="مبلغ درخواست" value="۴۵۰٬۰۰۰٬۰۰۰ تومان" />
-          <SummaryRow label="وضعیت نهایی" value="تأیید نشد" />
-          <SummaryRow label="قرارداد مرتبط" value="قرارداد سعادت‌آباد" />
-        </View>
+        {!loading && !error && !rejected ? (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>نتیجه رد authoritative موجود نیست</Text>
+            <Text style={styles.body}>
+              این صفحه فقط وقتی ردشدن را نمایش می‌دهد که application واقعی status برابر Rejected داشته باشد.
+            </Text>
+            {application ? <Row label="وضعیت فعلی" value={application.status} /> : null}
+          </View>
+        ) : null}
 
-        <View style={styles.reasonCard}>
-          <Text style={styles.reasonTitle}>دلیل اعلام‌شده توسط بانک</Text>
-          <Text style={styles.bodyText}>اگر بانک دلیل مشخصی برای رد درخواست ارائه کند، همان متن بدون تغییر در این بخش نمایش داده می‌شود.</Text>
-        </View>
+        {rejected && application ? (
+          <>
+            <View style={styles.hero}>
+              <View style={styles.badge}><Text style={styles.badgeText}>Rejected</Text></View>
+              <Text style={styles.heroTitle}>درخواست در backend رد شده است</Text>
+              <Text style={styles.heroText}>
+                علت یا منبع فقط در صورتی نمایش داده می‌شود که evidence persisted برای همین application وجود داشته باشد.
+              </Text>
+            </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>طرح‌های دیگری برای شما قابل بررسی است</Text>
-          <Text style={styles.bodyText}>در صورت وجود طرح واجد شرایط دیگر یا طرح عمومی، می‌توانید گزینه دیگری را بررسی کنید.</Text>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.replace("/(tenant)/financing-plans")}
-            style={({ pressed }) => [styles.altAction, pressed && styles.pressed]}
-          >
-            <Text style={styles.altActionText}>مشاهده طرح‌های دیگر</Text>
-          </Pressable>
-        </View>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>درخواست</Text>
+              <Row label="Application ID" value={application.creditApplicationId} />
+              {plan ? (
+                <>
+                  <Row label="طرح انتخاب‌شده" value={plan.title} />
+                  <Row label="Bank ID" value={plan.bankId} />
+                  <Row label="نسخه" value={plan.version} />
+                </>
+              ) : null}
+            </View>
 
-        <View style={styles.historyCard}>
-          <Text style={styles.bodyText}>این درخواست و نتیجه بررسی آن در سوابق قرارداد شما باقی می‌ماند.</Text>
-        </View>
+            {approval ? (
+              <View style={styles.reasonCard}>
+                <Text style={styles.reasonTitle}>Bank approval evidence</Text>
+                <Row label="وضعیت" value={approval.status} />
+                <Row label="Provider" value={approval.provider} />
+                <Row label="حداکثر واجد شرایط" value={formatRial(approval.maximumEligibleLoanRial)} />
+                {approval.approvedLoanRial ? (
+                  <Row label="مبلغ تأییدشده" value={formatRial(approval.approvedLoanRial)} />
+                ) : null}
+                {approval.reasonCode ? (
+                  <Row label="Reason code persisted" value={approval.reasonCode} />
+                ) : (
+                  <Text style={styles.body}>Reason code persisted برای این evidence وجود ندارد.</Text>
+                )}
+              </View>
+            ) : (
+              <View style={styles.card}>
+                <Text style={styles.cardTitle}>Bank approval evidence وجود ندارد</Text>
+                <Text style={styles.body}>
+                  Rejected می‌تواند پیش از bank approval هم رخ دهد. اپ علت بانکی را در نبود evidence حدس نمی‌زند.
+                </Text>
+              </View>
+            )}
 
-        <View style={styles.actions}>
-          <AppButton variant="primary" onPress={() => router.replace("/(tenant)/financing-plans")}>بازگشت به طرح‌های تأمین مالی</AppButton>
-          <AppButton variant="outline" onPress={() => router.replace("/(shared)/contracts")}>بازگشت به قراردادها</AppButton>
-        </View>
+            <View style={styles.notice}>
+              <Text style={styles.noticeText}>
+                Reason code یک کد persisted است و اپ آن را به توضیح انسانی یا توصیه‌ی ساختگی تبدیل نمی‌کند.
+              </Text>
+            </View>
+          </>
+        ) : null}
+
+        <AppButton onPress={() => router.replace("/(tenant)/home")}>بازگشت به خانه</AppButton>
+        <AppButton variant="outline" onPress={() => router.replace("/(shared)/contracts")}>مشاهده قراردادها</AppButton>
       </ScrollView>
     </SafeAreaView>
   );
@@ -69,23 +116,24 @@ export default function FinancingNotApprovedScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.primary },
-  content: { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32, gap: 14 },
-  decisionCard: { backgroundColor: colors.surface, borderRadius: radii.lg, padding: 16, gap: 8, alignItems: "center" },
-  decisionTitle: { width: "100%", color: colors.text, fontFamily: fonts.bold, fontSize: 18, lineHeight: 32, textAlign: "center", writingDirection: "rtl" },
-  decisionDescription: { width: "100%", color: "#6B7280", fontFamily: fonts.regular, fontSize: 12, lineHeight: 18, textAlign: "center", writingDirection: "rtl" },
-  rejectedBadge: { minWidth: 88, minHeight: 24, borderRadius: 14, backgroundColor: "#FEF0F0", alignItems: "center", justifyContent: "center", paddingHorizontal: 9 },
-  rejectedBadgeText: { color: "#B62B2B", fontFamily: fonts.medium, fontSize: 12, writingDirection: "rtl" },
-  card: { backgroundColor: colors.surface, borderRadius: radii.lg, paddingHorizontal: 16, paddingVertical: 14, gap: 6 },
-  cardTitle: { width: "100%", color: colors.text, fontFamily: fonts.semibold, fontSize: 15, lineHeight: 24, textAlign: "right", writingDirection: "rtl" },
-  summaryRow: { minHeight: 30, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
-  summaryValue: { width: 170, color: colors.text, fontFamily: fonts.regular, fontSize: 13, lineHeight: 24, writingDirection: "rtl" },
-  summaryLabel: { width: 146, color: "#6B7280", fontFamily: fonts.medium, fontSize: 13, lineHeight: 24, textAlign: "right", writingDirection: "rtl" },
-  reasonCard: { backgroundColor: "#FFFAFA", borderRadius: radii.lg, paddingHorizontal: 16, paddingVertical: 14, gap: 8 },
-  reasonTitle: { width: "100%", color: "#B62B2B", fontFamily: fonts.semibold, fontSize: 14, lineHeight: 24, textAlign: "right", writingDirection: "rtl" },
-  bodyText: { width: "100%", color: "#6B7280", fontFamily: fonts.regular, fontSize: 12, lineHeight: 20, textAlign: "right", writingDirection: "rtl" },
-  altAction: { width: "100%", minHeight: 24, borderRadius: 10, backgroundColor: "#FFFAF0", alignItems: "center", justifyContent: "center", paddingHorizontal: 13 },
-  altActionText: { color: "#CC6C00", fontFamily: fonts.semibold, fontSize: 13, lineHeight: 24, textAlign: "center", writingDirection: "rtl" },
-  historyCard: { backgroundColor: "#F0F5F4", borderRadius: radii.lg, paddingHorizontal: 16, paddingVertical: 12 },
-  actions: { gap: 8 },
-  pressed: { opacity: 0.88 },
+  content: { paddingHorizontal: 16, paddingTop: 18, paddingBottom: 36, gap: 14 },
+  stateText: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, textAlign: "right", writingDirection: "rtl" },
+  errorCard: { backgroundColor: "#FEE2E2", borderRadius: radii.md, padding: 14, gap: 6 },
+  errorTitle: { color: "#991B1B", fontFamily: fonts.semibold, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
+  errorText: { color: "#991B1B", fontFamily: fonts.regular, fontSize: 11, textAlign: "right" },
+  hero: { backgroundColor: colors.surface, borderRadius: radii.lg, padding: 18, gap: 10, alignItems: "flex-end" },
+  badge: { backgroundColor: "#FEE2E2", borderRadius: radii.sm, paddingHorizontal: 10, paddingVertical: 5 },
+  badgeText: { color: "#991B1B", fontFamily: fonts.semibold, fontSize: 11 },
+  heroTitle: { width: "100%", color: colors.text, fontFamily: fonts.bold, fontSize: 18, textAlign: "right", writingDirection: "rtl" },
+  heroText: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, lineHeight: 20, textAlign: "right", writingDirection: "rtl" },
+  card: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radii.lg, padding: 16, gap: 11 },
+  reasonCard: { backgroundColor: "#FFF7F7", borderWidth: 1, borderColor: "#FECACA", borderRadius: radii.lg, padding: 16, gap: 11 },
+  cardTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 14, textAlign: "right", writingDirection: "rtl" },
+  reasonTitle: { color: "#991B1B", fontFamily: fonts.semibold, fontSize: 14, textAlign: "right", writingDirection: "rtl" },
+  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
+  label: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "right", writingDirection: "rtl" },
+  value: { flex: 1, color: colors.text, fontFamily: fonts.medium, fontSize: 11, textAlign: "left" },
+  body: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, lineHeight: 20, textAlign: "right", writingDirection: "rtl" },
+  notice: { backgroundColor: colors.successSoft, borderRadius: radii.md, padding: 13 },
+  noticeText: { color: colors.primary, fontFamily: fonts.regular, fontSize: 11, lineHeight: 18, textAlign: "right", writingDirection: "rtl" },
 });

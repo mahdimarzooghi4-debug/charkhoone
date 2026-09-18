@@ -92,6 +92,28 @@ export default function TenantHomeScreen() {
     ? `ماه ${nextPayment.contractMonthNumber.toLocaleString("fa-IR")} • سررسید ${formatDue(nextPayment.dueAtUtc)} • ${nextPayment.status}`
     : "فقط داده persist‌شده API نمایش داده می‌شود";
 
+  const openApplicationStatus = () => {
+    const application = bootstrap?.latestCreditApplication;
+    if (!application) return;
+
+    if (application.status === "PlanSelectionPending") {
+      router.push("/(tenant)/financing-plans");
+      return;
+    }
+
+    if (application.status === "ApprovedFunded") {
+      router.push("/(tenant)/financing-approved");
+      return;
+    }
+
+    if (application.status === "Rejected") {
+      router.push("/(tenant)/financing-not-approved");
+      return;
+    }
+
+    router.push("/(tenant)/financing-under-review");
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.topLogo}><BrandLogo /></View>
@@ -151,6 +173,11 @@ export default function TenantHomeScreen() {
               <Text style={styles.primaryButtonText}>پرداخت‌ها</Text>
             </Pressable>
           </View>
+          {bootstrap?.latestCreditApplication ? (
+            <Pressable style={styles.applicationButton} onPress={openApplicationStatus}>
+              <Text style={styles.applicationButtonText}>جزئیات authoritative درخواست</Text>
+            </Pressable>
+          ) : null}
         </View>
 
         <Text style={styles.quickTitle}>دسترسی سریع</Text>
@@ -201,6 +228,8 @@ const styles = StyleSheet.create({
   actionTitle: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 16, textAlign: "right", writingDirection: "rtl" },
   actionText: { color: colors.muted, fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, textAlign: "right", writingDirection: "rtl" },
   actionButtons: { flexDirection: "row", gap: 12, marginTop: 4 },
+  applicationButton: { minHeight: 44, borderRadius: radii.md, borderWidth: 1, borderColor: colors.accent, alignItems: "center", justifyContent: "center", paddingHorizontal: 12 },
+  applicationButtonText: { color: colors.accent, fontFamily: fonts.medium, fontSize: 12, writingDirection: "rtl" },
   outlineButton: { flex: 1, height: 48, borderRadius: radii.md, borderWidth: 1.5, borderColor: colors.primary, alignItems: "center", justifyContent: "center" },
   primaryButton: { flex: 1, height: 48, borderRadius: radii.md, backgroundColor: colors.primary, alignItems: "center", justifyContent: "center" },
   outlineButtonText: { color: colors.primary, fontFamily: fonts.medium, fontSize: 14, writingDirection: "rtl" },

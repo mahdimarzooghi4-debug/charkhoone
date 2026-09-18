@@ -18,16 +18,68 @@ public sealed class EfMobileBootstrapService(CharkhooneDbContext dbContext) : IM
             throw new ArgumentException("User id is required.", nameof(userId));
         }
 
-        var application = await dbContext.CreditApplications
+        var applicationRow = await dbContext.CreditApplications
             .AsNoTracking()
             .Where(x => x.ApplicantUserId == userId)
             .OrderByDescending(x => x.UpdatedAtUtc)
             .ThenByDescending(x => x.Id)
-            .Select(x => new MobileCreditApplicationSummary(
-                x.Id,
-                x.Status,
-                x.UpdatedAtUtc))
             .FirstOrDefaultAsync(cancellationToken);
+
+        MobileCreditApplicationSummary? application = null;
+        if (applicationRow is not null)
+        {
+            MobileSelectedPlanSummary? selectedPlan = null;
+            if (applicationRow.BankLoanPlanId is not null
+                && !string.IsNullOrWhiteSpace(applicationRow.BankLoanPlanVersion))
+            {
+                selectedPlan = await dbContext.BankLoanPlanVersions
+                    .AsNoTracking()
+                    .Where(x =>
+                        x.PlanId == applicationRow.BankLoanPlanId.Value
+                        && x.Version == applicationRow.BankLoanPlanVersion)
+                    .Select(x => new MobileSelectedPlanSummary(
+                        x.PlanId,
+                        x.Version,
+                        x.BankId,
+                        x.Title,
+                        x.InterestTerms,
+                        x.TermMonths))
+                    .SingleOrDefaultAsync(cancellationToken);
+            }
+
+            var bankApproval = await dbContext.BankApprovals
+                .AsNoTracking()
+                .Where(x => x.CreditApplicationId == applicationRow.Id)
+                .Select(x => new MobileBankApprovalSummary(
+                    x.Provider,
+                    x.Status,
+                    x.MaximumEligibleLoanRial,
+                    x.ApprovedLoanRial,
+                    x.ReasonCode,
+                    x.UpdatedAtUtc))
+                .SingleOrDefaultAsync(cancellationToken);
+
+            var fundingAllocation = await dbContext.FundingAllocations
+                .AsNoTracking()
+                .Where(x => x.CreditApplicationId == applicationRow.Id)
+                .Select(x => new MobileFundingAllocationSummary(
+                    x.ContractId,
+                    x.BankId,
+                    x.FullDepositEquivalentRial,
+                    x.MaximumEligibleLoanRial,
+                    x.BankApprovedLoanRial,
+                    x.TenantContributionRial,
+                    x.UpdatedAtUtc))
+                .SingleOrDefaultAsync(cancellationToken);
+
+            application = new MobileCreditApplicationSummary(
+                applicationRow.Id,
+                applicationRow.Status,
+                applicationRow.UpdatedAtUtc,
+                selectedPlan,
+                bankApproval,
+                fundingAllocation);
+        }
 
         var contractRows = await dbContext.LeaseContracts
             .AsNoTracking()

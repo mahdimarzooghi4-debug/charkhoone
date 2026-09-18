@@ -110,6 +110,9 @@ authoritative_screens = [
     "apps/mobile/app/(tenant)/payments.tsx",
     "apps/mobile/app/(tenant)/financing-plans.tsx",
     "apps/mobile/app/(tenant)/plan-confirmation.tsx",
+    "apps/mobile/app/(tenant)/financing-under-review.tsx",
+    "apps/mobile/app/(tenant)/financing-approved.tsx",
+    "apps/mobile/app/(tenant)/financing-not-approved.tsx",
     "apps/mobile/app/(shared)/contracts.tsx",
     "apps/mobile/app/(shared)/profile.tsx",
 ]
@@ -160,6 +163,74 @@ for prohibited in (
     require(
         prohibited not in plan_confirmation,
         f"plan confirmation contains prohibited synthetic financing value or route: {prohibited}",
+    )
+
+financing_under_review = read("apps/mobile/app/(tenant)/financing-under-review.tsx")
+financing_approved = read("apps/mobile/app/(tenant)/financing-approved.tsx")
+financing_rejected = read("apps/mobile/app/(tenant)/financing-not-approved.tsx")
+home = read("apps/mobile/app/(tenant)/home.tsx")
+
+for token in (
+    "useMobileBootstrap",
+    "application.status",
+    "selectedPlan",
+    "bankApproval",
+    "fundingAllocation",
+    "formatRial",
+):
+    require(
+        token in financing_under_review,
+        f"financing review status missing authoritative token: {token}",
+    )
+
+for token in (
+    "useMobileBootstrap",
+    'application?.status === "ApprovedFunded"',
+    "fundingAllocation",
+    "formatRial",
+):
+    require(
+        token in financing_approved,
+        f"approved financing status missing authoritative token: {token}",
+    )
+
+for token in (
+    "useMobileBootstrap",
+    'application?.status === "Rejected"',
+    "bankApproval",
+    "reasonCode",
+):
+    require(
+        token in financing_rejected,
+        f"rejected financing status missing authoritative token: {token}",
+    )
+
+require(
+    'router.push("/(tenant)/financing-approved")' in home
+    and 'router.push("/(tenant)/financing-not-approved")' in home
+    and 'router.push("/(tenant)/financing-under-review")' in home,
+    "home must route persisted application states to authoritative status screens",
+)
+
+for prohibited in (
+    "/(tenant)/membership",
+    "کد رهگیری",
+    "سعادت‌آباد",
+    "شرایط ویژه",
+):
+    require(
+        prohibited not in financing_approved,
+        f"approved financing status contains prohibited synthetic membership/property token: {prohibited}",
+    )
+
+for prohibited in (
+    "طرح ویژه کارکنان",
+    "بانک نمونه",
+    "قرارداد سعادت‌آباد",
+):
+    require(
+        prohibited not in financing_rejected,
+        f"rejected financing status contains prohibited synthetic token: {prohibited}",
     )
 
 if failures:

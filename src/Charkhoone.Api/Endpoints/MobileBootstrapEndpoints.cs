@@ -61,7 +61,35 @@ public static class MobileBootstrapEndpoints
                 : new MobileCreditApplicationResponse(
                     view.LatestCreditApplication.CreditApplicationId,
                     view.LatestCreditApplication.Status.ToString(),
-                    view.LatestCreditApplication.UpdatedAtUtc),
+                    view.LatestCreditApplication.UpdatedAtUtc,
+                    view.LatestCreditApplication.SelectedPlan is null
+                        ? null
+                        : new MobileSelectedPlanResponse(
+                            view.LatestCreditApplication.SelectedPlan.PlanId,
+                            view.LatestCreditApplication.SelectedPlan.Version,
+                            view.LatestCreditApplication.SelectedPlan.BankId,
+                            view.LatestCreditApplication.SelectedPlan.Title,
+                            view.LatestCreditApplication.SelectedPlan.InterestTerms,
+                            view.LatestCreditApplication.SelectedPlan.TermMonths),
+                    view.LatestCreditApplication.BankApproval is null
+                        ? null
+                        : new MobileBankApprovalResponse(
+                            view.LatestCreditApplication.BankApproval.Provider,
+                            view.LatestCreditApplication.BankApproval.Status,
+                            DecimalText(view.LatestCreditApplication.BankApproval.MaximumEligibleLoanRial)!,
+                            DecimalText(view.LatestCreditApplication.BankApproval.ApprovedLoanRial),
+                            view.LatestCreditApplication.BankApproval.ReasonCode,
+                            view.LatestCreditApplication.BankApproval.UpdatedAtUtc),
+                    view.LatestCreditApplication.FundingAllocation is null
+                        ? null
+                        : new MobileFundingAllocationResponse(
+                            view.LatestCreditApplication.FundingAllocation.ContractId,
+                            view.LatestCreditApplication.FundingAllocation.BankId,
+                            DecimalText(view.LatestCreditApplication.FundingAllocation.FullDepositEquivalentRial)!,
+                            DecimalText(view.LatestCreditApplication.FundingAllocation.MaximumEligibleLoanRial)!,
+                            DecimalText(view.LatestCreditApplication.FundingAllocation.BankApprovedLoanRial)!,
+                            DecimalText(view.LatestCreditApplication.FundingAllocation.TenantContributionRial)!,
+                            view.LatestCreditApplication.FundingAllocation.UpdatedAtUtc)),
             view.Contracts
                 .Select(contract => new MobileContractResponse(
                     contract.ContractId,
@@ -96,6 +124,34 @@ public sealed record MobileBootstrapResponse(
 public sealed record MobileCreditApplicationResponse(
     Guid CreditApplicationId,
     string Status,
+    DateTimeOffset UpdatedAtUtc,
+    MobileSelectedPlanResponse? SelectedPlan,
+    MobileBankApprovalResponse? BankApproval,
+    MobileFundingAllocationResponse? FundingAllocation);
+
+public sealed record MobileSelectedPlanResponse(
+    Guid PlanId,
+    string Version,
+    string BankId,
+    string Title,
+    string InterestTerms,
+    int TermMonths);
+
+public sealed record MobileBankApprovalResponse(
+    string Provider,
+    string Status,
+    string MaximumEligibleLoanRial,
+    string? ApprovedLoanRial,
+    string? ReasonCode,
+    DateTimeOffset UpdatedAtUtc);
+
+public sealed record MobileFundingAllocationResponse(
+    Guid ContractId,
+    string BankId,
+    string FullDepositEquivalentRial,
+    string MaximumEligibleLoanRial,
+    string BankApprovedLoanRial,
+    string TenantContributionRial,
     DateTimeOffset UpdatedAtUtc);
 
 public sealed record MobileContractResponse(
