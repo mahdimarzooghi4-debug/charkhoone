@@ -3,6 +3,7 @@ extern alias worker;
 using Charkhoone.Application.Contracts;
 using Charkhoone.Application.Payments;
 using Charkhoone.Domain.Contracts;
+using Charkhoone.Domain.CreditApplications;
 using Charkhoone.Domain.Payments;
 using Charkhoone.Infrastructure.Contracts;
 using Charkhoone.Infrastructure.Persistence;
@@ -139,6 +140,7 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
 
         var result = await worker.ReconcileOnceAsync();
 
+        Assert.Equal(0, result.LeaseFundingCandidates);
         Assert.Equal(0, result.PaymentCandidates);
         Assert.Equal(0, result.CoverageCandidates);
         Assert.Equal(0, result.CancellationCandidates);
@@ -164,6 +166,154 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
                 x.Type == "lease-contract.normal-settlement-pending.v1"));
     }
 
+    [Fact]
+    public async Task Worker_ActivatesFundingCompleteDraft_AndDoesNotRequeueActiveContract()
+    {
+        var workerAt = DateTimeOffset.Parse("2026-09-18T16:30:00+00:00");
+        var contractId = Guid.NewGuid();
+        var tenantId = Guid.NewGuid();
+        var ownerId = Guid.NewGuid();
+        var applicationId = Guid.NewGuid();
+        var allocationId = Guid.NewGuid();
+        var planId = Guid.NewGuid();
+        var freezeId = Guid.NewGuid();
+        var fundReference = $"worker-activation-fund-{contractId:D}";
+
+        const decimal frozenPrincipalRial = 700_000_000m;
+        const string bankId = "worker-activation-bank";
+        const string planVersion = "worker-activation-v1";
+
+        await using (var db = CreateDbContext())
+        {
+            db.Users.AddRange(
+                new UserRow
+                {
+                    Id = tenantId,
+                    OidcSubject = $"worker-activation-tenant-{tenantId:D}",
+                    CreatedAtUtc = workerAt.AddMonths(-1),
+                },
+                new UserRow
+                {
+                    Id = ownerId,
+                    OidcSubject = $"worker-activation-owner-{ownerId:D}",
+                    CreatedAtUtc = workerAt.AddMonths(-1),
+                });
+
+            db.CreditApplications.Add(new CreditApplicationRow
+            {
+                Id = applicationId,
+                ApplicantUserId = tenantId,
+                Status = CreditApplicationStatus.ApprovedFunded,
+                BankLoanPlanId = planId,
+                BankLoanPlanVersion = planVersion,
+                CreatedAtUtc = workerAt.AddDays(-10),
+                UpdatedAtUtc = workerAt.AddMinutes(-10),
+            });
+
+            db.LeaseContracts.Add(new LeaseContractRow
+            {
+                Id = contractId,
+                TenantUserId = tenantId,
+                OwnerUserId = ownerId,
+                PropertyId = Guid.NewGuid(),
+                CreditApplicationId = applicationId,
+                Status = LeaseContractStatus.Draft,
+                BankLoanPlanId = planId,
+                BankLoanPlanVersion = planVersion,
+                CreatedAtUtc = workerAt.AddDays(-10),
+                UpdatedAtUtc = workerAt.AddMinutes(-10),
+            });
+
+            db.FundingAllocations.Add(new FundingAllocationRow
+            {
+                Id = allocationId,
+                CreditApplicationId = applicationId,
+                ContractId = contractId,
+                BankLoanPlanId = planId,
+                BankLoanPlanVersion = planVersion,
+                BankId = bankId,
+                FullDepositEquivalentRial = frozenPrincipalRial,
+                MaximumEligibleLoanRial = frozenPrincipalRial,
+                BankApprovedLoanRial = frozenPrincipalRial,
+                TenantContributionRial = 0m,
+                CreatedAtUtc = workerAt.AddMinutes(-8),
+                UpdatedAtUtc = workerAt.AddMinutes(-8),
+            });
+
+            db.FundPrincipalFreezes.Add(new FundPrincipalFreezeRow
+            {
+                Id = freezeId,
+                FundingAllocationId = allocationId,
+                Provider = "worker-activation-fund",
+                Status = "Confirmed",
+                IdempotencyKey = $"worker-activation-freeze:{allocationId:D}",
+                FundReference = fundReference,
+                ExternalReference = $"worker-activation-freeze-external:{freezeId:D}",
+                AttemptCount = 1,
+                CreatedAtUtc = workerAt.AddMinutes(-7),
+                UpdatedAtUtc = workerAt.AddMinutes(-7),
+            });
+
+            db.FrozenPrincipals.Add(new FrozenPrincipalRow
+            {
+                ContractId = contractId,
+                BankId = bankId,
+                AmountRial = frozenPrincipalRial,
+                FundReference = fundReference,
+                FrozenAtUtc = workerAt.AddMinutes(-7),
+            });
+
+            await db.SaveChangesAsync();
+        }
+
+        var normalSettlement = new RecordingNormalSettlementService();
+        await using var provider = BuildWorkerServiceProvider(normalSettlement, workerAt);
+        var worker = new CharkhooneWorker.FinancialReconciliationWorker(
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            new CharkhooneWorker.FinancialReconciliationWorkerOptions
+            {
+                Enabled = true,
+                BatchSize = 32,
+            },
+            provider.GetRequiredService<TimeProvider>(),
+            provider.GetRequiredService<ILogger<CharkhooneWorker.FinancialReconciliationWorker>>());
+
+        var first = await worker.ReconcileOnceAsync();
+
+        Assert.Equal(1, first.LeaseFundingCandidates);
+        Assert.Equal(0, first.PaymentCandidates);
+        Assert.Equal(0, first.CoverageCandidates);
+        Assert.Equal(0, first.CancellationCandidates);
+        Assert.Equal(0, first.CancellationBankPrincipalCandidates);
+        Assert.Equal(0, first.NormalMaturityCandidates);
+        Assert.Equal(0, first.NormalSettlementCandidates);
+        Assert.Equal(0, normalSettlement.CallCount);
+
+        await using (var db = CreateDbContext())
+        {
+            var contract = await db.LeaseContracts.AsNoTracking()
+                .SingleAsync(x => x.Id == contractId);
+            Assert.Equal(LeaseContractStatus.Active, contract.Status);
+
+            Assert.Equal(
+                3,
+                await db.WorkflowTransitions.CountAsync(x =>
+                    x.AggregateType == "LeaseContract"
+                    && x.AggregateId == contractId));
+            Assert.Equal(
+                1,
+                await db.AuditEvents.CountAsync(x =>
+                    x.AggregateId == contractId
+                    && x.Action == "contract_activated"));
+        }
+
+        var second = await worker.ReconcileOnceAsync();
+
+        Assert.Equal(0, second.LeaseFundingCandidates);
+        Assert.Equal(0, second.NormalMaturityCandidates);
+        Assert.Equal(0, normalSettlement.CallCount);
+    }
+
     private ServiceProvider BuildWorkerServiceProvider(
         INormalSettlementService normalSettlement,
         DateTimeOffset workerAt)
@@ -173,6 +323,7 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
         services.AddDbContext<CharkhooneDbContext>(options =>
             options.UseNpgsql(_isolatedConnectionString ?? _factory.ConnectionString));
         services.AddSingleton<TimeProvider>(new FixedTimeProvider(workerAt));
+        services.AddScoped<ILeaseFundingLifecycleService, EfLeaseFundingLifecycleService>();
         services.AddScoped<INormalMaturityService, EfNormalMaturityService>();
         services.AddSingleton(normalSettlement);
         services.AddSingleton<INormalSettlementService>(normalSettlement);

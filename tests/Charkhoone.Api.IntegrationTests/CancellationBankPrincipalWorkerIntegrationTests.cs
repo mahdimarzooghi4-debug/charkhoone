@@ -191,6 +191,7 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
 
         var first = await worker.ReconcileOnceAsync();
 
+        Assert.Equal(0, first.LeaseFundingCandidates);
         Assert.Equal(0, first.PaymentCandidates);
         Assert.Equal(0, first.CoverageCandidates);
         Assert.Equal(0, first.CancellationCandidates);
@@ -242,6 +243,7 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
         services.AddSingleton<TimeProvider>(new FixedTimeProvider(workerAt));
         services.AddSingleton(adapter);
         services.AddScoped<ICancellationBankPrincipalSettlementService, EfCancellationBankPrincipalSettlementService>();
+        services.AddScoped<ILeaseFundingLifecycleService, NoOpLeaseFundingLifecycleService>();
         services.AddScoped<INormalMaturityService, NoOpNormalMaturityService>();
         services.AddScoped<IPaymentReconciliationService, NoOpPaymentReconciliationService>();
         services.AddScoped<ITenantContributionCoverageService, NoOpCoverageService>();
@@ -334,6 +336,19 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
             Guid contractId,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<CancellationSettlementView?>(null);
+    }
+
+    private sealed class NoOpLeaseFundingLifecycleService : ILeaseFundingLifecycleService
+    {
+        public Task<AdvanceLeaseFundingLifecycleResult> AdvanceAsync(
+            Guid contractId,
+            DateTimeOffset occurredAtUtc,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new AdvanceLeaseFundingLifecycleResult(
+                AdvanceLeaseFundingLifecycleOutcome.InvalidState,
+                contractId,
+                null,
+                0));
     }
 
     private sealed class NoOpNormalMaturityService : INormalMaturityService

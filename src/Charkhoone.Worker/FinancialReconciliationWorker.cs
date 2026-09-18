@@ -31,7 +31,8 @@ public sealed class FinancialReconciliationWorker(
             {
                 var result = await ReconcileOnceAsync(stoppingToken);
                 logger.LogInformation(
-                    "Financial reconciliation batch completed: {Payments} payments, {Coverage} coverage obligations, {Cancellations} cancellation settlements, {CancellationBankPrincipals} cancellation bank-principal returns, {NormalMaturities} normal maturities, {NormalSettlements} normal settlements.",
+                    "Financial reconciliation batch completed: {LeaseFunding} lease funding lifecycles, {Payments} payments, {Coverage} coverage obligations, {Cancellations} cancellation settlements, {CancellationBankPrincipals} cancellation bank-principal returns, {NormalMaturities} normal maturities, {NormalSettlements} normal settlements.",
+                    result.LeaseFundingCandidates,
                     result.PaymentCandidates,
                     result.CoverageCandidates,
                     result.CancellationCandidates,
@@ -66,6 +67,28 @@ public sealed class FinancialReconciliationWorker(
         await using var scope = scopeFactory.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
         var occurredAtUtc = timeProvider.GetUtcNow();
+
+        var leaseFundingCandidates = await dbContext.LeaseContracts
+            .AsNoTracking()
+            .Where(x => x.Status == LeaseContractStatus.Draft
+                || x.Status == LeaseContractStatus.AwaitingFunding
+                || x.Status == LeaseContractStatus.AwaitingCompletion)
+            .Where(x => dbContext.FundingAllocations.Any(allocation =>
+                allocation.ContractId == x.Id))
+            .OrderBy(x => x.UpdatedAtUtc)
+            .ThenBy(x => x.Id)
+            .Select(x => x.Id)
+            .Take(options.BatchSize)
+            .ToListAsync(cancellationToken);
+
+        var leaseFundingService = scope.ServiceProvider.GetRequiredService<ILeaseFundingLifecycleService>();
+        foreach (var contractId in leaseFundingCandidates)
+        {
+            await RunCandidateAsync(
+                "lease-funding-lifecycle",
+                contractId,
+                () => leaseFundingService.AdvanceAsync(contractId, occurredAtUtc, cancellationToken));
+        }
 
         var paymentCandidates = await (
                 from payment in dbContext.PaymentInstructions.AsNoTracking()
@@ -224,6 +247,7 @@ public sealed class FinancialReconciliationWorker(
                 () => normalSettlementService.SettleAsync(contractId, occurredAtUtc, cancellationToken));
         }
 
+        activity?.SetTag("charkhoone.reconciliation.lease_funding_candidates", leaseFundingCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.payment_candidates", paymentCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.coverage_candidates", coverageCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.cancellation_candidates", cancellationCandidates.Count);
@@ -234,6 +258,7 @@ public sealed class FinancialReconciliationWorker(
         activity?.SetTag("charkhoone.reconciliation.normal_settlement_candidates", normalSettlementCandidates.Count);
 
         return new FinancialReconciliationBatchResult(
+            leaseFundingCandidates.Count,
             paymentCandidates.Count,
             coverageCandidates.Count,
             cancellationCandidates.Count,
@@ -273,6 +298,7 @@ public sealed class FinancialReconciliationWorker(
 }
 
 public sealed record FinancialReconciliationBatchResult(
+    int LeaseFundingCandidates,
     int PaymentCandidates,
     int CoverageCandidates,
     int CancellationCandidates,
