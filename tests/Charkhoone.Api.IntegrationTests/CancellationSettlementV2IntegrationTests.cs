@@ -341,10 +341,14 @@ public sealed class CancellationSettlementV2IntegrationTests(CharkhooneApiFactor
                 && x.DebitRial == 0m
                 && x.CreditRial == expectedLostReturnRial);
 
-            var ownerNotification = await db.OutboxMessages.AsNoTracking()
-                .SingleAsync(x =>
-                    x.Type == "lease-contract.cancelled-owner-notification-requested.v1"
-                    && x.PayloadJson.Contains(contractId.ToString()));
+            var ownerNotifications = await db.OutboxMessages.AsNoTracking()
+                .Where(x => x.Type == "lease-contract.cancelled-owner-notification-requested.v1")
+                .ToListAsync();
+            var ownerNotification = Assert.Single(
+                ownerNotifications,
+                x => x.PayloadJson.Contains(
+                    contractId.ToString(),
+                    StringComparison.OrdinalIgnoreCase));
             using (var ownerPayload = JsonDocument.Parse(ownerNotification.PayloadJson))
             {
                 Assert.Equal(contractId, ownerPayload.RootElement.GetProperty("contractId").GetGuid());
@@ -352,10 +356,14 @@ public sealed class CancellationSettlementV2IntegrationTests(CharkhooneApiFactor
                 Assert.Equal(expectedOwnerResidualRial, ownerPayload.RootElement.GetProperty("amountRial").GetDecimal());
             }
 
-            var tenantNotification = await db.OutboxMessages.AsNoTracking()
-                .SingleAsync(x =>
-                    x.Type == "lease-contract.cancelled-tenant-notification-requested.v1"
-                    && x.PayloadJson.Contains(contractId.ToString()));
+            var tenantNotifications = await db.OutboxMessages.AsNoTracking()
+                .Where(x => x.Type == "lease-contract.cancelled-tenant-notification-requested.v1")
+                .ToListAsync();
+            var tenantNotification = Assert.Single(
+                tenantNotifications,
+                x => x.PayloadJson.Contains(
+                    contractId.ToString(),
+                    StringComparison.OrdinalIgnoreCase));
             using (var tenantPayload = JsonDocument.Parse(tenantNotification.PayloadJson))
             {
                 Assert.Equal(contractId, tenantPayload.RootElement.GetProperty("contractId").GetGuid());
