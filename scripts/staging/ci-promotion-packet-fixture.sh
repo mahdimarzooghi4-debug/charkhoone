@@ -225,72 +225,7 @@ fi
 mv "$application_dir/summary.valid.txt" "$application_dir/summary.txt"
 
 cp "$application_dir/summary.txt" "$application_dir/summary.readiness-valid.txt"
-grep -v '^worker_http_readiness=passed
-wrong_target_hash='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
-sed "s/^staging_target_binding_sha256=.*/staging_target_binding_sha256=$wrong_target_hash/" "$application_dir/summary.target-valid.txt" > "$application_dir/summary.txt"
-if run_packet >/dev/null 2>&1; then
-  echo 'Promotion packet unexpectedly accepted mismatched staging target identity.' >&2
-  exit 1
-fi
-[[ ! -e "$output_dir/promotion-readiness.txt" ]]
-mv "$application_dir/summary.target-valid.txt" "$application_dir/summary.txt"
-
-run_packet >/dev/null
-exec {fixture_lock_fd}>"$application_dir/.evidence.lock"
-flock --exclusive "$fixture_lock_fd"
-if run_packet >/dev/null 2>&1; then
-  echo 'Promotion packet unexpectedly read evidence while a writer held its lock.' >&2
-  exit 1
-fi
-[[ ! -e "$output_dir/promotion-readiness.txt" ]]
-exec {fixture_lock_fd}>&-
-run_packet >/dev/null
-
-printf '\ntampered-broker-after-smoke=true\n' >> "$broker_evidence"
-if run_packet >/dev/null 2>&1; then
-  echo 'Promotion packet unexpectedly accepted message broker evidence that changed after application smoke.' >&2
-  exit 1
-fi
-[[ ! -e "$output_dir/promotion-readiness.txt" ]]
-
-printf 'provider=fixture-mq\nstatus=available\n' > "$broker_evidence"
-printf '\n' >> "$broker_metadata"
-if run_packet >/dev/null 2>&1; then
-  echo 'Promotion packet unexpectedly accepted message broker metadata bytes that changed after application smoke.' >&2
-  exit 1
-fi
-[[ ! -e "$output_dir/promotion-readiness.txt" ]]
-
-cat > "$broker_metadata" <<EOF
-{
-  "schema_version": 1,
-  "environment": "staging",
-  "evidence_kind": "message-broker-deployment",
-  "staging_target_binding_sha256": "$target_hash",
-  "provider": "fixture-mq",
-  "scope_id": "workspace-a",
-  "resource_id": "rabbitmq-a",
-  "raw_evidence_sha256": "$(sha256sum "$broker_evidence" | awk '{print $1}')"
-}
-EOF
-
-printf '\ntampered-after-smoke=true\n' >> "$worker_evidence"
-if run_packet >/dev/null 2>&1; then
-  echo 'Promotion packet unexpectedly accepted worker evidence that changed after application smoke.' >&2
-  exit 1
-fi
-[[ ! -e "$output_dir/promotion-readiness.txt" ]]
-
-printf 'provider=fixture\ngit_sha=%s\nstatus=deployed\n' "$expected_sha" > "$worker_evidence"
-printf '\n' >> "$worker_metadata"
-if run_packet >/dev/null 2>&1; then
-  echo 'Promotion packet unexpectedly accepted worker metadata bytes that changed after application smoke.' >&2
-  exit 1
-fi
-[[ ! -e "$output_dir/promotion-readiness.txt" ]]
-
-printf 'Promotion packet fixture tests passed.\n'
- "$application_dir/summary.readiness-valid.txt" > "$application_dir/summary.txt"
+grep -v '^worker_http_readiness=passed$' "$application_dir/summary.readiness-valid.txt" > "$application_dir/summary.txt"
 if run_packet >/dev/null 2>&1; then
   echo 'Promotion packet unexpectedly accepted application evidence without Worker HTTP readiness proof.' >&2
   exit 1
