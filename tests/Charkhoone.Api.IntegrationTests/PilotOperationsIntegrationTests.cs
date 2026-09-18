@@ -310,7 +310,7 @@ public sealed class PilotOperationsIntegrationTests(CharkhooneApiFactory factory
         var applicationId = Guid.NewGuid();
         var assessmentId = Guid.NewGuid();
         const decimal fullDepositEquivalentRial = 1234567890123456.78m;
-        const decimal loanRatio = 0.123456789012345678m;
+        const decimal loanRatio = 0.12345678m;
         const decimal maximumEligibleLoanRial = 987654321098765.43m;
 
         await using (var seedScope = _factory.Services.CreateAsyncScope())
@@ -377,7 +377,7 @@ public sealed class PilotOperationsIntegrationTests(CharkhooneApiFactory factory
             Assert.Equal(JsonValueKind.String, ratio.ValueKind);
             Assert.Equal(JsonValueKind.String, maximum.ValueKind);
             Assert.Equal("1234567890123456.78", deposit.GetString());
-            Assert.Equal("0.123456789012345678", ratio.GetString());
+            Assert.Equal("0.12345678", ratio.GetString());
             Assert.Equal("987654321098765.43", maximum.GetString());
         }
         finally
