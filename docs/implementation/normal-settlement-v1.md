@@ -19,10 +19,13 @@ This slice implements the technical settlement path for a contract that has alre
 
 ## Explicitly not implemented
 
-- Determining the business date/event that moves an active contract into `SettlementPending`; this service requires that lifecycle state to already be established.
 - Any early-cancellation release or settlement of frozen bank principal.
 - Production behavior for bank/fund transfer providers. Both normal-settlement adapters default to unavailable; development mock success requires explicit configuration.
 - A public HTTP endpoint. This slice establishes the application/infrastructure settlement service and persistence first.
+
+## Maturity entry
+
+`Active -> SettlementPending` is now prepared by the idempotent normal-maturity lifecycle and reconciliation-worker orchestration documented in `docs/implementation/normal-maturity-lifecycle-v1.md`. The settlement service itself still requires `SettlementPending` and does not infer maturity.
 
 ## Stakeholder completion evidence
 

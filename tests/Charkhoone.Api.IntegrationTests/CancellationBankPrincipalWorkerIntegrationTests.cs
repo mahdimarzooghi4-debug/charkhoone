@@ -1,5 +1,6 @@
 extern alias worker;
 
+using Charkhoone.Application.Contracts;
 using Charkhoone.Application.Payments;
 using Charkhoone.Domain.Contracts;
 using Charkhoone.Domain.CreditApplications;
@@ -194,6 +195,7 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
         Assert.Equal(0, first.CoverageCandidates);
         Assert.Equal(0, first.CancellationCandidates);
         Assert.Equal(1, first.CancellationBankPrincipalCandidates);
+        Assert.Equal(0, first.NormalMaturityCandidates);
         Assert.Equal(0, first.NormalSettlementCandidates);
         Assert.Equal(1, adapter.CallCount);
         Assert.Equal(contractId, adapter.LastRequest?.ContractId);
@@ -240,6 +242,7 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
         services.AddSingleton<TimeProvider>(new FixedTimeProvider(workerAt));
         services.AddSingleton(adapter);
         services.AddScoped<ICancellationBankPrincipalSettlementService, EfCancellationBankPrincipalSettlementService>();
+        services.AddScoped<INormalMaturityService, NoOpNormalMaturityService>();
         services.AddScoped<IPaymentReconciliationService, NoOpPaymentReconciliationService>();
         services.AddScoped<ITenantContributionCoverageService, NoOpCoverageService>();
         services.AddScoped<ICancellationSettlementService, NoOpCancellationSettlementService>();
@@ -304,10 +307,10 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
                 null,
                 Array.Empty<CoveragePaymentView>()));
 
-        public Task<TenantContributionBalanceView?> GetBalanceAsync(
+        public Task<Charkhoone.Application.Payments.TenantContributionBalanceView?> GetBalanceAsync(
             Guid contractId,
             CancellationToken cancellationToken = default) =>
-            Task.FromResult<TenantContributionBalanceView?>(null);
+            Task.FromResult<Charkhoone.Application.Payments.TenantContributionBalanceView?>(null);
 
         public Task<PostConfirmedReplenishmentResult> PostConfirmedReplenishmentAsync(
             Guid externalTransactionId,
@@ -331,6 +334,17 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
             Guid contractId,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<CancellationSettlementView?>(null);
+    }
+
+    private sealed class NoOpNormalMaturityService : INormalMaturityService
+    {
+        public Task<PrepareNormalMaturityResult> PrepareAsync(
+            Guid contractId,
+            DateTimeOffset occurredAtUtc,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new PrepareNormalMaturityResult(
+                PrepareNormalMaturityOutcome.InvalidState,
+                contractId));
     }
 
     private sealed class NoOpNormalSettlementService : INormalSettlementService
