@@ -196,11 +196,15 @@ public sealed class CancellationNotificationConsumerIntegrationTests(CharkhooneA
             await db.AuditEvents.CountAsync(x =>
                 x.AggregateId == fixture.ContractId
                 && x.Action == "cancellation_notification_indeterminate"));
-        Assert.Equal(
-            1,
-            await db.OutboxMessages.CountAsync(x =>
-                x.Type == CharkhooneWorker.CancellationNotificationConsumer.ReviewRequiredEventType
-                && x.PayloadJson.Contains(messageId.ToString("D"))));
+        var reviewPayloads = await db.OutboxMessages.AsNoTracking()
+            .Where(x => x.Type == CharkhooneWorker.CancellationNotificationConsumer.ReviewRequiredEventType)
+            .Select(x => x.PayloadJson)
+            .ToListAsync();
+        Assert.Single(
+            reviewPayloads,
+            value => value.Contains(
+                messageId.ToString("D"),
+                StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -247,11 +251,15 @@ public sealed class CancellationNotificationConsumerIntegrationTests(CharkhooneA
             await db.AuditEvents.CountAsync(x =>
                 x.AggregateId == fixture.ContractId
                 && x.Action == "cancellation_notification_failed"));
-        Assert.Equal(
-            1,
-            await db.OutboxMessages.CountAsync(x =>
-                x.Type == CharkhooneWorker.CancellationNotificationConsumer.ReviewRequiredEventType
-                && x.PayloadJson.Contains(messageId.ToString("D"))));
+        var reviewPayloads = await db.OutboxMessages.AsNoTracking()
+            .Where(x => x.Type == CharkhooneWorker.CancellationNotificationConsumer.ReviewRequiredEventType)
+            .Select(x => x.PayloadJson)
+            .ToListAsync();
+        Assert.Single(
+            reviewPayloads,
+            value => value.Contains(
+                messageId.ToString("D"),
+                StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task<Fixture> SeedCancelledContractAsync(DateTimeOffset now)
