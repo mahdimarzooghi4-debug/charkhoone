@@ -2,6 +2,7 @@ using Charkhoone.Application.Payments;
 using Charkhoone.Domain.Contracts;
 using Charkhoone.Domain.Payments;
 using Charkhoone.Infrastructure.Persistence;
+using Charkhoone.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Charkhoone.Infrastructure.Payments;
@@ -170,7 +171,7 @@ public sealed class EfMonthlyDueLifecycleService(
     }
 
     private async Task<MonthlyObligationView> LoadViewAsync(
-        Persistence.Models.MonthlyObligationRow obligation,
+        MonthlyObligationRow obligation,
         CancellationToken cancellationToken)
     {
         var delinquency = await dbContext.ContractDelinquencies
