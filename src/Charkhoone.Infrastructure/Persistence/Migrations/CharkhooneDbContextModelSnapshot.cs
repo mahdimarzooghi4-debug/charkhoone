@@ -1713,6 +1713,24 @@ namespace Charkhoone.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.LeaseContractScheduleMonthRow", b =>
+                {
+                    b.HasOne("Charkhoone.Infrastructure.Persistence.Models.LeaseContractTermsRow", null)
+                        .WithMany("ScheduleMonths")
+                        .HasForeignKey("ContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.LeaseContractTermsRow", b =>
+                {
+                    b.HasOne("Charkhoone.Infrastructure.Persistence.Models.LeaseContractRow", null)
+                        .WithOne()
+                        .HasForeignKey("Charkhoone.Infrastructure.Persistence.Models.LeaseContractTermsRow", "ContractId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.LeaseContractRow", b =>
                 {
                     b.HasOne("Charkhoone.Infrastructure.Persistence.Models.CreditApplicationRow", null)
@@ -1882,6 +1900,11 @@ namespace Charkhoone.Infrastructure.Persistence.Migrations
                         .HasForeignKey("CreditApplicationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.LeaseContractTermsRow", b =>
+                {
+                    b.Navigation("ScheduleMonths");
                 });
 
             modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.BankLoanPlanVersionRow", b =>
