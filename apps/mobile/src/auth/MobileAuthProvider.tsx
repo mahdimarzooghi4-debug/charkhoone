@@ -91,17 +91,21 @@ export function MobileAuthProvider({ children }: PropsWithChildren) {
     };
   }, [config]);
 
-  const authRequestConfig = useMemo<AuthSession.AuthRequestConfig>(
-    () => ({
+  const authRequestConfig = useMemo<AuthSession.AuthRequestConfig>(() => {
+    const extraParams: Record<string, string> = {};
+    if (config?.oidcAudience) {
+      extraParams.audience = config.oidcAudience;
+    }
+
+    return {
       clientId: config?.oidcClientId ?? "unconfigured",
       redirectUri,
       responseType: AuthSession.ResponseType.Code,
       scopes: ["openid", "profile", "offline_access"],
       usePKCE: true,
-      extraParams: config?.oidcAudience ? { audience: config.oidcAudience } : {},
-    }),
-    [config, redirectUri],
-  );
+      extraParams,
+    };
+  }, [config, redirectUri]);
 
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     authRequestConfig,
