@@ -1,30 +1,61 @@
-# Cancellation owner settlement v1
+# Cancellation owner settlement v2
 
-This phase implements the early-cancellation residual transfer required after three consecutive missed contractual months.
+This phase implements the financial settlement for a contract that has already entered `CancellationPending`.
 
-## Implemented
+## Financial rule
 
-- Cancellation settlement starts only for a contract already in `CancellationPending` with `CancellationRequired = true`.
-- Settlement is blocked while any contractual month is still `Missed` or any coverage transfer remains `Pending`/`Unknown`; Charkhoone coverage must be resolved first.
-- The transferable residual is calculated only from the tenant contribution ledger: initial contribution + confirmed replenishments - confirmed coverage.
-- Frozen bank principal is intentionally absent from the calculation, persistence relationship graph, external transfer request, and journal posting.
-- A single `CancellationSettlement` is allowed per contract.
-- The external owner transfer uses one stable idempotency key per contract and an independent adapter. The production default is unavailable; the development mock is enabled only by configuration.
-- `Indeterminate` or confirmation mismatch stays unknown and does not post the journal or finish cancellation.
-- A definitive failed transfer is terminal in this slice and is not automatically retried.
-- A confirmed transfer must match the exact expected rial amount and contain an external reference.
-- Before ledger posting, the tenant-contribution balance is rechecked under the contribution lock. A changed balance or missing ledger accounts requires manual reconciliation rather than guessing.
-- Confirmed transfer posts a balanced journal entry: debit tenant-contribution balance / credit fund-held tenant-contribution asset.
-- After a successful residual settlement, the contract moves `CancellationPending -> Cancelled`, with workflow transition, audit event, cancellation outbox event, and a separate owner-notification-requested event.
-- If the residual is exactly zero, cancellation completes without manufacturing an external zero-value transfer or journal entry; the zero amount is still persisted on the settlement.
+Successful coverage has already removed the covered principal from tenant contribution. Cancellation therefore does **not** debit that principal a second time.
 
-## Intentionally not implemented
+At cancellation:
 
-- No release, debit, or settlement of frozen bank principal. Early-cancellation bank-principal timing remains external-policy dependent.
-- No lost-fund-return accrual implementation. The 3% monthly basis exists as a business rule, but day-count, rounding, and partial-payment allocation remain undefined.
-- No automatic retry after a definitive external failure.
-- No public API route is introduced in this slice; the application service is ready for a later authenticated orchestration layer.
+1. derive the immutable cancellation cutoff from the single workflow transition into `CancellationPending`;
+2. calculate every still-open lost-fund-return exposure at the fixed 3% monthly simple rate on the 365-day basis, using that cutoff;
+3. deduct the resulting whole-rial lost-fund-return total from the posted tenant-contribution balance;
+4. transfer only the remaining tenant contribution to the owner;
+5. never use frozen bank principal for tenant delinquency or lost-fund-return settlement.
 
-## Migration
+The cancellation split is:
 
-The EF Core migration for `cancellation_settlements` must be generated from the verified model and committed before this phase is considered complete.
+`owner_residual = posted_tenant_contribution - open_lost_fund_return`
+
+The service fails closed if the financial split cannot be reproduced exactly or if the tenant contribution is insufficient.
+
+## Ledger treatment
+
+When an owner residual exists, the confirmed cancellation settlement posts one balanced journal:
+
+- debit tenant-contribution balance for the full pre-settlement tenant contribution;
+- credit fund-held tenant-contribution asset for the amount externally transferred to the owner;
+- credit lost-fund-return income for the contractual return retained by the fund.
+
+If owner residual is zero but lost-fund-return is positive, no zero-value external transfer is manufactured. The internal journal debits tenant-contribution balance and credits lost-fund-return income.
+
+If both amounts are zero, no journal or external transfer is manufactured.
+
+Frozen bank principal is absent from the calculation and journal.
+
+## Determinism and idempotency
+
+The lost-fund-return cutoff is the immutable `CancellationPending` workflow-transition timestamp, not worker execution time. An indeterminate owner transfer reconciled later therefore does not increase the tenant obligation.
+
+The owner external transfer and cancellation journal use v2 idempotency keys.
+
+A confirmed external owner transfer is accepted only for the exact frozen owner-residual amount and a valid external reference. If the current financial split can no longer reproduce that amount, the settlement becomes reconciliation work instead of guessing.
+
+Open lost-fund-return rows are finalized only when the cancellation financial journal is posted. Their calculation period ends at the cancellation cutoff. `ReplacedAtUtc` remains null because cancellation consumes tenant contribution rather than replenishing the withdrawn principal.
+
+## Lifecycle
+
+Settlement requires `CancellationPending` and a single corresponding workflow transition. The settlement service does not require delinquency as the cancellation reason, so the same financial settlement can support any separately approved lifecycle path that enters `CancellationPending`.
+
+All missed monthly obligations must first be covered, and coverage transfers cannot remain `Pending` or `Unknown`.
+
+After successful financial settlement the contract moves `CancellationPending -> Cancelled`, with workflow history, audit events, outbox evidence, and owner-notification request.
+
+## Separate bank principal policy
+
+Early cancellation does not release, debit, or settle frozen bank principal in this service. Bank principal remains separate and must be handled by its dedicated bank-principal policy/workflow.
+
+## Normal maturity is different
+
+This cancellation rule must not be reused for normal maturity. At normal contract end, frozen principal returns to the bank and the remaining tenant contribution returns to the tenant.
