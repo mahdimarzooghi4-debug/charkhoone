@@ -70,7 +70,12 @@ public sealed class RestoredDatabaseSmokeTests(CharkhooneApiFactory factory)
     public async Task FundedContribution_ReplayPreservesPostedLedgerAndFrozenPrincipal()
     {
         await using var db = CreateDb();
-        var allocation = await db.FundingAllocations.AsNoTracking().SingleAsync(x => x.BankId == "integration-bank");
+        var allocation = await db.FundingAllocations
+            .AsNoTracking()
+            .SingleAsync(x =>
+                x.BankId == "integration-bank"
+                && db.TenantContributions.Any(contribution =>
+                    contribution.FundingAllocationId == x.Id));
         var journalsBefore = await db.JournalEntries.AsNoTracking().OrderBy(x => x.Id).ToListAsync();
         var linesBefore = await db.JournalLines.AsNoTracking().OrderBy(x => x.Id).ToListAsync();
         var frozenBefore = await db.FrozenPrincipals.AsNoTracking().OrderBy(x => x.ContractId).ToListAsync();
