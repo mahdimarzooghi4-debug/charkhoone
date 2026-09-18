@@ -79,6 +79,8 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
         var tenantId = Guid.NewGuid();
         var ownerId = Guid.NewGuid();
         var applicationId = Guid.NewGuid();
+        var fundingAllocationId = Guid.NewGuid();
+        var fundFreezeId = Guid.NewGuid();
         var cancellationSettlementId = Guid.NewGuid();
 
         const decimal frozenBankPrincipalRial = 600_000_000m;
@@ -133,6 +135,35 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
                 CompletedAtUtc = cancelledAt,
             });
 
+            db.FundingAllocations.Add(new FundingAllocationRow
+            {
+                Id = fundingAllocationId,
+                CreditApplicationId = applicationId,
+                ContractId = contractId,
+                BankLoanPlanId = Guid.NewGuid(),
+                BankLoanPlanVersion = "worker-bank-integration-v1",
+                BankId = "worker-bank-integration-bank",
+                FullDepositEquivalentRial = frozenBankPrincipalRial,
+                MaximumEligibleLoanRial = frozenBankPrincipalRial,
+                BankApprovedLoanRial = frozenBankPrincipalRial,
+                TenantContributionRial = 0m,
+                CreatedAtUtc = cancelledAt.AddMonths(-4),
+                UpdatedAtUtc = cancelledAt.AddMonths(-4),
+            });
+            db.FundPrincipalFreezes.Add(new FundPrincipalFreezeRow
+            {
+                Id = fundFreezeId,
+                FundingAllocationId = fundingAllocationId,
+                Provider = "worker-bank-integration-fund",
+                Status = "Confirmed",
+                IdempotencyKey = $"worker-bank-fund-freeze:{fundingAllocationId:D}",
+                FundReference = $"worker-bank-frozen-{contractId:D}",
+                ExternalReference = $"worker-bank-fund-external-{fundFreezeId:D}",
+                AttemptCount = 1,
+                CreatedAtUtc = cancelledAt.AddMonths(-4),
+                UpdatedAtUtc = cancelledAt.AddMonths(-4),
+            });
+
             db.FrozenPrincipals.Add(new FrozenPrincipalRow
             {
                 ContractId = contractId,
@@ -182,6 +213,14 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
                 1,
                 await db.OutboxMessages.CountAsync(x =>
                     x.Type == "lease-contract.cancellation-bank-principal-returned.v1"));
+            Assert.Equal(
+                1,
+                await db.OutboxMessages.CountAsync(x =>
+                    x.Type == "lease-contract.cancelled-fund-notification-requested.v1"));
+            Assert.Equal(
+                1,
+                await db.OutboxMessages.CountAsync(x =>
+                    x.Type == "lease-contract.cancellation-financially-completed.v1"));
         }
 
         var second = await worker.ReconcileOnceAsync();
