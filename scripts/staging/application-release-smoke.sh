@@ -4,21 +4,14 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-: "${CHARKHOONE_STAGING_API_BASE_URL:?staging API base URL is required}"
-: "${CHARKHOONE_STAGING_WORKER_HEALTH_URL:?staging Worker health URL is required}"
 : "${CHARKHOONE_EXPECTED_GIT_SHA:?expected release git SHA is required}"
-: "${CHARKHOONE_STAGING_ACCESS_TOKEN_FILE:?path to staging access-token file is required}"
-: "${CHARKHOONE_STAGING_CONTRACT_ID:?an accessible staging contract id is required}"
-: "${CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY:?path to the completed database rehearsal summary is required}"
-: "${CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE:?path to deployment-platform worker evidence is required}"
-: "${CHARKHOONE_STAGING_WORKER_GIT_SHA:?worker deployed git SHA is required}"
 
 [[ ${CHARKHOONE_ALLOW_STAGING_APPLICATION_SMOKE:-false} == true ]] || {
   echo 'Set CHARKHOONE_ALLOW_STAGING_APPLICATION_SMOKE=true only after confirming the staging target and read-only smoke identity.' >&2
   exit 1
 }
 
-for command_name in git curl sha256sum awk grep sed date tr python3; do
+for command_name in flock mktemp chmod mv rm git curl sha256sum awk grep sed date tr python3; do
   command -v "$command_name" >/dev/null 2>&1 || { echo "$command_name is required" >&2; exit 1; }
 done
 
@@ -27,6 +20,20 @@ if [[ ! "$expected_sha" =~ ^[0-9a-f]{40}$ ]]; then
   echo 'CHARKHOONE_EXPECTED_GIT_SHA must be a full 40-character hexadecimal git SHA.' >&2
   exit 1
 fi
+
+# Once the target SHA and explicit opt-in are valid, every new attempt
+# invalidates prior completion, including failures in subsequent input checks.
+source "$ROOT_DIR/scripts/staging/evidence-attempt.sh"
+output_root="${CHARKHOONE_STAGING_EVIDENCE_DIR:-artifacts/staging/application-smoke}"
+begin_evidence_attempt "$output_root/$expected_sha" 'summary.txt'
+
+: "${CHARKHOONE_STAGING_API_BASE_URL:?staging API base URL is required}"
+: "${CHARKHOONE_STAGING_WORKER_HEALTH_URL:?staging Worker health URL is required}"
+: "${CHARKHOONE_STAGING_ACCESS_TOKEN_FILE:?path to staging access-token file is required}"
+: "${CHARKHOONE_STAGING_CONTRACT_ID:?an accessible staging contract id is required}"
+: "${CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY:?path to the completed database rehearsal summary is required}"
+: "${CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE:?path to deployment-platform worker evidence is required}"
+: "${CHARKHOONE_STAGING_WORKER_GIT_SHA:?worker deployed git SHA is required}"
 
 actual_sha="$(git rev-parse HEAD | tr '[:upper:]' '[:lower:]')"
 if [[ "$actual_sha" != "$expected_sha" ]]; then
@@ -98,15 +105,12 @@ if [[ -z "$access_token" ]]; then
   exit 1
 fi
 
-output_root="${CHARKHOONE_STAGING_EVIDENCE_DIR:-artifacts/staging/application-smoke}"
-output_dir="$output_root/$expected_sha"
-mkdir -p "$output_dir"
 
-sha256sum "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" | awk '{print $1}' > "$output_dir/database-rehearsal-summary.sha256"
-sha256sum "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE" | awk '{print $1}' > "$output_dir/worker-deployment-evidence.sha256"
+sha256sum "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" | awk '{print $1}' > "$attempt_dir/database-rehearsal-summary.sha256"
+sha256sum "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE" | awk '{print $1}' > "$attempt_dir/worker-deployment-evidence.sha256"
 
 temp_dir="$(mktemp -d)"
-trap 'rm -rf "$temp_dir"' EXIT
+trap 'rm -rf "$temp_dir" "$attempt_dir"' EXIT
 chmod 700 "$temp_dir"
 auth_header="$temp_dir/auth-header.txt"
 printf 'Authorization: Bearer %s\n' "$access_token" > "$auth_header"
@@ -149,7 +153,7 @@ request_url() {
     printf '%s expected HTTP %s but received %s.\n' "$name" "$expected_status" "$status" >&2
     exit 1
   fi
-  printf '%s=%s\n' "$name" "$status" >> "$output_dir/http-statuses.txt"
+  printf '%s=%s\n' "$name" "$status" >> "$attempt_dir/http-statuses.txt"
 }
 
 request_api() {
@@ -165,7 +169,7 @@ read_release_header() {
   awk 'BEGIN { IGNORECASE=1 } /^X-Charkhoone-Release-Sha:/ { value=$0; sub(/^[^:]+:[[:space:]]*/, "", value); gsub(/\r/, "", value); print value }' "$headers" | tail -n 1
 }
 
-rm -f "$output_dir/http-statuses.txt"
+rm -f "$attempt_dir/http-statuses.txt"
 request_api api_root '/api/v1' 200 false
 
 release_sha="$(read_release_header "$temp_dir/api_root.headers")"
@@ -174,7 +178,7 @@ if [[ "${release_sha,,}" != "$expected_sha" ]]; then
   exit 1
 fi
 
-grep -Eiq '^X-Content-Type-Options:[[:space:]]*nosniff\r?$' "$temp_dir/api_root.headers" || {
+tr -d '\r' < "$temp_dir/api_root.headers" | grep -Eiq '^X-Content-Type-Options:[[:space:]]*nosniff$' || {
   echo 'API root is missing the expected X-Content-Type-Options security header.' >&2
   exit 1
 }
@@ -228,7 +232,9 @@ PY
   printf 'access_token=not-retained\n'
   printf 'promotion_decision=not-made-by-script\n'
   date -u '+completed_at_utc=%Y-%m-%dT%H:%M:%SZ'
-} > "$output_dir/summary.txt"
+} > "$attempt_dir/summary.txt"
+
+publish_evidence_attempt
 
 printf 'Staging application release smoke passed; evidence is in %s\n' "$output_dir"
 printf 'API and Worker release identity/liveness were verified without exercising financial mutation endpoints.\n'
