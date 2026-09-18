@@ -95,7 +95,7 @@ public sealed class EfLeaseFundingLifecycleService(CharkhooneDbContext dbContext
                     contract.Id,
                     contract.Status,
                     0)
-                : Invalid(contract, 0);
+                : Invalid(contract.Id, initialStatus);
         }
 
         if (!HasValidAllocationBinding(contract, allocation))
