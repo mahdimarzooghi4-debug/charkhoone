@@ -64,6 +64,30 @@ public sealed record EnsureMonthlyObligationResult(
     EnsureMonthlyObligationOutcome Outcome,
     MonthlyObligationView? Obligation);
 
+public enum ProvisionMonthlyScheduleOutcome
+{
+    Provisioned,
+    AlreadyProvisioned,
+    Conflict,
+    TermsMissing,
+    ContractNotFound,
+    InvalidContractState,
+}
+
+public sealed record ProvisionMonthlyScheduleResult(
+    ProvisionMonthlyScheduleOutcome Outcome,
+    Guid ContractId,
+    int CreatedObligationCount,
+    int ExistingObligationCount);
+
+public interface IMonthlyScheduleProvisioningService
+{
+    Task<ProvisionMonthlyScheduleResult> ProvisionAsync(
+        Guid contractId,
+        DateTimeOffset occurredAtUtc,
+        CancellationToken cancellationToken = default);
+}
+
 public enum CloseMonthlyObligationOutcome
 {
     Paid,
