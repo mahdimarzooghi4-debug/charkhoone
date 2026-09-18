@@ -47,6 +47,7 @@ public sealed class AuthenticationConfigurationIntegrationTests
 
     [Theory]
     [InlineData("Identity")]
+    [InlineData("PropertyContract")]
     [InlineData("CreditGrade")]
     [InlineData("BankApproval")]
     [InlineData("Fund")]

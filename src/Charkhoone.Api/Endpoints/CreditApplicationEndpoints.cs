@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Charkhoone.Api.Security;
+using Charkhoone.Application.Contracts;
 using Charkhoone.Application.CreditApplications;
 
 namespace Charkhoone.Api.Endpoints;
@@ -34,6 +35,17 @@ public static class CreditApplicationEndpoints
             .WithName("SelectBankLoanPlan")
             .Produces<BankLoanPlanSelectionResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
+
+        api.MapPost("/credit-applications/{id:guid}/property-contract/reconcile", ReconcilePropertyContractAsync)
+            .RequireAuthorization()
+            .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)
+            .WithName("ReconcilePropertyContract")
+            .Produces<PropertyContractRegistrationResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -191,6 +203,61 @@ public static class CreditApplicationEndpoints
         };
     }
 
+    private static async Task<IResult> ReconcilePropertyContractAsync(
+        Guid id,
+        ClaimsPrincipal principal,
+        IUserIdentityLookup userIdentityLookup,
+        IPropertyContractRegistrationService registrations,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        var identity = await ResolveUserAsync(principal, userIdentityLookup, cancellationToken);
+        if (identity.Error is not null)
+        {
+            return identity.Error;
+        }
+
+        var result = await registrations.ReconcileAsync(
+            id,
+            identity.UserId!.Value,
+            timeProvider.GetUtcNow(),
+            cancellationToken);
+
+        return result.Outcome switch
+        {
+            ReconcilePropertyContractOutcome.Registered
+                or ReconcilePropertyContractOutcome.AlreadyRegistered
+                or ReconcilePropertyContractOutcome.NeedsDocuments
+                or ReconcilePropertyContractOutcome.Indeterminate
+                => Results.Ok(ToResponse(result)),
+            ReconcilePropertyContractOutcome.NotFound
+                => Results.Problem(
+                    statusCode: StatusCodes.Status404NotFound,
+                    title: "Credit application was not found.",
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = "credit_application_not_found",
+                    }),
+            ReconcilePropertyContractOutcome.Conflict
+                => Results.Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Trusted property-contract evidence conflicts with persisted contract state.",
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = "property_contract_conflict",
+                    }),
+            ReconcilePropertyContractOutcome.InvalidState
+                => Results.Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Property-contract evidence cannot be reconciled from the current application state.",
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = "property_contract_invalid_state",
+                    }),
+            _ => throw new InvalidOperationException("Unsupported property-contract reconciliation outcome."),
+        };
+    }
+
     private static async Task<(Guid? UserId, IResult? Error)> ResolveUserAsync(
         ClaimsPrincipal principal,
         IUserIdentityLookup userIdentityLookup,
@@ -224,6 +291,25 @@ public static class CreditApplicationEndpoints
         }
 
         return (internalUserId.Value, null);
+    }
+
+    private static PropertyContractRegistrationResponse ToResponse(
+        ReconcilePropertyContractResult result)
+    {
+        var registration = result.Registration;
+        return new PropertyContractRegistrationResponse(
+            result.Outcome.ToString(),
+            registration?.CreditApplicationId,
+            registration?.ApplicationStatus.ToString(),
+            registration?.ContractId,
+            registration?.ContractStatus.ToString(),
+            registration?.OwnerUserId,
+            registration?.PropertyId,
+            registration?.BankLoanPlanId,
+            registration?.BankLoanPlanVersion,
+            registration?.FullDepositEquivalentRial,
+            registration?.SourceReference,
+            registration?.UpdatedAtUtc);
     }
 
     private static BankLoanPlanSelectionResponse ToResponse(SelectBankLoanPlanResult result)
@@ -268,3 +354,18 @@ public sealed record BankLoanPlanSelectionResponse(
     string BankId,
     string Title,
     DateTimeOffset UpdatedAtUtc);
+
+
+public sealed record PropertyContractRegistrationResponse(
+    string Outcome,
+    Guid? CreditApplicationId,
+    string? ApplicationStatus,
+    Guid? ContractId,
+    string? ContractStatus,
+    Guid? OwnerUserId,
+    Guid? PropertyId,
+    Guid? BankLoanPlanId,
+    string? BankLoanPlanVersion,
+    decimal? FullDepositEquivalentRial,
+    string? SourceReference,
+    DateTimeOffset? UpdatedAtUtc);

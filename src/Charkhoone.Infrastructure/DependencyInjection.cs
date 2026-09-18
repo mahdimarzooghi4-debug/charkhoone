@@ -26,6 +26,7 @@ public static class DependencyInjection
     private static readonly string[] ExternalAdapterNames =
     [
         "Identity",
+        "PropertyContract",
         "CreditGrade",
         "BankApproval",
         "Fund",
@@ -78,6 +79,7 @@ public static class DependencyInjection
         services.AddScoped<IUserIdentityLookup, EfUserIdentityLookup>();
         services.AddScoped<IContractReadService, EfContractReadService>();
         services.AddScoped<ILeaseContractTermsService, EfLeaseContractTermsService>();
+        services.AddScoped<IPropertyContractRegistrationService, EfPropertyContractRegistrationService>();
         services.AddScoped<ILeaseFundingLifecycleService, EfLeaseFundingLifecycleService>();
         services.AddScoped<INormalMaturityService, EfNormalMaturityService>();
         services.AddScoped<ICreditApplicationService, EfCreditApplicationService>();
@@ -104,6 +106,16 @@ public static class DependencyInjection
         else
         {
             services.AddSingleton<IIdentityVerificationAdapter, UnavailableIdentityVerificationAdapter>();
+        }
+
+        var propertyContractAdapterMode = configuration["ExternalAdapters:PropertyContract:Mode"];
+        if (IsDevelopmentMock(propertyContractAdapterMode))
+        {
+            services.AddSingleton<IExternalPropertyContractEvidenceAdapter, DevelopmentPropertyContractEvidenceAdapter>();
+        }
+        else
+        {
+            services.AddSingleton<IExternalPropertyContractEvidenceAdapter, UnavailablePropertyContractEvidenceAdapter>();
         }
 
         var creditGradeAdapterMode = configuration["ExternalAdapters:CreditGrade:Mode"];
