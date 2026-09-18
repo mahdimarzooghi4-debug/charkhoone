@@ -1,3 +1,4 @@
+using Charkhoone.Application.BankFunding;
 using Charkhoone.Application.Contracts;
 using Charkhoone.Application.Payments;
 using Charkhoone.Application.TenantContributionFunding;
@@ -34,7 +35,8 @@ public sealed class FinancialReconciliationWorker(
             {
                 var result = await ReconcileOnceAsync(stoppingToken);
                 logger.LogInformation(
-                    "Financial reconciliation batch completed: {TenantContributionFunding} tenant contribution funding reconciliations, {LeaseFunding} lease funding lifecycles, {ScheduleProvisioning} monthly schedule provisions, {Payments} payment reconciliations, {DueLifecycle} due monthly lifecycles, {Coverage} coverage obligations, {ArrearsRepayments} tenant arrears repayment reconciliations, {Replenishments} confirmed tenant arrears repayments, {Cancellations} cancellation settlements, {CancellationBankPrincipals} cancellation bank-principal returns, {NormalMaturities} normal maturities, {NormalSettlements} normal settlements.",
+                    "Financial reconciliation batch completed: {BankFunding} bank/fund funding reconciliations, {TenantContributionFunding} tenant contribution funding reconciliations, {LeaseFunding} lease funding lifecycles, {ScheduleProvisioning} monthly schedule provisions, {Payments} payment reconciliations, {DueLifecycle} due monthly lifecycles, {Coverage} coverage obligations, {ArrearsRepayments} tenant arrears repayment reconciliations, {Replenishments} confirmed tenant arrears repayments, {Cancellations} cancellation settlements, {CancellationBankPrincipals} cancellation bank-principal returns, {NormalMaturities} normal maturities, {NormalSettlements} normal settlements.",
+                    result.BankFundingCandidates,
                     result.TenantContributionFundingCandidates,
                     result.LeaseFundingCandidates,
                     result.ScheduleProvisioningCandidates,
@@ -75,6 +77,60 @@ public sealed class FinancialReconciliationWorker(
         await using var scope = scopeFactory.CreateAsyncScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
         var occurredAtUtc = timeProvider.GetUtcNow();
+
+        var bankFundingCandidates = await (
+                from application in dbContext.CreditApplications.AsNoTracking()
+                join contract in dbContext.LeaseContracts.AsNoTracking()
+                    on application.Id equals contract.CreditApplicationId
+                where application.ApplicantUserId == contract.TenantUserId
+                    && (
+                        (
+                            (application.Status == CreditApplicationStatus.BankApprovalPending
+                                || application.Status == CreditApplicationStatus.ExternalCheckIndeterminate)
+                            && !dbContext.FundingAllocations.Any(allocation =>
+                                allocation.CreditApplicationId == application.Id)
+                            && dbContext.BankApprovals.Any(approval =>
+                                approval.CreditApplicationId == application.Id
+                                && approval.Status == "Indeterminate")
+                        )
+                        || (
+                            (application.Status == CreditApplicationStatus.FundingPending
+                                || application.Status == CreditApplicationStatus.ExternalCheckIndeterminate)
+                            && dbContext.FundingAllocations.Any(allocation =>
+                                allocation.CreditApplicationId == application.Id
+                                && dbContext.BankApprovals.Any(approval =>
+                                    approval.CreditApplicationId == application.Id
+                                    && approval.Status == "Approved"
+                                    && approval.ApprovedLoanRial == allocation.BankApprovedLoanRial
+                                    && approval.ExternalReference != null
+                                    && approval.ExternalReference != "")
+                                && dbContext.FundPrincipalFreezes.Any(freeze =>
+                                    freeze.FundingAllocationId == allocation.Id
+                                    && freeze.Status == "Indeterminate"))
+                        )
+                    )
+                orderby application.UpdatedAtUtc, application.Id
+                select new BankFundingCandidate(
+                    application.Id,
+                    application.ApplicantUserId))
+            .Take(options.BatchSize)
+            .ToListAsync(cancellationToken);
+
+        if (bankFundingCandidates.Count > 0)
+        {
+            var bankFundingService = scope.ServiceProvider.GetRequiredService<IBankFundingService>();
+            foreach (var candidate in bankFundingCandidates)
+            {
+                await RunCandidateAsync(
+                    "bank-funding",
+                    candidate.ApplicationId,
+                    () => bankFundingService.ProcessAsync(
+                        candidate.ApplicationId,
+                        candidate.ApplicantUserId,
+                        occurredAtUtc,
+                        cancellationToken));
+            }
+        }
 
         var tenantContributionFundingCandidates = await (
                 from allocation in dbContext.FundingAllocations.AsNoTracking()
@@ -439,6 +495,7 @@ public sealed class FinancialReconciliationWorker(
                 () => normalSettlementService.SettleAsync(contractId, occurredAtUtc, cancellationToken));
         }
 
+        activity?.SetTag("charkhoone.reconciliation.bank_funding_candidates", bankFundingCandidates.Count);
         activity?.SetTag(
             "charkhoone.reconciliation.tenant_contribution_funding_candidates",
             tenantContributionFundingCandidates.Count);
@@ -467,6 +524,7 @@ public sealed class FinancialReconciliationWorker(
             normalMaturityCandidates.Count,
             normalSettlementCandidates.Count)
         {
+            BankFundingCandidates = bankFundingCandidates.Count,
             TenantContributionFundingCandidates = tenantContributionFundingCandidates.Count,
             ScheduleProvisioningCandidates = scheduleProvisioningCandidates.Count,
             DueLifecycleCandidates = dueLifecycleCandidates.Count,
@@ -502,6 +560,7 @@ public sealed class FinancialReconciliationWorker(
         }
     }
 
+    private sealed record BankFundingCandidate(Guid ApplicationId, Guid ApplicantUserId);
     private sealed record PaymentCandidate(Guid PaymentInstructionId, Guid TenantUserId);
     private sealed record ArrearsRepaymentCandidate(Guid ContractId, Guid TenantUserId);
 }
@@ -515,6 +574,7 @@ public sealed record FinancialReconciliationBatchResult(
     int NormalMaturityCandidates,
     int NormalSettlementCandidates)
 {
+    public int BankFundingCandidates { get; init; }
     public int TenantContributionFundingCandidates { get; init; }
     public int ScheduleProvisioningCandidates { get; init; }
     public int DueLifecycleCandidates { get; init; }
