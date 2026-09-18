@@ -650,10 +650,18 @@ public sealed class EfCancellationSettlementService(
         {
             if (financialSettlement.OwnerResidualRial != 0m
                 || financialSettlement.LostFundReturnRial != 0m
-                || lostReturnBindings.Count != 0)
+                || lostReturnBindings.Any(x => x.Accrual.PayableReturn.Rial != 0m))
             {
                 throw new InvalidOperationException(
-                    "Zero cancellation balance cannot contain owner residual or lost-fund-return settlement.");
+                    "Zero cancellation balance cannot contain a positive owner residual or lost-fund-return settlement.");
+            }
+
+            foreach (var binding in lostReturnBindings)
+            {
+                binding.Row.CalculationPeriodEndUtc = cancellationEffectiveAtUtc;
+                binding.Row.CalculationPolicyVersion = binding.Accrual.CalculationPolicyVersion;
+                binding.Row.CalculatedReturnRial = 0m;
+                binding.Row.UpdatedAtUtc = postedAtUtc;
             }
 
             return null;
