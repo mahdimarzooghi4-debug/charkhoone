@@ -100,13 +100,10 @@ This phase intentionally does **not** add a public terms-capture HTTP endpoint. 
 
 `ILeaseContractTermsService` is the internal boundary for that future workflow.
 
-## Next phase
+## Downstream provisioning
 
-The next isolated phase is monthly schedule provisioning:
+The monthly schedule provisioning phase now consumes this snapshot and materializes all twelve months atomically.
 
-- discover active contracts with a trusted snapshot
-- materialize the twelve snapshot rows through `IMonthlyObligationService`
-- preserve exact due times, beneficiaries, owner payments, and bank-interest amounts
-- make provisioning idempotent and fail closed on conflicts
+It preserves the exact due times, beneficiaries, owner payments, and bank-interest amounts without recalculation. Exact partial state can be completed idempotently; contradictory existing obligations are quarantined for review.
 
-This phase introduces no external provider call.
+Neither snapshot capture nor schedule provisioning introduces an external provider call.

@@ -6,6 +6,7 @@ using Charkhoone.Domain.Contracts;
 using Charkhoone.Domain.CreditApplications;
 using Charkhoone.Domain.Payments;
 using Charkhoone.Infrastructure.Contracts;
+using Charkhoone.Infrastructure.Payments;
 using Charkhoone.Infrastructure.Persistence;
 using Charkhoone.Infrastructure.Persistence.Models;
 using CharkhooneWorker = worker::Charkhoone.Worker;
@@ -141,6 +142,7 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
         var result = await worker.ReconcileOnceAsync();
 
         Assert.Equal(0, result.LeaseFundingCandidates);
+        Assert.Equal(0, result.ScheduleProvisioningCandidates);
         Assert.Equal(0, result.PaymentCandidates);
         Assert.Equal(0, result.CoverageCandidates);
         Assert.Equal(0, result.CancellationCandidates);
@@ -310,6 +312,7 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
         var first = await worker.ReconcileOnceAsync();
 
         Assert.Equal(1, first.LeaseFundingCandidates);
+        Assert.Equal(1, first.ScheduleProvisioningCandidates);
         Assert.Equal(0, first.PaymentCandidates);
         Assert.Equal(0, first.CoverageCandidates);
         Assert.Equal(0, first.CancellationCandidates);
@@ -334,11 +337,27 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
                 await db.AuditEvents.CountAsync(x =>
                     x.AggregateId == contractId
                     && x.Action == "contract_activated"));
+            Assert.Equal(
+                12,
+                await db.MonthlyObligations.CountAsync(x =>
+                    x.ContractId == contractId));
+            Assert.Equal(
+                12,
+                await db.PaymentInstructions.CountAsync(payment =>
+                    db.MonthlyObligations.Any(obligation =>
+                        obligation.Id == payment.ObligationId
+                        && obligation.ContractId == contractId)));
+            Assert.Equal(
+                1,
+                await db.AuditEvents.CountAsync(x =>
+                    x.AggregateId == contractId
+                    && x.Action == "monthly_schedule_provisioned"));
         }
 
         var second = await worker.ReconcileOnceAsync();
 
         Assert.Equal(0, second.LeaseFundingCandidates);
+        Assert.Equal(0, second.ScheduleProvisioningCandidates);
         Assert.Equal(0, second.NormalMaturityCandidates);
         Assert.Equal(0, normalSettlement.CallCount);
     }
@@ -353,6 +372,7 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
             options.UseNpgsql(_isolatedConnectionString ?? _factory.ConnectionString));
         services.AddSingleton<TimeProvider>(new FixedTimeProvider(workerAt));
         services.AddScoped<ILeaseFundingLifecycleService, EfLeaseFundingLifecycleService>();
+        services.AddScoped<IMonthlyScheduleProvisioningService, EfMonthlyScheduleProvisioningService>();
         services.AddScoped<INormalMaturityService, EfNormalMaturityService>();
         services.AddSingleton(normalSettlement);
         services.AddSingleton<INormalSettlementService>(normalSettlement);

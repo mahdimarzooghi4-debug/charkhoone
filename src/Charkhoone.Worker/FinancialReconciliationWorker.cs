@@ -31,8 +31,9 @@ public sealed class FinancialReconciliationWorker(
             {
                 var result = await ReconcileOnceAsync(stoppingToken);
                 logger.LogInformation(
-                    "Financial reconciliation batch completed: {LeaseFunding} lease funding lifecycles, {Payments} payments, {Coverage} coverage obligations, {Cancellations} cancellation settlements, {CancellationBankPrincipals} cancellation bank-principal returns, {NormalMaturities} normal maturities, {NormalSettlements} normal settlements.",
+                    "Financial reconciliation batch completed: {LeaseFunding} lease funding lifecycles, {ScheduleProvisioning} monthly schedule provisions, {Payments} payments, {Coverage} coverage obligations, {Cancellations} cancellation settlements, {CancellationBankPrincipals} cancellation bank-principal returns, {NormalMaturities} normal maturities, {NormalSettlements} normal settlements.",
                     result.LeaseFundingCandidates,
+                    result.ScheduleProvisioningCandidates,
                     result.PaymentCandidates,
                     result.CoverageCandidates,
                     result.CancellationCandidates,
@@ -88,6 +89,35 @@ public sealed class FinancialReconciliationWorker(
                 "lease-funding-lifecycle",
                 contractId,
                 () => leaseFundingService.AdvanceAsync(contractId, occurredAtUtc, cancellationToken));
+        }
+
+        var scheduleProvisioningCandidates = await dbContext.LeaseContracts
+            .AsNoTracking()
+            .Where(x => x.Status == LeaseContractStatus.Active)
+            .Where(x => dbContext.LeaseContractTerms.Any(terms =>
+                terms.ContractId == x.Id))
+            .Where(x => !dbContext.AuditEvents.Any(audit =>
+                audit.AggregateType == "LeaseContract"
+                && audit.AggregateId == x.Id
+                && (audit.Action == "monthly_schedule_provisioned"
+                    || audit.Action == "monthly_schedule_provisioning_conflict")))
+            .OrderBy(x => x.UpdatedAtUtc)
+            .ThenBy(x => x.Id)
+            .Select(x => x.Id)
+            .Take(options.BatchSize)
+            .ToListAsync(cancellationToken);
+
+        var scheduleProvisioningService = scope.ServiceProvider
+            .GetRequiredService<IMonthlyScheduleProvisioningService>();
+        foreach (var contractId in scheduleProvisioningCandidates)
+        {
+            await RunCandidateAsync(
+                "monthly-schedule-provisioning",
+                contractId,
+                () => scheduleProvisioningService.ProvisionAsync(
+                    contractId,
+                    occurredAtUtc,
+                    cancellationToken));
         }
 
         var paymentCandidates = await (
@@ -248,6 +278,9 @@ public sealed class FinancialReconciliationWorker(
         }
 
         activity?.SetTag("charkhoone.reconciliation.lease_funding_candidates", leaseFundingCandidates.Count);
+        activity?.SetTag(
+            "charkhoone.reconciliation.schedule_provisioning_candidates",
+            scheduleProvisioningCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.payment_candidates", paymentCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.coverage_candidates", coverageCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.cancellation_candidates", cancellationCandidates.Count);
@@ -264,7 +297,10 @@ public sealed class FinancialReconciliationWorker(
             cancellationCandidates.Count,
             cancellationBankPrincipalCandidates.Count,
             normalMaturityCandidates.Count,
-            normalSettlementCandidates.Count);
+            normalSettlementCandidates.Count)
+        {
+            ScheduleProvisioningCandidates = scheduleProvisioningCandidates.Count,
+        };
     }
 
     private async Task RunCandidateAsync<T>(
@@ -304,4 +340,7 @@ public sealed record FinancialReconciliationBatchResult(
     int CancellationCandidates,
     int CancellationBankPrincipalCandidates,
     int NormalMaturityCandidates,
-    int NormalSettlementCandidates);
+    int NormalSettlementCandidates)
+{
+    public int ScheduleProvisioningCandidates { get; init; }
+}
