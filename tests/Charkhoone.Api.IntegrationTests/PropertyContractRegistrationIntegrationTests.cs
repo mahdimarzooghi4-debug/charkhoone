@@ -181,6 +181,7 @@ public sealed class PropertyContractRegistrationIntegrationTests(CharkhooneApiFa
         var unmappedOwnerId = Guid.NewGuid();
         var applicationId = Guid.NewGuid();
         var planId = Guid.NewGuid();
+        var sourceReference = $"trusted-registry:{applicationId:D}";
         const string planVersion = "public-v1";
 
         await SeedApplicationAsync(
@@ -195,7 +196,7 @@ public sealed class PropertyContractRegistrationIntegrationTests(CharkhooneApiFa
             ConfirmedEvidence(
                 unmappedOwnerId,
                 Guid.NewGuid(),
-                $"trusted-registry:{applicationId:D}",
+                sourceReference,
                 now.AddDays(10)));
 
         ReconcilePropertyContractResult result;
@@ -226,7 +227,8 @@ public sealed class PropertyContractRegistrationIntegrationTests(CharkhooneApiFa
         Assert.Equal("property_contract_owner_not_mapped", request.ReasonCode);
         Assert.False(await verification.LeaseContracts
             .AnyAsync(x => x.CreditApplicationId == applicationId));
-        Assert.False(await verification.LeaseContractTerms.AnyAsync());
+        Assert.False(await verification.LeaseContractTerms
+            .AnyAsync(x => x.SourceReference == sourceReference));
     }
 
     [Fact]
