@@ -1,15 +1,22 @@
+import { useEffect, useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { BrandLogo } from "@/components/BrandLogo";
 import { FigmaSvg } from "@/components/FigmaSvg";
 import { figmaAssets } from "@/figmaAssets";
+import { useMobileAuth } from "@/auth/MobileAuthProvider";
+import {
+  formatRial,
+  getMobileBootstrap,
+  type MobileBootstrapResponse,
+} from "@/api/mobileApi";
 import { colors, fonts, radii } from "@/theme";
 
-function SummaryCard({ title, value, note, valueSize = 14 }: { title: string; value: string; note: string; valueSize?: number }) {
+function SummaryCard({ title, value, note }: { title: string; value: string; note: string }) {
   return (
     <View style={styles.summaryCard}>
       <Text style={styles.summaryTitle}>{title}</Text>
-      <Text style={[styles.summaryValue, { fontSize: valueSize }]}>{value}</Text>
+      <Text style={styles.summaryValue}>{value}</Text>
       <Text style={styles.summaryNote}>{note}</Text>
     </View>
   );
@@ -24,17 +31,66 @@ function Shortcut({ icon, label, onPress }: { icon: string; label: string; onPre
   );
 }
 
-function BottomItem({ icon, label, active }: { icon: string; label: string; active?: boolean }) {
+function BottomItem({ icon, label, active, onPress }: { icon: string; label: string; active?: boolean; onPress?: () => void }) {
   return (
-    <View style={styles.bottomItem}>
+    <Pressable style={styles.bottomItem} onPress={onPress}>
       <FigmaSvg uri={icon} width={24} height={24} />
       <Text style={[styles.bottomLabel, active && styles.bottomLabelActive]}>{label}</Text>
-    </View>
+    </Pressable>
   );
+}
+
+function formatDue(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(date);
 }
 
 export default function TenantHomeScreen() {
   const router = useRouter();
+  const { status, apiRequest } = useMobileAuth();
+  const [bootstrap, setBootstrap] = useState<MobileBootstrapResponse | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (status === "unauthenticated" || status === "config-error") {
+      router.replace("/(auth)/login");
+      return;
+    }
+    if (status !== "authenticated") return;
+
+    let active = true;
+    getMobileBootstrap(apiRequest)
+      .then((value) => {
+        if (!active) return;
+        setBootstrap(value);
+        setLoadError(null);
+      })
+      .catch((error: unknown) => {
+        if (!active) return;
+        setLoadError(error instanceof Error ? error.message : "mobile_bootstrap_failed");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [apiRequest, router, status]);
+
+  const tenantContract = bootstrap?.contracts.find((contract) => contract.role === "Tenant") ?? null;
+  const nextPayment = bootstrap?.payments.find((payment) =>
+    payment.status !== "Succeeded" && payment.status !== "Reversed",
+  ) ?? null;
+
+  const applicationValue = bootstrap?.latestCreditApplication?.status ?? "درخواستی ثبت نشده";
+  const contractValue = tenantContract?.status ?? "قرارداد مستأجری ثبت نشده";
+  const paymentValue = nextPayment ? formatRial(nextPayment.amountRial) : "پرداخت باز وجود ندارد";
+  const paymentNote = nextPayment
+    ? `ماه ${nextPayment.contractMonthNumber.toLocaleString("fa-IR")} • سررسید ${formatDue(nextPayment.dueAtUtc)} • ${nextPayment.status}`
+    : "فقط داده persist‌شده API نمایش داده می‌شود";
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -42,49 +98,81 @@ export default function TenantHomeScreen() {
       <View style={styles.header}>
         <View style={styles.notification}><FigmaSvg uri={figmaAssets.bell} width={20} height={20} /></View>
         <View style={styles.greeting}>
-          <Text style={styles.greetingTitle}>سلام، علی رضایی</Text>
-          <Text style={styles.greetingNote}>به چارخونه خوش آمدید.</Text>
+          <Text style={styles.greetingTitle}>سلام</Text>
+          <Text style={styles.greetingNote}>اطلاعات این صفحه از حساب احراز هویت‌شده خوانده می‌شود.</Text>
         </View>
       </View>
+
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        {loadError ? (
+          <View style={styles.errorCard}>
+            <Text style={styles.errorTitle}>دریافت اطلاعات حساب ناموفق بود</Text>
+            <Text style={styles.errorText}>{loadError}</Text>
+          </View>
+        ) : null}
+
         <View style={styles.summaryGrid}>
           <View style={styles.summaryRow}>
-            <SummaryCard title="میزان قابل تأمین" value="هنوز محاسبه نشده" note="از ماشین حساب استفاده کنید" />
-            <SummaryCard title="اعتبار شما" value="در حال ارزیابی" note="براساس سابقه شما" valueSize={16} />
+            <SummaryCard
+              title="آخرین درخواست"
+              value={applicationValue}
+              note={bootstrap?.latestCreditApplication ? "وضعیت persisted درخواست اعتباری" : "هنوز درخواست واقعی وجود ندارد"}
+            />
+            <SummaryCard
+              title="وضعیت قرارداد"
+              value={contractValue}
+              note={tenantContract ? `شناسه: ${tenantContract.contractId}` : "قرارداد نمونه نمایش داده نمی‌شود"}
+            />
           </View>
           <View style={styles.summaryRow}>
-            <SummaryCard title="وضعیت قرارداد" value="ثبت نشده" note="هنوز قرارداد خودنویس ثبت نشده است" />
-            <SummaryCard title="پرداخت بعدی" value="در حال حاضر پرداختی ندارید" note="پس از فعال‌شدن قرارداد نمایش داده می‌شود" valueSize={12} />
+            <SummaryCard
+              title="پرداخت بعدی"
+              value={paymentValue}
+              note={paymentNote}
+            />
+            <SummaryCard
+              title="منبع داده"
+              value={bootstrap ? "API واقعی" : "در حال دریافت"}
+              note="Bearer OIDC • PostgreSQL"
+            />
           </View>
         </View>
 
         <View style={styles.actionCard}>
-          <Text style={styles.actionTitle}>اقدام بعدی شما</Text>
-          <Text style={styles.actionText}>برای شروع، شرایط تأمین مالی را محاسبه کنید یا در صورت داشتن قرارداد خودنویس، کد رهگیری آن را ثبت کنید.</Text>
+          <Text style={styles.actionTitle}>عملیات حساب</Text>
+          <Text style={styles.actionText}>
+            قراردادها و پرداخت‌ها فقط از backend خوانده می‌شوند. اپ موبایل نتیجه بانک، پرداخت یا وضعیت مالی را خودش تولید نمی‌کند.
+          </Text>
           <View style={styles.actionButtons}>
-            <Pressable style={styles.outlineButton} onPress={() => router.push("/(shared)/contract-tracking")}><Text style={styles.outlineButtonText}>ثبت کد رهگیری</Text></Pressable>
-            <Pressable style={styles.primaryButton} onPress={() => router.push("/(tenant)/calculator")}><Text style={styles.primaryButtonText}>محاسبه شرایط</Text></Pressable>
+            <Pressable style={styles.outlineButton} onPress={() => router.push("/(shared)/contracts")}>
+              <Text style={styles.outlineButtonText}>قراردادها</Text>
+            </Pressable>
+            <Pressable style={styles.primaryButton} onPress={() => router.push("/(tenant)/payments")}>
+              <Text style={styles.primaryButtonText}>پرداخت‌ها</Text>
+            </Pressable>
           </View>
         </View>
 
         <Text style={styles.quickTitle}>دسترسی سریع</Text>
         <View style={styles.quickRow}>
           <Shortcut icon={figmaAssets.calculator} label="ماشین‌حساب" onPress={() => router.push("/(tenant)/calculator")} />
-          <Shortcut icon={figmaAssets.wallet} label="دریافت و پرداخت" />
-          <Shortcut icon={figmaAssets.file} label="قراردادها" />
-          <Shortcut icon={figmaAssets.home} label="املاک من" />
+          <Shortcut icon={figmaAssets.wallet} label="دریافت و پرداخت" onPress={() => router.push("/(tenant)/payments")} />
+          <Shortcut icon={figmaAssets.file} label="قراردادها" onPress={() => router.push("/(shared)/contracts")} />
+          <Shortcut icon={figmaAssets.home} label="خانه" />
         </View>
 
         <View style={styles.notice}>
-          <Text style={styles.noticeText}>درخواست شما پس از تکمیل مراحل برای بررسی به بانک ارسال می‌شود.</Text>
+          <Text style={styles.noticeText}>
+            این نسخه هیچ مبلغ یا وضعیت نمونه‌ای را به‌عنوان داده واقعی نمایش نمی‌دهد.
+          </Text>
           <FigmaSvg uri={figmaAssets.info} width={16} height={16} />
         </View>
       </ScrollView>
 
       <View style={styles.bottomNav}>
-        <BottomItem icon={figmaAssets.user} label="حساب من" />
-        <BottomItem icon={figmaAssets.fileText} label="قراردادها" />
-        <BottomItem icon={figmaAssets.creditCard} label="دریافت و پرداخت" />
+        <BottomItem icon={figmaAssets.user} label="حساب من" onPress={() => router.push("/(shared)/profile")} />
+        <BottomItem icon={figmaAssets.fileText} label="قراردادها" onPress={() => router.push("/(shared)/contracts")} />
+        <BottomItem icon={figmaAssets.creditCard} label="دریافت و پرداخت" onPress={() => router.push("/(tenant)/payments")} />
         <BottomItem icon={figmaAssets.homeActive} label="خانه" active />
       </View>
     </SafeAreaView>
@@ -94,18 +182,21 @@ export default function TenantHomeScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.primary },
   topLogo: { height: 60, alignItems: "flex-end" },
-  header: { height: 56, paddingHorizontal: 20, paddingVertical: 8, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  header: { minHeight: 56, paddingHorizontal: 20, paddingVertical: 8, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   notification: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
-  greeting: { alignItems: "flex-end", gap: 2 },
+  greeting: { flex: 1, alignItems: "flex-end", gap: 2 },
   greetingTitle: { color: colors.page, fontFamily: fonts.semibold, fontSize: 16, writingDirection: "rtl" },
-  greetingNote: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, writingDirection: "rtl" },
+  greetingNote: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, writingDirection: "rtl", textAlign: "right" },
   scroll: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 16, gap: 20 },
+  errorCard: { backgroundColor: "#FEE2E2", borderRadius: radii.md, padding: 14, gap: 6 },
+  errorTitle: { color: "#991B1B", fontFamily: fonts.semibold, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
+  errorText: { color: "#991B1B", fontFamily: fonts.regular, fontSize: 11, textAlign: "right" },
   summaryGrid: { gap: 12 },
   summaryRow: { flexDirection: "row", gap: 12 },
-  summaryCard: { flex: 1, minHeight: 109, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md, padding: 16, gap: 8, alignItems: "flex-end" },
+  summaryCard: { flex: 1, minHeight: 120, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md, padding: 14, gap: 8, alignItems: "flex-end" },
   summaryTitle: { color: colors.primary, fontFamily: fonts.bold, fontSize: 12, textAlign: "right", writingDirection: "rtl" },
-  summaryValue: { width: "100%", color: colors.primary, fontFamily: fonts.regular, textAlign: "right", writingDirection: "rtl" },
-  summaryNote: { width: "100%", color: colors.muted, fontFamily: fonts.regular, fontSize: 11, lineHeight: 17, textAlign: "right", writingDirection: "rtl" },
+  summaryValue: { width: "100%", color: colors.primary, fontFamily: fonts.semibold, fontSize: 13, textAlign: "right", writingDirection: "rtl" },
+  summaryNote: { width: "100%", color: colors.muted, fontFamily: fonts.regular, fontSize: 10, lineHeight: 16, textAlign: "right", writingDirection: "rtl" },
   actionCard: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radii.lg, padding: 20, gap: 12 },
   actionTitle: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 16, textAlign: "right", writingDirection: "rtl" },
   actionText: { color: colors.muted, fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, textAlign: "right", writingDirection: "rtl" },
