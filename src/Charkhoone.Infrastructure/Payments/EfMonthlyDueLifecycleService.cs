@@ -93,11 +93,7 @@ public sealed class EfMonthlyDueLifecycleService(
         var reconciliationAttempts = 0;
         foreach (var instruction in instructions)
         {
-            if (instruction.Status is not (
-                PaymentInstructionStatus.Created
-                or PaymentInstructionStatus.Pending
-                or PaymentInstructionStatus.Unknown
-                or PaymentInstructionStatus.ReconciliationRequired))
+            if (instruction.Status != PaymentInstructionStatus.Created)
             {
                 continue;
             }
