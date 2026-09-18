@@ -67,7 +67,13 @@ def target_hash(path: Path) -> str:
 
 
 def metadata(kind: str, target: str, raw: Path) -> dict:
-    component = target_manifest()["worker" if kind == "worker-deployment" else "database"]
+    if kind == "worker-deployment":
+        component_name = "worker"
+    elif kind == "message-broker-deployment":
+        component_name = "message_broker"
+    else:
+        component_name = "database"
+    component = target_manifest()[component_name]
     value = {
         "schema_version": 1,
         "environment": "staging",
@@ -123,7 +129,7 @@ with tempfile.TemporaryDirectory(prefix="charkhoone-provider-evidence-") as raw_
     write_json(manifest, target_manifest())
     binding = target_hash(manifest)
 
-    for kind in ("database-backup", "database-restore", "worker-deployment"):
+    for kind in ("database-backup", "database-restore", "message-broker-deployment", "worker-deployment"):
         raw_file = temp / f"{kind}.txt"
         raw_file.write_text(f"synthetic {kind} provider evidence\n", encoding="utf-8")
         meta_file = temp / f"{kind}.json"

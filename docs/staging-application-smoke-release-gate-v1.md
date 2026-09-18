@@ -17,6 +17,8 @@ Required inputs include:
 - `CHARKHOONE_STAGING_ACCESS_TOKEN_FILE`: read-only staging token file.
 - `CHARKHOONE_STAGING_CONTRACT_ID`: existing staging contract accessible to the smoke identity.
 - `CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY`: completed database rehearsal summary for the same SHA.
+- `CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE`: raw provider evidence for the staging message broker.
+- `CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE_METADATA`: non-secret identity/hash sidecar for that broker evidence.
 - `CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE`: raw provider deployment evidence.
 - `CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA`: non-secret identity/hash sidecar for the exact raw Worker deployment evidence.
 - `CHARKHOONE_STAGING_WORKER_GIT_SHA`: provider/operator-reported Worker release SHA.
@@ -26,7 +28,7 @@ Remote Worker health URLs must use HTTPS. Plain HTTP is allowed only for loopbac
 
 ## Read-only checks
 
-Before the first HTTP request, the target manifest fingerprint must match the completed database rehearsal summary. The rehearsal summary must also show provider-bound backup and restore evidence with valid raw/metadata SHA-256 values. The supplied API base URL and Worker health URL must match the manifest. Worker deployment metadata must bind the same Worker provider/scope/resource, the exact raw deployment evidence SHA-256, and the exact release git SHA.
+Before the first HTTP request, the target manifest fingerprint must match the completed database rehearsal summary. The rehearsal summary must also show provider-bound backup and restore evidence with valid raw/metadata SHA-256 values. Message-broker evidence must bind the exact `message_broker` provider/scope/resource declared in the target manifest before any HTTP request. The supplied API base URL and Worker health URL must match the manifest. Worker deployment metadata must bind the same Worker provider/scope/resource, the exact raw deployment evidence SHA-256, and the exact release git SHA.
 
 The smoke runner performs GET-only checks:
 
@@ -50,6 +52,8 @@ The application-smoke summary records:
 - API/Worker target URL match,
 - API release identity/liveness/readiness,
 - database rehearsal binding,
+- message-broker provider/resource identity match,
+- message-broker raw evidence and metadata hash binding,
 - Worker deployment SHA binding,
 - Worker HTTP release-header match,
 - Worker HTTP liveness success,

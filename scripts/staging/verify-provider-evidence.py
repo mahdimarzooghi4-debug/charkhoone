@@ -23,7 +23,7 @@ BASE_KEYS = {
     "resource_id",
     "raw_evidence_sha256",
 }
-KINDS = {"database-backup", "database-restore", "worker-deployment"}
+KINDS = {"database-backup", "database-restore", "message-broker-deployment", "worker-deployment"}
 
 
 def fail(message: str) -> "NoReturn":
@@ -139,7 +139,12 @@ def main() -> None:
     target_hash = canonical_target_hash(normalized)
     metadata = load_metadata(args.metadata, args.kind)
 
-    component_name = "worker" if args.kind == "worker-deployment" else "database"
+    if args.kind == "worker-deployment":
+        component_name = "worker"
+    elif args.kind == "message-broker-deployment":
+        component_name = "message_broker"
+    else:
+        component_name = "database"
     component = normalized[component_name]
     assert isinstance(component, dict)
 

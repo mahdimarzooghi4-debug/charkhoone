@@ -29,6 +29,8 @@ begin_evidence_attempt "$output_root/$expected_sha" 'promotion-readiness.txt'
 
 : "${CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY:?database rehearsal summary path is required}"
 : "${CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR:?application smoke evidence directory is required}"
+: "${CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE:?message broker provider evidence path is required}"
+: "${CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE_METADATA:?message broker evidence metadata path is required}"
 : "${CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE:?worker deployment evidence path is required}"
 : "${CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA:?worker deployment evidence metadata path is required}"
 : "${CHARKHOONE_STAGING_TARGET_MANIFEST:?staging target manifest path is required}"
@@ -55,6 +57,8 @@ flock --shared --nonblock "$application_lock_fd" || {
 application_summary="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/summary.txt"
 application_statuses="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/http-statuses.txt"
 application_database_hash="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/database-rehearsal-summary.sha256"
+application_broker_hash="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/message-broker-evidence.sha256"
+application_broker_metadata_hash="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/message-broker-evidence-metadata.sha256"
 application_worker_hash="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/worker-deployment-evidence.sha256"
 application_worker_metadata_hash="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/worker-deployment-evidence-metadata.sha256"
 application_target_hash="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/staging-target-binding.sha256"
@@ -64,9 +68,13 @@ for evidence_path in \
   "$application_summary" \
   "$application_statuses" \
   "$application_database_hash" \
+  "$application_broker_hash" \
+  "$application_broker_metadata_hash" \
   "$application_worker_hash" \
   "$application_worker_metadata_hash" \
   "$application_target_hash" \
+  "$CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE" \
+  "$CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE_METADATA" \
   "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE" \
   "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA" \
   "$CHARKHOONE_STAGING_TARGET_MANIFEST" \
@@ -121,6 +129,8 @@ require_line "$application_summary" 'anonymous_contract_auth_boundary=401'
 require_line "$application_summary" 'authenticated_contract_read=passed'
 require_line "$application_summary" 'authenticated_contract_audit_read=passed'
 require_line "$application_summary" 'database_rehearsal=matched-release-and-passed'
+require_line "$application_summary" 'message_broker_evidence=identity-and-raw-hash-verified'
+require_line "$application_summary" 'message_broker_metadata=hash-recorded'
 require_line "$application_summary" 'worker_release_sha=matched-operator-platform-evidence'
 require_line "$application_summary" 'worker_http_release_header=matched'
 require_line "$application_summary" 'worker_http_liveness=passed'
@@ -168,6 +178,19 @@ if [[ ! "$database_target_hash" =~ ^[0-9a-f]{64}$ || "$application_summary_targe
   exit 1
 fi
 
+broker_provider_info="$(python3 scripts/staging/verify-provider-evidence.py \
+  --manifest "$CHARKHOONE_STAGING_TARGET_MANIFEST" \
+  --metadata "$CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE_METADATA" \
+  --raw-evidence "$CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE" \
+  --kind message-broker-deployment)"
+verified_broker_target_hash="$(printf '%s\n' "$broker_provider_info" | awk -F= '$1 == "provider_evidence_target_binding_sha256" { sub(/^[^=]*=/, ""); print; exit }')"
+verified_broker_raw_hash="$(printf '%s\n' "$broker_provider_info" | awk -F= '$1 == "provider_evidence_raw_sha256" { sub(/^[^=]*=/, ""); print; exit }')"
+verified_broker_metadata_hash="$(printf '%s\n' "$broker_provider_info" | awk -F= '$1 == "provider_evidence_metadata_sha256" { sub(/^[^=]*=/, ""); print; exit }')"
+if [[ "$verified_broker_target_hash" != "$database_target_hash" ]]; then
+  echo 'Message broker provider evidence target identity does not match the promotion target.' >&2
+  exit 1
+fi
+
 worker_provider_info="$(python3 scripts/staging/verify-provider-evidence.py \
   --manifest "$CHARKHOONE_STAGING_TARGET_MANIFEST" \
   --metadata "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA" \
@@ -186,6 +209,19 @@ actual_database_hash="$(sha256sum "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMAR
 recorded_database_hash="$(read_recorded_hash "$application_database_hash")"
 if [[ "$actual_database_hash" != "$recorded_database_hash" ]]; then
   echo 'Application smoke evidence does not bind to the supplied database rehearsal summary.' >&2
+  exit 1
+fi
+
+actual_broker_hash="$(sha256sum "$CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE" | awk '{print $1}')"
+recorded_broker_hash="$(read_recorded_hash "$application_broker_hash")"
+actual_broker_metadata_hash="$(sha256sum "$CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE_METADATA" | awk '{print $1}')"
+recorded_broker_metadata_hash="$(read_recorded_hash "$application_broker_metadata_hash")"
+if [[ "$actual_broker_hash" != "$recorded_broker_hash" || "$actual_broker_hash" != "$verified_broker_raw_hash" ]]; then
+  echo 'Application smoke evidence does not bind to the supplied message broker evidence.' >&2
+  exit 1
+fi
+if [[ "$actual_broker_metadata_hash" != "$recorded_broker_metadata_hash" || "$actual_broker_metadata_hash" != "$verified_broker_metadata_hash" ]]; then
+  echo 'Application smoke evidence does not bind to the supplied message broker metadata.' >&2
   exit 1
 fi
 
@@ -210,6 +246,10 @@ manifest="$attempt_dir/evidence-manifest.tsv"
   printf 'application_smoke_summary\t%s\n' "$(sha256sum "$application_summary" | awk '{print $1}')"
   printf 'application_smoke_http_statuses\t%s\n' "$(sha256sum "$application_statuses" | awk '{print $1}')"
   printf 'application_database_hash_record\t%s\n' "$(sha256sum "$application_database_hash" | awk '{print $1}')"
+  printf 'application_broker_hash_record\t%s\n' "$(sha256sum "$application_broker_hash" | awk '{print $1}')"
+  printf 'application_broker_metadata_hash_record\t%s\n' "$(sha256sum "$application_broker_metadata_hash" | awk '{print $1}')"
+  printf 'message_broker_evidence\t%s\n' "$actual_broker_hash"
+  printf 'message_broker_evidence_metadata\t%s\n' "$actual_broker_metadata_hash"
   printf 'application_worker_hash_record\t%s\n' "$(sha256sum "$application_worker_hash" | awk '{print $1}')"
   printf 'application_worker_metadata_hash_record\t%s\n' "$(sha256sum "$application_worker_metadata_hash" | awk '{print $1}')"
   printf 'application_target_hash_record\t%s\n' "$(sha256sum "$application_target_hash" | awk '{print $1}')"
@@ -227,6 +267,9 @@ manifest="$attempt_dir/evidence-manifest.tsv"
   printf 'application_smoke=validated\n'
   printf 'database_rehearsal_hash_binding=matched\n'
   printf 'database_provider_evidence_hashes=validated\n'
+  printf 'message_broker_evidence_hash_binding=matched\n'
+  printf 'message_broker_metadata_hash_binding=matched\n'
+  printf 'message_broker_provider_identity=matched-target-manifest\n'
   printf 'staging_target_binding=matched-across-database-and-application\n'
   printf 'staging_target_binding_sha256=%s\n' "$database_target_hash"
   printf 'worker_deployment_evidence_hash_binding=matched\n'

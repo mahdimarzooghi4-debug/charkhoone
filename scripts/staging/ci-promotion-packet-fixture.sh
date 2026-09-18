@@ -14,6 +14,8 @@ trap 'rm -rf "$temp_dir"' EXIT
 
 application_dir="$temp_dir/application-smoke"
 database_summary="$temp_dir/database-summary.txt"
+broker_evidence="$temp_dir/message-broker.txt"
+broker_metadata="$temp_dir/message-broker-metadata.json"
 worker_evidence="$temp_dir/worker-deployment.txt"
 worker_metadata="$temp_dir/worker-deployment-metadata.json"
 target_manifest="$temp_dir/staging-target.json"
@@ -87,6 +89,8 @@ anonymous_contract_auth_boundary=401
 authenticated_contract_read=passed
 authenticated_contract_audit_read=passed
 database_rehearsal=matched-release-and-passed
+message_broker_evidence=identity-and-raw-hash-verified
+message_broker_metadata=hash-recorded
 worker_release_sha=matched-operator-platform-evidence
 worker_http_release_header=matched
 worker_http_liveness=passed
@@ -108,6 +112,27 @@ authenticated_contract=200
 authenticated_audit=200
 worker_health_live=200
 EOF
+
+printf 'provider=fixture-mq\nstatus=available\n' > "$broker_evidence"
+broker_raw_hash="$(sha256sum "$broker_evidence" | awk '{print $1}')"
+cat > "$broker_metadata" <<EOF
+{
+  "schema_version": 1,
+  "environment": "staging",
+  "evidence_kind": "message-broker-deployment",
+  "staging_target_binding_sha256": "$target_hash",
+  "provider": "fixture-mq",
+  "scope_id": "workspace-a",
+  "resource_id": "rabbitmq-a",
+  "raw_evidence_sha256": "$broker_raw_hash"
+}
+EOF
+
+python3 scripts/staging/verify-provider-evidence.py \
+  --manifest "$target_manifest" \
+  --metadata "$broker_metadata" \
+  --raw-evidence "$broker_evidence" \
+  --kind message-broker-deployment >/dev/null
 
 printf 'provider=fixture\ngit_sha=%s\nstatus=deployed\n' "$expected_sha" > "$worker_evidence"
 worker_raw_hash="$(sha256sum "$worker_evidence" | awk '{print $1}')"
@@ -133,6 +158,8 @@ python3 scripts/staging/verify-provider-evidence.py \
   --expected-git-sha "$expected_sha" >/dev/null
 
 printf '%s\n' "$(sha256sum "$database_summary" | awk '{print $1}')" > "$application_dir/database-rehearsal-summary.sha256"
+printf '%s\n' "$broker_raw_hash" > "$application_dir/message-broker-evidence.sha256"
+printf '%s\n' "$(sha256sum "$broker_metadata" | awk '{print $1}')" > "$application_dir/message-broker-evidence-metadata.sha256"
 printf '%s\n' "$worker_raw_hash" > "$application_dir/worker-deployment-evidence.sha256"
 printf '%s\n' "$(sha256sum "$worker_metadata" | awk '{print $1}')" > "$application_dir/worker-deployment-evidence-metadata.sha256"
 printf '%s\n' "$target_hash" > "$application_dir/staging-target-binding.sha256"
@@ -152,6 +179,8 @@ run_packet() {
   CHARKHOONE_EXPECTED_GIT_SHA="$expected_sha" \
   CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY="$database_summary" \
   CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR="$application_dir" \
+  CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE="$broker_evidence" \
+  CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE_METADATA="$broker_metadata" \
   CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE="$worker_evidence" \
   CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA="$worker_metadata" \
   CHARKHOONE_STAGING_TARGET_MANIFEST="$target_manifest" \
@@ -168,6 +197,9 @@ test -s "$output_dir/promotion-readiness.txt"
 grep -Fxq "git_sha=$expected_sha" "$output_dir/promotion-readiness.txt"
 grep -Fxq 'database_rehearsal_hash_binding=matched' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'database_provider_evidence_hashes=validated' "$output_dir/promotion-readiness.txt"
+grep -Fxq 'message_broker_evidence_hash_binding=matched' "$output_dir/promotion-readiness.txt"
+grep -Fxq 'message_broker_metadata_hash_binding=matched' "$output_dir/promotion-readiness.txt"
+grep -Fxq 'message_broker_provider_identity=matched-target-manifest' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'worker_deployment_evidence_hash_binding=matched' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'worker_deployment_metadata_hash_binding=matched' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'worker_provider_identity=matched-target-manifest' "$output_dir/promotion-readiness.txt"
@@ -178,7 +210,7 @@ grep -Fxq 'worker_http_liveness=validated' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'worker_http_identity=validated' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'promotion_decision=human-required' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'deployment_action=none' "$output_dir/promotion-readiness.txt"
-[[ "$(wc -l < "$output_dir/evidence-manifest.tsv")" -eq 11 ]]
+[[ "$(wc -l < "$output_dir/evidence-manifest.tsv")" -eq 15 ]]
 
 cp "$application_dir/summary.txt" "$application_dir/summary.valid.txt"
 grep -v '^worker_http_liveness=passed$' "$application_dir/summary.valid.txt" > "$application_dir/summary.txt"
@@ -209,6 +241,34 @@ fi
 [[ ! -e "$output_dir/promotion-readiness.txt" ]]
 exec {fixture_lock_fd}>&-
 run_packet >/dev/null
+
+printf '\ntampered-broker-after-smoke=true\n' >> "$broker_evidence"
+if run_packet >/dev/null 2>&1; then
+  echo 'Promotion packet unexpectedly accepted message broker evidence that changed after application smoke.' >&2
+  exit 1
+fi
+[[ ! -e "$output_dir/promotion-readiness.txt" ]]
+
+printf 'provider=fixture-mq\nstatus=available\n' > "$broker_evidence"
+printf '\n' >> "$broker_metadata"
+if run_packet >/dev/null 2>&1; then
+  echo 'Promotion packet unexpectedly accepted message broker metadata bytes that changed after application smoke.' >&2
+  exit 1
+fi
+[[ ! -e "$output_dir/promotion-readiness.txt" ]]
+
+cat > "$broker_metadata" <<EOF
+{
+  "schema_version": 1,
+  "environment": "staging",
+  "evidence_kind": "message-broker-deployment",
+  "staging_target_binding_sha256": "$target_hash",
+  "provider": "fixture-mq",
+  "scope_id": "workspace-a",
+  "resource_id": "rabbitmq-a",
+  "raw_evidence_sha256": "$(sha256sum "$broker_evidence" | awk '{print $1}')"
+}
+EOF
 
 printf '\ntampered-after-smoke=true\n' >> "$worker_evidence"
 if run_packet >/dev/null 2>&1; then
