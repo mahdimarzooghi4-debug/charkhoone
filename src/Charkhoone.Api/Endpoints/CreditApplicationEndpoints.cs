@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using Charkhoone.Api.Security;
+using Charkhoone.Application.BankFunding;
 using Charkhoone.Application.Contracts;
 using Charkhoone.Application.CreditApplications;
 using Charkhoone.Application.CreditEligibility;
@@ -58,6 +59,17 @@ public static class CreditApplicationEndpoints
             .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)
             .WithName("ReconcileCreditEligibility")
             .Produces<CreditEligibilityResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
+
+        api.MapPost("/credit-applications/{id:guid}/bank-funding/reconcile", ReconcileBankFundingAsync)
+            .RequireAuthorization()
+            .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)
+            .WithName("ReconcileBankFunding")
+            .Produces<BankFundingResponse>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -324,6 +336,62 @@ public static class CreditApplicationEndpoints
         };
     }
 
+    private static async Task<IResult> ReconcileBankFundingAsync(
+        Guid id,
+        ClaimsPrincipal principal,
+        IUserIdentityLookup userIdentityLookup,
+        IBankFundingService bankFunding,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        var identity = await ResolveUserAsync(principal, userIdentityLookup, cancellationToken);
+        if (identity.Error is not null)
+        {
+            return identity.Error;
+        }
+
+        var result = await bankFunding.ProcessAsync(
+            id,
+            identity.UserId!.Value,
+            timeProvider.GetUtcNow(),
+            cancellationToken);
+
+        return result.Outcome switch
+        {
+            ProcessBankFundingOutcome.Funded
+                or ProcessBankFundingOutcome.AlreadyFunded
+                or ProcessBankFundingOutcome.BankApprovalIndeterminate
+                or ProcessBankFundingOutcome.BankDeclined
+                or ProcessBankFundingOutcome.FundingIndeterminate
+                => Results.Ok(ToResponse(result)),
+            ProcessBankFundingOutcome.NotFound
+                => Results.Problem(
+                    statusCode: StatusCodes.Status404NotFound,
+                    title: "Credit application was not found.",
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = "credit_application_not_found",
+                    }),
+            ProcessBankFundingOutcome.Conflict
+                => Results.Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Persisted bank/funding evidence conflicts with trusted eligibility or contract state.",
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = "bank_funding_evidence_conflict",
+                    }),
+            ProcessBankFundingOutcome.InvalidState
+                => Results.Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Bank funding cannot be reconciled from the current trusted application state.",
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = "bank_funding_invalid_state",
+                    }),
+            _ => throw new InvalidOperationException("Unsupported bank-funding outcome."),
+        };
+    }
+
     private static async Task<(Guid? UserId, IResult? Error)> ResolveUserAsync(
         ClaimsPrincipal principal,
         IUserIdentityLookup userIdentityLookup,
@@ -357,6 +425,23 @@ public static class CreditApplicationEndpoints
         }
 
         return (internalUserId.Value, null);
+    }
+
+    private static BankFundingResponse ToResponse(ProcessBankFundingResult result)
+    {
+        var funding = result.Funding;
+        return new BankFundingResponse(
+            result.Outcome.ToString(),
+            funding?.CreditApplicationId,
+            funding?.ApplicationStatus.ToString(),
+            funding?.ContractId,
+            funding?.BankId,
+            funding?.FullDepositEquivalentRial,
+            funding?.MaximumEligibleLoanRial,
+            funding?.BankApprovedLoanRial,
+            funding?.TenantContributionRial,
+            funding?.FundReference,
+            funding?.UpdatedAtUtc);
     }
 
     private static CreditEligibilityResponse ToResponse(
@@ -464,4 +549,18 @@ public sealed record CreditEligibilityResponse(
     decimal? FullDepositEquivalentRial,
     decimal? LoanRatio,
     decimal? MaximumEligibleLoanRial,
+    DateTimeOffset? UpdatedAtUtc);
+
+
+public sealed record BankFundingResponse(
+    string Outcome,
+    Guid? CreditApplicationId,
+    string? ApplicationStatus,
+    Guid? ContractId,
+    string? BankId,
+    decimal? FullDepositEquivalentRial,
+    decimal? MaximumEligibleLoanRial,
+    decimal? BankApprovedLoanRial,
+    decimal? TenantContributionRial,
+    string? FundReference,
     DateTimeOffset? UpdatedAtUtc);

@@ -17,12 +17,18 @@ public sealed class EfBankFundingService(
 
     public async Task<ProcessBankFundingResult> ProcessAsync(
         Guid applicationId,
+        Guid applicantUserId,
         DateTimeOffset occurredAtUtc,
         CancellationToken cancellationToken = default)
     {
         if (applicationId == Guid.Empty)
         {
             throw new ArgumentException("Credit application id is required.", nameof(applicationId));
+        }
+
+        if (applicantUserId == Guid.Empty)
+        {
+            throw new ArgumentException("Applicant user id is required.", nameof(applicantUserId));
         }
 
         CreditApplicationRow application;
@@ -35,7 +41,7 @@ public sealed class EfBankFundingService(
         await using (var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken))
         {
             application = await dbContext.CreditApplications
-                .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} FOR UPDATE")
+                .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} AND \"ApplicantUserId\" = {applicantUserId} FOR UPDATE")
                 .SingleOrDefaultAsync(cancellationToken)
                 ?? null!;
 
@@ -81,7 +87,17 @@ public sealed class EfBankFundingService(
 
             if (!IsUsableEligibility(eligibility) || contract is null
                 || application.BankLoanPlanId is null
-                || string.IsNullOrWhiteSpace(application.BankLoanPlanVersion))
+                || string.IsNullOrWhiteSpace(application.BankLoanPlanVersion)
+                || contract.TenantUserId != applicantUserId
+                || contract.BankLoanPlanId != application.BankLoanPlanId
+                || !string.Equals(
+                    contract.BankLoanPlanVersion,
+                    application.BankLoanPlanVersion,
+                    StringComparison.Ordinal)
+                || !await MatchesTrustedContractSnapshotAsync(
+                    contract.Id,
+                    eligibility,
+                    cancellationToken))
             {
                 await transaction.RollbackAsync(cancellationToken);
                 return new ProcessBankFundingResult(
@@ -96,7 +112,7 @@ public sealed class EfBankFundingService(
                     cancellationToken)
                 ?? null!;
 
-            if (plan is null)
+            if (plan is null || plan.TermMonths != BankLoanPlanVersion.RequiredTermMonths)
             {
                 await transaction.RollbackAsync(cancellationToken);
                 return new ProcessBankFundingResult(
@@ -117,6 +133,29 @@ public sealed class EfBankFundingService(
                     CreatedAtUtc = occurredAtUtc,
                     UpdatedAtUtc = occurredAtUtc,
                 };
+
+            if (dbContext.Entry(approval).State != EntityState.Detached
+                && approval.MaximumEligibleLoanRial != eligibility.MaximumEligibleLoanRial!.Value)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return new ProcessBankFundingResult(
+                    ProcessBankFundingOutcome.Conflict,
+                    ToView(application, contract, allocation, null));
+            }
+
+            if (allocation is not null
+                && !AllocationMatchesTrustedState(
+                    allocation,
+                    application,
+                    contract,
+                    plan,
+                    eligibility))
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return new ProcessBankFundingResult(
+                    ProcessBankFundingOutcome.Conflict,
+                    ToView(application, contract, allocation, null));
+            }
 
             if (dbContext.Entry(approval).State == EntityState.Detached)
             {
@@ -173,6 +212,7 @@ public sealed class EfBankFundingService(
 
             var bankResult = await ApplyBankResultAsync(
                 applicationId,
+                applicantUserId,
                 approval.Id,
                 contract.Id,
                 plan,
@@ -193,6 +233,7 @@ public sealed class EfBankFundingService(
 
         return await FreezePrincipalAsync(
             applicationId,
+            applicantUserId,
             contract.Id,
             allocation,
             occurredAtUtc,
@@ -201,6 +242,7 @@ public sealed class EfBankFundingService(
 
     private async Task<ProcessBankFundingResult> ApplyBankResultAsync(
         Guid applicationId,
+        Guid applicantUserId,
         Guid approvalId,
         Guid contractId,
         BankLoanPlanVersionRow plan,
@@ -212,7 +254,7 @@ public sealed class EfBankFundingService(
         await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
         var application = await dbContext.CreditApplications
-            .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} AND \"ApplicantUserId\" = {applicantUserId} FOR UPDATE")
             .SingleAsync(cancellationToken);
         var approval = await dbContext.BankApprovals
             .FromSqlInterpolated($"SELECT * FROM bank_approvals WHERE \"Id\" = {approvalId} FOR UPDATE")
@@ -238,8 +280,14 @@ public sealed class EfBankFundingService(
         approval.AttemptCount += 1;
         approval.UpdatedAtUtc = occurredAtUtc;
 
-        if (response.Status == BankApprovalDecisionStatus.Declined)
+        var normalizedBankReference = string.IsNullOrWhiteSpace(response.ExternalReference)
+            ? null
+            : response.ExternalReference.Trim();
+
+        if (response.Status == BankApprovalDecisionStatus.Declined
+            && normalizedBankReference is not null)
         {
+            approval.ExternalReference = normalizedBankReference;
             ApplyTransition(
                 application,
                 CreditApplicationStatus.Rejected,
@@ -266,8 +314,10 @@ public sealed class EfBankFundingService(
 
         var approvedLoanRial = response.ApprovedLoanRial;
         if (response.Status != BankApprovalDecisionStatus.Approved
+            || normalizedBankReference is null
             || approvedLoanRial is null
             || approvedLoanRial <= 0m
+            || approvedLoanRial != decimal.Truncate(approvedLoanRial.Value)
             || approvedLoanRial > eligibility.MaximumEligibleLoanRial
             || approvedLoanRial > eligibility.FullDepositEquivalentRial)
         {
@@ -289,6 +339,8 @@ public sealed class EfBankFundingService(
                 ProcessBankFundingOutcome.BankApprovalIndeterminate,
                 ToView(application, contract, null, null));
         }
+
+        approval.ExternalReference = normalizedBankReference;
 
         var tenantContributionRial = CreditAllocationCalculator.CalculateTenantContribution(
             eligibility.FullDepositEquivalentRial,
@@ -351,6 +403,7 @@ public sealed class EfBankFundingService(
 
     private async Task<ProcessBankFundingResult> FreezePrincipalAsync(
         Guid applicationId,
+        Guid applicantUserId,
         Guid contractId,
         FundingAllocationRow allocation,
         DateTimeOffset occurredAtUtc,
@@ -361,7 +414,7 @@ public sealed class EfBankFundingService(
         await using (var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken))
         {
             var application = await dbContext.CreditApplications
-                .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} FOR UPDATE")
+                .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} AND \"ApplicantUserId\" = {applicantUserId} FOR UPDATE")
                 .SingleAsync(cancellationToken);
             var contract = await dbContext.LeaseContracts
                 .SingleAsync(x => x.Id == contractId, cancellationToken);
@@ -418,7 +471,7 @@ public sealed class EfBankFundingService(
 
         await using var resultTransaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
         var lockedApplication = await dbContext.CreditApplications
-            .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} AND \"ApplicantUserId\" = {applicantUserId} FOR UPDATE")
             .SingleAsync(cancellationToken);
         var lockedContract = await dbContext.LeaseContracts
             .SingleAsync(x => x.Id == contractId, cancellationToken);
@@ -447,7 +500,8 @@ public sealed class EfBankFundingService(
         lockedRequest.UpdatedAtUtc = occurredAtUtc;
 
         if (response.Status != FundPrincipalFreezeStatus.Confirmed
-            || string.IsNullOrWhiteSpace(response.FundReference))
+            || string.IsNullOrWhiteSpace(response.FundReference)
+            || string.IsNullOrWhiteSpace(response.ExternalReference))
         {
             lockedRequest.Status = FundPrincipalFreezeStatus.Indeterminate.ToString();
             lockedRequest.FundReference = null;
@@ -523,6 +577,115 @@ public sealed class EfBankFundingService(
         return new ProcessBankFundingResult(
             ProcessBankFundingOutcome.Funded,
             ToView(lockedApplication, lockedContract, allocation, frozenPrincipal));
+    }
+
+    private async Task<bool> MatchesTrustedContractSnapshotAsync(
+        Guid contractId,
+        CreditEligibilityAssessmentRow eligibility,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(eligibility.ExternalSubGrade)
+            || eligibility.MaximumEligibleLoanRial is null)
+        {
+            return false;
+        }
+
+        var terms = await dbContext.LeaseContractTerms
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.ContractId == contractId, cancellationToken);
+
+        if (terms is null
+            || terms.Calendar != "Persian"
+            || terms.TermMonths != BankLoanPlanVersion.RequiredTermMonths
+            || terms.FullDepositEquivalentRial != eligibility.FullDepositEquivalentRial
+            || terms.FullDepositEquivalentRial <= 0m
+            || terms.FullDepositEquivalentRial != decimal.Truncate(terms.FullDepositEquivalentRial)
+            || string.IsNullOrWhiteSpace(terms.SourceReference))
+        {
+            return false;
+        }
+
+        decimal calculatedFullDeposit;
+        decimal calculatedMaximumLoan;
+        try
+        {
+            calculatedFullDeposit = FullDepositCalculator.Calculate(
+                terms.CashDepositRial,
+                terms.MonthlyRentRial);
+            calculatedMaximumLoan = CreditAllocationCalculator.CalculateMaximumLoan(
+                terms.FullDepositEquivalentRial,
+                eligibility.ExternalSubGrade);
+        }
+        catch (ArgumentException)
+        {
+            return false;
+        }
+
+        if (calculatedFullDeposit != terms.FullDepositEquivalentRial
+            || calculatedMaximumLoan != eligibility.MaximumEligibleLoanRial.Value)
+        {
+            return false;
+        }
+
+        var schedule = await dbContext.LeaseContractScheduleMonths
+            .AsNoTracking()
+            .Where(x => x.ContractId == contractId)
+            .OrderBy(x => x.ContractMonthNumber)
+            .ToListAsync(cancellationToken);
+
+        if (schedule.Count != BankLoanPlanVersion.RequiredTermMonths)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < schedule.Count; index++)
+        {
+            var month = schedule[index];
+            if (month.ContractMonthNumber != index + 1
+                || month.OwnerPaymentRial < 0m
+                || month.BankInterestRial < 0m
+                || month.OwnerPaymentRial != decimal.Truncate(month.OwnerPaymentRial)
+                || month.BankInterestRial != decimal.Truncate(month.BankInterestRial)
+                || (month.OwnerPaymentRial == 0m && month.BankInterestRial == 0m)
+                || (index > 0 && schedule[index - 1].DueAtUtc >= month.DueAtUtc))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool AllocationMatchesTrustedState(
+        FundingAllocationRow allocation,
+        CreditApplicationRow application,
+        LeaseContractRow contract,
+        BankLoanPlanVersionRow plan,
+        CreditEligibilityAssessmentRow eligibility)
+    {
+        if (eligibility.MaximumEligibleLoanRial is null)
+        {
+            return false;
+        }
+
+        if (allocation.CreditApplicationId != application.Id
+            || allocation.ContractId != contract.Id
+            || allocation.BankLoanPlanId != plan.PlanId
+            || !string.Equals(allocation.BankLoanPlanVersion, plan.Version, StringComparison.Ordinal)
+            || !string.Equals(allocation.BankId, plan.BankId, StringComparison.Ordinal)
+            || allocation.FullDepositEquivalentRial != eligibility.FullDepositEquivalentRial
+            || allocation.MaximumEligibleLoanRial != eligibility.MaximumEligibleLoanRial.Value
+            || allocation.BankApprovedLoanRial <= 0m
+            || allocation.BankApprovedLoanRial != decimal.Truncate(allocation.BankApprovedLoanRial)
+            || allocation.BankApprovedLoanRial > eligibility.MaximumEligibleLoanRial.Value)
+        {
+            return false;
+        }
+
+        return allocation.TenantContributionRial
+            == CreditAllocationCalculator.CalculateTenantContribution(
+                eligibility.FullDepositEquivalentRial,
+                allocation.BankApprovedLoanRial);
     }
 
     private void MarkExternalIndeterminate(
