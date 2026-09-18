@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AppButton } from "@/components/AppButton";
@@ -32,9 +33,11 @@ export default function FinancingUnderReviewScreen() {
   const { status, data, error, loading } = useMobileBootstrap();
   const application = data?.latestCreditApplication ?? null;
 
-  if (status === "unauthenticated" || status === "config-error") {
-    router.replace("/(auth)/login");
-  }
+  useEffect(() => {
+    if (status === "unauthenticated" || status === "config-error") {
+      router.replace("/(auth)/login");
+    }
+  }, [router, status]);
 
   const allocation = application?.fundingAllocation ?? null;
   const approval = application?.bankApproval ?? null;
