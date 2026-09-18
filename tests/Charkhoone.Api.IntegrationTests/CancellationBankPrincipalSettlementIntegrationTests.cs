@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Charkhoone.Application.Payments;
 using Charkhoone.Domain.Contracts;
 using Charkhoone.Domain.CreditApplications;
@@ -29,6 +30,8 @@ public sealed class CancellationBankPrincipalSettlementIntegrationTests(Charkhoo
         var tenantId = Guid.NewGuid();
         var ownerId = Guid.NewGuid();
         var applicationId = Guid.NewGuid();
+        var fundingAllocationId = Guid.NewGuid();
+        var fundFreezeId = Guid.NewGuid();
         var cancellationSettlementId = Guid.NewGuid();
 
         const decimal frozenBankPrincipalRial = 600_000_000m;
@@ -81,6 +84,35 @@ public sealed class CancellationBankPrincipalSettlementIntegrationTests(Charkhoo
                 CreatedAtUtc = settlementAt,
                 UpdatedAtUtc = settlementAt,
                 CompletedAtUtc = settlementAt,
+            });
+
+            db.FundingAllocations.Add(new FundingAllocationRow
+            {
+                Id = fundingAllocationId,
+                CreditApplicationId = applicationId,
+                ContractId = contractId,
+                BankLoanPlanId = Guid.NewGuid(),
+                BankLoanPlanVersion = "cancel-bank-integration-v1",
+                BankId = "cancel-bank-integration-bank",
+                FullDepositEquivalentRial = frozenBankPrincipalRial,
+                MaximumEligibleLoanRial = frozenBankPrincipalRial,
+                BankApprovedLoanRial = frozenBankPrincipalRial,
+                TenantContributionRial = 0m,
+                CreatedAtUtc = cancellationAt.AddMonths(-4),
+                UpdatedAtUtc = cancellationAt.AddMonths(-4),
+            });
+            db.FundPrincipalFreezes.Add(new FundPrincipalFreezeRow
+            {
+                Id = fundFreezeId,
+                FundingAllocationId = fundingAllocationId,
+                Provider = "cancel-bank-integration-fund",
+                Status = "Confirmed",
+                IdempotencyKey = $"cancel-bank-fund-freeze:{fundingAllocationId:D}",
+                FundReference = $"cancel-bank-frozen-{contractId:D}",
+                ExternalReference = $"cancel-bank-fund-external-{fundFreezeId:D}",
+                AttemptCount = 1,
+                CreatedAtUtc = cancellationAt.AddMonths(-4),
+                UpdatedAtUtc = cancellationAt.AddMonths(-4),
             });
 
             db.FrozenPrincipals.Add(new FrozenPrincipalRow
@@ -180,11 +212,43 @@ public sealed class CancellationBankPrincipalSettlementIntegrationTests(Charkhoo
                 x => x.PayloadJson.Contains(
                     contractId.ToString("D"),
                     StringComparison.OrdinalIgnoreCase));
+
+            var fundNotification = await db.OutboxMessages.AsNoTracking()
+                .SingleAsync(x => x.Type == "lease-contract.cancelled-fund-notification-requested.v1");
+            using (var fundPayload = JsonDocument.Parse(fundNotification.PayloadJson))
+            {
+                Assert.Equal(contractId, fundPayload.RootElement.GetProperty("contractId").GetGuid());
+                Assert.Equal("cancel-bank-integration-fund", fundPayload.RootElement.GetProperty("fundProvider").GetString());
+                Assert.Equal($"cancel-bank-frozen-{contractId:D}", fundPayload.RootElement.GetProperty("fundReference").GetString());
+                Assert.Equal("cancel-bank-integration-bank", fundPayload.RootElement.GetProperty("bankId").GetString());
+                Assert.Equal(frozenBankPrincipalRial, fundPayload.RootElement.GetProperty("amountRial").GetDecimal());
+            }
+
+            var completed = await db.OutboxMessages.AsNoTracking()
+                .SingleAsync(x => x.Type == "lease-contract.cancellation-financially-completed.v1");
+            using (var completedPayload = JsonDocument.Parse(completed.PayloadJson))
+            {
+                Assert.Equal(contractId, completedPayload.RootElement.GetProperty("contractId").GetGuid());
+                Assert.Equal(tenantId, completedPayload.RootElement.GetProperty("tenantUserId").GetGuid());
+                Assert.Equal(ownerId, completedPayload.RootElement.GetProperty("ownerUserId").GetGuid());
+                Assert.Equal(300_000_000m, completedPayload.RootElement.GetProperty("ownerResidualAmountRial").GetDecimal());
+                Assert.Equal("cancel-bank-integration-bank", completedPayload.RootElement.GetProperty("bankId").GetString());
+                Assert.Equal(frozenBankPrincipalRial, completedPayload.RootElement.GetProperty("bankPrincipalAmountRial").GetDecimal());
+                Assert.Equal("cancel-bank-integration-fund", completedPayload.RootElement.GetProperty("fundProvider").GetString());
+                Assert.Equal($"cancel-bank-frozen-{contractId:D}", completedPayload.RootElement.GetProperty("fundReference").GetString());
+                Assert.Equal(returnJournal.Id, completedPayload.RootElement.GetProperty("bankJournalEntryId").GetGuid());
+            }
+
             Assert.Equal(
                 1,
                 await db.AuditEvents.CountAsync(x =>
                     x.AggregateId == contractId
                     && x.Action == "cancellation_bank_principal_returned"));
+            Assert.Equal(
+                1,
+                await db.AuditEvents.CountAsync(x =>
+                    x.AggregateId == contractId
+                    && x.Action == "cancellation_financially_completed"));
         }
 
         SettleCancellationBankPrincipalResult replay;
@@ -210,6 +274,19 @@ public sealed class CancellationBankPrincipalSettlementIntegrationTests(Charkhoo
             1,
             await finalDb.JournalEntries.CountAsync(x =>
                 x.IdempotencyKey == $"journal:cancellation-bank-principal:{contractId:D}:v1"));
+        Assert.Equal(
+            1,
+            await finalDb.OutboxMessages.CountAsync(x =>
+                x.Type == "lease-contract.cancelled-fund-notification-requested.v1"));
+        Assert.Equal(
+            1,
+            await finalDb.OutboxMessages.CountAsync(x =>
+                x.Type == "lease-contract.cancellation-financially-completed.v1"));
+        Assert.Equal(
+            1,
+            await finalDb.AuditEvents.CountAsync(x =>
+                x.AggregateId == contractId
+                && x.Action == "cancellation_financially_completed"));
     }
 
     private CharkhooneDbContext CreateDbContext()
