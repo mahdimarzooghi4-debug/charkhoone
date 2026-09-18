@@ -225,6 +225,27 @@ public sealed class MonthlyDueLifecycleIntegrationTests(CharkhooneApiFactory fac
                         && payment.ObligationId == fixture.CurrentObligationId)));
         }
 
+        await using (var db = CreateDbContext())
+        {
+            var blockedPaymentId = await db.PaymentInstructions.AsNoTracking()
+                .Where(x => x.ObligationId == fixture.CurrentObligationId)
+                .OrderBy(x => x.Id)
+                .Select(x => x.Id)
+                .FirstAsync();
+            var payments = new EfPaymentService(db, paymentAdapter);
+            var replay = await payments.ReconcileAsync(
+                blockedPaymentId,
+                await db.LeaseContracts.AsNoTracking()
+                    .Where(x => x.Id == fixture.ContractId)
+                    .Select(x => x.TenantUserId)
+                    .SingleAsync(),
+                now.AddSeconds(30));
+
+            Assert.Equal(ReconcilePaymentOutcome.ArrearsOutstanding, replay.Outcome);
+        }
+
+        Assert.Equal(0, paymentAdapter.CallCount);
+
         var coverageAdapter = new ConfirmingCoverageAdapter();
         await using (var db = CreateDbContext())
         {
@@ -252,6 +273,56 @@ public sealed class MonthlyDueLifecycleIntegrationTests(CharkhooneApiFactory fac
             await coveredDb.CoveragePayments.CountAsync(x =>
                 x.MonthlyObligationId == fixture.CurrentObligationId
                 && x.Status == CoveragePaymentStatus.Succeeded));
+    }
+
+    [Fact]
+    public async Task ThirdDueMonth_BlockedByOlderArrears_LatchesCancellationWithoutProviderCall()
+    {
+        var now = DateTimeOffset.Parse("2026-09-18T21:30:00+00:00");
+        var fixture = await SeedArrearsBlockedScenarioAsync(now, priorMissCount: 2);
+        var paymentAdapter = new RecordingPaymentAdapter(ExternalPaymentReconciliationStatus.Succeeded);
+
+        await using (var db = CreateDbContext())
+        {
+            var payments = new EfPaymentService(db, paymentAdapter);
+            var service = new EfMonthlyDueLifecycleService(db, payments, payments);
+            var result = await service.ProcessAsync(fixture.CurrentObligationId, now);
+
+            Assert.Equal(ProcessMonthlyDueOutcome.Missed, result.Outcome);
+            Assert.Equal(1, result.ReconciliationAttempts);
+        }
+
+        Assert.Equal(0, paymentAdapter.CallCount);
+
+        await using var finalDb = CreateDbContext();
+        var contract = await finalDb.LeaseContracts.AsNoTracking()
+            .SingleAsync(x => x.Id == fixture.ContractId);
+        var delinquency = await finalDb.ContractDelinquencies.AsNoTracking()
+            .SingleAsync(x => x.ContractId == fixture.ContractId);
+        var statuses = await finalDb.PaymentInstructions.AsNoTracking()
+            .Where(x => x.ObligationId == fixture.CurrentObligationId)
+            .Select(x => x.Status)
+            .ToListAsync();
+
+        Assert.Equal(LeaseContractStatus.CancellationPending, contract.Status);
+        Assert.Equal(3, delinquency.ConsecutiveMissedMonths);
+        Assert.True(delinquency.CancellationRequired);
+        Assert.All(statuses, status => Assert.Equal(PaymentInstructionStatus.ArrearsBlocked, status));
+        Assert.Equal(
+            1,
+            await finalDb.AuditEvents.CountAsync(x =>
+                x.AggregateId == fixture.ContractId
+                && x.Action == "contract_cancellation_required"));
+
+        var cancellationPayloads = await finalDb.OutboxMessages.AsNoTracking()
+            .Where(x => x.Type == "lease-contract.cancellation-required.v1")
+            .Select(x => x.PayloadJson)
+            .ToListAsync();
+        Assert.Single(
+            cancellationPayloads,
+            payload => payload.Contains(
+                fixture.ContractId.ToString("D"),
+                StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task<SingleMonthFixture> SeedSingleDueMonthAsync(DateTimeOffset now)
@@ -329,15 +400,21 @@ public sealed class MonthlyDueLifecycleIntegrationTests(CharkhooneApiFactory fac
         return new SingleMonthFixture(contractId, obligationId);
     }
 
-    private async Task<ArrearsFixture> SeedArrearsBlockedScenarioAsync(DateTimeOffset now)
+    private async Task<ArrearsFixture> SeedArrearsBlockedScenarioAsync(
+        DateTimeOffset now,
+        int priorMissCount = 1)
     {
+        if (priorMissCount is < 1 or > 2)
+        {
+            throw new ArgumentOutOfRangeException(nameof(priorMissCount));
+        }
         var tenantId = Guid.NewGuid();
         var ownerId = Guid.NewGuid();
         var applicationId = Guid.NewGuid();
         var contractId = Guid.NewGuid();
         var allocationId = Guid.NewGuid();
-        var previousObligationId = Guid.NewGuid();
         var currentObligationId = Guid.NewGuid();
+        var currentMonthNumber = priorMissCount + 1;
 
         await using var db = CreateDbContext();
         db.Users.AddRange(
@@ -371,7 +448,7 @@ public sealed class MonthlyDueLifecycleIntegrationTests(CharkhooneApiFactory fac
             PropertyId = Guid.NewGuid(),
             CreditApplicationId = applicationId,
             Status = LeaseContractStatus.Active,
-            CreatedAtUtc = now.AddMonths(-3),
+            CreatedAtUtc = now.AddMonths(-(priorMissCount + 2)),
             UpdatedAtUtc = now.AddDays(-1),
         });
 
@@ -423,49 +500,54 @@ public sealed class MonthlyDueLifecycleIntegrationTests(CharkhooneApiFactory fac
         db.ContractDelinquencies.Add(new ContractDelinquencyRow
         {
             ContractId = contractId,
-            ConsecutiveMissedMonths = 1,
+            ConsecutiveMissedMonths = priorMissCount,
             CancellationRequired = false,
             UpdatedAtUtc = now.AddMonths(-1),
         });
 
-        db.MonthlyObligations.AddRange(
-            new MonthlyObligationRow
+        for (var month = 1; month <= priorMissCount; month++)
+        {
+            var previousObligationId = Guid.NewGuid();
+            var closedAt = now.AddMonths(month - currentMonthNumber);
+            db.MonthlyObligations.Add(new MonthlyObligationRow
             {
                 Id = previousObligationId,
                 ContractId = contractId,
-                ContractMonthNumber = 1,
-                DueAtUtc = now.AddMonths(-1),
+                ContractMonthNumber = month,
+                DueAtUtc = closedAt.AddHours(-1),
                 Status = MonthlyObligationStatus.Missed,
-                CreatedAtUtc = now.AddMonths(-2),
-                UpdatedAtUtc = now.AddMonths(-1),
-                ClosedAtUtc = now.AddMonths(-1),
-            },
-            new MonthlyObligationRow
-            {
-                Id = currentObligationId,
-                ContractId = contractId,
-                ContractMonthNumber = 2,
-                DueAtUtc = now.AddMinutes(-5),
-                Status = MonthlyObligationStatus.Open,
-                CreatedAtUtc = now.AddMonths(-1),
-                UpdatedAtUtc = now.AddMonths(-1),
+                CreatedAtUtc = closedAt.AddMonths(-1),
+                UpdatedAtUtc = closedAt,
+                ClosedAtUtc = closedAt,
             });
 
-        AddTerminalFailedInstruction(
-            db,
-            previousObligationId,
-            contractId,
-            1,
-            MonthlyObligationComponentKind.OwnerPayment,
-            "previous-owner-beneficiary",
-            1_000_000m,
-            now.AddMonths(-1));
+            AddTerminalFailedInstruction(
+                db,
+                previousObligationId,
+                contractId,
+                month,
+                MonthlyObligationComponentKind.OwnerPayment,
+                $"previous-owner-beneficiary:{month}",
+                1_000_000m,
+                closedAt);
+        }
+
+        db.MonthlyObligations.Add(new MonthlyObligationRow
+        {
+            Id = currentObligationId,
+            ContractId = contractId,
+            ContractMonthNumber = currentMonthNumber,
+            DueAtUtc = now.AddMinutes(-5),
+            Status = MonthlyObligationStatus.Open,
+            CreatedAtUtc = now.AddMonths(-1),
+            UpdatedAtUtc = now.AddMonths(-1),
+        });
 
         AddCreatedInstruction(
             db,
             currentObligationId,
             contractId,
-            2,
+            currentMonthNumber,
             MonthlyObligationComponentKind.OwnerPayment,
             "current-owner-beneficiary",
             9_000_000m,
@@ -474,7 +556,7 @@ public sealed class MonthlyDueLifecycleIntegrationTests(CharkhooneApiFactory fac
             db,
             currentObligationId,
             contractId,
-            2,
+            currentMonthNumber,
             MonthlyObligationComponentKind.BankInterest,
             "current-bank-beneficiary",
             6_000_000m,
