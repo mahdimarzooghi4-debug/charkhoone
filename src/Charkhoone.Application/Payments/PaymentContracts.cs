@@ -97,6 +97,7 @@ public enum ReconcilePaymentOutcome
     AlreadyReconciled,
     Failed,
     Indeterminate,
+    ArrearsOutstanding,
     NotFound,
     InvalidState,
 }

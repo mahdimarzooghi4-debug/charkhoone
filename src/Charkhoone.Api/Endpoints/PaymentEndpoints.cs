@@ -50,6 +50,15 @@ public static class PaymentEndpoints
                 or ReconcilePaymentOutcome.Failed
                 or ReconcilePaymentOutcome.Indeterminate
                 => Results.Ok(ToResponse(result)),
+            ReconcilePaymentOutcome.ArrearsOutstanding
+                => Results.Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Older tenant arrears must be settled in full before a newer monthly payment can be started.",
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = "older_arrears_outstanding",
+                        ["contractId"] = result.Payment?.ContractId,
+                    }),
             ReconcilePaymentOutcome.NotFound
                 => Results.Problem(
                     statusCode: StatusCodes.Status404NotFound,

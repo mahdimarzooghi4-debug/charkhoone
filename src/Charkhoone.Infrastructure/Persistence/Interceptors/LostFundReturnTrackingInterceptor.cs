@@ -6,9 +6,9 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 namespace Charkhoone.Infrastructure.Persistence.Interceptors;
 
 /// <summary>
-/// Captures the raw exposure needed for the future lost-fund-return calculation at the same
-/// persistence boundary where a coverage payment becomes successful. It does not calculate
-/// any return or allocate later replenishments to exposures.
+/// Captures the contractual lost-fund-return exposure at the same persistence boundary where a
+/// coverage payment becomes successful. The fixed policy version is bound at exposure creation;
+/// the simple return amount is finalized only when the tenant fully repays the arrears.
 /// </summary>
 public sealed class LostFundReturnTrackingInterceptor : SaveChangesInterceptor
 {
@@ -75,7 +75,7 @@ public sealed class LostFundReturnTrackingInterceptor : SaveChangesInterceptor
                 CalculationPeriodStartUtc = exposure.WithdrawnAtUtc,
                 ReplacedAtUtc = null,
                 CalculationPeriodEndUtc = null,
-                CalculationPolicyVersion = null,
+                CalculationPolicyVersion = LostFundReturnTerms.CalculationPolicyVersion,
                 CalculatedReturnRial = null,
                 CreatedAtUtc = exposure.WithdrawnAtUtc,
                 UpdatedAtUtc = exposure.WithdrawnAtUtc,
