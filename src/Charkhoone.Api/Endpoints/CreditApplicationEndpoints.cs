@@ -31,6 +31,15 @@ public static class CreditApplicationEndpoints
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
 
+        api.MapGet("/credit-applications/{id:guid}/loan-plans", ListBankLoanPlansAsync)
+            .RequireAuthorization()
+            .WithName("ListBankLoanPlans")
+            .Produces<BankLoanPlanListResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
+
         api.MapPost("/credit-applications/{id:guid}/loan-plan", SelectBankLoanPlanAsync)
             .RequireAuthorization()
             .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)
@@ -142,6 +151,60 @@ public static class CreditApplicationEndpoints
                         ["currentStatus"] = result.Application?.Status.ToString(),
                     }),
             _ => throw new InvalidOperationException("Unsupported credit application submission outcome."),
+        };
+    }
+
+    private static async Task<IResult> ListBankLoanPlansAsync(
+        Guid id,
+        ClaimsPrincipal principal,
+        IUserIdentityLookup userIdentityLookup,
+        IBankLoanPlanReadService planReader,
+        CancellationToken cancellationToken)
+    {
+        var identity = await ResolveUserAsync(principal, userIdentityLookup, cancellationToken);
+        if (identity.Error is not null)
+        {
+            return identity.Error;
+        }
+
+        var result = await planReader.ListAvailableAsync(
+            id,
+            identity.UserId!.Value,
+            cancellationToken);
+
+        return result.Outcome switch
+        {
+            ListBankLoanPlansOutcome.Available
+                => Results.Ok(new BankLoanPlanListResponse(
+                    result.CreditApplicationId,
+                    result.ApplicationStatus!.Value.ToString(),
+                    result.Plans
+                        .Select(plan => new BankLoanPlanListItemResponse(
+                            plan.PlanId,
+                            plan.Version,
+                            plan.BankId,
+                            plan.Title,
+                            plan.InterestTerms,
+                            plan.TermMonths))
+                        .ToArray())),
+            ListBankLoanPlansOutcome.NotFound
+                => Results.Problem(
+                    statusCode: StatusCodes.Status404NotFound,
+                    title: "Credit application was not found.",
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = "credit_application_not_found",
+                    }),
+            ListBankLoanPlansOutcome.InvalidState
+                => Results.Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "Bank loan plans are available only while the application is awaiting plan selection.",
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = "bank_loan_plan_list_invalid_state",
+                        ["currentStatus"] = result.ApplicationStatus?.ToString(),
+                    }),
+            _ => throw new InvalidOperationException("Unsupported bank-loan plan list outcome."),
         };
     }
 
@@ -507,6 +570,20 @@ public sealed record CreditApplicationResponse(
     string Status,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset UpdatedAtUtc);
+
+
+public sealed record BankLoanPlanListResponse(
+    Guid CreditApplicationId,
+    string ApplicationStatus,
+    IReadOnlyList<BankLoanPlanListItemResponse> Items);
+
+public sealed record BankLoanPlanListItemResponse(
+    Guid PlanId,
+    string Version,
+    string BankId,
+    string Title,
+    string InterestTerms,
+    int TermMonths);
 
 
 public sealed record SelectBankLoanPlanRequest(
