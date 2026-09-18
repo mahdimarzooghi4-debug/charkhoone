@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Charkhoone.Application.Payments;
 using Charkhoone.Domain.Contracts;
 using Charkhoone.Domain.CreditApplications;
@@ -339,6 +340,27 @@ public sealed class CancellationSettlementV2IntegrationTests(CharkhooneApiFactor
                 && x.LedgerAccountId != fundAssetId
                 && x.DebitRial == 0m
                 && x.CreditRial == expectedLostReturnRial);
+
+            var ownerNotification = await db.OutboxMessages.AsNoTracking()
+                .SingleAsync(x => x.Type == "lease-contract.cancelled-owner-notification-requested.v1");
+            using (var ownerPayload = JsonDocument.Parse(ownerNotification.PayloadJson))
+            {
+                Assert.Equal(contractId, ownerPayload.RootElement.GetProperty("contractId").GetGuid());
+                Assert.Equal(ownerId, ownerPayload.RootElement.GetProperty("ownerUserId").GetGuid());
+                Assert.Equal(expectedOwnerResidualRial, ownerPayload.RootElement.GetProperty("amountRial").GetDecimal());
+            }
+
+            var tenantNotification = await db.OutboxMessages.AsNoTracking()
+                .SingleAsync(x => x.Type == "lease-contract.cancelled-tenant-notification-requested.v1");
+            using (var tenantPayload = JsonDocument.Parse(tenantNotification.PayloadJson))
+            {
+                Assert.Equal(contractId, tenantPayload.RootElement.GetProperty("contractId").GetGuid());
+                Assert.Equal(tenantId, tenantPayload.RootElement.GetProperty("tenantUserId").GetGuid());
+                Assert.Equal(expectedPostedBalanceRial, tenantPayload.RootElement.GetProperty("tenantContributionBeforeSettlementRial").GetDecimal());
+                Assert.Equal(expectedLostReturnRial, tenantPayload.RootElement.GetProperty("lostFundReturnRial").GetDecimal());
+                Assert.Equal(expectedOwnerResidualRial, tenantPayload.RootElement.GetProperty("ownerResidualAmountRial").GetDecimal());
+                Assert.Equal(cancellationAt, tenantPayload.RootElement.GetProperty("cancellationEffectiveAtUtc").GetDateTimeOffset());
+            }
         }
 
         SettleCancellationResult replay;

@@ -50,7 +50,7 @@ Settlement requires `CancellationPending` and a single corresponding workflow tr
 
 All missed monthly obligations must first be covered, and coverage transfers cannot remain `Pending` or `Unknown`.
 
-After successful financial settlement the contract moves `CancellationPending -> Cancelled`, with workflow history, audit events, outbox evidence, and owner-notification request.
+After successful financial settlement the contract moves `CancellationPending -> Cancelled`, with workflow history, audit events, outbox evidence, owner-notification request, and tenant-notification request. The tenant notification carries the immutable cancellation cutoff plus the tenant-contribution, lost-fund-return, and owner-residual split so downstream messaging does not reconstruct financial semantics.
 
 ## Separate bank principal policy
 
