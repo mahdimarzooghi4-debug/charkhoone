@@ -486,7 +486,8 @@ public sealed class EfPropertyContractRegistrationService(
             || request is null
             || request.CreditApplicationId != applicationId
             || request.Type != VerificationType
-            || request.Status is not (PendingSnapshotStatus or nameof(ExternalPropertyContractEvidenceStatus.Confirmed))
+            || (request.Status != PendingSnapshotStatus
+                && request.Status != nameof(ExternalPropertyContractEvidenceStatus.Confirmed))
             || contract.TenantUserId != applicantUserId
             || !HasValidContractBinding(application, contract)
             || snapshot.ContractId != contract.Id
