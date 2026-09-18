@@ -276,6 +276,31 @@ if payload.get("status") != "live":
     raise SystemExit("Worker liveness response status did not equal live.")
 PY
 
+worker_readiness_url="${worker_health_url%/live}/ready"
+request_url worker_health_ready "$worker_readiness_url" 200 false
+worker_readiness_release_sha="$(read_release_header "$temp_dir/worker_health_ready.headers")"
+if [[ "${worker_readiness_release_sha,,}" != "$expected_sha" ]]; then
+  echo 'Worker readiness release identity header is missing or does not match the expected release SHA.' >&2
+  exit 1
+fi
+python3 - "$temp_dir/worker_health_ready.body" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], "r", encoding="utf-8") as handle:
+    payload = json.load(handle)
+if payload.get("service") != "Charkhoone.Worker":
+    raise SystemExit("Worker readiness response service identity did not match Charkhoone.Worker.")
+if payload.get("status") != "ready":
+    raise SystemExit("Worker readiness response status did not equal ready.")
+checks = payload.get("checks")
+if not isinstance(checks, dict) or not checks:
+    raise SystemExit("Worker readiness response did not contain dependency checks.")
+not_healthy = sorted(name for name, status in checks.items() if status != "healthy")
+if not_healthy:
+    raise SystemExit("Worker readiness reported unhealthy dependencies: " + ", ".join(not_healthy))
+PY
+
 {
   printf 'environment=staging\n'
   printf 'git_sha=%s\n' "$expected_sha"
@@ -295,6 +320,7 @@ PY
   printf 'worker_release_sha=matched-operator-platform-evidence\n'
   printf 'worker_http_release_header=matched\n'
   printf 'worker_http_liveness=passed\n'
+  printf 'worker_http_readiness=passed\n'
   printf 'worker_http_identity=matched\n'
   printf 'worker_deployment_evidence=identity-and-raw-hash-verified\n'
   printf 'worker_deployment_metadata=hash-recorded\n'
@@ -308,5 +334,5 @@ PY
 publish_evidence_attempt
 
 printf 'Staging application release smoke passed; evidence is in %s\n' "$output_dir"
-printf 'API and Worker release identity/liveness were verified without exercising financial mutation endpoints.\n'
+printf 'API and Worker release identity/liveness/readiness were verified without exercising financial mutation endpoints.\n'
 printf 'No response body or access token was retained.\n'

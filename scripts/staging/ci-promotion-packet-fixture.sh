@@ -94,6 +94,7 @@ message_broker_metadata=hash-recorded
 worker_release_sha=matched-operator-platform-evidence
 worker_http_release_header=matched
 worker_http_liveness=passed
+worker_http_readiness=passed
 worker_http_identity=matched
 worker_deployment_evidence=identity-and-raw-hash-verified
 worker_deployment_metadata=hash-recorded
@@ -111,6 +112,7 @@ anonymous_contract=401
 authenticated_contract=200
 authenticated_audit=200
 worker_health_live=200
+worker_health_ready=200
 EOF
 
 printf 'provider=fixture-mq\nstatus=available\n' > "$broker_evidence"
@@ -207,6 +209,7 @@ grep -Fxq 'staging_target_binding=matched-across-database-and-application' "$out
 grep -Fxq "staging_target_binding_sha256=$target_hash" "$output_dir/promotion-readiness.txt"
 grep -Fxq 'worker_http_release_header=validated' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'worker_http_liveness=validated' "$output_dir/promotion-readiness.txt"
+grep -Fxq 'worker_http_readiness=validated' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'worker_http_identity=validated' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'promotion_decision=human-required' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'deployment_action=none' "$output_dir/promotion-readiness.txt"
@@ -220,6 +223,15 @@ if run_packet >/dev/null 2>&1; then
 fi
 [[ ! -e "$output_dir/promotion-readiness.txt" ]]
 mv "$application_dir/summary.valid.txt" "$application_dir/summary.txt"
+
+cp "$application_dir/summary.txt" "$application_dir/summary.readiness-valid.txt"
+grep -v '^worker_http_readiness=passed$' "$application_dir/summary.readiness-valid.txt" > "$application_dir/summary.txt"
+if run_packet >/dev/null 2>&1; then
+  echo 'Promotion packet unexpectedly accepted application evidence without Worker HTTP readiness proof.' >&2
+  exit 1
+fi
+[[ ! -e "$output_dir/promotion-readiness.txt" ]]
+mv "$application_dir/summary.readiness-valid.txt" "$application_dir/summary.txt"
 
 cp "$application_dir/summary.txt" "$application_dir/summary.target-valid.txt"
 wrong_target_hash='bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb'
