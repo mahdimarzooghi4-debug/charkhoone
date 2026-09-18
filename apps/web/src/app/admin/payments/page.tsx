@@ -222,12 +222,16 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
             {items.map((item) => (
               <div className="admin-payments__row" role="row" key={item.paymentInstructionId}>
                 <span role="cell">
-                  <Link
-                    className="admin-payments__action admin-payments__action--secondary"
-                    href={`/admin/cases?contractId=${encodeURIComponent(item.contractId)}`}
-                  >
-                    مشاهده
-                  </Link>
+                  {item.creditApplicationId ? (
+                    <Link
+                      className="admin-payments__action admin-payments__action--secondary"
+                      href={`/admin/cases/${item.creditApplicationId}`}
+                    >
+                      پرونده
+                    </Link>
+                  ) : (
+                    <span className="admin-payments__muted">—</span>
+                  )}
                 </span>
                 <span className="admin-payments__muted" role="cell">
                   {formatDateTime(item.updatedAtUtc)}
