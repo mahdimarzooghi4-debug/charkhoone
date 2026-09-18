@@ -46,10 +46,11 @@ A financial worker pass now runs the relevant stages in this order:
 3. retry already-started monthly payment reconciliation
 4. process due monthly obligations
 5. cover newly missed obligations from tenant contribution
-6. finalize confirmed tenant arrears repayments
-7. discover and run cancellation settlement
-8. cancellation bank-principal processing
-9. normal maturity and normal settlement
+6. reconcile already-started Pending/Unknown tenant arrears repayments
+7. finalize confirmed tenant arrears repayments
+8. discover and run cancellation settlement
+9. cancellation bank-principal processing
+10. normal maturity and normal settlement
 
 Running repayment after coverage lets a trusted successful repayment restore the principal withdrawn by coverage in the same worker pass. Running it before cancellation discovery does not bypass the three-missed-month rule: `PostConfirmedReplenishmentAsync` still rejects contracts whose cancellation requirement is already latched.
 
@@ -70,3 +71,8 @@ The PostgreSQL integration test uses a disposable real PostgreSQL database and p
 It proves the worker posts the exact principal plus Lost Fund Return journal, finalizes the exposure at the successful transaction timestamp, restores only principal to tenant contribution, and does not requeue the transaction on the next pass.
 
 No staging, production, or real external provider is contacted.
+
+
+## Reconciliation path added next
+
+The follow-on repayment reconciliation phase adds the explicit tenant endpoint and a fail-closed external adapter. It preserves this worker's succeeded-evidence finalizer as a recovery path while retrying Pending/Unknown attempts immediately before it.

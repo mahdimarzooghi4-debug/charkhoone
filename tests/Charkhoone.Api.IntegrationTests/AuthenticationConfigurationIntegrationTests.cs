@@ -52,6 +52,7 @@ public sealed class AuthenticationConfigurationIntegrationTests
     [InlineData("Fund")]
     [InlineData("Payment")]
     [InlineData("Coverage")]
+    [InlineData("ArrearsRepayment")]
     [InlineData("CancellationSettlement")]
     [InlineData("NormalSettlementBank")]
     [InlineData("NormalSettlementTenant")]

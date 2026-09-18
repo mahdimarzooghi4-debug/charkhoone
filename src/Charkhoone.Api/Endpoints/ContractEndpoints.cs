@@ -18,6 +18,16 @@ public static class ContractEndpoints
             .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
+        api.MapPost("/contracts/{id:guid}/arrears-repayment/reconcile", ReconcileArrearsRepaymentAsync)
+            .RequireAuthorization()
+            .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)
+            .WithName("ReconcileTenantArrearsRepayment")
+            .Produces<TenantArrearsRepaymentResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status429TooManyRequests);
+
         api.MapPost("/contracts/{id:guid}/settlement/reconcile", ReconcileSettlementAsync)
             .RequireAuthorization()
             .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)
@@ -70,6 +80,52 @@ public static class ContractEndpoints
         return detail is null
             ? ContractNotFound()
             : Results.Ok(ToResponse(detail));
+    }
+
+    private static async Task<IResult> ReconcileArrearsRepaymentAsync(
+        Guid id,
+        ClaimsPrincipal principal,
+        IUserIdentityLookup userIdentityLookup,
+        ITenantArrearsRepaymentService repayments,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        var identity = await ResolveUserAsync(principal, userIdentityLookup, cancellationToken);
+        if (identity.Error is not null)
+        {
+            return identity.Error;
+        }
+
+        var result = await repayments.ReconcileAsync(
+            id,
+            identity.UserId!.Value,
+            timeProvider.GetUtcNow(),
+            cancellationToken);
+
+        return result.Outcome switch
+        {
+            ReconcileTenantArrearsRepaymentOutcome.Reconciled
+                or ReconcileTenantArrearsRepaymentOutcome.AlreadyReconciled
+                or ReconcileTenantArrearsRepaymentOutcome.Failed
+                or ReconcileTenantArrearsRepaymentOutcome.Indeterminate
+                => Results.Ok(ToResponse(result)),
+            ReconcileTenantArrearsRepaymentOutcome.NotFound => ContractNotFound(),
+            ReconcileTenantArrearsRepaymentOutcome.NoArrears => Results.Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                title: "There is no covered tenant arrears requiring repayment.",
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = "tenant_arrears_not_outstanding",
+                }),
+            ReconcileTenantArrearsRepaymentOutcome.InvalidState => Results.Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                title: "Tenant arrears repayment cannot be reconciled from the current contract or evidence state.",
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = "tenant_arrears_repayment_invalid_state",
+                }),
+            _ => throw new InvalidOperationException("Unsupported tenant arrears repayment outcome."),
+        };
     }
 
     private static async Task<IResult> ReconcileSettlementAsync(
@@ -355,6 +411,33 @@ public static class ContractEndpoints
                     detail.Settlement.CompletedAtUtc),
             detail.OpenLostFundReturnExposureCount);
 
+    private static TenantArrearsRepaymentResponse ToResponse(
+        ReconcileTenantArrearsRepaymentResult result)
+    {
+        var repayment = result.Repayment!;
+        return new TenantArrearsRepaymentResponse(
+            result.Outcome.ToString(),
+            repayment.ContractId,
+            repayment.ExternalTransactionId,
+            repayment.TransactionStatus.ToString(),
+            repayment.OutstandingPrincipalRial,
+            repayment.LostFundReturnRial,
+            repayment.TotalRepaymentRial,
+            repayment.Provider,
+            repayment.ExternalReference,
+            repayment.QuoteAtUtc,
+            repayment.SucceededAtUtc,
+            result.Replenishment is null
+                ? null
+                : new TenantArrearsReplenishmentResponse(
+                    result.Replenishment.Id,
+                    result.Replenishment.JournalEntryId,
+                    result.Replenishment.AmountRial,
+                    result.Replenishment.RemainingTenantContributionRial,
+                    result.Replenishment.ExternalReference,
+                    result.Replenishment.ReplenishedAtUtc));
+    }
+
     private static NormalSettlementResponse ToResponse(NormalSettlementView settlement) =>
         new(
             settlement.Id,
@@ -514,3 +597,26 @@ public sealed record ContractAuditPageResponse(
     int PageSize,
     int TotalCount,
     bool HasNextPage);
+
+
+public sealed record TenantArrearsRepaymentResponse(
+    string Outcome,
+    Guid ContractId,
+    Guid ExternalTransactionId,
+    string TransactionStatus,
+    decimal OutstandingPrincipalRial,
+    decimal LostFundReturnRial,
+    decimal TotalRepaymentRial,
+    string Provider,
+    string? ExternalReference,
+    DateTimeOffset QuoteAtUtc,
+    DateTimeOffset? SucceededAtUtc,
+    TenantArrearsReplenishmentResponse? Replenishment);
+
+public sealed record TenantArrearsReplenishmentResponse(
+    Guid Id,
+    Guid JournalEntryId,
+    decimal PrincipalRial,
+    decimal RemainingTenantContributionRial,
+    string ExternalReference,
+    DateTimeOffset ReplenishedAtUtc);
