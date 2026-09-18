@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import re
 import sys
 from pathlib import Path
 
@@ -73,7 +74,7 @@ for token in required_release_env:
     require(token in release_env, f"release env example missing token: {token}")
 
 require(
-    "NEXT_PUBLIC_" not in web_env,
+    re.search(r"(?m)^\s*NEXT_PUBLIC_[A-Z0-9_]+\s*=", web_env) is None,
     "admin runtime variables must remain server-only in apps/web/.env.example",
 )
 require(
