@@ -486,3 +486,5 @@
     direction: rtl;
   }
 }
+
+.admin-payments__empty-state{min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:40px;text-align:center}.admin-payments__empty-state h2,.admin-payments__empty-state p{margin:0}.admin-payments__empty-state h2{font-size:20px}.admin-payments__empty-state p{max-width:760px;color:var(--ch-color-text-subtle);font-size:13px;line-height:1.9}.admin-payments__empty-state .admin-payments__action{margin-top:8px;text-decoration:none}
