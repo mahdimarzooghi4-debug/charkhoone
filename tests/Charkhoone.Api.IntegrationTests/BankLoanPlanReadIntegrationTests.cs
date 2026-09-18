@@ -144,13 +144,24 @@ public sealed class BankLoanPlanReadIntegrationTests(CharkhooneApiFactory factor
                     nameof(CreditApplicationStatus.PlanSelectionPending),
                     root.GetProperty("applicationStatus").GetString());
 
-                var item = Assert.Single(root.GetProperty("items").EnumerateArray());
-                Assert.Equal(publicPlanId, item.GetProperty("planId").GetGuid());
-                Assert.Equal("public-v7", item.GetProperty("version").GetString());
+                var items = root.GetProperty("items").EnumerateArray().ToArray();
+                var item = Assert.Single(
+                    items,
+                    candidate =>
+                        candidate.GetProperty("planId").GetGuid() == publicPlanId
+                        && candidate.GetProperty("version").GetString() == "public-v7");
+
                 Assert.Equal("bank-authoritative", item.GetProperty("bankId").GetString());
                 Assert.Equal("Authoritative public plan", item.GetProperty("title").GetString());
                 Assert.Equal("persisted interest terms v7", item.GetProperty("interestTerms").GetString());
                 Assert.Equal(BankLoanPlanVersion.RequiredTermMonths, item.GetProperty("termMonths").GetInt32());
+
+                Assert.DoesNotContain(items, candidate =>
+                    candidate.GetProperty("planId").GetGuid() == draftPlanId);
+                Assert.DoesNotContain(items, candidate =>
+                    candidate.GetProperty("planId").GetGuid() == organizationalPlanId);
+                Assert.DoesNotContain(items, candidate =>
+                    candidate.GetProperty("planId").GetGuid() == suspendedPlanId);
             }
 
             var selectResponse = await applicant.PostAsJsonAsync(
