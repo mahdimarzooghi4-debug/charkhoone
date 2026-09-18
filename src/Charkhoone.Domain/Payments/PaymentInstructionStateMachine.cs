@@ -8,6 +8,7 @@ public enum PaymentInstructionStatus
     Failed,
     Unknown,
     ReconciliationRequired,
+    ArrearsBlocked,
     Reversed,
 }
 
@@ -16,12 +17,15 @@ public static class PaymentInstructionStateMachine
     private static readonly IReadOnlyDictionary<PaymentInstructionStatus, IReadOnlySet<PaymentInstructionStatus>> AllowedTransitions =
         new Dictionary<PaymentInstructionStatus, IReadOnlySet<PaymentInstructionStatus>>
         {
-            [PaymentInstructionStatus.Created] = Set(PaymentInstructionStatus.Pending),
+            [PaymentInstructionStatus.Created] = Set(
+                PaymentInstructionStatus.Pending,
+                PaymentInstructionStatus.ArrearsBlocked),
             [PaymentInstructionStatus.Pending] = Set(PaymentInstructionStatus.Succeeded, PaymentInstructionStatus.Failed, PaymentInstructionStatus.Unknown),
             [PaymentInstructionStatus.Unknown] = Set(PaymentInstructionStatus.ReconciliationRequired, PaymentInstructionStatus.Succeeded, PaymentInstructionStatus.Failed),
             [PaymentInstructionStatus.ReconciliationRequired] = Set(PaymentInstructionStatus.Succeeded, PaymentInstructionStatus.Failed, PaymentInstructionStatus.Unknown),
             [PaymentInstructionStatus.Succeeded] = Set(PaymentInstructionStatus.Reversed),
             [PaymentInstructionStatus.Failed] = Set(),
+            [PaymentInstructionStatus.ArrearsBlocked] = Set(),
             [PaymentInstructionStatus.Reversed] = Set(),
         };
 
