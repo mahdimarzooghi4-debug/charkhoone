@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using Charkhoone.Api.Security;
 using Charkhoone.Application.PilotOperations;
 using Charkhoone.Domain.CreditApplications;

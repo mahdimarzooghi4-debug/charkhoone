@@ -80,20 +80,20 @@ public sealed class EfPilotOperationsService(
             .ToListAsync(cancellationToken);
 
         var allocationIds = allocations.Select(x => x.Id).ToArray();
-        var freezes = allocationIds.Length == 0
+        List<FundPrincipalFreezeRow> freezes = allocationIds.Length == 0
             ? []
             : await dbContext.FundPrincipalFreezes
                 .AsNoTracking()
                 .Where(x => allocationIds.Contains(x.FundingAllocationId))
                 .ToListAsync(cancellationToken);
-        var tenantFundings = allocationIds.Length == 0
+        List<TenantContributionFundingRow> tenantFundings = allocationIds.Length == 0
             ? []
             : await dbContext.TenantContributionFundings
                 .AsNoTracking()
                 .Where(x => allocationIds.Contains(x.FundingAllocationId))
                 .ToListAsync(cancellationToken);
         var externalIds = tenantFundings.Select(x => x.ExternalTransactionId).ToArray();
-        var externalTransactions = externalIds.Length == 0
+        List<ExternalTransactionRow> externalTransactions = externalIds.Length == 0
             ? []
             : await dbContext.ExternalTransactions
                 .AsNoTracking()
