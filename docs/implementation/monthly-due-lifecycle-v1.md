@@ -102,9 +102,10 @@ A financial worker pass now runs the relevant stages in this order:
 3. retry already-started payment reconciliation
 4. process due monthly obligations
 5. discover and run coverage from newly closed `Missed` months
-6. discover cancellation candidates from newly latched delinquency
-7. cancellation bank-principal processing
-8. normal maturity and normal settlement
+6. finalize already-confirmed tenant arrears repayment evidence
+7. discover cancellation candidates from newly latched delinquency
+8. cancellation bank-principal processing
+9. normal maturity and normal settlement
 
 This ordering lets newly persisted state be consumed in the same worker pass instead of waiting for the next poll.
 
