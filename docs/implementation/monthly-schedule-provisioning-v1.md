@@ -86,9 +86,11 @@ Therefore a funding-complete `Draft` contract can, in one worker pass:
 
 1. advance through funding lifecycle to `Active`
 2. materialize its trusted 12-month schedule
-3. expose payment instructions for later tenant payment reconciliation
+3. expose payment instructions for due-time reconciliation
 
-Provisioning itself does not create external transactions and does not call any external adapter.
+The downstream monthly due lifecycle now consumes those instructions when their exact trusted `DueAtUtc` is reached. It queries external payment status, closes paid/missed months through the existing state machine, and preserves oldest-debt-first arrears policy.
+
+Provisioning itself still does not create external transactions and does not call any external adapter.
 
 ## Deliberate non-goals
 
