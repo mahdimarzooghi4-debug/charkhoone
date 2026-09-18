@@ -67,7 +67,7 @@ def parse_positive_int(value: str) -> int:
 
 
 def parse_args() -> argparse.Namespace:
-    env_cases = os.environ.get("CHARKHOONE_SCENARIO_CASES_PER_SCENARIO", "1")
+    env_cases = os.environ.get("CHARKHOONE_SCENARIO_CASE_COUNT", str(len(SCENARIOS)))
     parser = argparse.ArgumentParser(
         description=(
             "Run a configurable internal-pilot scenario cohort against the real "
@@ -75,12 +75,13 @@ def parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument(
-        "--cases-per-scenario",
+        "--cases",
         type=parse_positive_int,
         default=parse_positive_int(env_cases),
         help=(
-            "number of independent PostgreSQL-backed test cases to execute for each "
-            "selected scenario (default: CHARKHOONE_SCENARIO_CASES_PER_SCENARIO or 1)"
+            "total number of independent PostgreSQL-backed cases to execute across "
+            "the selected scenarios (default: CHARKHOONE_SCENARIO_CASE_COUNT or "
+            "one case per built-in scenario)"
         ),
     )
     parser.add_argument(
@@ -191,6 +192,14 @@ def main() -> int:
     env = os.environ.copy()
     env["CHARKHOONE_SCENARIO_HARNESS"] = "true"
 
+    if args.cases < len(scenarios):
+        print(
+            "scenario cohort configuration error: --cases must be at least the "
+            "number of selected scenarios so every selected scenario is exercised",
+            file=sys.stderr,
+        )
+        return 2
+
     if not args.no_build:
         build = [
             "dotnet",
@@ -208,42 +217,44 @@ def main() -> int:
     results: list[dict[str, object]] = []
     sequence = 0
 
-    for scenario in scenarios:
+    per_scenario_counts = {name: 0 for name in scenarios}
+    for sequence in range(1, args.cases + 1):
+        scenario = scenarios[(sequence - 1) % len(scenarios)]
         contract = SCENARIOS[scenario]
-        for case_number in range(1, args.cases_per_scenario + 1):
-            sequence += 1
-            case_started = time.monotonic()
-            print(
-                f"[scenario-cohort] {sequence}/"
-                f"{len(scenarios) * args.cases_per_scenario} "
-                f"scenario={scenario} case={case_number}",
-                flush=True,
-            )
+        per_scenario_counts[scenario] += 1
+        case_number = per_scenario_counts[scenario]
+        case_started = time.monotonic()
+        print(
+            f"[scenario-cohort] {sequence}/{args.cases} "
+            f"scenario={scenario} case={case_number}",
+            flush=True,
+        )
 
-            command = [
-                "dotnet",
-                "test",
-                str(PROJECT),
-                "--configuration",
-                "Release",
-                "--no-build",
-                "--filter",
-                f"FullyQualifiedName={contract['test']}",
-                "--logger",
-                "console;verbosity=minimal",
-            ]
-            return_code = run(command, env)
-            duration_seconds = round(time.monotonic() - case_started, 3)
-            results.append(
-                {
-                    "scenario": scenario,
-                    "case": case_number,
-                    "test": contract["test"],
-                    "passed": return_code == 0,
-                    "exitCode": return_code,
-                    "durationSeconds": duration_seconds,
-                }
-            )
+        command = [
+            "dotnet",
+            "test",
+            str(PROJECT),
+            "--configuration",
+            "Release",
+            "--no-build",
+            "--filter",
+            f"FullyQualifiedName={contract['test']}",
+            "--logger",
+            "console;verbosity=minimal",
+        ]
+        return_code = run(command, env)
+        duration_seconds = round(time.monotonic() - case_started, 3)
+        results.append(
+            {
+                "sequence": sequence,
+                "scenario": scenario,
+                "scenarioCase": case_number,
+                "test": contract["test"],
+                "passed": return_code == 0,
+                "exitCode": return_code,
+                "durationSeconds": duration_seconds,
+            }
+        )
 
     passed = sum(1 for item in results if item["passed"])
     failed = len(results) - passed
@@ -253,8 +264,9 @@ def main() -> int:
         "startedAtUtc": started_at,
         "gitSha": git_sha(),
         "postgresEvidence": "real-postgresql-integration-boundary",
-        "casesPerScenario": args.cases_per_scenario,
+        "requestedCaseCount": args.cases,
         "selectedScenarios": scenarios,
+        "scenarioCaseCounts": per_scenario_counts,
         "totalCases": len(results),
         "passedCases": passed,
         "failedCases": failed,
