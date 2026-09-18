@@ -818,6 +818,17 @@ public sealed class EfCancellationSettlementService(
             amountRial = settlement.AmountRial,
             occurredAtUtc,
         });
+        AddOutbox("lease-contract.cancelled-tenant-notification-requested.v1", occurredAtUtc, new
+        {
+            contractId = contract.Id,
+            tenantUserId = contract.TenantUserId,
+            cancellationSettlementId = settlement.Id,
+            tenantContributionBeforeSettlementRial = financialSettlement.TenantContributionBeforeSettlementRial,
+            lostFundReturnRial = financialSettlement.LostFundReturnRial,
+            ownerResidualAmountRial = settlement.AmountRial,
+            cancellationEffectiveAtUtc,
+            occurredAtUtc,
+        });
     }
 
     private void AddJournalLines(Guid journalEntryId, JournalEntryDraft draft)
