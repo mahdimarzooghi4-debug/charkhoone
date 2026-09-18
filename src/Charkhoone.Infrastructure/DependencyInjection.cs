@@ -35,6 +35,7 @@ public static class DependencyInjection
         "CancellationNotification",
         "NormalSettlementBank",
         "NormalSettlementTenant",
+        "NormalSettlementNotification",
     ];
 
     public static IServiceCollection AddInfrastructure(
@@ -186,6 +187,16 @@ public static class DependencyInjection
         else
         {
             services.AddSingleton<IExternalTenantResidualReturnAdapter, UnavailableTenantResidualReturnAdapter>();
+        }
+
+        var normalSettlementNotificationMode = configuration["ExternalAdapters:NormalSettlementNotification:Mode"];
+        if (IsDevelopmentMock(normalSettlementNotificationMode))
+        {
+            services.AddSingleton<IExternalNormalSettlementNotificationAdapter, DevelopmentNormalSettlementNotificationAdapter>();
+        }
+        else
+        {
+            services.AddSingleton<IExternalNormalSettlementNotificationAdapter, UnavailableNormalSettlementNotificationAdapter>();
         }
 
         return services;

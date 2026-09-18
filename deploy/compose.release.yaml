@@ -38,6 +38,9 @@ services:
       RabbitMq__CancellationNotificationQueue: ${CHARKHOONE_CANCELLATION_NOTIFICATION_QUEUE:-charkhoone.cancellation-notifications}
       RabbitMq__CancellationNotificationReviewQueue: ${CHARKHOONE_CANCELLATION_NOTIFICATION_REVIEW_QUEUE:-charkhoone.cancellation-notifications.review}
       ExternalAdapters__CancellationNotification__Mode: "Unavailable"
+      RabbitMq__NormalSettlementNotificationQueue: ${CHARKHOONE_NORMAL_SETTLEMENT_NOTIFICATION_QUEUE:-charkhoone.normal-settlement-notifications}
+      RabbitMq__NormalSettlementNotificationReviewQueue: ${CHARKHOONE_NORMAL_SETTLEMENT_NOTIFICATION_REVIEW_QUEUE:-charkhoone.normal-settlement-notifications.review}
+      ExternalAdapters__NormalSettlementNotification__Mode: "Unavailable"
       FinancialReconciliation__Enabled: ${CHARKHOONE_FINANCIAL_RECONCILIATION_ENABLED:-false}
     depends_on:
       - api

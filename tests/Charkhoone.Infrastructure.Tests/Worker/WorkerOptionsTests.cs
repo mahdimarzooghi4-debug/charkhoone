@@ -68,6 +68,25 @@ public sealed class WorkerOptionsTests
     }
 
     [Fact]
+    public void RabbitMq_ParsesNormalSettlementNotificationQueues()
+    {
+        var configuration = Build(new Dictionary<string, string?>
+        {
+            ["RabbitMq:NormalSettlementNotificationQueue"] = "notifications.normal-settlement",
+            ["RabbitMq:NormalSettlementNotificationReviewQueue"] = "notifications.normal-settlement.review",
+        });
+
+        var options = RabbitMqWorkerOptions.FromConfiguration(configuration);
+
+        Assert.Equal(
+            "notifications.normal-settlement",
+            options.NormalSettlementNotificationQueue);
+        Assert.Equal(
+            "notifications.normal-settlement.review",
+            options.NormalSettlementNotificationReviewQueue);
+    }
+
+    [Fact]
     public void RabbitMq_MaxDeliveryAttemptsIsNeverZero()
     {
         var configuration = Build(new Dictionary<string, string?>

@@ -24,4 +24,8 @@ This slice implements the technical settlement path for a contract that has alre
 - Production behavior for bank/fund transfer providers. Both normal-settlement adapters default to unavailable; development mock success requires explicit configuration.
 - A public HTTP endpoint. This slice establishes the application/infrastructure settlement service and persistence first.
 
+## Stakeholder completion evidence
+
+Normal maturity finalization now requires the confirmed historical fund-freeze identity and emits owner, tenant, bank and fund notification requests plus `lease-contract.normal-settlement-financially-completed.v1` in the same transaction that moves the contract to `Settled`. Delivery semantics are documented in `docs/implementation/normal-settlement-notification-delivery-v1.md`.
+
 The generated EF Core migration for this slice is version-controlled after model tests/build pass. It is not evidence that the migration has been applied to a live staging or production PostgreSQL database.
