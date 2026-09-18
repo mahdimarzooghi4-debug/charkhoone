@@ -4,6 +4,7 @@ using Charkhoone.Application.CreditApplications;
 using Charkhoone.Application.CreditEligibility;
 using Charkhoone.Application.IdentityVerification;
 using Charkhoone.Application.Payments;
+using Charkhoone.Application.PilotOperations;
 using Charkhoone.Application.TenantContributionFunding;
 using Charkhoone.Infrastructure.BankFunding;
 using Charkhoone.Infrastructure.Contracts;
@@ -12,6 +13,7 @@ using Charkhoone.Infrastructure.CreditEligibility;
 using Charkhoone.Infrastructure.IdentityVerification;
 using Charkhoone.Infrastructure.Payments;
 using Charkhoone.Infrastructure.Persistence;
+using Charkhoone.Infrastructure.PilotOperations;
 using Charkhoone.Infrastructure.Persistence.Interceptors;
 using Charkhoone.Infrastructure.TenantContributionFunding;
 using Microsoft.EntityFrameworkCore;
@@ -97,6 +99,7 @@ public static class DependencyInjection
         services.AddScoped<ICancellationSettlementService, EfCancellationSettlementService>();
         services.AddScoped<ICancellationBankPrincipalSettlementService, EfCancellationBankPrincipalSettlementService>();
         services.AddScoped<INormalSettlementService, EfNormalSettlementService>();
+        services.AddScoped<IPilotOperationsService, EfPilotOperationsService>();
 
         var identityAdapterMode = configuration["ExternalAdapters:Identity:Mode"];
         if (IsDevelopmentMock(identityAdapterMode))

@@ -69,7 +69,18 @@ builder.Services
         options.MapInboundClaims = false;
         options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
     });
-builder.Services.AddAuthorization();
+var pilotOperationsOptions = PilotOperationsOptions.FromConfiguration(builder.Configuration);
+builder.Services.AddSingleton(pilotOperationsOptions);
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(
+        PilotOperationsOptions.AuthorizationPolicy,
+        policy =>
+        {
+            policy.RequireAuthenticatedUser();
+            policy.RequireAssertion(context => pilotOperationsOptions.IsAllowed(context.User));
+        });
+});
 builder.Services.AddCharkhooneApiSecurity(builder.Configuration);
 builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddInfrastructure(
@@ -137,6 +148,7 @@ api.MapGet("", () => Results.Ok(new
 api.MapCreditApplicationEndpoints();
 api.MapPaymentEndpoints();
 api.MapContractEndpoints();
+api.MapPilotOperationsEndpoints();
 
 app.Run();
 
