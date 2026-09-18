@@ -1,173 +1,418 @@
 import Link from "next/link";
-
-type CaseDetail = {
-  id: string;
-  user: string;
-  role: string;
-  nationalId: string;
-  stage: string;
-  stageTone: "success" | "warning" | "neutral" | "danger";
-  partner: string;
-  payment: string;
-  paymentTone: "success" | "warning" | "neutral" | "danger";
-  updated: string;
-  created: string;
-  financing: string;
-  due: string;
-};
-
-const cases: Record<string, CaseDetail> = {
-  "CS-1405-1182": {
-    id: "CS-1405-1182",
-    user: "علی رضایی",
-    role: "مستأجر",
-    nationalId: "۰۰۱•••••۷۸۹",
-    stage: "فعال",
-    stageTone: "success",
-    partner: "بانک نمونه",
-    payment: "پرداخت‌شده",
-    paymentTone: "success",
-    updated: "امروز ۱۴:۳۲",
-    created: "۱۴۰۵/۰۶/۰۳",
-    financing: "۳۵۰ میلیون تومان",
-    due: "۱۴۰۵/۰۷/۱۸",
-  },
-  "CS-1405-1181": { id: "CS-1405-1181", user: "مریم احمدی", role: "کاربر", nationalId: "—", stage: "در بررسی", stageTone: "neutral", partner: "بانک توسعه", payment: "—", paymentTone: "neutral", updated: "امروز", created: "—", financing: "—", due: "—" },
-  "CS-1405-1178": { id: "CS-1405-1178", user: "رضا کاظمی", role: "کاربر", nationalId: "—", stage: "ارسال‌شده به بانک", stageTone: "neutral", partner: "بانک نمونه", payment: "—", paymentTone: "neutral", updated: "امروز", created: "—", financing: "—", due: "—" },
-  "CS-1405-1176": { id: "CS-1405-1176", user: "سارا محمدی", role: "کاربر", nationalId: "—", stage: "نیازمند تکمیل", stageTone: "warning", partner: "—", payment: "—", paymentTone: "neutral", updated: "دیروز", created: "—", financing: "—", due: "—" },
-  "CS-1405-1170": { id: "CS-1405-1170", user: "امیر حسینی", role: "کاربر", nationalId: "—", stage: "تأیید شریک مالی", stageTone: "success", partner: "بانک توسعه", payment: "آماده پرداخت", paymentTone: "warning", updated: "دیروز", created: "—", financing: "—", due: "—" },
-  "CS-1405-1168": { id: "CS-1405-1168", user: "نگار کریمی", role: "کاربر", nationalId: "—", stage: "فعال", stageTone: "success", partner: "بانک نمونه", payment: "پرداخت‌شده", paymentTone: "success", updated: "۲ روز پیش", created: "—", financing: "—", due: "—" },
-  "CS-1405-1163": { id: "CS-1405-1163", user: "محمد مرادی", role: "کاربر", nationalId: "—", stage: "در انتظار تأیید", stageTone: "warning", partner: "صندوق مسکن", payment: "—", paymentTone: "neutral", updated: "۲ روز پیش", created: "—", financing: "—", due: "—" },
-  "CS-1405-1159": { id: "CS-1405-1159", user: "زهرا اکبری", role: "کاربر", nationalId: "—", stage: "ردشده", stageTone: "danger", partner: "بانک توسعه", payment: "—", paymentTone: "neutral", updated: "۳ روز پیش", created: "—", financing: "—", due: "—" },
-  "CS-1405-1156": { id: "CS-1405-1156", user: "حسین عباسی", role: "کاربر", nationalId: "—", stage: "در بررسی", stageTone: "neutral", partner: "صندوق مسکن", payment: "—", paymentTone: "neutral", updated: "۴ روز پیش", created: "—", financing: "—", due: "—" },
-  "CS-1405-1150": { id: "CS-1405-1150", user: "الهام یوسفی", role: "کاربر", nationalId: "—", stage: "ارسال‌شده به بانک", stageTone: "neutral", partner: "بانک نمونه", payment: "—", paymentTone: "neutral", updated: "۵ روز پیش", created: "—", financing: "—", due: "—" },
-};
+import {
+  getPilotCase,
+  PilotApiError,
+  type PilotCaseDetail,
+  type PilotReconcileOperation,
+} from "@/lib/pilotOperations";
 
 type PageProps = {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-function Badge({ children, tone }: { children: React.ReactNode; tone: CaseDetail["stageTone"] }) {
-  return <span className={`admin-case-detail__badge admin-case-detail__badge--${tone}`}>{children}</span>;
+function firstValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
 }
 
-export default async function AdminCaseDetailPage({ params }: PageProps) {
+function formatDateTime(value: string | null | undefined) {
+  if (!value) return "—";
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+
+  return new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "UTC",
+  }).format(parsed);
+}
+
+function formatRial(value: string | number | null | undefined) {
+  if (value === null || value === undefined) return "—";
+  const rendered =
+    typeof value === "number"
+      ? value.toLocaleString("fa-IR", { maximumFractionDigits: 20 })
+      : value;
+  return `${rendered} ریال`;
+}
+
+function tone(value: string | null | undefined): "success" | "warning" | "neutral" | "danger" {
+  const normalized = value?.toLowerCase() ?? "";
+  if (
+    normalized.includes("failed") ||
+    normalized.includes("declined") ||
+    normalized.includes("rejected")
+  ) {
+    return "danger";
+  }
+
+  if (
+    normalized.includes("pending") ||
+    normalized.includes("unknown") ||
+    normalized.includes("indeterminate") ||
+    normalized.includes("needsdocuments")
+  ) {
+    return "warning";
+  }
+
+  if (
+    normalized.includes("verified") ||
+    normalized.includes("approved") ||
+    normalized.includes("confirmed") ||
+    normalized.includes("succeeded") ||
+    normalized.includes("active") ||
+    normalized.includes("funded")
+  ) {
+    return "success";
+  }
+
+  return "neutral";
+}
+
+function Badge({
+  children,
+  value,
+}: {
+  children: React.ReactNode;
+  value?: string | null;
+}) {
+  return (
+    <span className={`admin-case-detail__badge admin-case-detail__badge--${tone(value)}`}>
+      {children}
+    </span>
+  );
+}
+
+function ReconcileForm({
+  applicationId,
+  operation,
+}: {
+  applicationId: string;
+  operation: PilotReconcileOperation;
+}) {
+  return (
+    <form
+      className="admin-case-detail__reconcile"
+      action={`/admin/api/pilot/cases/${applicationId}/reconcile`}
+      method="post"
+    >
+      <input type="hidden" name="operation" value={operation} />
+      <div>
+        <strong>عملیات پیشنهادی backend: {operation}</strong>
+        <p>
+          این فرم فقط retry همان service authoritative را درخواست می‌کند؛ status، مبلغ، grade یا provider result قابل ورود نیست.
+        </p>
+      </div>
+      <label>
+        <span>دلیل انسانی retry</span>
+        <textarea
+          name="reason"
+          required
+          maxLength={1000}
+          rows={3}
+          placeholder="مثال: پیگیری پس از timeout سرویس بیرونی و بررسی evidence موجود."
+        />
+      </label>
+      <button className="admin-case-detail__action admin-case-detail__action--primary" type="submit">
+        ثبت درخواست reconcile
+      </button>
+    </form>
+  );
+}
+
+function FailureState({ error }: { error: unknown }) {
+  const pilotError = error instanceof PilotApiError ? error : null;
+  return (
+    <section className="admin-case-detail__panel admin-case-detail__failure" role="alert">
+      <h2>جزئیات واقعی پرونده در دسترس نیست</h2>
+      <p>
+        {pilotError?.status === 401 || pilotError?.status === 403
+          ? "bearer معتبر OIDC یا allowlist اپراتور برای Pilot API لازم است. پنل هیچ login محلی یا داده fallback ندارد."
+          : pilotError?.status === 404
+            ? "این applicationId در PostgreSQL پیدا نشد."
+            : "اتصال پنل به Pilot API برقرار نیست یا backend پاسخ معتبر نداده است."}
+      </p>
+      <small>
+        {pilotError ? `کد: ${pilotError.code} • HTTP ${pilotError.status}` : "کد: pilot_web_unexpected_error"}
+      </small>
+      <Link className="admin-case-detail__back" href="/admin/cases">
+        بازگشت به پرونده‌ها
+      </Link>
+    </section>
+  );
+}
+
+function FinancialEvidence({ item }: { item: PilotCaseDetail }) {
+  return (
+    <section className="admin-case-detail__panel admin-case-detail__detail-panel">
+      <div className="admin-case-detail__section-heading">
+        <h2>Evidence مالی</h2>
+        <p>فقط داده persist‌شده backend؛ وب هیچ مبلغ یا نتیجه‌ای را محاسبه یا تولید نمی‌کند.</p>
+      </div>
+      <div className="admin-case-detail__detail-list">
+        <div className="admin-case-detail__detail-row">
+          <Badge value={item.creditEligibility?.status}>
+            {item.creditEligibility?.status ?? "—"}
+          </Badge>
+          <div>
+            <span>Credit eligibility</span>
+            <strong>
+              {item.creditEligibility
+                ? `${formatRial(item.creditEligibility.maximumEligibleLoanRial)} • ${item.creditEligibility.provider}`
+                : "—"}
+            </strong>
+          </div>
+        </div>
+        <div className="admin-case-detail__detail-row">
+          <Badge value={item.bankApproval?.status}>{item.bankApproval?.status ?? "—"}</Badge>
+          <div>
+            <span>Bank approval</span>
+            <strong>
+              {item.bankApproval
+                ? `${formatRial(item.bankApproval.approvedLoanRial)} • ${item.bankApproval.provider}`
+                : "—"}
+            </strong>
+          </div>
+        </div>
+        <div className="admin-case-detail__detail-row">
+          <Badge value={item.fundFreeze?.status}>{item.fundFreeze?.status ?? "—"}</Badge>
+          <div>
+            <span>Fund principal freeze</span>
+            <strong>{item.fundFreeze?.fundReference ?? "—"}</strong>
+          </div>
+        </div>
+        <div className="admin-case-detail__detail-row">
+          <Badge value={item.tenantContributionFunding?.status}>
+            {item.tenantContributionFunding?.status ?? "—"}
+          </Badge>
+          <div>
+            <span>Tenant contribution</span>
+            <strong>
+              {item.tenantContributionFunding
+                ? `${formatRial(item.tenantContributionFunding.amountRial)} • ${item.tenantContributionFunding.currency}`
+                : "—"}
+            </strong>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default async function AdminCaseDetailPage({ params, searchParams }: PageProps) {
   const { id } = await params;
-  const item = cases[id] ?? cases["CS-1405-1182"];
-  const hasExactFinancialDetail = item.id === "CS-1405-1182";
+  const query = await searchParams;
+
+  let item: PilotCaseDetail;
+  try {
+    item = await getPilotCase(id);
+  } catch (error) {
+    return (
+      <section className="admin-case-detail" data-name="Admin / Pilot Case Detail">
+        <header className="admin-case-detail__header">
+          <Link className="admin-case-detail__back" href="/admin/cases">
+            بازگشت به پرونده‌ها
+          </Link>
+          <div className="admin-case-detail__heading">
+            <h1>جزئیات پرونده پایلوت</h1>
+            <p>{id}</p>
+          </div>
+        </header>
+        <FailureState error={error} />
+      </section>
+    );
+  }
+
+  const reconcileResult = firstValue(query.reconcile);
+  const reconcileCode = firstValue(query.code);
 
   return (
-    <section className="admin-case-detail" data-node-id="701:12" data-name="Admin / Case Detail">
+    <section className="admin-case-detail" data-name="Admin / Pilot Case Detail">
       <header className="admin-case-detail__header">
-        <Link className="admin-case-detail__back" href="/admin/cases">بازگشت به پرونده‌ها</Link>
+        <Link className="admin-case-detail__back" href="/admin/cases">
+          بازگشت به پرونده‌ها
+        </Link>
         <div className="admin-case-detail__heading">
-          <h1>جزئیات پرونده</h1>
-          <p>{item.id} — {item.user}</p>
+          <h1>جزئیات پرونده پایلوت</h1>
+          <p>{item.creditApplicationId}</p>
         </div>
       </header>
 
+      {reconcileResult ? (
+        <div
+          className={`admin-case-detail__notice admin-case-detail__notice--${reconcileResult === "ok" ? "success" : "warning"}`}
+          role="status"
+        >
+          {reconcileResult === "ok"
+            ? "درخواست reconcile توسط API پذیرفته شد و داده صفحه دوباره از backend خوانده شده است."
+            : `درخواست reconcile انجام نشد. کد: ${reconcileCode ?? "pilot_reconcile_failed"}`}
+        </div>
+      ) : null}
+
       <section className="admin-case-detail__panel admin-case-detail__summary">
         <div className="admin-case-detail__section-heading">
-          <h2>خلاصه پرونده</h2>
-          <p>نمای مدیریتی وضعیت پرونده، کاربر، شریک مالی و جریان پرداخت در چارخونه.</p>
+          <h2>خلاصه واقعی پرونده</h2>
+          <p>شناسه و stateها مستقیماً از protected /api/v1/pilot آمده‌اند.</p>
         </div>
         <div className="admin-case-detail__summary-grid">
-          <article><span>مرحله پرونده</span><strong>{item.stage}</strong><small>{item.stage === "فعال" ? "تأمین مالی در جریان" : "وضعیت جاری پرونده"}</small></article>
-          <article><span>شریک مالی</span><strong>{item.partner}</strong><small>{item.partner === "—" ? "هنوز تعیین نشده" : "درگاه تأمین مالی"}</small></article>
-          <article><span>شماره پرونده</span><strong>{item.id}</strong><small>{item.created === "—" ? "تاریخ ثبت در دسترس نیست" : `ثبت‌شده در ${item.created}`}</small></article>
-          <article><span>کاربر</span><strong>{item.user}</strong><small>{item.role}{item.nationalId === "—" ? "" : ` • کد ملی ${item.nationalId}`}</small></article>
+          <article>
+            <span>Application status</span>
+            <strong>{item.applicationStatus}</strong>
+            <small>{formatDateTime(item.updatedAtUtc)}</small>
+          </article>
+          <article>
+            <span>Contract status</span>
+            <strong>{item.contractStatus ?? "—"}</strong>
+            <small>{item.contractId ?? "بدون قرارداد"}</small>
+          </article>
+          <article>
+            <span>Applicant user</span>
+            <strong title={item.applicantUserId}>{item.applicantUserId}</strong>
+            <small>OIDC subject کاربر عمداً expose نمی‌شود</small>
+          </article>
+          <article>
+            <span>Suggested operation</span>
+            <strong>{item.suggestedOperation ?? "—"}</strong>
+            <small>پیشنهاد backend؛ نه تغییر مستقیم state</small>
+          </article>
         </div>
       </section>
 
       <div className="admin-case-detail__columns">
-        <section className="admin-case-detail__panel admin-case-detail__detail-panel">
-          <div className="admin-case-detail__section-heading">
-            <h2>وضعیت مالی و پرداخت</h2>
-            <p>وضعیت جاری تعهدات و تراکنش‌های مرتبط با این پرونده.</p>
-          </div>
-          <div className="admin-case-detail__detail-list">
-            <div className="admin-case-detail__detail-row">
-              <Badge tone={item.paymentTone}>{item.payment === "—" ? "ثبت نشده" : item.payment === "پرداخت‌شده" ? "موفق" : item.payment}</Badge>
-              <div><span>وضعیت پرداخت</span><strong>{item.payment}</strong></div>
-            </div>
-            <div className="admin-case-detail__detail-row">
-              <Badge tone={item.financing === "—" ? "neutral" : "success"}>{item.financing === "—" ? "—" : "فعال"}</Badge>
-              <div><span>مبلغ تأمین مالی</span><strong>{item.financing}</strong></div>
-            </div>
-            <div className="admin-case-detail__detail-row">
-              <Badge tone="neutral">طبق برنامه</Badge>
-              <div><span>سررسید بعدی</span><strong>{item.due}</strong></div>
-            </div>
-          </div>
-        </section>
+        <FinancialEvidence item={item} />
 
         <section className="admin-case-detail__panel admin-case-detail__detail-panel">
           <div className="admin-case-detail__section-heading">
-            <h2>وضعیت و کنترل پرونده</h2>
-            <p>مرحله جاری پرونده، وضعیت بررسی چارخونه و موقعیت آن نزد شریک مالی.</p>
+            <h2>Binding پرونده</h2>
+            <p>شناسه‌های trusted persisted برای application، plan، contract، owner و property.</p>
           </div>
-          <div className="admin-case-detail__detail-list">
-            <div className="admin-case-detail__detail-row">
-              <Badge tone={item.stageTone}>{item.stage}</Badge>
-              <div><span>چارخونه</span><strong>{item.stage}</strong></div>
+          <dl className="admin-case-detail__facts">
+            <div>
+              <dt>Plan</dt>
+              <dd>
+                {item.bankLoanPlanId
+                  ? `${item.bankLoanPlanId} @ ${item.bankLoanPlanVersion ?? "—"}`
+                  : "—"}
+              </dd>
             </div>
-            <div className="admin-case-detail__detail-row">
-              <Badge tone={item.partner === "—" ? "neutral" : "success"}>{item.partner === "—" ? "تعیین نشده" : "تأیید شریک"}</Badge>
-              <div><span>شریک مالی</span><strong>{item.partner === "—" ? "تعیین نشده" : "تأیید شده"}</strong></div>
+            <div>
+              <dt>Contract</dt>
+              <dd>{item.contractId ?? "—"}</dd>
             </div>
-            <div className="admin-case-detail__detail-row">
-              <Badge tone={item.stageTone === "warning" || item.stageTone === "danger" ? "warning" : "neutral"}>{item.stageTone === "warning" || item.stageTone === "danger" ? "نیازمند بررسی" : "بدون اقدام"}</Badge>
-              <div><span>وضعیت بررسی</span><strong>{item.stageTone === "warning" || item.stageTone === "danger" ? "نیازمند بررسی" : "بدون اقدام"}</strong></div>
+            <div>
+              <dt>Owner user</dt>
+              <dd>{item.ownerUserId ?? "—"}</dd>
             </div>
-          </div>
+            <div>
+              <dt>Property</dt>
+              <dd>{item.propertyId ?? "—"}</dd>
+            </div>
+          </dl>
         </section>
       </div>
+
+      {item.fundingAllocation ? (
+        <section className="admin-case-detail__panel">
+          <div className="admin-case-detail__section-heading">
+            <h2>Funding allocation</h2>
+            <p>نمایش read-only از allocation persisted؛ واحد همه مبالغ ریال است.</p>
+          </div>
+          <dl className="admin-case-detail__facts admin-case-detail__facts--grid">
+            <div>
+              <dt>Full deposit equivalent</dt>
+              <dd>{formatRial(item.fundingAllocation.fullDepositEquivalentRial)}</dd>
+            </div>
+            <div>
+              <dt>Maximum eligible loan</dt>
+              <dd>{formatRial(item.fundingAllocation.maximumEligibleLoanRial)}</dd>
+            </div>
+            <div>
+              <dt>Bank approved loan</dt>
+              <dd>{formatRial(item.fundingAllocation.bankApprovedLoanRial)}</dd>
+            </div>
+            <div>
+              <dt>Tenant contribution</dt>
+              <dd>{formatRial(item.fundingAllocation.tenantContributionRial)}</dd>
+            </div>
+          </dl>
+        </section>
+      ) : null}
 
       <div className="admin-case-detail__columns admin-case-detail__columns--lower">
         <section className="admin-case-detail__panel">
           <div className="admin-case-detail__section-heading">
-            <h2>اطلاعات مرتبط</h2>
-            <p>شناسه‌ها و اطلاعات کلیدی برای پیگیری مدیریتی پرونده.</p>
+            <h2>Verification requests</h2>
+            <p>provider evidence واقعی به ترتیب backend.</p>
           </div>
-          <dl className="admin-case-detail__facts">
-            <div><dt>شماره پرونده</dt><dd>{item.id}</dd></div>
-            <div><dt>کاربر</dt><dd>{item.user} — {item.role}</dd></div>
-            <div><dt>شریک مالی</dt><dd>{item.partner}</dd></div>
-            <div><dt>آخرین به‌روزرسانی</dt><dd>{item.updated}</dd></div>
-          </dl>
+          {item.verificationRequests.length ? (
+            <div className="admin-case-detail__timeline">
+              {item.verificationRequests.map((verification) => (
+                <div key={verification.id}>
+                  <time>{formatDateTime(verification.updatedAtUtc)}</time>
+                  <p>
+                    <strong>
+                      {verification.type} • {verification.status}
+                    </strong>
+                    <span>
+                      {verification.provider}
+                      {verification.externalReference
+                        ? ` • ${verification.externalReference}`
+                        : ""}
+                      {verification.reasonCode ? ` • ${verification.reasonCode}` : ""}
+                    </span>
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="admin-case-detail__timeline admin-case-detail__timeline--empty">
+              <p>verification persisted برای این پرونده وجود ندارد.</p>
+            </div>
+          )}
         </section>
 
         <section className="admin-case-detail__panel">
           <div className="admin-case-detail__section-heading">
-            <h2>آخرین رویدادها</h2>
-            <p>تغییرات اصلی پرونده به ترتیب جدیدترین رویداد ثبت‌شده.</p>
+            <h2>آخرین audit eventها</h2>
+            <p>رویدادهای persist‌شده CreditApplication؛ جدیدترین‌ها در این نما.</p>
           </div>
-          {hasExactFinancialDetail ? (
+          {item.recentAuditEvents.length ? (
             <div className="admin-case-detail__timeline">
-              <div><time>۱۴۰۵/۰۶/۰۸</time><p><strong>پرداخت موفق ثبت شد</strong><span>تراکنش دوره جاری تسویه شد</span></p></div>
-              <div><time>۱۴۰۵/۰۶/۰۶</time><p><strong>تأیید شریک مالی ثبت شد</strong><span>پرونده وارد مرحله فعال شد</span></p></div>
-              <div><time>۱۴۰۵/۰۶/۰۵</time><p><strong>بررسی چارخونه تکمیل شد</strong><span>پرونده برای شریک مالی ارسال شد</span></p></div>
-              <div><time>۱۴۰۵/۰۶/۰۳</time><p><strong>پرونده ایجاد شد</strong><span>درخواست کاربر در چارخونه ثبت شد</span></p></div>
+              {item.recentAuditEvents.map((event) => (
+                <div key={event.id}>
+                  <time>{formatDateTime(event.occurredAtUtc)}</time>
+                  <p>
+                    <strong>{event.action}</strong>
+                    <span>
+                      {event.actorId} • {event.reason}
+                    </span>
+                  </p>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="admin-case-detail__timeline admin-case-detail__timeline--empty">
-              <p>جزئیات رویدادهای این پرونده در داده نمونه Figma مشخص نشده است.</p>
+              <p>audit event قابل نمایش وجود ندارد.</p>
             </div>
           )}
         </section>
       </div>
 
-      <section className="admin-case-detail__management" aria-label="مدیریت پرونده">
+      <section className="admin-case-detail__management" aria-label="reconcile پرونده">
         <div className="admin-case-detail__management-copy">
-          <h2>مدیریت پرونده</h2>
-          <p>تغییرات مدیریتی همراه با دلیل و زمان در تاریخچه پرونده ثبت می‌شوند.</p>
+          <h2>کنترل محدود اپراتور</h2>
+          <p>
+            پنل فقط named reconcile را به service authoritative می‌فرستد. هیچ control برای set کردن status، مبلغ، grade یا ledger وجود ندارد.
+          </p>
         </div>
-        <div className="admin-case-detail__actions">
-          <button className="admin-case-detail__action admin-case-detail__action--danger" type="button">توقف پرونده</button>
-          <button className="admin-case-detail__action admin-case-detail__action--warning" type="button">نیازمند بررسی</button>
-          <Link className="admin-case-detail__action" href="/admin/partners">مدیریت شریک مالی</Link>
-          <button className="admin-case-detail__action admin-case-detail__action--primary" type="button">تغییر مرحله</button>
-        </div>
+        {item.suggestedOperation ? (
+          <ReconcileForm
+            applicationId={item.creditApplicationId}
+            operation={item.suggestedOperation}
+          />
+        ) : (
+          <Badge value={item.applicationStatus}>در state فعلی عملیات پیشنهادی وجود ندارد</Badge>
+        )}
       </section>
     </section>
   );

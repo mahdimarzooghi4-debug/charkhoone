@@ -511,3 +511,124 @@
     width: auto;
   }
 }
+
+
+.admin-case-detail__notice {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.8;
+  border-radius: 10px;
+}
+
+.admin-case-detail__notice--success {
+  color: #166534;
+  background: #e2f4e5;
+}
+
+.admin-case-detail__notice--warning {
+  color: #926012;
+  background: #fff6de;
+}
+
+.admin-case-detail__failure {
+  min-height: 280px;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.admin-case-detail__failure h2,
+.admin-case-detail__failure p {
+  margin: 0;
+}
+
+.admin-case-detail__failure p,
+.admin-case-detail__failure small {
+  max-width: 720px;
+  color: var(--ch-color-text-subtle);
+  line-height: 1.8;
+}
+
+.admin-case-detail__facts--grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 24px;
+}
+
+.admin-case-detail__reconcile {
+  width: min(620px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px;
+  gap: 10px 14px;
+  direction: rtl;
+}
+
+.admin-case-detail__reconcile > div {
+  grid-column: 1 / -1;
+  text-align: right;
+}
+
+.admin-case-detail__reconcile > div strong {
+  display: block;
+  font-size: 13px;
+}
+
+.admin-case-detail__reconcile > div p {
+  margin: 4px 0 0;
+  color: var(--ch-color-text-subtle);
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.admin-case-detail__reconcile label {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: right;
+}
+
+.admin-case-detail__reconcile label span {
+  color: var(--ch-color-text-subtle);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.admin-case-detail__reconcile textarea {
+  width: 100%;
+  min-height: 76px;
+  padding: 10px 12px;
+  resize: vertical;
+  direction: rtl;
+  color: var(--ch-color-text);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.7;
+  background: #fff;
+  border: 1px solid var(--ch-color-border);
+  border-radius: 8px;
+}
+
+.admin-case-detail__reconcile textarea:focus-visible {
+  outline: 2px solid rgb(255 138 0 / 55%);
+  outline-offset: 2px;
+}
+
+.admin-case-detail__reconcile .admin-case-detail__action {
+  min-width: 0;
+  align-self: end;
+  min-height: 76px;
+  white-space: normal;
+}
+
+@media (max-width: 760px) {
+  .admin-case-detail__facts--grid,
+  .admin-case-detail__reconcile {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-case-detail__reconcile .admin-case-detail__action {
+    min-height: 44px;
+  }
+}

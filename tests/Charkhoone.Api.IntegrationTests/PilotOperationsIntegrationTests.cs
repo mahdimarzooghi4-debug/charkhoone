@@ -187,6 +187,215 @@ public sealed class PilotOperationsIntegrationTests(CharkhooneApiFactory factory
             updatedVerifications[0].GetProperty("provider").GetString());
     }
 
+    [Fact]
+    public async Task AllowlistedOperator_PaginatesRealPostgresQueue_ForAdminWeb()
+    {
+        var now = DateTimeOffset.Parse("2199-09-18T23:45:00+00:00");
+        var operatorSubject = $"pilot-web-operator-{Guid.NewGuid():D}";
+        var newestApplicantId = Guid.NewGuid();
+        var olderApplicantId = Guid.NewGuid();
+        var newestApplicationId = Guid.NewGuid();
+        var olderApplicationId = Guid.NewGuid();
+
+        await using (var seedScope = _factory.Services.CreateAsyncScope())
+        {
+            var db = seedScope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+            db.Users.AddRange(
+                new UserRow
+                {
+                    Id = newestApplicantId,
+                    OidcSubject = $"pilot-web-applicant-{newestApplicantId:D}",
+                    CreatedAtUtc = now.AddDays(-2),
+                },
+                new UserRow
+                {
+                    Id = olderApplicantId,
+                    OidcSubject = $"pilot-web-applicant-{olderApplicantId:D}",
+                    CreatedAtUtc = now.AddDays(-2),
+                });
+            db.CreditApplications.AddRange(
+                new CreditApplicationRow
+                {
+                    Id = newestApplicationId,
+                    ApplicantUserId = newestApplicantId,
+                    Status = CreditApplicationStatus.IdentityPending,
+                    CreatedAtUtc = now.AddDays(-1),
+                    UpdatedAtUtc = now,
+                },
+                new CreditApplicationRow
+                {
+                    Id = olderApplicationId,
+                    ApplicantUserId = olderApplicantId,
+                    Status = CreditApplicationStatus.IdentityPending,
+                    CreatedAtUtc = now.AddDays(-1),
+                    UpdatedAtUtc = now.AddMinutes(-1),
+                });
+            await db.SaveChangesAsync();
+        }
+
+        try
+        {
+            using var pilotFactory = _factory.WithWebHostBuilder(builder =>
+            {
+                builder.UseSetting("PilotOperations:Enabled", "true");
+                builder.UseSetting("PilotOperations:AllowedSubjects:0", operatorSubject);
+            });
+
+            using var client = pilotFactory.CreateClient();
+            client.DefaultRequestHeaders.Add("X-Test-Subject", operatorSubject);
+
+            var firstPage = await client.GetAsync(
+                "/api/v1/pilot/cases?status=IdentityPending&page=1&pageSize=1");
+            Assert.Equal(HttpStatusCode.OK, firstPage.StatusCode);
+
+            using (var firstDocument = JsonDocument.Parse(
+                await firstPage.Content.ReadAsStringAsync()))
+            {
+                Assert.Equal(1, firstDocument.RootElement.GetProperty("page").GetInt32());
+                Assert.Equal(1, firstDocument.RootElement.GetProperty("pageSize").GetInt32());
+                var items = firstDocument.RootElement.GetProperty("items");
+                Assert.Equal(1, items.GetArrayLength());
+                Assert.Equal(
+                    newestApplicationId,
+                    items[0].GetProperty("creditApplicationId").GetGuid());
+                Assert.Equal(
+                    newestApplicantId,
+                    items[0].GetProperty("applicantUserId").GetGuid());
+                Assert.Equal(
+                    nameof(CreditApplicationStatus.IdentityPending),
+                    items[0].GetProperty("applicationStatus").GetString());
+                Assert.Equal(
+                    "Identity",
+                    items[0].GetProperty("suggestedOperation").GetString());
+            }
+
+            var secondPage = await client.GetAsync(
+                "/api/v1/pilot/cases?status=IdentityPending&page=2&pageSize=1");
+            Assert.Equal(HttpStatusCode.OK, secondPage.StatusCode);
+
+            using (var secondDocument = JsonDocument.Parse(
+                await secondPage.Content.ReadAsStringAsync()))
+            {
+                Assert.Equal(2, secondDocument.RootElement.GetProperty("page").GetInt32());
+                var items = secondDocument.RootElement.GetProperty("items");
+                Assert.Equal(1, items.GetArrayLength());
+                Assert.Equal(
+                    olderApplicationId,
+                    items[0].GetProperty("creditApplicationId").GetGuid());
+            }
+
+            var missing = await client.GetAsync(
+                $"/api/v1/pilot/cases/{Guid.NewGuid():D}");
+            Assert.Equal(HttpStatusCode.NotFound, missing.StatusCode);
+        }
+        finally
+        {
+            await using var cleanupScope = _factory.Services.CreateAsyncScope();
+            var db = cleanupScope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+            await db.CreditApplications
+                .Where(x => x.Id == newestApplicationId || x.Id == olderApplicationId)
+                .ExecuteDeleteAsync();
+            await db.Users
+                .Where(x => x.Id == newestApplicantId || x.Id == olderApplicantId)
+                .ExecuteDeleteAsync();
+        }
+    }
+
+    [Fact]
+    public async Task AllowlistedOperator_DetailSerializesFinancialDecimalsAsExactStrings()
+    {
+        var now = DateTimeOffset.Parse("2199-09-19T00:00:00+00:00");
+        var operatorSubject = $"pilot-decimal-operator-{Guid.NewGuid():D}";
+        var applicantId = Guid.NewGuid();
+        var applicationId = Guid.NewGuid();
+        var assessmentId = Guid.NewGuid();
+        const decimal fullDepositEquivalentRial = 1234567890123456.78m;
+        const decimal loanRatio = 0.12345678m;
+        const decimal maximumEligibleLoanRial = 987654321098765.43m;
+
+        await using (var seedScope = _factory.Services.CreateAsyncScope())
+        {
+            var db = seedScope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+            db.Users.Add(new UserRow
+            {
+                Id = applicantId,
+                OidcSubject = $"pilot-decimal-applicant-{applicantId:D}",
+                CreatedAtUtc = now.AddDays(-1),
+            });
+            db.CreditApplications.Add(new CreditApplicationRow
+            {
+                Id = applicationId,
+                ApplicantUserId = applicantId,
+                Status = CreditApplicationStatus.ExternalChecksPending,
+                CreatedAtUtc = now.AddHours(-1),
+                UpdatedAtUtc = now,
+            });
+            db.CreditEligibilityAssessments.Add(new CreditEligibilityAssessmentRow
+            {
+                Id = assessmentId,
+                CreditApplicationId = applicationId,
+                Provider = "pilot-credit-provider",
+                Status = "Indeterminate",
+                ExternalSubGrade = null,
+                FullDepositEquivalentRial = fullDepositEquivalentRial,
+                LoanRatio = loanRatio,
+                MaximumEligibleLoanRial = maximumEligibleLoanRial,
+                IdempotencyKey = $"pilot-decimal-{applicationId:D}",
+                ExternalReference = "pilot-credit-reference",
+                ReasonCode = "provider_timeout",
+                AttemptCount = 1,
+                CreatedAtUtc = now.AddMinutes(-5),
+                UpdatedAtUtc = now,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        try
+        {
+            using var pilotFactory = _factory.WithWebHostBuilder(builder =>
+            {
+                builder.UseSetting("PilotOperations:Enabled", "true");
+                builder.UseSetting("PilotOperations:AllowedSubjects:0", operatorSubject);
+            });
+
+            using var client = pilotFactory.CreateClient();
+            client.DefaultRequestHeaders.Add("X-Test-Subject", operatorSubject);
+
+            var response = await client.GetAsync(
+                $"/api/v1/pilot/cases/{applicationId:D}");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            using var document = JsonDocument.Parse(
+                await response.Content.ReadAsStringAsync());
+            var credit = document.RootElement.GetProperty("creditEligibility");
+
+            var deposit = credit.GetProperty("fullDepositEquivalentRial");
+            var ratio = credit.GetProperty("loanRatio");
+            var maximum = credit.GetProperty("maximumEligibleLoanRial");
+
+            Assert.Equal(JsonValueKind.String, deposit.ValueKind);
+            Assert.Equal(JsonValueKind.String, ratio.ValueKind);
+            Assert.Equal(JsonValueKind.String, maximum.ValueKind);
+            Assert.Equal("1234567890123456.78", deposit.GetString());
+            Assert.Equal("0.12345678", ratio.GetString());
+            Assert.Equal("987654321098765.43", maximum.GetString());
+        }
+        finally
+        {
+            await using var cleanupScope = _factory.Services.CreateAsyncScope();
+            var db = cleanupScope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+            await db.CreditEligibilityAssessments
+                .Where(x => x.Id == assessmentId)
+                .ExecuteDeleteAsync();
+            await db.CreditApplications
+                .Where(x => x.Id == applicationId)
+                .ExecuteDeleteAsync();
+            await db.Users
+                .Where(x => x.Id == applicantId)
+                .ExecuteDeleteAsync();
+        }
+    }
+
     private sealed class RecordingIdentityAdapter : IIdentityVerificationAdapter
     {
         public string Provider => "pilot-identity-provider";

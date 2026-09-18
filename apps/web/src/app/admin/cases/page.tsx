@@ -1,103 +1,315 @@
 import Link from "next/link";
+import {
+  getPilotCases,
+  PilotApiError,
+  type PilotCaseQueueItem,
+} from "@/lib/pilotOperations";
 
-const metrics = [
-  { label: "تأمین مالی فعال", value: "۲۸۴ پرونده", note: "پرونده‌های فعال با جریان مالی جاری" },
-  { label: "در بررسی شریک مالی", value: "۹۶ پرونده", note: "در انتظار یا در حال بررسی بانک و صندوق" },
-  { label: "نیازمند بررسی", value: "۱۲ پرونده", note: "نیازمند اقدام تیم چارخونه" },
-  { label: "پرونده‌های در جریان", value: "۴۲۳ پرونده", note: "تمام پرونده‌های باز پلتفرم" },
+const PAGE_SIZE = 50;
+
+const statusFilters = [
+  { value: "", label: "همه" },
+  { value: "IdentityPending", label: "احراز هویت" },
+  { value: "PlanSelectionPending", label: "انتخاب طرح" },
+  { value: "PropertyContractPending", label: "قرارداد ملک" },
+  { value: "ExternalChecksPending", label: "بررسی بیرونی" },
+  { value: "ExternalCheckIndeterminate", label: "نامعین" },
+  { value: "DecisionReady", label: "آماده تصمیم" },
+  { value: "BankApprovalPending", label: "بانک" },
+  { value: "FundingPending", label: "تأمین مالی" },
+  { value: "ApprovedFunded", label: "تأمین‌شده" },
 ] as const;
 
-const filters = [
-  { label: "همه", tone: "active" },
-  { label: "نیازمند بررسی", tone: "warning" },
-  { label: "در بررسی", tone: "neutral" },
-  { label: "فعال", tone: "neutral" },
-] as const;
+const statusLabels: Record<string, string> = {
+  IdentityPending: "در انتظار احراز هویت",
+  PlanSelectionPending: "در انتظار انتخاب طرح",
+  PropertyContractPending: "در انتظار قرارداد ملک",
+  ExternalChecksPending: "در انتظار بررسی بیرونی",
+  ExternalCheckIndeterminate: "بررسی بیرونی نامعین",
+  DecisionReady: "آماده تصمیم",
+  BankApprovalPending: "در انتظار بانک",
+  FundingPending: "در انتظار تأمین مالی",
+  ApprovedFunded: "تأمین مالی تکمیل",
+};
 
-const cases = [
-  { id: "CS-1405-1182", user: "علی رضایی", stage: "فعال", stageTone: "success", partner: "بانک نمونه", payment: "پرداخت‌شده", paymentTone: "success", updated: "امروز" },
-  { id: "CS-1405-1181", user: "مریم احمدی", stage: "در بررسی", stageTone: "neutral", partner: "بانک توسعه", payment: "—", paymentTone: "neutral", updated: "امروز" },
-  { id: "CS-1405-1178", user: "رضا کاظمی", stage: "ارسال‌شده به بانک", stageTone: "neutral", partner: "بانک نمونه", payment: "—", paymentTone: "neutral", updated: "امروز" },
-  { id: "CS-1405-1176", user: "سارا محمدی", stage: "نیازمند تکمیل", stageTone: "warning", partner: "—", payment: "—", paymentTone: "neutral", updated: "دیروز" },
-  { id: "CS-1405-1170", user: "امیر حسینی", stage: "تأیید شریک مالی", stageTone: "success", partner: "بانک توسعه", payment: "آماده پرداخت", paymentTone: "warning", updated: "دیروز" },
-  { id: "CS-1405-1168", user: "نگار کریمی", stage: "فعال", stageTone: "success", partner: "بانک نمونه", payment: "پرداخت‌شده", paymentTone: "success", updated: "۲ روز پیش" },
-  { id: "CS-1405-1163", user: "محمد مرادی", stage: "در انتظار تأیید", stageTone: "warning", partner: "صندوق مسکن", payment: "—", paymentTone: "neutral", updated: "۲ روز پیش" },
-  { id: "CS-1405-1159", user: "زهرا اکبری", stage: "ردشده", stageTone: "danger", partner: "بانک توسعه", payment: "—", paymentTone: "neutral", updated: "۳ روز پیش", partnerTone: "danger" },
-  { id: "CS-1405-1156", user: "حسین عباسی", stage: "در بررسی", stageTone: "neutral", partner: "صندوق مسکن", payment: "—", paymentTone: "neutral", updated: "۴ روز پیش" },
-  { id: "CS-1405-1150", user: "الهام یوسفی", stage: "ارسال‌شده به بانک", stageTone: "neutral", partner: "بانک نمونه", payment: "—", paymentTone: "neutral", updated: "۵ روز پیش" },
-] as const;
+type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-export default function AdminCasesPage() {
+function firstValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function parsePage(value: string | undefined) {
+  const parsed = Number.parseInt(value ?? "", 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
+}
+
+function parseStatus(value: string | undefined) {
+  const normalized = value?.trim();
+  return normalized && /^[A-Za-z]+$/.test(normalized) && normalized.length <= 80
+    ? normalized
+    : undefined;
+}
+
+function formatStatus(value: string | null) {
+  if (!value) return "—";
+  return statusLabels[value] ?? value;
+}
+
+function statusTone(value: string | null): "success" | "warning" | "neutral" | "danger" {
+  const normalized = value?.toLowerCase() ?? "";
+  if (
+    normalized.includes("failed") ||
+    normalized.includes("declined") ||
+    normalized.includes("rejected")
+  ) {
+    return "danger";
+  }
+
+  if (
+    normalized.includes("pending") ||
+    normalized.includes("unknown") ||
+    normalized.includes("indeterminate") ||
+    normalized.includes("needsdocuments")
+  ) {
+    return "warning";
+  }
+
+  if (
+    normalized.includes("verified") ||
+    normalized.includes("approved") ||
+    normalized.includes("confirmed") ||
+    normalized.includes("succeeded") ||
+    normalized.includes("active") ||
+    normalized.includes("funded")
+  ) {
+    return "success";
+  }
+
+  return "neutral";
+}
+
+function formatUpdatedAt(value: string) {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
+
+  return new Intl.DateTimeFormat("fa-IR-u-ca-persian", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: "UTC",
+  }).format(parsed);
+}
+
+function fundingState(item: PilotCaseQueueItem) {
+  if (item.tenantContributionStatus) {
+    return `سهم مستأجر: ${item.tenantContributionStatus}`;
+  }
+
+  if (item.fundFreezeStatus) {
+    return `فریز اصل: ${item.fundFreezeStatus}`;
+  }
+
+  if (item.bankApprovalStatus) {
+    return `بانک: ${item.bankApprovalStatus}`;
+  }
+
+  if (item.creditEligibilityStatus) {
+    return `اعتبار: ${item.creditEligibilityStatus}`;
+  }
+
+  return "—";
+}
+
+function pageHref(page: number, status?: string) {
+  const params = new URLSearchParams({ page: String(page) });
+  if (status) params.set("status", status);
+  return `/admin/cases?${params.toString()}`;
+}
+
+function FailureState({ error }: { error: unknown }) {
+  const pilotError = error instanceof PilotApiError ? error : null;
+  const needsAuthentication = pilotError?.status === 401 || pilotError?.status === 403;
+
   return (
-    <section className="admin-cases" data-node-id="698:12" data-name="Admin / Cases">
+    <section className="admin-cases__table-card admin-cases__state-card" role="alert">
+      <h2>داده عملیاتی در دسترس نیست</h2>
+      <p>
+        {needsAuthentication
+          ? "این صفحه فقط bearer واقعی OIDC را به API پایلوت پاس می‌دهد. ورود محلی یا داده نمونه وجود ندارد."
+          : "اتصال سروری پنل به Pilot API برقرار نیست یا API پاسخ معتبر نداده است."}
+      </p>
+      <small>
+        {pilotError ? `کد: ${pilotError.code} • HTTP ${pilotError.status}` : "کد: pilot_web_unexpected_error"}
+      </small>
+      {needsAuthentication ? <Link href="/admin/login">ورود از مسیر OIDC</Link> : null}
+    </section>
+  );
+}
+
+export default async function AdminCasesPage({ searchParams }: { searchParams: SearchParams }) {
+  const query = await searchParams;
+  const page = parsePage(firstValue(query.page));
+  const status = parseStatus(firstValue(query.status));
+
+  let response: Awaited<ReturnType<typeof getPilotCases>>;
+  try {
+    response = await getPilotCases(page, PAGE_SIZE, status);
+  } catch (error) {
+    return (
+      <section className="admin-cases" data-name="Admin / Pilot Cases">
+        <header className="admin-cases__header">
+          <div />
+          <div className="admin-cases__heading">
+            <h1>پرونده‌های پایلوت</h1>
+            <p>صف عملیاتی واقعی از PostgreSQL؛ بدون داده نمونه و بدون امکان تغییر مستقیم state.</p>
+          </div>
+        </header>
+        <FailureState error={error} />
+      </section>
+    );
+  }
+
+  const items = response.items;
+  const reconcileCount = items.filter((item) => item.suggestedOperation !== null).length;
+  const contractCount = items.filter((item) => item.contractId !== null).length;
+  const fundingEvidenceCount = items.filter(
+    (item) =>
+      item.creditEligibilityStatus !== null ||
+      item.bankApprovalStatus !== null ||
+      item.fundFreezeStatus !== null ||
+      item.tenantContributionStatus !== null,
+  ).length;
+  const hasNextPage = items.length === response.pageSize;
+
+  return (
+    <section className="admin-cases" data-name="Admin / Pilot Cases">
       <header className="admin-cases__header">
-        <button className="admin-cases__export" type="button">خروجی</button>
+        <span className="admin-cases__live">Pilot API • PostgreSQL</span>
         <div className="admin-cases__heading">
-          <h1>پرونده‌ها</h1>
-          <p>مدیریت، پایش و کنترل مرحله پرونده‌ها، شریک مالی و وضعیت بررسی در کل پلتفرم چارخونه</p>
+          <h1>پرونده‌های پایلوت</h1>
+          <p>صف واقعی عملیات؛ شناسه‌ها و وضعیت‌ها مستقیماً از backend محافظت‌شده خوانده می‌شوند.</p>
         </div>
       </header>
 
-      <section className="admin-cases__metrics" aria-label="آمار پرونده‌ها">
-        {metrics.map((item) => (
-          <article className="admin-cases__metric" key={item.label}>
-            <span>{item.label}</span>
-            <strong>{item.value}</strong>
-            <small>{item.note}</small>
-          </article>
-        ))}
+      <section className="admin-cases__metrics" aria-label="آمار صفحه جاری">
+        <article className="admin-cases__metric">
+          <span>پرونده در این صفحه</span>
+          <strong>{items.length.toLocaleString("fa-IR")}</strong>
+          <small>فقط page جاری، نه آمار ساختگی کل سامانه</small>
+        </article>
+        <article className="admin-cases__metric">
+          <span>پیشنهاد reconcile</span>
+          <strong>{reconcileCount.toLocaleString("fa-IR")}</strong>
+          <small>عملیات پیشنهادی backend برای state فعلی</small>
+        </article>
+        <article className="admin-cases__metric">
+          <span>دارای قرارداد</span>
+          <strong>{contractCount.toLocaleString("fa-IR")}</strong>
+          <small>پرونده‌های این صفحه با contract واقعی</small>
+        </article>
+        <article className="admin-cases__metric">
+          <span>دارای evidence مالی</span>
+          <strong>{fundingEvidenceCount.toLocaleString("fa-IR")}</strong>
+          <small>اعتبار، بانک، فریز اصل یا سهم مستأجر</small>
+        </article>
       </section>
 
-      <section className="admin-cases__controls" aria-label="جستجو و فیلتر پرونده‌ها">
-        <div className="admin-cases__filters">
-          {filters.map((filter) => (
-            <button className={`admin-cases__filter admin-cases__filter--${filter.tone}`} type="button" key={filter.label}>
-              {filter.label}
-            </button>
-          ))}
-        </div>
-        <label className="admin-cases__search">
-          <span className="admin-cases__sr-only">جستجوی پرونده‌ها</span>
-          <input type="search" placeholder="جستجو با نام، کد ملی یا شماره پرونده" />
-        </label>
+      <section className="admin-cases__controls" aria-label="فیلتر پرونده‌ها">
+        <nav className="admin-cases__filters" aria-label="فیلتر وضعیت">
+          {statusFilters.map((filter) => {
+            const active = (status ?? "") === filter.value;
+            return (
+              <Link
+                className={`admin-cases__filter admin-cases__filter--${active ? "active" : "neutral"}`}
+                href={pageHref(1, filter.value || undefined)}
+                aria-current={active ? "page" : undefined}
+                key={filter.value || "all"}
+              >
+                {filter.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <p className="admin-cases__source-note">
+          {status ? `فیلتر API: ${status}` : "بدون فیلتر وضعیت"}
+        </p>
       </section>
 
       <section className="admin-cases__table-card">
         <div className="admin-cases__table-wrap">
-          <div className="admin-cases__table" role="table" aria-label="فهرست پرونده‌ها">
+          <div className="admin-cases__table" role="table" aria-label="فهرست پرونده‌های پایلوت">
             <div className="admin-cases__row admin-cases__row--head" role="row">
               <span role="columnheader">اقدام</span>
               <span role="columnheader">به‌روزرسانی</span>
-              <span role="columnheader">وضعیت پرداخت</span>
-              <span role="columnheader">شریک مالی</span>
-              <span role="columnheader">مرحله پرونده</span>
-              <span role="columnheader">شماره پرونده</span>
-              <span role="columnheader">کاربر</span>
+              <span role="columnheader">Reconcile</span>
+              <span role="columnheader">Evidence مالی</span>
+              <span role="columnheader">قرارداد</span>
+              <span role="columnheader">وضعیت پرونده</span>
+              <span role="columnheader">Applicant</span>
             </div>
 
-            {cases.map((item) => (
-              <div className="admin-cases__row" role="row" key={item.id}>
-                <span role="cell"><Link className="admin-cases__manage" href={`/admin/cases/${item.id}`}>مدیریت</Link></span>
-                <span className="admin-cases__muted" role="cell">{item.updated}</span>
-                <span role="cell"><span className={`admin-cases__badge admin-cases__badge--${item.paymentTone}`}>{item.payment}</span></span>
-                <span className={"partnerTone" in item && item.partnerTone === "danger" ? "admin-cases__partner--danger" : ""} role="cell">{item.partner}</span>
-                <span role="cell"><span className={`admin-cases__badge admin-cases__badge--${item.stageTone}`}>{item.stage}</span></span>
-                <strong role="cell">{item.id}</strong>
-                <strong role="cell">{item.user}</strong>
+            {items.map((item) => (
+              <div className="admin-cases__row" role="row" key={item.creditApplicationId}>
+                <span role="cell">
+                  <Link
+                    className="admin-cases__manage"
+                    href={`/admin/cases/${item.creditApplicationId}`}
+                  >
+                    مدیریت
+                  </Link>
+                </span>
+                <span className="admin-cases__muted" role="cell">
+                  {formatUpdatedAt(item.updatedAtUtc)}
+                </span>
+                <span role="cell">
+                  <span
+                    className={`admin-cases__badge admin-cases__badge--${item.suggestedOperation ? "warning" : "neutral"}`}
+                  >
+                    {item.suggestedOperation ?? "—"}
+                  </span>
+                </span>
+                <span role="cell">
+                  <span
+                    className={`admin-cases__badge admin-cases__badge--${statusTone(
+                      item.tenantContributionStatus ??
+                        item.fundFreezeStatus ??
+                        item.bankApprovalStatus ??
+                        item.creditEligibilityStatus,
+                    )}`}
+                  >
+                    {fundingState(item)}
+                  </span>
+                </span>
+                <span role="cell">
+                  <span
+                    className={`admin-cases__badge admin-cases__badge--${statusTone(item.contractStatus)}`}
+                  >
+                    {item.contractStatus ?? "—"}
+                  </span>
+                </span>
+                <strong role="cell" title={item.creditApplicationId}>
+                  {formatStatus(item.applicationStatus)}
+                </strong>
+                <strong role="cell" title={item.applicantUserId}>
+                  {item.applicantUserId}
+                </strong>
               </div>
             ))}
           </div>
         </div>
 
+        {items.length === 0 ? (
+          <div className="admin-cases__empty">برای این page و فیلتر، پرونده‌ای در PostgreSQL ثبت نشده است.</div>
+        ) : null}
+
         <footer className="admin-cases__footer">
           <nav className="admin-cases__pagination" aria-label="صفحه‌بندی پرونده‌ها">
-            <button type="button">قبلی</button>
-            <button className="admin-cases__page--active" type="button" aria-current="page">۱</button>
-            <button type="button">۲</button>
-            <button type="button">۳</button>
-            <button type="button">بعدی</button>
+            {page > 1 ? <Link href={pageHref(page - 1, status)}>قبلی</Link> : <span>قبلی</span>}
+            <strong>{page.toLocaleString("fa-IR")}</strong>
+            {hasNextPage ? <Link href={pageHref(page + 1, status)}>بعدی</Link> : <span>بعدی</span>}
           </nav>
-          <p>نمایش ۱۰ پرونده از ۴۲۳ پرونده</p>
+          <p>
+            page {response.page.toLocaleString("fa-IR")} • حداکثر {response.pageSize.toLocaleString("fa-IR")} پرونده
+          </p>
         </footer>
       </section>
     </section>
