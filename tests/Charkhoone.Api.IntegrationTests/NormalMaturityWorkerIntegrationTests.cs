@@ -452,10 +452,286 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
         Assert.Equal(0, result.NormalMaturityCandidates);
     }
 
+    [Fact]
+    public async Task Worker_PostsConfirmedTenantArrearsRepayment_Once_WithExactLostFundReturn()
+    {
+        var workerAt = DateTimeOffset.Parse("2026-09-18T17:30:00+00:00");
+        var withdrawnAtUtc = workerAt.AddDays(-10);
+        var tenantId = Guid.NewGuid();
+        var ownerId = Guid.NewGuid();
+        var applicationId = Guid.NewGuid();
+        var contractId = Guid.NewGuid();
+        var allocationId = Guid.NewGuid();
+        var obligationId = Guid.NewGuid();
+        var paymentInstructionId = Guid.NewGuid();
+        var coverageExternalTransactionId = Guid.NewGuid();
+        var coveragePaymentId = Guid.NewGuid();
+        var replenishmentExternalTransactionId = Guid.NewGuid();
+        var fundAssetAccountId = Guid.NewGuid();
+        var tenantBalanceAccountId = Guid.NewGuid();
+        const decimal principalRial = 1_000_000m;
+
+        var exposure = LostFundReturnTerms.OpenExposure(
+            contractId,
+            coveragePaymentId,
+            principalRial,
+            withdrawnAtUtc);
+        var accrual = LostFundReturnTerms.CalculateAccruedReturn(exposure, workerAt);
+        var repaymentTotalRial = principalRial + accrual.PayableReturn.Rial;
+
+        await using (var db = CreateDbContext())
+        {
+            db.Users.AddRange(
+                new UserRow
+                {
+                    Id = tenantId,
+                    OidcSubject = $"repayment-worker-tenant-{tenantId:D}",
+                    CreatedAtUtc = withdrawnAtUtc.AddMonths(-2),
+                },
+                new UserRow
+                {
+                    Id = ownerId,
+                    OidcSubject = $"repayment-worker-owner-{ownerId:D}",
+                    CreatedAtUtc = withdrawnAtUtc.AddMonths(-2),
+                });
+
+            db.CreditApplications.Add(new CreditApplicationRow
+            {
+                Id = applicationId,
+                ApplicantUserId = tenantId,
+                Status = CreditApplicationStatus.ApprovedFunded,
+                CreatedAtUtc = withdrawnAtUtc.AddMonths(-2),
+                UpdatedAtUtc = withdrawnAtUtc.AddMonths(-2),
+            });
+
+            db.LeaseContracts.Add(new LeaseContractRow
+            {
+                Id = contractId,
+                TenantUserId = tenantId,
+                OwnerUserId = ownerId,
+                PropertyId = Guid.NewGuid(),
+                CreditApplicationId = applicationId,
+                Status = LeaseContractStatus.Active,
+                CreatedAtUtc = withdrawnAtUtc.AddMonths(-2),
+                UpdatedAtUtc = withdrawnAtUtc,
+            });
+
+            db.FundingAllocations.Add(new FundingAllocationRow
+            {
+                Id = allocationId,
+                CreditApplicationId = applicationId,
+                ContractId = contractId,
+                BankLoanPlanId = Guid.NewGuid(),
+                BankLoanPlanVersion = "repayment-worker-v1",
+                BankId = "repayment-worker-bank",
+                FullDepositEquivalentRial = 5_000_000m,
+                MaximumEligibleLoanRial = 3_000_000m,
+                BankApprovedLoanRial = 3_000_000m,
+                TenantContributionRial = 2_000_000m,
+                CreatedAtUtc = withdrawnAtUtc.AddMonths(-2),
+                UpdatedAtUtc = withdrawnAtUtc.AddMonths(-2),
+            });
+
+            db.TenantContributions.Add(new TenantContributionRow
+            {
+                ContractId = contractId,
+                FundingAllocationId = allocationId,
+                InitialAmountRial = 2_000_000m,
+                FundReference = $"repayment-worker-fund:{contractId:D}",
+                FundedAtUtc = withdrawnAtUtc.AddMonths(-2),
+            });
+
+            db.LedgerAccounts.AddRange(
+                new LedgerAccountRow
+                {
+                    Id = fundAssetAccountId,
+                    Code = $"contract:{contractId:D}:fund-held-tenant-contribution",
+                    Name = "Fund-held tenant contribution",
+                    Currency = "IRR",
+                    ContractId = contractId,
+                    CreatedAtUtc = withdrawnAtUtc.AddMonths(-2),
+                },
+                new LedgerAccountRow
+                {
+                    Id = tenantBalanceAccountId,
+                    Code = $"contract:{contractId:D}:tenant-contribution-balance",
+                    Name = "Tenant contribution balance",
+                    Currency = "IRR",
+                    ContractId = contractId,
+                    CreatedAtUtc = withdrawnAtUtc.AddMonths(-2),
+                });
+
+            db.MonthlyObligations.Add(new MonthlyObligationRow
+            {
+                Id = obligationId,
+                ContractId = contractId,
+                ContractMonthNumber = 1,
+                DueAtUtc = withdrawnAtUtc.AddDays(-1),
+                Status = MonthlyObligationStatus.Covered,
+                CreatedAtUtc = withdrawnAtUtc.AddMonths(-1),
+                UpdatedAtUtc = withdrawnAtUtc,
+                ClosedAtUtc = withdrawnAtUtc,
+            });
+
+            db.PaymentInstructions.Add(new PaymentInstructionRow
+            {
+                Id = paymentInstructionId,
+                ObligationId = obligationId,
+                DueAtUtc = withdrawnAtUtc.AddDays(-1),
+                BeneficiaryId = "repayment-worker-owner-beneficiary",
+                AmountRial = principalRial,
+                IdempotencyKey = $"repayment-worker-payment:{paymentInstructionId:D}",
+                Status = PaymentInstructionStatus.Failed,
+                CreatedAtUtc = withdrawnAtUtc.AddMonths(-1),
+                UpdatedAtUtc = withdrawnAtUtc,
+            });
+
+            db.MonthlyObligationComponents.Add(new MonthlyObligationComponentRow
+            {
+                MonthlyObligationId = obligationId,
+                PaymentInstructionId = paymentInstructionId,
+                Kind = MonthlyObligationComponentKind.OwnerPayment,
+            });
+
+            db.ExternalTransactions.AddRange(
+                new ExternalTransactionRow
+                {
+                    Id = coverageExternalTransactionId,
+                    Provider = "repayment-worker-coverage-provider",
+                    OperationType = "tenant_contribution_coverage",
+                    AggregateType = "PaymentInstruction",
+                    AggregateId = paymentInstructionId,
+                    Status = ExternalTransactionStatus.Succeeded,
+                    AmountRial = principalRial,
+                    Currency = "IRR",
+                    IdempotencyKey = $"repayment-worker-coverage:{paymentInstructionId:D}",
+                    ExternalReference = $"coverage:{paymentInstructionId:D}",
+                    CreatedAtUtc = withdrawnAtUtc,
+                    UpdatedAtUtc = withdrawnAtUtc,
+                },
+                new ExternalTransactionRow
+                {
+                    Id = replenishmentExternalTransactionId,
+                    Provider = "repayment-worker-repayment-provider",
+                    OperationType = "tenant_contribution_replenishment",
+                    AggregateType = "LeaseContract",
+                    AggregateId = contractId,
+                    Status = ExternalTransactionStatus.Succeeded,
+                    AmountRial = repaymentTotalRial,
+                    Currency = "IRR",
+                    IdempotencyKey = $"repayment-worker-replenishment:{contractId:D}",
+                    ExternalReference = $"repayment:{contractId:D}",
+                    CreatedAtUtc = workerAt.AddMinutes(-1),
+                    UpdatedAtUtc = workerAt,
+                });
+
+            db.CoveragePayments.Add(new CoveragePaymentRow
+            {
+                Id = coveragePaymentId,
+                ContractId = contractId,
+                MonthlyObligationId = obligationId,
+                PaymentInstructionId = paymentInstructionId,
+                Kind = MonthlyObligationComponentKind.OwnerPayment,
+                AmountRial = principalRial,
+                BeneficiaryId = "repayment-worker-owner-beneficiary",
+                Status = CoveragePaymentStatus.Succeeded,
+                ExternalTransactionId = coverageExternalTransactionId,
+                RemainingTenantContributionRial = 1_000_000m,
+                CreatedAtUtc = withdrawnAtUtc,
+                UpdatedAtUtc = withdrawnAtUtc,
+                CoveredAtUtc = withdrawnAtUtc,
+            });
+
+            db.LostFundReturns.Add(new LostFundReturnRow
+            {
+                Id = Guid.NewGuid(),
+                ContractId = contractId,
+                CoveragePaymentId = coveragePaymentId,
+                WithdrawnAmountRial = principalRial,
+                MonthlyRate = LostFundReturnTerms.MonthlyRate,
+                WithdrawnAtUtc = withdrawnAtUtc,
+                CalculationPeriodStartUtc = withdrawnAtUtc,
+                CreatedAtUtc = withdrawnAtUtc,
+                UpdatedAtUtc = withdrawnAtUtc,
+            });
+
+            db.ContractDelinquencies.Add(new ContractDelinquencyRow
+            {
+                ContractId = contractId,
+                ConsecutiveMissedMonths = 1,
+                CancellationRequired = false,
+                UpdatedAtUtc = withdrawnAtUtc,
+            });
+
+            await db.SaveChangesAsync();
+        }
+
+        var normalSettlement = new RecordingNormalSettlementService();
+        await using var provider = BuildWorkerServiceProvider(
+            normalSettlement,
+            workerAt,
+            useRealCoverage: true);
+        var worker = new CharkhooneWorker.FinancialReconciliationWorker(
+            provider.GetRequiredService<IServiceScopeFactory>(),
+            new CharkhooneWorker.FinancialReconciliationWorkerOptions
+            {
+                Enabled = true,
+                BatchSize = 32,
+            },
+            provider.GetRequiredService<TimeProvider>(),
+            provider.GetRequiredService<ILogger<CharkhooneWorker.FinancialReconciliationWorker>>());
+
+        var first = await worker.ReconcileOnceAsync();
+
+        Assert.Equal(1, first.ReplenishmentCandidates);
+
+        await using (var db = CreateDbContext())
+        {
+            var replenishment = await db.TenantContributionReplenishments
+                .AsNoTracking()
+                .SingleAsync(x => x.ExternalTransactionId == replenishmentExternalTransactionId);
+            var lostReturn = await db.LostFundReturns
+                .AsNoTracking()
+                .SingleAsync(x => x.CoveragePaymentId == coveragePaymentId);
+            var journalLines = await db.JournalLines
+                .AsNoTracking()
+                .Where(x => x.JournalEntryId == replenishment.JournalEntryId)
+                .ToListAsync();
+
+            Assert.Equal(principalRial, replenishment.AmountRial);
+            Assert.Equal(2_000_000m, replenishment.RemainingTenantContributionRial);
+            Assert.Equal(workerAt, replenishment.ReplenishedAtUtc);
+            Assert.Equal(accrual.PayableReturn.Rial, lostReturn.CalculatedReturnRial!.Value);
+            Assert.Equal(workerAt, lostReturn.ReplacedAtUtc!.Value);
+            Assert.Equal(workerAt, lostReturn.CalculationPeriodEndUtc!.Value);
+            Assert.Equal(LostFundReturnTerms.CalculationPolicyVersion, lostReturn.CalculationPolicyVersion);
+            Assert.Equal(repaymentTotalRial, journalLines.Sum(x => x.DebitRial));
+            Assert.Equal(repaymentTotalRial, journalLines.Sum(x => x.CreditRial));
+            Assert.Contains(journalLines, x =>
+                x.LedgerAccountId == fundAssetAccountId
+                && x.DebitRial == repaymentTotalRial
+                && x.CreditRial == 0m);
+            Assert.Contains(journalLines, x =>
+                x.LedgerAccountId == tenantBalanceAccountId
+                && x.DebitRial == 0m
+                && x.CreditRial == principalRial);
+        }
+
+        var second = await worker.ReconcileOnceAsync();
+
+        Assert.Equal(0, second.ReplenishmentCandidates);
+        await using var verificationDb = CreateDbContext();
+        Assert.Equal(
+            1,
+            await verificationDb.TenantContributionReplenishments
+                .CountAsync(x => x.ExternalTransactionId == replenishmentExternalTransactionId));
+    }
+
     private ServiceProvider BuildWorkerServiceProvider(
         INormalSettlementService normalSettlement,
         DateTimeOffset workerAt,
-        IMonthlyDueLifecycleService? dueLifecycle = null)
+        IMonthlyDueLifecycleService? dueLifecycle = null,
+        bool useRealCoverage = false)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -470,7 +746,15 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
         services.AddSingleton(normalSettlement);
         services.AddSingleton<INormalSettlementService>(normalSettlement);
         services.AddScoped<IPaymentReconciliationService, NoOpPaymentReconciliationService>();
-        services.AddScoped<ITenantContributionCoverageService, NoOpCoverageService>();
+        if (useRealCoverage)
+        {
+            services.AddSingleton<IExternalCoverageTransferAdapter, NeverCalledCoverageTransferAdapter>();
+            services.AddScoped<ITenantContributionCoverageService, EfTenantContributionCoverageService>();
+        }
+        else
+        {
+            services.AddScoped<ITenantContributionCoverageService, NoOpCoverageService>();
+        }
         services.AddScoped<ICancellationSettlementService, NoOpCancellationSettlementService>();
         services.AddScoped<ICancellationBankPrincipalSettlementService, NoOpCancellationBankPrincipalSettlementService>();
         return services.BuildServiceProvider();
@@ -553,6 +837,17 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
             DateTimeOffset occurredAtUtc,
             CancellationToken cancellationToken = default) =>
             Task.FromResult(new ReconcilePaymentResult(ReconcilePaymentOutcome.InvalidState, null));
+    }
+
+    private sealed class NeverCalledCoverageTransferAdapter : IExternalCoverageTransferAdapter
+    {
+        public string Provider => "repayment-worker-unused-coverage-provider";
+
+        public Task<ExternalCoverageTransferResponse> EnsureOrQueryAsync(
+            ExternalCoverageTransferRequest request,
+            CancellationToken cancellationToken = default) =>
+            throw new InvalidOperationException(
+                "The repayment worker test must not start or query a coverage transfer.");
     }
 
     private sealed class NoOpCoverageService : ITenantContributionCoverageService
