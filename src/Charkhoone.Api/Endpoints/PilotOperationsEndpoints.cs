@@ -66,7 +66,7 @@ public static class PilotOperationsEndpoints
         {
             page = normalizedPage,
             pageSize = normalizedPageSize,
-            items,
+            items = items.Select(ToQueueResponse).ToArray(),
         });
     }
 
@@ -84,7 +84,7 @@ public static class PilotOperationsEndpoints
                 {
                     ["code"] = "pilot_case_not_found",
                 })
-            : Results.Ok(detail);
+            : Results.Ok(ToDetailResponse(detail));
     }
 
     private static async Task<IResult> ReconcileAsync(
@@ -141,7 +141,7 @@ public static class PilotOperationsEndpoints
 
         return result.Outcome switch
         {
-            PilotReconcileOutcome.Executed => Results.Ok(result),
+            PilotReconcileOutcome.Executed => Results.Ok(ToReconcileResponse(result)),
             PilotReconcileOutcome.NotFound => Results.Problem(
                 statusCode: StatusCodes.Status404NotFound,
                 title: "Pilot case was not found.",
@@ -168,6 +168,56 @@ public static class PilotOperationsEndpoints
             _ => throw new InvalidOperationException("Unsupported pilot reconciliation outcome."),
         };
     }
+
+    private static object ToQueueResponse(PilotCaseQueueItem item) => new
+    {
+        creditApplicationId = item.CreditApplicationId,
+        applicantUserId = item.ApplicantUserId,
+        applicationStatus = item.ApplicationStatus.ToString(),
+        contractId = item.ContractId,
+        contractStatus = item.ContractStatus?.ToString(),
+        latestVerificationType = item.LatestVerificationType,
+        latestVerificationStatus = item.LatestVerificationStatus,
+        creditEligibilityStatus = item.CreditEligibilityStatus,
+        bankApprovalStatus = item.BankApprovalStatus,
+        fundFreezeStatus = item.FundFreezeStatus,
+        tenantContributionStatus = item.TenantContributionStatus,
+        suggestedOperation = item.SuggestedOperation?.ToString(),
+        updatedAtUtc = item.UpdatedAtUtc,
+    };
+
+    private static object ToDetailResponse(PilotCaseDetail detail) => new
+    {
+        creditApplicationId = detail.CreditApplicationId,
+        applicantUserId = detail.ApplicantUserId,
+        applicationStatus = detail.ApplicationStatus.ToString(),
+        bankLoanPlanId = detail.BankLoanPlanId,
+        bankLoanPlanVersion = detail.BankLoanPlanVersion,
+        contractId = detail.ContractId,
+        contractStatus = detail.ContractStatus?.ToString(),
+        ownerUserId = detail.OwnerUserId,
+        propertyId = detail.PropertyId,
+        verificationRequests = detail.VerificationRequests,
+        creditEligibility = detail.CreditEligibility,
+        bankApproval = detail.BankApproval,
+        fundingAllocation = detail.FundingAllocation,
+        fundFreeze = detail.FundFreeze,
+        tenantContributionFunding = detail.TenantContributionFunding,
+        recentAuditEvents = detail.RecentAuditEvents,
+        suggestedOperation = detail.SuggestedOperation?.ToString(),
+        updatedAtUtc = detail.UpdatedAtUtc,
+    };
+
+    private static object ToReconcileResponse(PilotReconcileResult result) => new
+    {
+        outcome = result.Outcome.ToString(),
+        operation = result.Operation.ToString(),
+        operationOutcome = result.OperationOutcome,
+        applicationStatus = result.ApplicationStatus?.ToString(),
+        contractStatus = result.ContractStatus?.ToString(),
+        auditEventId = result.AuditEventId,
+        occurredAtUtc = result.OccurredAtUtc,
+    };
 }
 
 public sealed record PilotReconcileRequest(
