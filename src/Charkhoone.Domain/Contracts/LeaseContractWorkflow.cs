@@ -31,8 +31,20 @@ public sealed class LeaseContractWorkflow
 
     private readonly List<WorkflowTransition<LeaseContractStatus>> _transitions = [];
 
-    public LeaseContractStatus Status { get; private set; } = LeaseContractStatus.Draft;
+    public LeaseContractWorkflow()
+        : this(LeaseContractStatus.Draft)
+    {
+    }
+
+    private LeaseContractWorkflow(LeaseContractStatus status)
+    {
+        Status = status;
+    }
+
+    public LeaseContractStatus Status { get; private set; }
     public IReadOnlyList<WorkflowTransition<LeaseContractStatus>> Transitions => _transitions;
+
+    public static LeaseContractWorkflow Restore(LeaseContractStatus status) => new(status);
 
     public WorkflowTransition<LeaseContractStatus> MoveTo(
         LeaseContractStatus next,
