@@ -515,8 +515,8 @@ public sealed class PilotOperationsIntegrationTests(CharkhooneApiFactory factory
                 await response.Content.ReadAsStringAsync());
             var items = document.RootElement.GetProperty("items");
             var item = Assert.Single(
-                items.EnumerateArray().Where(x =>
-                    x.GetProperty("paymentInstructionId").GetGuid() == paymentInstructionId));
+                items.EnumerateArray(),
+                x => x.GetProperty("paymentInstructionId").GetGuid() == paymentInstructionId);
 
             Assert.Equal(obligationId, item.GetProperty("monthlyObligationId").GetGuid());
             Assert.Equal(contractId, item.GetProperty("contractId").GetGuid());
