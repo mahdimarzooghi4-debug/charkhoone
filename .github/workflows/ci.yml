@@ -44,6 +44,12 @@ jobs:
         run: dotnet build Charkhoone.slnx --configuration Release --no-restore
       - name: Test
         run: dotnet test Charkhoone.slnx --configuration Release --no-build
+      - name: Validate pilot cohort harness safety tooling
+        shell: bash
+        run: |
+          for script in scripts/pilot/*.sh; do bash -n "$script"; done
+          python3 -m py_compile scripts/pilot/*.py
+          python3 scripts/pilot/test-cohort-target.py
       - name: Install EF CLI
         run: dotnet tool install --global dotnet-ef --version 10.0.12
       - name: Verify no pending model changes
