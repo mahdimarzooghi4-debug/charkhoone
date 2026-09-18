@@ -125,6 +125,47 @@ public sealed class MonthlyDueLifecycleIntegrationTests(CharkhooneApiFactory fac
     }
 
     [Fact]
+    public async Task DueMonth_IndeterminateProvider_RemainsOpenForReconciliation()
+    {
+        var now = DateTimeOffset.Parse("2026-09-18T20:15:00+00:00");
+        var fixture = await SeedSingleDueMonthAsync(now);
+        var adapter = new RecordingPaymentAdapter(ExternalPaymentReconciliationStatus.Indeterminate);
+
+        await using (var db = CreateDbContext())
+        {
+            var payments = new EfPaymentService(db, adapter);
+            var service = new EfMonthlyDueLifecycleService(db, payments, payments);
+            var result = await service.ProcessAsync(fixture.ObligationId, now);
+
+            Assert.Equal(ProcessMonthlyDueOutcome.ReconciliationRequired, result.Outcome);
+            Assert.Equal(2, result.ReconciliationAttempts);
+        }
+
+        Assert.Equal(2, adapter.CallCount);
+
+        await using var finalDb = CreateDbContext();
+        Assert.Equal(
+            MonthlyObligationStatus.Open,
+            await finalDb.MonthlyObligations.AsNoTracking()
+                .Where(x => x.Id == fixture.ObligationId)
+                .Select(x => x.Status)
+                .SingleAsync());
+
+        var statuses = await finalDb.PaymentInstructions.AsNoTracking()
+            .Where(x => x.ObligationId == fixture.ObligationId)
+            .Select(x => x.Status)
+            .ToListAsync();
+        Assert.All(statuses, status => Assert.Equal(PaymentInstructionStatus.Unknown, status));
+
+        Assert.Equal(
+            2,
+            await finalDb.ExternalTransactions.CountAsync(x =>
+                x.AggregateType == "PaymentInstruction"
+                && x.OperationType == "payment_reconciliation"
+                && x.Status == ExternalTransactionStatus.Unknown));
+    }
+
+    [Fact]
     public async Task DueMonth_DefinitiveFailures_ClosesMissed()
     {
         var now = DateTimeOffset.Parse("2026-09-18T20:30:00+00:00");
@@ -198,13 +239,15 @@ public sealed class MonthlyDueLifecycleIntegrationTests(CharkhooneApiFactory fac
             Assert.Equal(2, delinquency.ConsecutiveMissedMonths);
             Assert.False(delinquency.CancellationRequired);
 
+            var blockedPaymentIds = await db.PaymentInstructions.AsNoTracking()
+                .Where(x => x.ObligationId == fixture.CurrentObligationId)
+                .Select(x => x.Id)
+                .ToArrayAsync();
             Assert.Equal(
                 2,
                 await db.AuditEvents.CountAsync(x =>
                     x.Action == "payment_blocked_by_older_arrears"
-                    && db.PaymentInstructions.Any(payment =>
-                        payment.Id == x.AggregateId
-                        && payment.ObligationId == fixture.CurrentObligationId)));
+                    && blockedPaymentIds.Contains(x.AggregateId)));
 
             var blockedPayloads = await db.OutboxMessages.AsNoTracking()
                 .Where(x => x.Type == "payment-instruction.arrears-blocked.v1")
@@ -220,9 +263,7 @@ public sealed class MonthlyDueLifecycleIntegrationTests(CharkhooneApiFactory fac
                 0,
                 await db.ExternalTransactions.CountAsync(x =>
                     x.AggregateType == "PaymentInstruction"
-                    && db.PaymentInstructions.Any(payment =>
-                        payment.Id == x.AggregateId
-                        && payment.ObligationId == fixture.CurrentObligationId)));
+                    && blockedPaymentIds.Contains(x.AggregateId)));
         }
 
         await using (var db = CreateDbContext())
