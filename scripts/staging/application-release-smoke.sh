@@ -33,6 +33,7 @@ begin_evidence_attempt "$output_root/$expected_sha" 'summary.txt'
 : "${CHARKHOONE_STAGING_CONTRACT_ID:?an accessible staging contract id is required}"
 : "${CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY:?path to the completed database rehearsal summary is required}"
 : "${CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE:?path to deployment-platform worker evidence is required}"
+: "${CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA:?path to Worker deployment evidence identity metadata is required}"
 : "${CHARKHOONE_STAGING_WORKER_GIT_SHA:?worker deployed git SHA is required}"
 : "${CHARKHOONE_STAGING_TARGET_MANIFEST:?path to non-secret staging target manifest is required}"
 
@@ -106,6 +107,7 @@ fi
 for evidence_path in \
   "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
   "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE" \
+  "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA" \
   "$CHARKHOONE_STAGING_ACCESS_TOKEN_FILE"; do
   [[ -f "$evidence_path" && -s "$evidence_path" ]] || {
     echo "Required staging input is missing or empty: $evidence_path" >&2
@@ -113,10 +115,29 @@ for evidence_path in \
   }
 done
 
+worker_provider_info="$(python3 scripts/staging/verify-provider-evidence.py \
+  --manifest "$CHARKHOONE_STAGING_TARGET_MANIFEST" \
+  --metadata "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA" \
+  --raw-evidence "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE" \
+  --kind worker-deployment \
+  --expected-git-sha "$expected_sha")"
+worker_provider_raw_hash="$(printf '%s\n' "$worker_provider_info" | awk -F= '$1 == "provider_evidence_raw_sha256" { sub(/^[^=]*=/, ""); print; exit }')"
+worker_provider_metadata_hash="$(printf '%s\n' "$worker_provider_info" | awk -F= '$1 == "provider_evidence_metadata_sha256" { sub(/^[^=]*=/, ""); print; exit }')"
+if [[ ! "$worker_provider_raw_hash" =~ ^[0-9a-f]{64}$ || ! "$worker_provider_metadata_hash" =~ ^[0-9a-f]{64}$ ]]; then
+  echo 'Worker provider evidence verifier returned incomplete hash evidence.' >&2
+  exit 1
+fi
+
 if ! grep -Fxq 'environment=staging' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
   || ! grep -Fxq "git_sha=$expected_sha" "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
   || ! grep -Fxq "staging_target_binding_sha256=$target_binding_sha" "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
   || ! grep -Fxq 'staging_target_database_name_match=true' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
+  || ! grep -Fxq 'provider_backup_evidence=identity-and-raw-hash-verified' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
+  || ! grep -Eq '^provider_backup_raw_sha256=[0-9a-f]{64}$' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
+  || ! grep -Eq '^provider_backup_metadata_sha256=[0-9a-f]{64}$' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
+  || ! grep -Fxq 'provider_restore_evidence=identity-and-raw-hash-verified' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
+  || ! grep -Eq '^provider_restore_raw_sha256=[0-9a-f]{64}$' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
+  || ! grep -Eq '^provider_restore_metadata_sha256=[0-9a-f]{64}$' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
   || ! grep -Fxq 'migration=completed' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
   || ! grep -Fxq 'post_migration_readiness=passed' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY"; then
   echo 'Database rehearsal summary is incomplete or does not match the expected release SHA.' >&2
@@ -131,7 +152,8 @@ fi
 
 
 sha256sum "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" | awk '{print $1}' > "$attempt_dir/database-rehearsal-summary.sha256"
-sha256sum "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE" | awk '{print $1}' > "$attempt_dir/worker-deployment-evidence.sha256"
+printf '%s\n' "$worker_provider_raw_hash" > "$attempt_dir/worker-deployment-evidence.sha256"
+printf '%s\n' "$worker_provider_metadata_hash" > "$attempt_dir/worker-deployment-evidence-metadata.sha256"
 printf '%s\n' "$target_binding_sha" > "$attempt_dir/staging-target-binding.sha256"
 
 temp_dir="$(mktemp -d)"
@@ -254,7 +276,8 @@ PY
   printf 'worker_http_release_header=matched\n'
   printf 'worker_http_liveness=passed\n'
   printf 'worker_http_identity=matched\n'
-  printf 'worker_deployment_evidence=hash-recorded\n'
+  printf 'worker_deployment_evidence=identity-and-raw-hash-verified\n'
+  printf 'worker_deployment_metadata=hash-recorded\n'
   printf 'financial_mutations=not-exercised\n'
   printf 'response_bodies=not-retained\n'
   printf 'access_token=not-retained\n'

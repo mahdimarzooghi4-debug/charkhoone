@@ -11,7 +11,7 @@ cd "$ROOT_DIR"
   exit 1
 }
 
-for command_name in flock mktemp chmod mv rm git sha256sum awk grep date mkdir tr; do
+for command_name in flock mktemp chmod mv rm git sha256sum awk grep date mkdir tr python3; do
   command -v "$command_name" >/dev/null 2>&1 || { echo "$command_name is required" >&2; exit 1; }
 done
 
@@ -30,6 +30,8 @@ begin_evidence_attempt "$output_root/$expected_sha" 'promotion-readiness.txt'
 : "${CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY:?database rehearsal summary path is required}"
 : "${CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR:?application smoke evidence directory is required}"
 : "${CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE:?worker deployment evidence path is required}"
+: "${CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA:?worker deployment evidence metadata path is required}"
+: "${CHARKHOONE_STAGING_TARGET_MANIFEST:?staging target manifest path is required}"
 : "${CHARKHOONE_RELEASE_CI_EVIDENCE:?release CI evidence path is required}"
 
 actual_sha="$(git rev-parse HEAD | tr '[:upper:]' '[:lower:]')"
@@ -54,6 +56,7 @@ application_summary="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/summary.txt"
 application_statuses="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/http-statuses.txt"
 application_database_hash="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/database-rehearsal-summary.sha256"
 application_worker_hash="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/worker-deployment-evidence.sha256"
+application_worker_metadata_hash="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/worker-deployment-evidence-metadata.sha256"
 application_target_hash="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/staging-target-binding.sha256"
 
 for evidence_path in \
@@ -62,8 +65,11 @@ for evidence_path in \
   "$application_statuses" \
   "$application_database_hash" \
   "$application_worker_hash" \
+  "$application_worker_metadata_hash" \
   "$application_target_hash" \
   "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE" \
+  "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA" \
+  "$CHARKHOONE_STAGING_TARGET_MANIFEST" \
   "$CHARKHOONE_RELEASE_CI_EVIDENCE"; do
   [[ -f "$evidence_path" && -s "$evidence_path" ]] || {
     echo "Required release evidence is missing or empty: $evidence_path" >&2
@@ -85,8 +91,19 @@ require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" "git_sha=$expected
 require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'staging_target_database_name_match=true'
 require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'migration_runtime_roles_distinct=true'
 require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'migration_runtime_database_name_match=true'
-require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'provider_backup_evidence=operator-supplied-hash-recorded'
-require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'provider_restore_evidence=operator-supplied-hash-recorded'
+require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'provider_backup_evidence=identity-and-raw-hash-verified'
+require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'provider_restore_evidence=identity-and-raw-hash-verified'
+for provider_hash_key in \
+  provider_backup_raw_sha256 \
+  provider_backup_metadata_sha256 \
+  provider_restore_raw_sha256 \
+  provider_restore_metadata_sha256; do
+  provider_hash_value="$(awk -F= -v wanted="$provider_hash_key" '$1 == wanted { sub(/^[^=]*=/, ""); print; exit }' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" | tr '[:upper:]' '[:lower:]')"
+  if [[ ! "$provider_hash_value" =~ ^[0-9a-f]{64}$ ]]; then
+    echo "Database rehearsal provider evidence hash is missing or malformed: $provider_hash_key" >&2
+    exit 1
+  fi
+done
 require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'migration=completed'
 require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'post_migration_readiness=passed'
 require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'query_plan_evidence=captured-on-operator-confirmed-representative-dataset'
@@ -108,7 +125,8 @@ require_line "$application_summary" 'worker_release_sha=matched-operator-platfor
 require_line "$application_summary" 'worker_http_release_header=matched'
 require_line "$application_summary" 'worker_http_liveness=passed'
 require_line "$application_summary" 'worker_http_identity=matched'
-require_line "$application_summary" 'worker_deployment_evidence=hash-recorded'
+require_line "$application_summary" 'worker_deployment_evidence=identity-and-raw-hash-verified'
+require_line "$application_summary" 'worker_deployment_metadata=hash-recorded'
 require_line "$application_summary" 'financial_mutations=not-exercised'
 require_line "$application_summary" 'response_bodies=not-retained'
 require_line "$application_summary" 'access_token=not-retained'
@@ -150,6 +168,20 @@ if [[ ! "$database_target_hash" =~ ^[0-9a-f]{64}$ || "$application_summary_targe
   exit 1
 fi
 
+worker_provider_info="$(python3 scripts/staging/verify-provider-evidence.py \
+  --manifest "$CHARKHOONE_STAGING_TARGET_MANIFEST" \
+  --metadata "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA" \
+  --raw-evidence "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE" \
+  --kind worker-deployment \
+  --expected-git-sha "$expected_sha")"
+verified_worker_target_hash="$(printf '%s\n' "$worker_provider_info" | awk -F= '$1 == "provider_evidence_target_binding_sha256" { sub(/^[^=]*=/, ""); print; exit }')"
+verified_worker_raw_hash="$(printf '%s\n' "$worker_provider_info" | awk -F= '$1 == "provider_evidence_raw_sha256" { sub(/^[^=]*=/, ""); print; exit }')"
+verified_worker_metadata_hash="$(printf '%s\n' "$worker_provider_info" | awk -F= '$1 == "provider_evidence_metadata_sha256" { sub(/^[^=]*=/, ""); print; exit }')"
+if [[ "$verified_worker_target_hash" != "$database_target_hash" ]]; then
+  echo 'Worker provider evidence target identity does not match the promotion target.' >&2
+  exit 1
+fi
+
 actual_database_hash="$(sha256sum "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" | awk '{print $1}')"
 recorded_database_hash="$(read_recorded_hash "$application_database_hash")"
 if [[ "$actual_database_hash" != "$recorded_database_hash" ]]; then
@@ -159,8 +191,14 @@ fi
 
 actual_worker_hash="$(sha256sum "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE" | awk '{print $1}')"
 recorded_worker_hash="$(read_recorded_hash "$application_worker_hash")"
-if [[ "$actual_worker_hash" != "$recorded_worker_hash" ]]; then
+actual_worker_metadata_hash="$(sha256sum "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA" | awk '{print $1}')"
+recorded_worker_metadata_hash="$(read_recorded_hash "$application_worker_metadata_hash")"
+if [[ "$actual_worker_hash" != "$recorded_worker_hash" || "$actual_worker_hash" != "$verified_worker_raw_hash" ]]; then
   echo 'Application smoke evidence does not bind to the supplied worker deployment evidence.' >&2
+  exit 1
+fi
+if [[ "$actual_worker_metadata_hash" != "$recorded_worker_metadata_hash" || "$actual_worker_metadata_hash" != "$verified_worker_metadata_hash" ]]; then
+  echo 'Application smoke evidence does not bind to the supplied worker deployment metadata.' >&2
   exit 1
 fi
 
@@ -173,8 +211,10 @@ manifest="$attempt_dir/evidence-manifest.tsv"
   printf 'application_smoke_http_statuses\t%s\n' "$(sha256sum "$application_statuses" | awk '{print $1}')"
   printf 'application_database_hash_record\t%s\n' "$(sha256sum "$application_database_hash" | awk '{print $1}')"
   printf 'application_worker_hash_record\t%s\n' "$(sha256sum "$application_worker_hash" | awk '{print $1}')"
+  printf 'application_worker_metadata_hash_record\t%s\n' "$(sha256sum "$application_worker_metadata_hash" | awk '{print $1}')"
   printf 'application_target_hash_record\t%s\n' "$(sha256sum "$application_target_hash" | awk '{print $1}')"
   printf 'worker_deployment_evidence\t%s\n' "$actual_worker_hash"
+  printf 'worker_deployment_evidence_metadata\t%s\n' "$actual_worker_metadata_hash"
   printf 'release_ci_evidence\t%s\n' "$(sha256sum "$CHARKHOONE_RELEASE_CI_EVIDENCE" | awk '{print $1}')"
 } > "$manifest"
 
@@ -186,9 +226,12 @@ manifest="$attempt_dir/evidence-manifest.tsv"
   printf 'database_rehearsal=validated\n'
   printf 'application_smoke=validated\n'
   printf 'database_rehearsal_hash_binding=matched\n'
+  printf 'database_provider_evidence_hashes=validated\n'
   printf 'staging_target_binding=matched-across-database-and-application\n'
   printf 'staging_target_binding_sha256=%s\n' "$database_target_hash"
   printf 'worker_deployment_evidence_hash_binding=matched\n'
+  printf 'worker_deployment_metadata_hash_binding=matched\n'
+  printf 'worker_provider_identity=matched-target-manifest\n'
   printf 'worker_http_release_header=validated\n'
   printf 'worker_http_liveness=validated\n'
   printf 'worker_http_identity=validated\n'

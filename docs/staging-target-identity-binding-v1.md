@@ -89,12 +89,12 @@ It does not:
 
 - create or mutate cloud resources,
 - authenticate to a provider,
-- prove that backup/restore evidence belongs to the declared provider resource,
+- prove that provider evidence was genuinely produced by the provider,
 - prove Worker dependency readiness,
 - contact staging or production from CI,
 - make a promotion decision.
 
-Provider-native backup/PITR, restore, and deployment evidence remain separately required and human-reviewed.
+Provider-native backup/PITR, restore, and deployment evidence remain separately required and human-reviewed. The repository now also requires non-secret provider-evidence metadata sidecars that bind those raw files to this target identity; see `docs/staging-provider-evidence-identity-binding-v1.md`.
 
 ## CI fixtures
 

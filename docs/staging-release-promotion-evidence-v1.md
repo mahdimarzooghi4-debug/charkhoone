@@ -11,9 +11,11 @@ For one full 40-character release SHA, collect:
 1. Real staging database rehearsal `summary.txt`.
 2. Full application-smoke evidence directory.
 3. The same Worker provider/deployment evidence file used during application smoke.
-4. `release-ci-evidence.txt` from the successful CI run for the same SHA.
-5. The application smoke's `staging-target-binding.sha256` record.
-6. An exact repository checkout at that SHA.
+4. The same Worker deployment evidence metadata sidecar used during application smoke.
+5. The staging target manifest used by rehearsal/smoke.
+6. `release-ci-evidence.txt` from the successful CI run for the same SHA.
+7. The application smoke's `staging-target-binding.sha256` record.
+8. An exact repository checkout at that SHA.
 
 The application smoke must now prove Worker HTTP health. Its summary must contain:
 
@@ -21,7 +23,8 @@ The application smoke must now prove Worker HTTP health. Its summary must contai
 - `worker_http_release_header=matched`
 - `worker_http_liveness=passed`
 - `worker_http_identity=matched`
-- `worker_deployment_evidence=hash-recorded`
+- `worker_deployment_evidence=identity-and-raw-hash-verified`
+- `worker_deployment_metadata=hash-recorded`
 
 Its HTTP status evidence must include `worker_health_live=200`.
 
@@ -34,14 +37,20 @@ Its HTTP status evidence must include `worker_health_live=200`.
 - database rehearsal passed migration/readiness/query-plan gates,
 - application smoke passed API auth/readiness checks,
 - Worker HTTP liveness, release header, and service identity were all validated,
-- Worker deployment evidence is byte-for-byte the same file whose SHA-256 was recorded at smoke time.
+- Worker deployment evidence is byte-for-byte the same file whose SHA-256 was recorded at smoke time,
+- Worker deployment metadata is byte-for-byte the same sidecar whose SHA-256 was recorded at smoke time,
+- Worker provider/scope/resource identity matches the target manifest,
+- Worker metadata target fingerprint and git SHA match the promotion target and release SHA.
 
 The generated `promotion-readiness.txt` records:
 
 - `worker_http_release_header=validated`
 - `worker_http_liveness=validated`
 - `worker_http_identity=validated`
+- `database_provider_evidence_hashes=validated`
 - `worker_deployment_evidence_hash_binding=matched`
+- `worker_deployment_metadata_hash_binding=matched`
+- `worker_provider_identity=matched-target-manifest`
 - `staging_target_binding=matched-across-database-and-application`
 - `staging_target_binding_sha256=<sha256>`
 - `promotion_decision=human-required`
@@ -61,8 +70,9 @@ Worker `/health/live` is an independent host/process liveness check. It does not
 - builds a promotion packet from synthetic evidence,
 - proves Worker HTTP liveness evidence is mandatory,
 - proves cross-target database/application evidence is rejected,
-- proves post-smoke Worker provider evidence tampering is rejected,
-- validates canonical staging target manifest semantics.
+- proves post-smoke Worker raw evidence and metadata tampering are rejected,
+- validates canonical staging target manifest semantics,
+- validates backup/restore/Worker provider-evidence identity binding semantics.
 
 This validates tooling semantics only. It does not contact staging or production.
 
