@@ -80,7 +80,7 @@ The primary authenticated routes no longer present these values as real data:
 - toman-denominated authoritative amounts;
 - a payment button that jumps directly to a success screen.
 
-The financing-plan screen now states that a real plan-list read endpoint is not available instead of inventing plans.
+The original mobile API/OIDC slice intentionally left financing-plan discovery unavailable rather than inventing plans. The follow-up `mobile-authoritative-financing-plans-v1.md` adds an authenticated authoritative read endpoint and exact-version selection flow while preserving the no-synthetic-data rule.
 
 The payment screen is read-only because the current public API exposes reconciliation of an existing payment instruction, not a separate online payment-initiation endpoint. The mobile UI therefore does not misuse reconciliation as payment initiation.
 
