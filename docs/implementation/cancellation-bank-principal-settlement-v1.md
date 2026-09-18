@@ -61,6 +61,22 @@ Successful return writes:
 
 Replay validates the persisted external success, recognition journal, and return journal before returning `AlreadyCompleted`; it does not call the provider again.
 
+
+## Worker orchestration
+
+`FinancialReconciliationWorker` discovers the bank-principal leg only after the owner-side cancellation settlement is terminally completed and the contract is already `Cancelled`.
+
+Eligible candidates:
+
+- have a completed cancellation settlement with a completion timestamp
+- have positive persisted frozen bank principal
+- do not have a normal-maturity settlement
+- do not already have a terminal succeeded or failed `cancellation_bank_principal_return` external transaction
+
+Pending or indeterminate external returns remain candidates so the existing idempotent adapter can be queried again. Succeeded and failed returns are excluded from later batches, so a successful bank return is not sent twice and a definitive failure is not blindly retried.
+
+The worker reports a separate `CancellationBankPrincipalCandidates` batch count and tracing tag, keeping owner cancellation and bank-principal reconciliation operationally distinguishable.
+
 ## Provider boundary
 
 This workflow reuses the existing bank-principal return adapter. Production behavior is still fail-closed when that adapter is unavailable or unconfigured. No staging or production provider is contacted by this implementation or its tests.
