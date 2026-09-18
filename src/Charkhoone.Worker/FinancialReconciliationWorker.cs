@@ -81,7 +81,7 @@ public sealed class FinancialReconciliationWorker(
         var bankFundingCandidates = await (
                 from application in dbContext.CreditApplications.AsNoTracking()
                 join contract in dbContext.LeaseContracts.AsNoTracking()
-                    on application.Id equals contract.CreditApplicationId
+                    on (Guid?)application.Id equals contract.CreditApplicationId
                 where application.ApplicantUserId == contract.TenantUserId
                     && (
                         (
