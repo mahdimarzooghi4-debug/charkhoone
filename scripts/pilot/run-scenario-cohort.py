@@ -62,7 +62,7 @@ def parse_positive_int(value: str) -> int:
     if parsed < 1:
         raise argparse.ArgumentTypeError("must be at least 1")
     if parsed > 10000:
-        raise argparse.ArgumentTypeError("must be 10000 or fewer per scenario")
+        raise argparse.ArgumentTypeError("must be 10000 or fewer total cases")
     return parsed
 
 
