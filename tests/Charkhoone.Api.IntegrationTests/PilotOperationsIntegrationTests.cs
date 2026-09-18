@@ -31,9 +31,11 @@ public sealed class PilotOperationsIntegrationTests(CharkhooneApiFactory factory
         using var client = _factory.CreateAuthenticatedClient(
             $"pilot-disabled-subject-{Guid.NewGuid():D}");
 
-        var response = await client.GetAsync("/api/v1/pilot/cases");
+        var casesResponse = await client.GetAsync("/api/v1/pilot/cases");
+        var paymentsResponse = await client.GetAsync("/api/v1/pilot/payments");
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, casesResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, paymentsResponse.StatusCode);
     }
 
     [Fact]
