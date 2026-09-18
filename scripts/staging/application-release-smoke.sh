@@ -32,6 +32,8 @@ begin_evidence_attempt "$output_root/$expected_sha" 'summary.txt'
 : "${CHARKHOONE_STAGING_ACCESS_TOKEN_FILE:?path to staging access-token file is required}"
 : "${CHARKHOONE_STAGING_CONTRACT_ID:?an accessible staging contract id is required}"
 : "${CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY:?path to the completed database rehearsal summary is required}"
+: "${CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE:?path to message broker provider evidence is required}"
+: "${CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE_METADATA:?path to message broker evidence identity metadata is required}"
 : "${CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE:?path to deployment-platform worker evidence is required}"
 : "${CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA:?path to Worker deployment evidence identity metadata is required}"
 : "${CHARKHOONE_STAGING_WORKER_GIT_SHA:?worker deployed git SHA is required}"
@@ -106,6 +108,8 @@ fi
 
 for evidence_path in \
   "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
+  "$CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE" \
+  "$CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE_METADATA" \
   "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE" \
   "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA" \
   "$CHARKHOONE_STAGING_ACCESS_TOKEN_FILE"; do
@@ -114,6 +118,18 @@ for evidence_path in \
     exit 1
   }
 done
+
+broker_provider_info="$(python3 scripts/staging/verify-provider-evidence.py \
+  --manifest "$CHARKHOONE_STAGING_TARGET_MANIFEST" \
+  --metadata "$CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE_METADATA" \
+  --raw-evidence "$CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE" \
+  --kind message-broker-deployment)"
+broker_provider_raw_hash="$(printf '%s\n' "$broker_provider_info" | awk -F= '$1 == "provider_evidence_raw_sha256" { sub(/^[^=]*=/, ""); print; exit }')"
+broker_provider_metadata_hash="$(printf '%s\n' "$broker_provider_info" | awk -F= '$1 == "provider_evidence_metadata_sha256" { sub(/^[^=]*=/, ""); print; exit }')"
+if [[ ! "$broker_provider_raw_hash" =~ ^[0-9a-f]{64}$ || ! "$broker_provider_metadata_hash" =~ ^[0-9a-f]{64}$ ]]; then
+  echo 'Message broker provider evidence verifier returned incomplete hash evidence.' >&2
+  exit 1
+fi
 
 worker_provider_info="$(python3 scripts/staging/verify-provider-evidence.py \
   --manifest "$CHARKHOONE_STAGING_TARGET_MANIFEST" \
@@ -152,6 +168,8 @@ fi
 
 
 sha256sum "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" | awk '{print $1}' > "$attempt_dir/database-rehearsal-summary.sha256"
+printf '%s\n' "$broker_provider_raw_hash" > "$attempt_dir/message-broker-evidence.sha256"
+printf '%s\n' "$broker_provider_metadata_hash" > "$attempt_dir/message-broker-evidence-metadata.sha256"
 printf '%s\n' "$worker_provider_raw_hash" > "$attempt_dir/worker-deployment-evidence.sha256"
 printf '%s\n' "$worker_provider_metadata_hash" > "$attempt_dir/worker-deployment-evidence-metadata.sha256"
 printf '%s\n' "$target_binding_sha" > "$attempt_dir/staging-target-binding.sha256"
@@ -272,6 +290,8 @@ PY
   printf 'authenticated_contract_read=passed\n'
   printf 'authenticated_contract_audit_read=passed\n'
   printf 'database_rehearsal=matched-release-and-passed\n'
+  printf 'message_broker_evidence=identity-and-raw-hash-verified\n'
+  printf 'message_broker_metadata=hash-recorded\n'
   printf 'worker_release_sha=matched-operator-platform-evidence\n'
   printf 'worker_http_release_header=matched\n'
   printf 'worker_http_liveness=passed\n'

@@ -82,6 +82,19 @@ sys.stdout.write("401" if name == "anonymous_contract" else "200")
         f"provider_restore_raw_sha256={'c' * 64}\n"
         f"provider_restore_metadata_sha256={'d' * 64}\n"
         "migration=completed\npost_migration_readiness=passed\n")
+    broker = temp / "broker.txt"
+    broker.write_text("synthetic-message-broker-provider-evidence\n")
+    broker_metadata = temp / "broker-metadata.json"
+    broker_metadata.write_text(json.dumps({
+        "schema_version": 1,
+        "environment": "staging",
+        "evidence_kind": "message-broker-deployment",
+        "staging_target_binding_sha256": target_hash,
+        "provider": "fixture-mq",
+        "scope_id": "workspace-a",
+        "resource_id": "rabbitmq-a",
+        "raw_evidence_sha256": hashlib.sha256(broker.read_bytes()).hexdigest(),
+    }), encoding="utf-8")
     worker = temp / "worker.txt"
     worker.write_text("synthetic-provider-evidence-only\n")
     worker_metadata = temp / "worker-metadata.json"
@@ -105,6 +118,8 @@ sys.stdout.write("401" if name == "anonymous_contract" else "200")
         CHARKHOONE_STAGING_ACCESS_TOKEN_FILE=str(token),
         CHARKHOONE_STAGING_CONTRACT_ID="11111111-1111-4111-8111-111111111111",
         CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY=str(database),
+        CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE=str(broker),
+        CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE_METADATA=str(broker_metadata),
         CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE=str(worker),
         CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA=str(worker_metadata),
         CHARKHOONE_STAGING_WORKER_GIT_SHA=SHA,
@@ -135,6 +150,7 @@ sys.stdout.write("401" if name == "anonymous_contract" else "200")
         {"CHARKHOONE_STAGING_ACCESS_TOKEN_FILE": str(temp / "missing-token")},
         {"CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY": str(temp / "missing-summary")},
         {"CHARKHOONE_STAGING_TARGET_MANIFEST": str(temp / "missing-target-manifest")},
+        {"CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE_METADATA": str(temp / "missing-broker-metadata")},
         {"CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA": str(temp / "missing-worker-metadata")},
     ]:
         success()
@@ -142,6 +158,27 @@ sys.stdout.write("401" if name == "anonymous_contract" else "200")
         assert result.returncode != 0
         assert not (output / "summary.txt").exists(), "Failed rerun retained prior completion"
         assert not list(output.glob(".attempt.*")), "Failed attempt was not cleaned"
+
+    # Mismatched message broker provider metadata must be rejected before any HTTP request.
+    success()
+    wrong_broker_metadata = temp / "wrong-broker-metadata.json"
+    wrong_broker_metadata.write_text(json.dumps({
+        "schema_version": 1,
+        "environment": "staging",
+        "evidence_kind": "message-broker-deployment",
+        "staging_target_binding_sha256": target_hash,
+        "provider": "fixture-mq",
+        "scope_id": "workspace-a",
+        "resource_id": "other-broker",
+        "raw_evidence_sha256": hashlib.sha256(broker.read_bytes()).hexdigest(),
+    }), encoding="utf-8")
+    curl_called = temp / "curl-called"
+    curl_called.unlink(missing_ok=True)
+    result = run({"CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE_METADATA": str(wrong_broker_metadata)})
+    assert result.returncode != 0
+    assert not curl_called.exists(), "Message broker provider mismatch reached curl instead of failing closed"
+    assert not (output / "summary.txt").exists()
+    assert not list(output.glob(".attempt.*"))
 
     # Mismatched Worker provider metadata must be rejected before any HTTP request.
     success()

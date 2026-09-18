@@ -14,15 +14,18 @@ Supported kinds are:
 
 - `database-backup`
 - `database-restore`
+- `message-broker-deployment`
 - `worker-deployment`
 
 For backup and restore evidence, the sidecar component identity refers to the protected/source staging database declared in the target manifest. A restore drill may use a separate disposable restore target; that restore target is still documented by the raw provider evidence and operator review.
+
+For message-broker deployment evidence, the sidecar identity refers to the `message_broker` resource declared in the staging target manifest and hash-binds the exact raw provider evidence. Broker evidence is not tied to a release git SHA because the broker infrastructure is not necessarily redeployed per application release.
 
 For Worker deployment evidence, the sidecar identity refers to the Worker resource declared in the staging target manifest and also binds the exact release git SHA.
 
 ## Metadata schema
 
-Database backup/restore metadata contains exactly:
+Database backup/restore and message-broker deployment metadata contain exactly:
 
 - `schema_version: 1`
 - `environment: "staging"`
@@ -82,9 +85,11 @@ The existing Npgsql/psql target binding, database-name match, distinct database 
 
 Application smoke additionally requires:
 
-`CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA`
+- `CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE`
+- `CHARKHOONE_STAGING_MESSAGE_BROKER_EVIDENCE_METADATA`
+- `CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA`
 
-Worker provider evidence is verified against the target manifest, exact raw deployment evidence file, and expected release SHA before the first HTTP request.
+Message-broker provider evidence is verified against the `message_broker` target identity and exact raw evidence file before the first HTTP request. Worker provider evidence is then verified against the target manifest, exact raw deployment evidence file, and expected release SHA before the first HTTP request.
 
 Smoke evidence records the raw deployment evidence hash and metadata hash independently. A provider/resource mismatch, wrong release SHA, or raw-evidence tamper therefore fails before API/Worker smoke traffic.
 
@@ -125,14 +130,15 @@ Those remain provider-native evidence and human review responsibilities.
 
 CI uses synthetic local files only. It verifies that:
 
-- backup, restore, and Worker deployment metadata succeed when fully matched,
+- backup, restore, message-broker, and Worker deployment metadata succeed when fully matched,
 - target fingerprint mismatch fails,
 - provider resource mismatch fails,
 - raw evidence tamper fails,
 - wrong Worker git SHA fails,
 - production metadata fails,
 - unknown/secret fields fail,
+- message-broker metadata mismatch blocks smoke before curl,
 - Worker metadata mismatch blocks smoke before curl,
-- promotion rejects raw Worker or metadata tampering.
+- promotion rejects raw broker/Worker evidence or metadata tampering.
 
 CI does not contact a provider, staging, or production.
