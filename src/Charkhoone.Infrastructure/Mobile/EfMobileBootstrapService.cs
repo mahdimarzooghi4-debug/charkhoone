@@ -71,6 +71,8 @@ public sealed class EfMobileBootstrapService(CharkhooneDbContext dbContext) : IM
                     join obligation in dbContext.MonthlyObligations.AsNoTracking()
                         on component.MonthlyObligationId equals obligation.Id
                     where tenantContractIds.Contains(obligation.ContractId)
+                        && payment.Status != Charkhoone.Domain.Payments.PaymentInstructionStatus.Succeeded
+                        && payment.Status != Charkhoone.Domain.Payments.PaymentInstructionStatus.Reversed
                     orderby payment.DueAtUtc, obligation.ContractMonthNumber, component.Kind, payment.Id
                     select new MobilePaymentSummary(
                         payment.Id,
