@@ -747,6 +747,16 @@ public sealed class EfNormalSettlementService(
             return new SettleNormalContractResult(SettleNormalContractOutcome.InvalidState, ToView(settlement));
         }
 
+        var fundFreezeEvidence = await LoadFundFreezeEvidenceAsync(
+            contract.Id,
+            settlement.FundReference,
+            cancellationToken);
+        if (fundFreezeEvidence is null)
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return new SettleNormalContractResult(SettleNormalContractOutcome.InvalidState, ToView(settlement));
+        }
+
         var previousStatus = contract.Status;
         contract.Status = LeaseContractStatus.Settled;
         contract.UpdatedAtUtc = occurredAtUtc;
@@ -768,6 +778,13 @@ public sealed class EfNormalSettlementService(
             OccurredAtUtc = occurredAtUtc,
         });
         AddAudit(contract.Id, actorId, "contract_settled_after_normal_maturity", reason, occurredAtUtc);
+        AddAudit(
+            contract.Id,
+            "system:normal-settlement-financial-completion",
+            "normal_settlement_financially_completed",
+            "Normal maturity bank-principal and tenant-residual settlement are complete with stakeholder notification evidence.",
+            occurredAtUtc);
+
         AddOutbox("lease-contract.settled.v1", occurredAtUtc, new
         {
             contractId = contract.Id,
@@ -782,10 +799,95 @@ public sealed class EfNormalSettlementService(
             tenantJournalEntryId = settlement.TenantJournalEntryId,
             occurredAtUtc,
         });
+        AddOutbox("lease-contract.normal-settlement-owner-notification-requested.v1", occurredAtUtc, new
+        {
+            contractId = contract.Id,
+            settlementId = settlement.Id,
+            ownerUserId = contract.OwnerUserId,
+            tenantUserId = settlement.TenantUserId,
+            occurredAtUtc,
+        });
+        AddOutbox("lease-contract.normal-settlement-tenant-notification-requested.v1", occurredAtUtc, new
+        {
+            contractId = contract.Id,
+            settlementId = settlement.Id,
+            tenantUserId = settlement.TenantUserId,
+            tenantResidualAmountRial = settlement.TenantResidualAmountRial,
+            tenantExternalTransactionId = settlement.TenantExternalTransactionId,
+            tenantJournalEntryId = settlement.TenantJournalEntryId,
+            occurredAtUtc,
+        });
+        AddOutbox("lease-contract.normal-settlement-bank-notification-requested.v1", occurredAtUtc, new
+        {
+            contractId = contract.Id,
+            settlementId = settlement.Id,
+            bankId = settlement.BankId,
+            amountRial = settlement.BankPrincipalAmountRial,
+            externalTransactionId = settlement.BankExternalTransactionId,
+            journalEntryId = settlement.BankJournalEntryId,
+            occurredAtUtc,
+        });
+        AddOutbox("lease-contract.normal-settlement-fund-notification-requested.v1", occurredAtUtc, new
+        {
+            contractId = contract.Id,
+            settlementId = settlement.Id,
+            fundProvider = fundFreezeEvidence.Provider,
+            fundReference = fundFreezeEvidence.FundReference,
+            bankId = settlement.BankId,
+            amountRial = settlement.BankPrincipalAmountRial,
+            occurredAtUtc,
+        });
+        AddOutbox("lease-contract.normal-settlement-financially-completed.v1", occurredAtUtc, new
+        {
+            contractId = contract.Id,
+            settlementId = settlement.Id,
+            ownerUserId = contract.OwnerUserId,
+            tenantUserId = settlement.TenantUserId,
+            tenantResidualAmountRial = settlement.TenantResidualAmountRial,
+            tenantExternalTransactionId = settlement.TenantExternalTransactionId,
+            tenantJournalEntryId = settlement.TenantJournalEntryId,
+            bankId = settlement.BankId,
+            bankPrincipalAmountRial = settlement.BankPrincipalAmountRial,
+            bankExternalTransactionId = settlement.BankExternalTransactionId,
+            bankJournalEntryId = settlement.BankJournalEntryId,
+            fundProvider = fundFreezeEvidence.Provider,
+            fundReference = fundFreezeEvidence.FundReference,
+            occurredAtUtc,
+        });
 
         await dbContext.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
         return new SettleNormalContractResult(SettleNormalContractOutcome.Completed, ToView(settlement));
+    }
+
+    private async Task<FundFreezeEvidence?> LoadFundFreezeEvidenceAsync(
+        Guid contractId,
+        string expectedFundReference,
+        CancellationToken cancellationToken)
+    {
+        var allocation = await dbContext.FundingAllocations
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.ContractId == contractId, cancellationToken);
+        if (allocation is null)
+        {
+            return null;
+        }
+
+        var freeze = await dbContext.FundPrincipalFreezes
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.FundingAllocationId == allocation.Id, cancellationToken);
+        if (freeze is null
+            || !string.Equals(freeze.Status, "Confirmed", StringComparison.Ordinal)
+            || string.IsNullOrWhiteSpace(freeze.Provider)
+            || string.IsNullOrWhiteSpace(freeze.FundReference)
+            || !string.Equals(freeze.FundReference.Trim(), expectedFundReference, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return new FundFreezeEvidence(
+            freeze.Provider.Trim(),
+            freeze.FundReference.Trim());
     }
 
     private async Task<bool> HasUnsettledNormalSettlementPrerequisitesAsync(
@@ -1048,6 +1150,10 @@ public sealed class EfNormalSettlementService(
         Indeterminate,
         InvalidState,
     }
+
+    private sealed record FundFreezeEvidence(
+        string Provider,
+        string FundReference);
 
     private sealed record FrozenPrincipalLedgerAccounts(
         LedgerAccountRow FundFrozenAsset,
