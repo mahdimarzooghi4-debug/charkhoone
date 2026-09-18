@@ -47,9 +47,9 @@ export type PilotCreditEligibilityView = {
   provider: string;
   status: string;
   externalSubGrade: string | null;
-  fullDepositEquivalentRial: string | number;
-  loanRatio: string | number | null;
-  maximumEligibleLoanRial: string | number | null;
+  fullDepositEquivalentRial: string;
+  loanRatio: string | null;
+  maximumEligibleLoanRial: string | null;
   externalReference: string | null;
   reasonCode: string | null;
   attemptCount: number;
@@ -59,8 +59,8 @@ export type PilotCreditEligibilityView = {
 export type PilotBankApprovalView = {
   provider: string;
   status: string;
-  maximumEligibleLoanRial: string | number;
-  approvedLoanRial: string | number | null;
+  maximumEligibleLoanRial: string;
+  approvedLoanRial: string | null;
   externalReference: string | null;
   reasonCode: string | null;
   attemptCount: number;
@@ -71,10 +71,10 @@ export type PilotFundingAllocationView = {
   id: string;
   contractId: string;
   bankId: string;
-  fullDepositEquivalentRial: string | number;
-  maximumEligibleLoanRial: string | number;
-  bankApprovedLoanRial: string | number;
-  tenantContributionRial: string | number;
+  fullDepositEquivalentRial: string;
+  maximumEligibleLoanRial: string;
+  bankApprovedLoanRial: string;
+  tenantContributionRial: string;
   updatedAtUtc: string;
 };
 
@@ -93,7 +93,7 @@ export type PilotTenantContributionFundingView = {
   externalTransactionId: string;
   provider: string;
   status: string;
-  amountRial: string | number;
+  amountRial: string;
   currency: string;
   fundReference: string | null;
   externalReference: string | null;
