@@ -124,11 +124,12 @@ public sealed class CreditApplicationPlanSelectionIntegrationTests(CharkhooneApi
                 x.AggregateType == "CreditApplication"
                 && x.AggregateId == applicationId
                 && x.Action == "bank_loan_plan_selected"));
-        Assert.Equal(
-            1,
-            await verification.OutboxMessages.CountAsync(x =>
-                x.Type == "credit-application.bank-loan-plan-selected.v1"
-                && x.PayloadJson.Contains(applicationId.ToString())));
+        var selectionEvents = await verification.OutboxMessages
+            .AsNoTracking()
+            .Where(x => x.Type == "credit-application.bank-loan-plan-selected.v1")
+            .ToListAsync();
+        Assert.Single(selectionEvents.Where(x =>
+            x.PayloadJson.Contains(applicationId.ToString(), StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]
