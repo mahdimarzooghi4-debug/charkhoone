@@ -81,7 +81,7 @@ public sealed class NormalSettlementNotificationEvidenceIntegrationTests(Charkho
                 BankLoanPlanId = Guid.NewGuid(),
                 BankLoanPlanVersion = "normal-notification-v1",
                 BankId = bankId,
-                FullDepositEquivalentRial = frozenPrincipalRial,
+                FullDepositEquivalentRial = frozenPrincipalRial + tenantResidualRial,
                 MaximumEligibleLoanRial = frozenPrincipalRial,
                 BankApprovedLoanRial = frozenPrincipalRial,
                 TenantContributionRial = tenantResidualRial,
