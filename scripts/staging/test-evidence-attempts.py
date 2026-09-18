@@ -33,7 +33,18 @@ if scenario == "hold" and name == "worker_health_live":
     while True: time.sleep(0.1)
 if scenario == name: sys.exit(7)
 headers.write_text("HTTP/1.1 200 OK\\r\\nX-Charkhoone-Release-Sha: " + os.environ["CHARKHOONE_EXPECTED_GIT_SHA"] + "\\r\\nX-Content-Type-Options: nosniff\\r\\nCache-Control: no-store\\r\\n\\r\\n")
-body.write_text(json.dumps({"service": "Charkhoone.Worker", "status": "live"}))
+if name == "worker_health_ready":
+    body.write_text(json.dumps({
+        "service": "Charkhoone.Worker",
+        "status": "ready",
+        "checks": {
+            "postgres": "healthy",
+            "rabbitmq": "healthy",
+            "external-adapters": "healthy",
+        },
+    }))
+else:
+    body.write_text(json.dumps({"service": "Charkhoone.Worker", "status": "live"}))
 sys.stdout.write("401" if name == "anonymous_contract" else "200")
 ''')
     fake.chmod(0o755)
@@ -136,7 +147,7 @@ sys.stdout.write("401" if name == "anonymous_contract" else "200")
         result = run()
         assert result.returncode == 0, result.stderr
         assert (output / "summary.txt").is_file()
-        assert len((output / "http-statuses.txt").read_text().splitlines()) == 7
+        assert len((output / "http-statuses.txt").read_text().splitlines()) == 8
         assert not list(output.glob(".attempt.*"))
         for file in output.iterdir():
             if file.is_file():
@@ -146,6 +157,7 @@ sys.stdout.write("401" if name == "anonymous_contract" else "200")
         {"CHARKHOONE_STAGING_ACCESS_TOKEN_FILE": ""},
         {"SMOKE_FIXTURE_SCENARIO": "api_root"},
         {"SMOKE_FIXTURE_SCENARIO": "worker_health_live"},
+        {"SMOKE_FIXTURE_SCENARIO": "worker_health_ready"},
         {"CHARKHOONE_STAGING_WORKER_GIT_SHA": "0" * 40},
         {"CHARKHOONE_STAGING_ACCESS_TOKEN_FILE": str(temp / "missing-token")},
         {"CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY": str(temp / "missing-summary")},

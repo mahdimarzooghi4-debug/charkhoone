@@ -23,11 +23,12 @@ The application smoke must now prove Worker HTTP health. Its summary must contai
 - `worker_release_sha=matched-operator-platform-evidence`
 - `worker_http_release_header=matched`
 - `worker_http_liveness=passed`
+- `worker_http_readiness=passed`
 - `worker_http_identity=matched`
 - `worker_deployment_evidence=identity-and-raw-hash-verified`
 - `worker_deployment_metadata=hash-recorded`
 
-Its HTTP status evidence must include `worker_health_live=200`.
+Its HTTP status evidence must include both `worker_health_live=200` and `worker_health_ready=200`.
 
 ## Promotion packet validation
 
@@ -49,6 +50,7 @@ The generated `promotion-readiness.txt` records:
 
 - `worker_http_release_header=validated`
 - `worker_http_liveness=validated`
+- `worker_http_readiness=validated`
 - `worker_http_identity=validated`
 - `database_provider_evidence_hashes=validated`
 - `message_broker_evidence_hash_binding=matched`
@@ -66,7 +68,7 @@ The packet stores hashes and normalized results only; it does not copy raw crede
 
 ## Worker health boundary
 
-Worker `/health/live` is an independent host/process liveness check. It does not assert Worker dependency readiness for PostgreSQL, RabbitMQ, or external adapters. Provider deployment evidence remains separately required and hash-bound.
+Worker `/health/live` remains an independent host/process liveness check. Worker `/health/ready` separately proves current reachability of PostgreSQL and enabled RabbitMQ plus configuration readiness of external adapters required by enabled Worker features. It does not prove external provider reachability or provider provenance; provider deployment evidence remains separately required and hash-bound.
 
 ## CI validation
 

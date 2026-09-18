@@ -39,8 +39,9 @@ The smoke runner performs GET-only checks:
 5. Authenticated contract read returns 200.
 6. Authenticated audit-event read returns 200.
 7. Worker `/health/live` returns 200.
-8. Worker response carries the exact release SHA header.
-9. Worker JSON identifies `service=Charkhoone.Worker` and `status=live`.
+8. Worker liveness response carries the exact release SHA header and identifies `service=Charkhoone.Worker`, `status=live`.
+9. Worker `/health/ready` returns 200 with the same release SHA.
+10. Worker readiness JSON identifies `service=Charkhoone.Worker`, `status=ready`, and reports PostgreSQL, RabbitMQ, and required external-adapter checks as healthy.
 
 No financial mutation endpoint is invoked. Response bodies and the access token remain temporary and are not copied into evidence.
 
@@ -57,6 +58,7 @@ The application-smoke summary records:
 - Worker deployment SHA binding,
 - Worker HTTP release-header match,
 - Worker HTTP liveness success,
+- Worker HTTP dependency-readiness success,
 - Worker service identity match,
 - provider/resource identity match for Worker deployment evidence,
 - raw Worker deployment evidence hash binding,
@@ -65,7 +67,7 @@ The application-smoke summary records:
 - no retained response bodies or token,
 - no automatic promotion decision.
 
-The Worker endpoint is a process/host liveness signal only. It does not claim PostgreSQL, RabbitMQ, or external-provider readiness for Worker background processing.
+`/health/live` remains a process/host liveness signal only. `/health/ready` is separate and fails closed when PostgreSQL is unreachable, enabled RabbitMQ is unreachable, or an enabled Worker feature still resolves to an unavailable external adapter. Disabled Worker features do not make unrelated adapters mandatory.
 
 ## Execution boundary
 
