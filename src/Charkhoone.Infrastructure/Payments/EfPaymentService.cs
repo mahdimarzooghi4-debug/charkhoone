@@ -182,6 +182,25 @@ public sealed class EfPaymentService(
 
             if (instruction.Status == PaymentInstructionStatus.Created)
             {
+                var delinquency = await dbContext.ContractDelinquencies
+                    .AsNoTracking()
+                    .SingleOrDefaultAsync(x => x.ContractId == contract.Id, cancellationToken);
+
+                if (contract.Status != LeaseContractStatus.Active
+                    || delinquency?.CancellationRequired == true)
+                {
+                    var view = await ToPaymentViewAsync(instruction, obligation, contract, cancellationToken);
+                    await transaction.RollbackAsync(cancellationToken);
+                    return new ReconcilePaymentResult(ReconcilePaymentOutcome.InvalidState, view);
+                }
+
+                if (await HasEarlierOutstandingTenantDebtAsync(obligation, cancellationToken))
+                {
+                    var view = await ToPaymentViewAsync(instruction, obligation, contract, cancellationToken);
+                    await transaction.RollbackAsync(cancellationToken);
+                    return new ReconcilePaymentResult(ReconcilePaymentOutcome.ArrearsOutstanding, view);
+                }
+
                 instruction.Status = PaymentInstructionStateMachine.Transition(
                     instruction.Status,
                     PaymentInstructionStatus.Pending);
@@ -339,7 +358,8 @@ public sealed class EfPaymentService(
                 .AllAsync(x => x.Status == PaymentInstructionStatus.Succeeded, cancellationToken);
 
             if (allPaid
-                && await CanCloseChronologicallyAsync(lockedObligation, cancellationToken))
+                && await CanCloseChronologicallyAsync(lockedObligation, cancellationToken)
+                && !await HasEarlierOutstandingTenantDebtAsync(lockedObligation, cancellationToken))
             {
                 await MarkObligationPaidAsync(lockedObligation, lockedContract, occurredAtUtc, cancellationToken);
             }
@@ -426,6 +446,13 @@ public sealed class EfPaymentService(
         var allPaid = instructions.All(x => x.Status == PaymentInstructionStatus.Succeeded);
         if (allPaid)
         {
+            if (await HasEarlierOutstandingTenantDebtAsync(obligation, cancellationToken))
+            {
+                var view = await ToObligationViewAsync(obligation, contract.Id, cancellationToken);
+                await transaction.RollbackAsync(cancellationToken);
+                return new CloseMonthlyObligationResult(CloseMonthlyObligationOutcome.InvalidState, view);
+            }
+
             await MarkObligationPaidAsync(obligation, contract, occurredAtUtc, cancellationToken);
             await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
@@ -627,7 +654,7 @@ public sealed class EfPaymentService(
             contract.Id,
             "system:payment-reconciliation",
             "monthly_obligation_paid",
-            $"Contract month {obligation.ContractMonthNumber} was paid in full. Older debt, if any, was not automatically settled.",
+            $"Contract month {obligation.ContractMonthNumber} was paid in full only after all earlier tenant arrears were cleared.",
             occurredAtUtc);
         AddOutbox("monthly-obligation.paid.v1", occurredAtUtc, new
         {
@@ -636,6 +663,61 @@ public sealed class EfPaymentService(
             contractMonthNumber = obligation.ContractMonthNumber,
             occurredAtUtc,
         });
+    }
+
+    private async Task<bool> HasEarlierOutstandingTenantDebtAsync(
+        MonthlyObligationRow obligation,
+        CancellationToken cancellationToken)
+    {
+        var hasEarlierOpenOrMissedMonth = await dbContext.MonthlyObligations
+            .AsNoTracking()
+            .AnyAsync(
+                x => x.ContractId == obligation.ContractId
+                    && x.ContractMonthNumber < obligation.ContractMonthNumber
+                    && (x.Status == MonthlyObligationStatus.Open
+                        || x.Status == MonthlyObligationStatus.Missed),
+                cancellationToken);
+
+        if (hasEarlierOpenOrMissedMonth)
+        {
+            return true;
+        }
+
+        var earlierCoveredObligationIds = await dbContext.MonthlyObligations
+            .AsNoTracking()
+            .Where(x => x.ContractId == obligation.ContractId
+                && x.ContractMonthNumber < obligation.ContractMonthNumber
+                && x.Status == MonthlyObligationStatus.Covered)
+            .Select(x => x.Id)
+            .ToArrayAsync(cancellationToken);
+
+        if (earlierCoveredObligationIds.Length == 0)
+        {
+            return false;
+        }
+
+        var coveredPaymentIds = await dbContext.CoveragePayments
+            .AsNoTracking()
+            .Where(x => earlierCoveredObligationIds.Contains(x.MonthlyObligationId)
+                && x.Status == CoveragePaymentStatus.Succeeded)
+            .Select(x => x.Id)
+            .ToArrayAsync(cancellationToken);
+
+        if (coveredPaymentIds.Length == 0)
+        {
+            return true;
+        }
+
+        var finalizedExposureCount = await dbContext.LostFundReturns
+            .AsNoTracking()
+            .CountAsync(
+                x => coveredPaymentIds.Contains(x.CoveragePaymentId)
+                    && x.CalculatedReturnRial != null
+                    && x.CalculationPeriodEndUtc != null
+                    && x.ReplacedAtUtc != null,
+                cancellationToken);
+
+        return finalizedExposureCount != coveredPaymentIds.Length;
     }
 
     private async Task<bool> CanCloseChronologicallyAsync(

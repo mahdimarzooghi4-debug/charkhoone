@@ -16,10 +16,10 @@ public sealed class ConsecutiveMissedMonths
     public bool RequiresCancellation { get; private set; }
 
     /// <summary>
-    /// Registers a closed contractual month. A full tenant payment resets the consecutive chain;
-    /// any closed month without full payment extends it. Older debt is intentionally not changed here.
-    /// Once three consecutive missed months are reached, cancellation remains required and this tracker
-    /// no longer accepts later month results. Partial-payment allocation is deliberately not modeled here.
+    /// Registers a closed contractual month. A fully paid month may reset the consecutive chain only
+    /// after the payment workflow has independently verified that all earlier tenant arrears are cleared.
+    /// Any closed month without full payment extends the chain. Once three consecutive missed months are
+    /// reached, cancellation remains required and this tracker no longer accepts later month results.
     /// </summary>
     public void RegisterClosedMonth(bool tenantPaidInFull)
     {

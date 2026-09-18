@@ -279,10 +279,91 @@ public sealed class EfTenantContributionCoverageService(
                     null);
             }
 
+            var contract = await dbContext.LeaseContracts
+                .FromSqlInterpolated($"SELECT * FROM lease_contracts WHERE \"Id\" = {externalTransaction.AggregateId} FOR UPDATE")
+                .SingleOrDefaultAsync(cancellationToken);
+            var delinquency = contract is null
+                ? null
+                : await dbContext.ContractDelinquencies
+                    .SingleOrDefaultAsync(x => x.ContractId == contract.Id, cancellationToken);
+
+            if (contract is null
+                || contract.Status != Charkhoone.Domain.Contracts.LeaseContractStatus.Active
+                || delinquency?.CancellationRequired == true)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return new PostConfirmedReplenishmentResult(
+                    PostConfirmedReplenishmentOutcome.InvalidState,
+                    null,
+                    null);
+            }
+
             var contribution = await dbContext.TenantContributions
                 .FromSqlInterpolated($"SELECT * FROM tenant_contributions WHERE \"ContractId\" = {externalTransaction.AggregateId} FOR UPDATE")
                 .SingleOrDefaultAsync(cancellationToken);
             if (contribution is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return new PostConfirmedReplenishmentResult(
+                    PostConfirmedReplenishmentOutcome.InvalidState,
+                    null,
+                    null);
+            }
+
+            var paymentEffectiveAtUtc = externalTransaction.UpdatedAtUtc;
+            if (paymentEffectiveAtUtc > occurredAtUtc)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return new PostConfirmedReplenishmentResult(
+                    PostConfirmedReplenishmentOutcome.InvalidState,
+                    null,
+                    null);
+            }
+
+            var confirmedArrears = await LoadConfirmedArrearsItemsAsync(
+                contribution.ContractId,
+                cancellationToken);
+            var previouslyReplenishedRial = await dbContext.TenantContributionReplenishments
+                .Where(x => x.ContractId == contribution.ContractId)
+                .SumAsync(x => (decimal?)x.AmountRial, cancellationToken) ?? 0m;
+
+            TenantArrearsSnapshot arrearsSnapshot;
+            List<LostFundReturnAccrualBinding> lostReturnBindings;
+            decimal accruedLostFundReturnRial;
+
+            try
+            {
+                arrearsSnapshot = TenantArrearsPolicy.CalculateOutstanding(
+                    confirmedArrears,
+                    previouslyReplenishedRial);
+
+                lostReturnBindings = await CalculateLostFundReturnBindingsAsync(
+                    contribution.ContractId,
+                    confirmedArrears,
+                    arrearsSnapshot,
+                    paymentEffectiveAtUtc,
+                    cancellationToken);
+                accruedLostFundReturnRial = lostReturnBindings.Sum(x => x.Accrual.PayableReturn.Rial);
+            }
+            catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return new PostConfirmedReplenishmentResult(
+                    PostConfirmedReplenishmentOutcome.InvalidState,
+                    null,
+                    null);
+            }
+
+            TenantArrearsPaymentPlan arrearsPaymentPlan;
+            try
+            {
+                arrearsPaymentPlan = TenantArrearsPolicy.CreateFullPaymentPlan(
+                    confirmedArrears,
+                    previouslyReplenishedRial,
+                    accruedLostFundReturnRial,
+                    externalTransaction.AmountRial);
+            }
+            catch (Exception exception) when (exception is ArgumentException or InvalidOperationException)
             {
                 await transaction.RollbackAsync(cancellationToken);
                 return new PostConfirmedReplenishmentResult(
@@ -312,11 +393,29 @@ public sealed class EfTenantContributionCoverageService(
                     null);
             }
 
-            var journalDraft = JournalEntryDraft.Create(
-            [
-                JournalLineDraft.Create(accounts.FundAsset.Id, externalTransaction.AmountRial, 0m),
-                JournalLineDraft.Create(accounts.TenantBalance.Id, 0m, externalTransaction.AmountRial),
-            ]);
+            LedgerAccountRow? lostReturnIncomeAccount = null;
+            if (arrearsPaymentPlan.LostFundReturnRial > 0m)
+            {
+                lostReturnIncomeAccount = await GetOrCreateLostFundReturnIncomeAccountAsync(
+                    contribution.ContractId,
+                    occurredAtUtc,
+                    cancellationToken);
+            }
+
+            var journalLines = new List<JournalLineDraft>
+            {
+                JournalLineDraft.Create(accounts.FundAsset.Id, arrearsPaymentPlan.RequiredTotalRial, 0m),
+                JournalLineDraft.Create(accounts.TenantBalance.Id, 0m, arrearsPaymentPlan.PrincipalRial),
+            };
+            if (arrearsPaymentPlan.LostFundReturnRial > 0m)
+            {
+                journalLines.Add(JournalLineDraft.Create(
+                    lostReturnIncomeAccount!.Id,
+                    0m,
+                    arrearsPaymentPlan.LostFundReturnRial));
+            }
+
+            var journalDraft = JournalEntryDraft.Create(journalLines);
 
             var journalEntry = new JournalEntryRow
             {
@@ -324,12 +423,21 @@ public sealed class EfTenantContributionCoverageService(
                 ReferenceType = "ExternalTransaction",
                 ReferenceId = externalTransaction.Id,
                 IdempotencyKey = journalKey,
-                Description = "Confirmed tenant replenishment returned to the fund-held tenant contribution.",
-                OccurredAtUtc = occurredAtUtc,
+                Description = "Confirmed tenant arrears payment restored principal and separately recognized simple lost-fund-return income.",
+                OccurredAtUtc = paymentEffectiveAtUtc,
                 PostedAtUtc = occurredAtUtc,
             };
             dbContext.JournalEntries.Add(journalEntry);
             AddJournalLines(journalEntry.Id, journalDraft);
+
+            foreach (var binding in lostReturnBindings)
+            {
+                binding.Row.ReplacedAtUtc = paymentEffectiveAtUtc;
+                binding.Row.CalculationPeriodEndUtc = paymentEffectiveAtUtc;
+                binding.Row.CalculationPolicyVersion = binding.Accrual.CalculationPolicyVersion;
+                binding.Row.CalculatedReturnRial = binding.Accrual.PayableReturn.Rial;
+                binding.Row.UpdatedAtUtc = occurredAtUtc;
+            }
 
             postedRow = new TenantContributionReplenishmentRow
             {
@@ -337,10 +445,10 @@ public sealed class EfTenantContributionCoverageService(
                 ContractId = contribution.ContractId,
                 ExternalTransactionId = externalTransaction.Id,
                 JournalEntryId = journalEntry.Id,
-                AmountRial = externalTransaction.AmountRial,
-                RemainingTenantContributionRial = balanceBefore.PostedBalance.Rial + externalTransaction.AmountRial,
+                AmountRial = arrearsPaymentPlan.PrincipalRial,
+                RemainingTenantContributionRial = balanceBefore.PostedBalance.Rial + arrearsPaymentPlan.PrincipalRial,
                 ExternalReference = externalTransaction.ExternalReference.Trim(),
-                ReplenishedAtUtc = occurredAtUtc,
+                ReplenishedAtUtc = paymentEffectiveAtUtc,
             };
             dbContext.TenantContributionReplenishments.Add(postedRow);
 
@@ -349,7 +457,7 @@ public sealed class EfTenantContributionCoverageService(
                 contribution.ContractId,
                 $"payment:{externalTransaction.Provider}",
                 "tenant_contribution_replenished",
-                "A confirmed replenishment was returned to the fund-held tenant contribution and posted as a balanced journal entry.",
+                "The exact full outstanding tenant principal plus simple 3% lost fund return was paid; principal was restored oldest-first and fund return was recognized separately.",
                 occurredAtUtc);
             AddOutbox("tenant-contribution.replenished.v1", occurredAtUtc, new
             {
@@ -357,8 +465,30 @@ public sealed class EfTenantContributionCoverageService(
                 replenishmentId = postedRow.Id,
                 externalTransactionId = externalTransaction.Id,
                 journalEntryId = journalEntry.Id,
-                amountRial = postedRow.AmountRial,
+                totalPaymentRial = arrearsPaymentPlan.RequiredTotalRial,
+                principalReplenishmentRial = postedRow.AmountRial,
+                lostFundReturnRial = arrearsPaymentPlan.LostFundReturnRial,
                 remainingTenantContributionRial = postedRow.RemainingTenantContributionRial,
+                arrearsBeforePaymentRial = arrearsPaymentPlan.BeforePayment.OutstandingRial,
+                lostFundReturnPolicy = LostFundReturnTerms.CalculationPolicyVersion,
+                paymentEffectiveAtUtc,
+                allocationPolicy = "oldest-contract-month-first",
+                allocations = arrearsPaymentPlan.AllocationsOldestFirst.Select(x => new
+                {
+                    referenceId = x.ReferenceId,
+                    contractMonthNumber = x.ContractMonthNumber,
+                    componentOrder = x.ComponentOrder,
+                    principalRial = x.AmountRial,
+                }),
+                lostFundReturnExposures = lostReturnBindings.Select(x => new
+                {
+                    coveragePaymentId = x.Row.CoveragePaymentId,
+                    withdrawnPrincipalRial = x.Accrual.WithdrawnPrincipal.Rial,
+                    withdrawnAtUtc = x.Accrual.WithdrawnAtUtc,
+                    repaidAtUtc = x.Accrual.RepaidAtUtc,
+                    elapsedDays = x.Accrual.ElapsedDays,
+                    lostFundReturnRial = x.Accrual.PayableReturn.Rial,
+                }),
                 occurredAtUtc,
             });
 
@@ -691,6 +821,150 @@ public sealed class EfTenantContributionCoverageService(
                 externalReferences.GetValueOrDefault(x.ExternalTransactionId))).ToArray());
     }
 
+    private async Task<IReadOnlyList<TenantArrearsItem>> LoadConfirmedArrearsItemsAsync(
+        Guid contractId,
+        CancellationToken cancellationToken)
+    {
+        var rows = await (
+            from coverage in dbContext.CoveragePayments.AsNoTracking()
+            join obligation in dbContext.MonthlyObligations.AsNoTracking()
+                on coverage.MonthlyObligationId equals obligation.Id
+            where coverage.ContractId == contractId
+                && coverage.Status == CoveragePaymentStatus.Succeeded
+            orderby obligation.ContractMonthNumber, coverage.Kind, coverage.Id
+            select new
+            {
+                coverage.Id,
+                obligation.ContractMonthNumber,
+                coverage.Kind,
+                coverage.AmountRial,
+            })
+            .ToListAsync(cancellationToken);
+
+        return rows
+            .Select(x => new TenantArrearsItem(
+                x.Id,
+                x.ContractMonthNumber,
+                (int)x.Kind,
+                x.AmountRial))
+            .ToArray();
+    }
+
+    private async Task<List<LostFundReturnAccrualBinding>> CalculateLostFundReturnBindingsAsync(
+        Guid contractId,
+        IReadOnlyList<TenantArrearsItem> confirmedArrears,
+        TenantArrearsSnapshot arrearsSnapshot,
+        DateTimeOffset repaidAtUtc,
+        CancellationToken cancellationToken)
+    {
+        if (arrearsSnapshot.OutstandingRial <= 0m)
+        {
+            throw new InvalidOperationException("There is no outstanding principal to accrue lost fund return.");
+        }
+
+        var coverageIds = confirmedArrears.Select(x => x.ReferenceId).ToArray();
+        var rows = await dbContext.LostFundReturns
+            .Where(x => x.ContractId == contractId && coverageIds.Contains(x.CoveragePaymentId))
+            .ToListAsync(cancellationToken);
+
+        if (rows.Count != coverageIds.Length)
+        {
+            throw new InvalidOperationException(
+                "Every confirmed coverage payment must have exactly one lost fund return exposure.");
+        }
+
+        var arrearsById = confirmedArrears.ToDictionary(x => x.ReferenceId);
+        var outstandingById = arrearsSnapshot.OutstandingOldestFirst
+            .ToDictionary(x => x.ReferenceId);
+
+        var bindings = new List<LostFundReturnAccrualBinding>();
+
+        foreach (var row in rows)
+        {
+            if (!arrearsById.TryGetValue(row.CoveragePaymentId, out var arrearsItem)
+                || row.WithdrawnAmountRial != arrearsItem.AmountRial
+                || row.MonthlyRate != LostFundReturnTerms.MonthlyRate)
+            {
+                throw new InvalidOperationException(
+                    "Lost fund return exposure does not match its confirmed coverage principal.");
+            }
+
+            if (!outstandingById.TryGetValue(row.CoveragePaymentId, out var outstanding))
+            {
+                if (row.CalculatedReturnRial is null
+                    || row.CalculationPeriodEndUtc is null
+                    || row.ReplacedAtUtc is null
+                    || string.IsNullOrWhiteSpace(row.CalculationPolicyVersion))
+                {
+                    throw new InvalidOperationException(
+                        "Historical replenishment exists without finalized lost fund return evidence.");
+                }
+
+                continue;
+            }
+
+            if (outstanding.AmountRial != row.WithdrawnAmountRial)
+            {
+                throw new InvalidOperationException(
+                    "Legacy partial replenishment cannot be automatically repriced because its lost-return cutoff is not provable.");
+            }
+
+            if (row.CalculatedReturnRial is not null
+                || row.CalculationPeriodEndUtc is not null
+                || row.ReplacedAtUtc is not null)
+            {
+                throw new InvalidOperationException(
+                    "Outstanding tenant principal cannot reference a finalized lost fund return exposure.");
+            }
+
+            var exposure = LostFundReturnTerms.OpenExposure(
+                row.ContractId,
+                row.CoveragePaymentId,
+                row.WithdrawnAmountRial,
+                row.WithdrawnAtUtc);
+            var accrual = LostFundReturnTerms.CalculateAccruedReturn(exposure, repaidAtUtc);
+            bindings.Add(new LostFundReturnAccrualBinding(row, accrual));
+        }
+
+        if (bindings.Count != arrearsSnapshot.OutstandingOldestFirst.Count)
+        {
+            throw new InvalidOperationException(
+                "Outstanding tenant arrears and open lost fund return exposures are inconsistent.");
+        }
+
+        return bindings
+            .OrderBy(x => arrearsById[x.Row.CoveragePaymentId].ContractMonthNumber)
+            .ThenBy(x => arrearsById[x.Row.CoveragePaymentId].ComponentOrder)
+            .ThenBy(x => x.Row.CoveragePaymentId)
+            .ToList();
+    }
+
+    private async Task<LedgerAccountRow> GetOrCreateLostFundReturnIncomeAccountAsync(
+        Guid contractId,
+        DateTimeOffset occurredAtUtc,
+        CancellationToken cancellationToken)
+    {
+        var code = $"contract:{contractId:D}:lost-fund-return-income";
+        var existing = await dbContext.LedgerAccounts
+            .SingleOrDefaultAsync(x => x.Code == code, cancellationToken);
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        var account = new LedgerAccountRow
+        {
+            Id = Guid.NewGuid(),
+            Code = code,
+            Name = "Lost fund return income",
+            Currency = "IRR",
+            ContractId = contractId,
+            CreatedAtUtc = occurredAtUtc,
+        };
+        dbContext.LedgerAccounts.Add(account);
+        return account;
+    }
+
     private async Task<TenantContributionBalanceSnapshot> CalculateBalanceSnapshotAsync(
         TenantContributionRow contribution,
         CancellationToken cancellationToken)
@@ -854,6 +1128,10 @@ public sealed class EfTenantContributionCoverageService(
         string BeneficiaryId,
         decimal AmountRial,
         PaymentInstructionStatus PaymentStatus);
+
+    private sealed record LostFundReturnAccrualBinding(
+        LostFundReturnRow Row,
+        LostFundReturnAccrual Accrual);
 
     private sealed record ContributionLedgerAccounts(
         LedgerAccountRow FundAsset,

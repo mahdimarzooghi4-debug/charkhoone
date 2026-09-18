@@ -82,7 +82,7 @@ public sealed class DelinquencyChronologyIntegrationTests(CharkhooneApiFactory f
     }
 
     [Fact]
-    public async Task FullyPaidCurrentMonth_ResetsCurrentStreakWithoutChangingOlderDebtStatuses()
+    public async Task FullyPaidCurrentMonth_CannotResetStreakWhileOlderDebtRemains()
     {
         var now = DateTimeOffset.UtcNow;
         var seeded = await SeedContractAsync(
@@ -91,6 +91,45 @@ public sealed class DelinquencyChronologyIntegrationTests(CharkhooneApiFactory f
             (2, MonthlyObligationStatus.Missed, PaymentInstructionStatus.Failed),
             (3, MonthlyObligationStatus.Open, PaymentInstructionStatus.Succeeded));
 
+        await SetDelinquencyAsync(seeded.ContractId, 2, cancellationRequired: false, now);
+
+        CloseMonthlyObligationResult result;
+        await using (var scope = _factory.Services.CreateAsyncScope())
+        {
+            var service = scope.ServiceProvider.GetRequiredService<IMonthlyObligationService>();
+            result = await service.CloseAsync(seeded.MonthIds[3], now);
+        }
+
+        Assert.Equal(CloseMonthlyObligationOutcome.InvalidState, result.Outcome);
+
+        await using var verificationScope = _factory.Services.CreateAsyncScope();
+        var db = verificationScope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+        var months = await db.MonthlyObligations
+            .AsNoTracking()
+            .Where(x => x.ContractId == seeded.ContractId)
+            .OrderBy(x => x.ContractMonthNumber)
+            .ToListAsync();
+        var delinquency = await db.ContractDelinquencies.AsNoTracking().SingleAsync(x => x.ContractId == seeded.ContractId);
+
+        Assert.Equal(MonthlyObligationStatus.Missed, months[0].Status);
+        Assert.Equal(MonthlyObligationStatus.Missed, months[1].Status);
+        Assert.Equal(MonthlyObligationStatus.Open, months[2].Status);
+        Assert.Equal(2, delinquency.ConsecutiveMissedMonths);
+        Assert.False(delinquency.CancellationRequired);
+    }
+
+    [Fact]
+    public async Task FullyPaidCurrentMonth_ResetsStreakAfterCoveredOlderArrearsWereFullySettled()
+    {
+        var now = DateTimeOffset.UtcNow;
+        var seeded = await SeedContractAsync(
+            now,
+            (1, MonthlyObligationStatus.Covered, PaymentInstructionStatus.Failed),
+            (2, MonthlyObligationStatus.Covered, PaymentInstructionStatus.Failed),
+            (3, MonthlyObligationStatus.Open, PaymentInstructionStatus.Succeeded));
+
+        await SeedFinalizedCoverageExposureAsync(seeded.ContractId, seeded.MonthIds[1], now.AddDays(-20), now.AddDays(-10));
+        await SeedFinalizedCoverageExposureAsync(seeded.ContractId, seeded.MonthIds[2], now.AddDays(-10), now.AddDays(-5));
         await SetDelinquencyAsync(seeded.ContractId, 2, cancellationRequired: false, now);
 
         CloseMonthlyObligationResult result;
@@ -111,8 +150,8 @@ public sealed class DelinquencyChronologyIntegrationTests(CharkhooneApiFactory f
             .ToListAsync();
         var delinquency = await db.ContractDelinquencies.AsNoTracking().SingleAsync(x => x.ContractId == seeded.ContractId);
 
-        Assert.Equal(MonthlyObligationStatus.Missed, months[0].Status);
-        Assert.Equal(MonthlyObligationStatus.Missed, months[1].Status);
+        Assert.Equal(MonthlyObligationStatus.Covered, months[0].Status);
+        Assert.Equal(MonthlyObligationStatus.Covered, months[1].Status);
         Assert.Equal(MonthlyObligationStatus.Paid, months[2].Status);
         Assert.Equal(0, delinquency.ConsecutiveMissedMonths);
         Assert.False(delinquency.CancellationRequired);
@@ -184,6 +223,72 @@ public sealed class DelinquencyChronologyIntegrationTests(CharkhooneApiFactory f
 
         await db.SaveChangesAsync();
         return new SeededContract(contractId, monthIds);
+    }
+
+    private async Task SeedFinalizedCoverageExposureAsync(
+        Guid contractId,
+        Guid monthlyObligationId,
+        DateTimeOffset withdrawnAtUtc,
+        DateTimeOffset repaidAtUtc)
+    {
+        await using var scope = _factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+        var payment = await db.PaymentInstructions
+            .SingleAsync(x => x.ObligationId == monthlyObligationId);
+        var externalTransactionId = Guid.NewGuid();
+        var coveragePaymentId = Guid.NewGuid();
+
+        db.ExternalTransactions.Add(new ExternalTransactionRow
+        {
+            Id = externalTransactionId,
+            Provider = "chronology-test-provider",
+            OperationType = "tenant_contribution_coverage",
+            AggregateType = "PaymentInstruction",
+            AggregateId = payment.Id,
+            Status = ExternalTransactionStatus.Succeeded,
+            AmountRial = payment.AmountRial,
+            Currency = "IRR",
+            IdempotencyKey = $"chronology-coverage:{payment.Id:D}",
+            ExternalReference = $"chronology-ref:{payment.Id:D}",
+            CreatedAtUtc = withdrawnAtUtc,
+            UpdatedAtUtc = withdrawnAtUtc,
+        });
+
+        db.CoveragePayments.Add(new CoveragePaymentRow
+        {
+            Id = coveragePaymentId,
+            ContractId = contractId,
+            MonthlyObligationId = monthlyObligationId,
+            PaymentInstructionId = payment.Id,
+            Kind = MonthlyObligationComponentKind.OwnerPayment,
+            AmountRial = payment.AmountRial,
+            BeneficiaryId = payment.BeneficiaryId,
+            Status = CoveragePaymentStatus.Succeeded,
+            ExternalTransactionId = externalTransactionId,
+            RemainingTenantContributionRial = 0m,
+            CreatedAtUtc = withdrawnAtUtc,
+            UpdatedAtUtc = withdrawnAtUtc,
+            CoveredAtUtc = withdrawnAtUtc,
+        });
+
+        db.LostFundReturns.Add(new LostFundReturnRow
+        {
+            Id = Guid.NewGuid(),
+            ContractId = contractId,
+            CoveragePaymentId = coveragePaymentId,
+            WithdrawnAmountRial = payment.AmountRial,
+            MonthlyRate = LostFundReturnTerms.MonthlyRate,
+            WithdrawnAtUtc = withdrawnAtUtc,
+            CalculationPeriodStartUtc = withdrawnAtUtc,
+            ReplacedAtUtc = repaidAtUtc,
+            CalculationPeriodEndUtc = repaidAtUtc,
+            CalculationPolicyVersion = LostFundReturnTerms.CalculationPolicyVersion,
+            CalculatedReturnRial = 1m,
+            CreatedAtUtc = withdrawnAtUtc,
+            UpdatedAtUtc = repaidAtUtc,
+        });
+
+        await db.SaveChangesAsync();
     }
 
     private async Task SetDelinquencyAsync(
