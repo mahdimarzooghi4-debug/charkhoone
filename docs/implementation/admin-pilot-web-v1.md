@@ -110,13 +110,13 @@ This slice does not change any financial policy, including:
 
 ## Payments page
 
-Pilot Operations V1 does not expose a real payment-ledger queue.
+The follow-up Pilot Payment Operations V1 slice adds a protected, read-only payment queue:
 
-Therefore `/admin/payments` no longer displays the old synthetic transaction/settlement dataset.
+`GET /api/v1/pilot/payments`
 
-It explicitly reports that the operational payment API is not available yet and links operators to real case-level financial evidence.
+`/admin/payments` now renders persisted payment instructions, monthly-obligation/component binding, contract/application binding, exact rial amount text, and the latest persisted external payment-reconciliation evidence.
 
-A future payment/ledger operator endpoint must be added before this screen can become an operational queue.
+The page does not expose manual payment creation, status overrides, provider-result overrides, ledger posting, reversal, or settlement mutations. Reconciliation remains governed by the existing authoritative payment workflows and public/user endpoints.
 
 ## PostgreSQL evidence
 

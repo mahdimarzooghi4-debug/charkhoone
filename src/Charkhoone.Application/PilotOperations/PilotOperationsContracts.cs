@@ -17,6 +17,29 @@ public sealed record PilotCaseQueueQuery(
     int Page,
     int PageSize);
 
+public sealed record PilotPaymentQueueQuery(
+    Charkhoone.Domain.Payments.PaymentInstructionStatus? Status,
+    int Page,
+    int PageSize);
+
+public sealed record PilotPaymentQueueItem(
+    Guid PaymentInstructionId,
+    Guid MonthlyObligationId,
+    Guid ContractId,
+    Guid? CreditApplicationId,
+    int ContractMonthNumber,
+    Charkhoone.Domain.Payments.MonthlyObligationComponentKind Kind,
+    string BeneficiaryId,
+    decimal AmountRial,
+    Charkhoone.Domain.Payments.PaymentInstructionStatus PaymentStatus,
+    Guid? ExternalTransactionId,
+    Charkhoone.Domain.Payments.ExternalTransactionStatus? ExternalTransactionStatus,
+    string? Provider,
+    string? ExternalReference,
+    string? ReasonCode,
+    DateTimeOffset DueAtUtc,
+    DateTimeOffset UpdatedAtUtc);
+
 public sealed record PilotCaseQueueItem(
     Guid CreditApplicationId,
     Guid ApplicantUserId,
@@ -142,6 +165,10 @@ public sealed record PilotReconcileResult(
 
 public interface IPilotOperationsService
 {
+    Task<IReadOnlyList<PilotPaymentQueueItem>> ListPaymentsAsync(
+        PilotPaymentQueueQuery query,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<PilotCaseQueueItem>> ListCasesAsync(
         PilotCaseQueueQuery query,
         CancellationToken cancellationToken = default);

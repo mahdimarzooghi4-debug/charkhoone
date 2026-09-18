@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Charkhoone.Api.Security;
 using Charkhoone.Application.PilotOperations;
 using Charkhoone.Domain.CreditApplications;
+using Charkhoone.Domain.Payments;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Charkhoone.Api.Endpoints;
@@ -14,6 +15,7 @@ public static class PilotOperationsEndpoints
         var pilot = api.MapGroup("/pilot")
             .RequireAuthorization(PilotOperationsOptions.AuthorizationPolicy);
 
+        pilot.MapGet("/payments", ListPaymentsAsync);
         pilot.MapGet("/cases", ListCasesAsync);
         pilot.MapGet("/cases/{applicationId:guid}", GetCaseAsync);
         pilot.MapPost("/cases/{applicationId:guid}/reconcile", ReconcileAsync)
@@ -22,10 +24,59 @@ public static class PilotOperationsEndpoints
         return api;
     }
 
+    private static async Task<IResult> ListPaymentsAsync(
+        [FromQuery] string? status,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
+        IPilotOperationsService service,
+        CancellationToken cancellationToken)
+    {
+        PaymentInstructionStatus? parsedStatus = null;
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            if (!Enum.TryParse<PaymentInstructionStatus>(status.Trim(), true, out var value))
+            {
+                return Results.Problem(
+                    statusCode: StatusCodes.Status400BadRequest,
+                    title: "Pilot payment status is invalid.",
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = "pilot_payment_status_invalid",
+                    });
+            }
+
+            parsedStatus = value;
+        }
+
+        var normalizedPage = page is null or <= 0 ? 1 : page.Value;
+        var normalizedPageSize = pageSize is null or <= 0 ? 50 : pageSize.Value;
+        if (normalizedPageSize > 200)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status400BadRequest,
+                title: "Pilot payment page size cannot exceed 200.",
+                extensions: new Dictionary<string, object?>
+                {
+                    ["code"] = "pilot_payment_page_size_invalid",
+                });
+        }
+
+        var items = await service.ListPaymentsAsync(
+            new PilotPaymentQueueQuery(parsedStatus, normalizedPage, normalizedPageSize),
+            cancellationToken);
+
+        return Results.Ok(new
+        {
+            page = normalizedPage,
+            pageSize = normalizedPageSize,
+            items = items.Select(ToPaymentQueueResponse).ToArray(),
+        });
+    }
+
     private static async Task<IResult> ListCasesAsync(
         [FromQuery] string? status,
-        [FromQuery] int page,
-        [FromQuery] int pageSize,
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize,
         IPilotOperationsService service,
         CancellationToken cancellationToken)
     {
@@ -46,8 +97,8 @@ public static class PilotOperationsEndpoints
             parsedStatus = value;
         }
 
-        var normalizedPage = page <= 0 ? 1 : page;
-        var normalizedPageSize = pageSize <= 0 ? 50 : pageSize;
+        var normalizedPage = page is null or <= 0 ? 1 : page.Value;
+        var normalizedPageSize = pageSize is null or <= 0 ? 50 : pageSize.Value;
         if (normalizedPageSize > 200)
         {
             return Results.Problem(
@@ -169,6 +220,26 @@ public static class PilotOperationsEndpoints
             _ => throw new InvalidOperationException("Unsupported pilot reconciliation outcome."),
         };
     }
+
+    private static object ToPaymentQueueResponse(PilotPaymentQueueItem item) => new
+    {
+        paymentInstructionId = item.PaymentInstructionId,
+        monthlyObligationId = item.MonthlyObligationId,
+        contractId = item.ContractId,
+        creditApplicationId = item.CreditApplicationId,
+        contractMonthNumber = item.ContractMonthNumber,
+        kind = item.Kind.ToString(),
+        beneficiaryId = item.BeneficiaryId,
+        amountRial = DecimalText(item.AmountRial),
+        paymentStatus = item.PaymentStatus.ToString(),
+        externalTransactionId = item.ExternalTransactionId,
+        externalTransactionStatus = item.ExternalTransactionStatus?.ToString(),
+        provider = item.Provider,
+        externalReference = item.ExternalReference,
+        reasonCode = item.ReasonCode,
+        dueAtUtc = item.DueAtUtc,
+        updatedAtUtc = item.UpdatedAtUtc,
+    };
 
     private static object ToQueueResponse(PilotCaseQueueItem item) => new
     {
