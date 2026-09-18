@@ -6,14 +6,16 @@ This phase adds an actual production export validation path for the Expo mobile 
 
 ## What is built
 
-The `mobile-export-build` workflow installs dependencies from `apps/mobile/package-lock.json`, runs TypeScript typechecking, and executes:
+The `mobile-export-build` workflow first verifies the checked-in mobile API/OIDC runtime boundary, installs dependencies from `apps/mobile/package-lock.json`, runs TypeScript typechecking, and executes:
 
 - `expo export --platform android`
 - `expo export --platform ios`
 
 Both commands run with `CI=1` and must produce non-empty output directories.
 
-For each platform, CI records a sorted SHA-256 manifest of every exported file. A SHA-bound summary records the exact Git commit, file counts, Node version, typecheck result, and platform export result.
+For each platform, CI records a sorted SHA-256 manifest of every exported file. A SHA-bound summary records the exact Git commit, file counts, Node version, runtime-wiring verification, typecheck result, and platform export result.
+
+The runtime-wiring verification proves source-level invariants for the mobile public OIDC client: code + PKCE, SecureStore use, no client secret, constrained API origin/path behavior, and removal of the old synthetic values from the primary authenticated screens. It does not authenticate against a real OIDC provider.
 
 ## Stable gate
 

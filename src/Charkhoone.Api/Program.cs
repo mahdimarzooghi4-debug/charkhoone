@@ -147,6 +147,7 @@ api.MapGet("", () => Results.Ok(new
 })).AllowAnonymous();
 api.MapCreditApplicationEndpoints();
 api.MapPaymentEndpoints();
+api.MapMobileBootstrapEndpoints();
 api.MapContractEndpoints();
 api.MapPilotOperationsEndpoints();
 

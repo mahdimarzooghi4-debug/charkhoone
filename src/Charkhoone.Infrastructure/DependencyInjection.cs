@@ -3,6 +3,7 @@ using Charkhoone.Application.Contracts;
 using Charkhoone.Application.CreditApplications;
 using Charkhoone.Application.CreditEligibility;
 using Charkhoone.Application.IdentityVerification;
+using Charkhoone.Application.Mobile;
 using Charkhoone.Application.Payments;
 using Charkhoone.Application.PilotOperations;
 using Charkhoone.Application.TenantContributionFunding;
@@ -11,6 +12,7 @@ using Charkhoone.Infrastructure.Contracts;
 using Charkhoone.Infrastructure.CreditApplications;
 using Charkhoone.Infrastructure.CreditEligibility;
 using Charkhoone.Infrastructure.IdentityVerification;
+using Charkhoone.Infrastructure.Mobile;
 using Charkhoone.Infrastructure.Payments;
 using Charkhoone.Infrastructure.Persistence;
 using Charkhoone.Infrastructure.PilotOperations;
@@ -79,6 +81,7 @@ public static class DependencyInjection
         }
 
         services.AddScoped<IUserIdentityLookup, EfUserIdentityLookup>();
+        services.AddScoped<IMobileBootstrapService, EfMobileBootstrapService>();
         services.AddScoped<IContractReadService, EfContractReadService>();
         services.AddScoped<ILeaseContractTermsService, EfLeaseContractTermsService>();
         services.AddScoped<IPropertyContractRegistrationService, EfPropertyContractRegistrationService>();

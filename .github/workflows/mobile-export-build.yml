@@ -21,6 +21,9 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22.13.1
+      - name: Verify mobile runtime API/OIDC wiring
+        working-directory: .
+        run: python3 scripts/release/verify-mobile-runtime-wiring.py
       - name: Install from lockfile
         run: npm ci --no-audit --no-fund
       - name: Typecheck
@@ -58,6 +61,7 @@ jobs:
             printf 'workflow=mobile-export-build\n'
             printf 'conclusion=success\n'
             printf 'node_version=22.13.1\n'
+            printf 'mobile_runtime_wiring=verified\n'
             printf 'mobile_typecheck=success\n'
             printf 'android_production_export=success\n'
             printf 'ios_production_export=success\n'

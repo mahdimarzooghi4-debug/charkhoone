@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { MobileAuthProvider } from "@/auth/MobileAuthProvider";
 import { StatusBar } from "expo-status-bar";
 import { I18nManager } from "react-native";
 import {
@@ -22,9 +23,9 @@ export default function RootLayout() {
   if (!loaded) return null;
 
   return (
-    <>
+    <MobileAuthProvider>
       <StatusBar style="light" />
       <Stack screenOptions={{ headerShown: false, animation: "slide_from_left" }} />
-    </>
+    </MobileAuthProvider>
   );
 }
