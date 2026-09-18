@@ -3,6 +3,7 @@ extern alias worker;
 using Charkhoone.Application.Payments;
 using Charkhoone.Domain.Contracts;
 using Charkhoone.Domain.CreditApplications;
+using Charkhoone.Domain.Payments;
 using Charkhoone.Infrastructure.Payments;
 using Charkhoone.Infrastructure.Persistence;
 using Charkhoone.Infrastructure.Persistence.Models;
