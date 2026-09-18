@@ -246,10 +246,9 @@ export function MobileAuthProvider({ children }: PropsWithChildren) {
     }
 
     try {
-      const refreshed = await AuthSession.refreshAsync(
+      const refreshed = await current.refreshAsync(
         {
           clientId: config.oidcClientId,
-          refreshToken: token.refreshToken,
           scopes: ["openid", "profile", "offline_access"],
         },
         discovery,
@@ -278,7 +277,7 @@ export function MobileAuthProvider({ children }: PropsWithChildren) {
       headers.set("authorization", `Bearer ${accessToken}`);
       headers.set("accept", "application/json");
 
-      const result = await fetch(target, {
+      const result = await fetch(target.toString(), {
         ...init,
         headers,
         redirect: "error",
