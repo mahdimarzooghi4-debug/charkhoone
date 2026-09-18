@@ -76,6 +76,7 @@ public static class DependencyInjection
 
         services.AddScoped<IUserIdentityLookup, EfUserIdentityLookup>();
         services.AddScoped<IContractReadService, EfContractReadService>();
+        services.AddScoped<INormalMaturityService, EfNormalMaturityService>();
         services.AddScoped<ICreditApplicationService, EfCreditApplicationService>();
         services.AddScoped<ICreditApplicationIdentityService, EfCreditApplicationIdentityService>();
         services.AddScoped<ICreditEligibilityService, EfCreditEligibilityService>();
