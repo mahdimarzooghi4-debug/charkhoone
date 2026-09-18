@@ -300,6 +300,8 @@ public sealed class PilotSyntheticCohortHarnessTests(CharkhooneApiFactory factor
         }
 
         Assert.Equal(ReconcileTenantContributionOutcome.Reconciled, tenantFunding.Outcome);
+        Assert.NotNull(tenantFunding.Funding);
+        var tenantFundingAllocationId = tenantFunding.Funding!.FundingAllocationId;
 
         var lease = await leaseFundingService.AdvanceAsync(
             contractId, now.AddSeconds(8), cancellationToken);
@@ -318,7 +320,9 @@ public sealed class PilotSyntheticCohortHarnessTests(CharkhooneApiFactory factor
                 cancellationToken));
         Assert.True(
             await db.JournalEntries.AnyAsync(
-                x => x.ReferenceType == "TenantContributionFunding",
+                x => x.ReferenceType == "ExternalTransaction"
+                    && x.IdempotencyKey
+                        == $"journal:tenant-contribution-funding:{tenantFundingAllocationId:D}:v1",
                 cancellationToken));
     }
 
