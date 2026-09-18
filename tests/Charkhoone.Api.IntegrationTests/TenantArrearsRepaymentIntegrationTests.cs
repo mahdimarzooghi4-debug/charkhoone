@@ -87,9 +87,9 @@ public sealed class TenantArrearsRepaymentIntegrationTests(CharkhooneApiFactory 
                 external.AmountRial);
             Assert.Equal(seeded.PrincipalRial, replenishment.AmountRial);
             Assert.Equal(now, replenishment.ReplenishedAtUtc);
-            Assert.Equal(expectedAccrual.PayableReturn.Rial, lostReturn.CalculatedReturnRial);
-            Assert.Equal(now, lostReturn.ReplacedAtUtc);
-            Assert.Equal(now, lostReturn.CalculationPeriodEndUtc);
+            Assert.Equal(expectedAccrual.PayableReturn.Rial, lostReturn.CalculatedReturnRial!.Value);
+            Assert.Equal(now, lostReturn.ReplacedAtUtc!.Value);
+            Assert.Equal(now, lostReturn.CalculationPeriodEndUtc!.Value);
             Assert.Equal(
                 LostFundReturnTerms.CalculationPolicyVersion,
                 lostReturn.CalculationPolicyVersion);
@@ -169,7 +169,6 @@ public sealed class TenantArrearsRepaymentIntegrationTests(CharkhooneApiFactory 
         var services = new ServiceCollection();
         services.AddDbContext<CharkhooneDbContext>(options =>
             options.UseNpgsql(_factory.ConnectionString));
-        services.AddSingleton(repaymentAdapter);
         services.AddSingleton<IExternalTenantArrearsRepaymentAdapter>(repaymentAdapter);
         services.AddSingleton<IExternalCoverageTransferAdapter, NeverCalledCoverageTransferAdapter>();
         services.AddScoped<ITenantContributionCoverageService, EfTenantContributionCoverageService>();
