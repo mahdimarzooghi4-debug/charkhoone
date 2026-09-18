@@ -574,3 +574,8 @@
   background: #e2f4e5;
   border-color: transparent;
 }
+
+.admin-payments__badge--neutral {
+  color: var(--ch-color-text-subtle);
+  background: #f3f4f6;
+}
