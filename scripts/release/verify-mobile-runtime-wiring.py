@@ -94,6 +94,14 @@ require(
     '"/api/v1/mobile/bootstrap"' in api,
     "mobile API client must use the authenticated bootstrap endpoint",
 )
+require(
+    "/loan-plans" in api and "/loan-plan" in api,
+    "mobile API client must use the authoritative financing plan read and selection endpoints",
+)
+require(
+    "getMobileFinancingPlans" in api and "selectMobileFinancingPlan" in api,
+    "mobile API client must expose financing plan read and selection helpers",
+)
 
 authoritative_screens = [
     "apps/mobile/app/(auth)/login.tsx",
@@ -101,6 +109,7 @@ authoritative_screens = [
     "apps/mobile/app/(tenant)/home.tsx",
     "apps/mobile/app/(tenant)/payments.tsx",
     "apps/mobile/app/(tenant)/financing-plans.tsx",
+    "apps/mobile/app/(tenant)/plan-confirmation.tsx",
     "apps/mobile/app/(shared)/contracts.tsx",
     "apps/mobile/app/(shared)/profile.tsx",
 ]
@@ -121,6 +130,37 @@ require(
     "installment-payment-success" not in read("apps/mobile/app/(tenant)/payments.tsx"),
     "payments screen must not route directly to synthetic success",
 )
+
+financing_plans = read("apps/mobile/app/(tenant)/financing-plans.tsx")
+plan_confirmation = read("apps/mobile/app/(tenant)/plan-confirmation.tsx")
+for token in (
+    "getMobileFinancingPlans",
+    "PlanSelectionPending",
+    "plan.planId",
+    "plan.version",
+):
+    require(token in financing_plans, f"financing plan list missing authoritative token: {token}")
+
+for token in (
+    "getMobileFinancingPlans",
+    "selectMobileFinancingPlan",
+    "mobile_financing_plan_not_available",
+    'router.replace("/(tenant)/home")',
+):
+    require(token in plan_confirmation, f"plan confirmation missing authoritative token: {token}")
+
+for prohibited in (
+    "۴۵۰٬۰۰۰٬۰۰۰",
+    "۱۸۰٬۰۰۰٬۰۰۰",
+    "۱۸٬۵۰۰٬۰۰۰",
+    "۲۰٬۰۰۰٬۰۰۰",
+    "صرفه‌جویی تقریبی",
+    "financing-under-review",
+):
+    require(
+        prohibited not in plan_confirmation,
+        f"plan confirmation contains prohibited synthetic financing value or route: {prohibited}",
+    )
 
 if failures:
     for failure in failures:
