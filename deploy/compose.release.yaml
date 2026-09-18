@@ -29,6 +29,7 @@ services:
     stop_grace_period: 30s
     environment:
       DOTNET_ENVIRONMENT: ${CHARKHOONE_ENVIRONMENT:?set Staging or Production}
+      Release__GitSha: ${CHARKHOONE_RELEASE_SHA:?set the exact 40-character release SHA}
       ConnectionStrings__Postgres: ${CHARKHOONE_POSTGRES_CONNECTION:?set the runtime PostgreSQL connection}
       Observability__OtlpEndpoint: ${CHARKHOONE_OTLP_ENDPOINT:-}
       RabbitMq__Enabled: "true"
