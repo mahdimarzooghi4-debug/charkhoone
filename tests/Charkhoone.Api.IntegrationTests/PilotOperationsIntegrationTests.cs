@@ -301,6 +301,101 @@ public sealed class PilotOperationsIntegrationTests(CharkhooneApiFactory factory
         }
     }
 
+    [Fact]
+    public async Task AllowlistedOperator_DetailSerializesFinancialDecimalsAsExactStrings()
+    {
+        var now = DateTimeOffset.Parse("2199-09-19T00:00:00+00:00");
+        var operatorSubject = $"pilot-decimal-operator-{Guid.NewGuid():D}";
+        var applicantId = Guid.NewGuid();
+        var applicationId = Guid.NewGuid();
+        var assessmentId = Guid.NewGuid();
+        const decimal fullDepositEquivalentRial = 1234567890123456.78m;
+        const decimal loanRatio = 0.123456789012345678m;
+        const decimal maximumEligibleLoanRial = 987654321098765.43m;
+
+        await using (var seedScope = _factory.Services.CreateAsyncScope())
+        {
+            var db = seedScope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+            db.Users.Add(new UserRow
+            {
+                Id = applicantId,
+                OidcSubject = $"pilot-decimal-applicant-{applicantId:D}",
+                CreatedAtUtc = now.AddDays(-1),
+            });
+            db.CreditApplications.Add(new CreditApplicationRow
+            {
+                Id = applicationId,
+                ApplicantUserId = applicantId,
+                Status = CreditApplicationStatus.ExternalChecksPending,
+                CreatedAtUtc = now.AddHours(-1),
+                UpdatedAtUtc = now,
+            });
+            db.CreditEligibilityAssessments.Add(new CreditEligibilityAssessmentRow
+            {
+                Id = assessmentId,
+                CreditApplicationId = applicationId,
+                Provider = "pilot-credit-provider",
+                Status = "Indeterminate",
+                ExternalSubGrade = null,
+                FullDepositEquivalentRial = fullDepositEquivalentRial,
+                LoanRatio = loanRatio,
+                MaximumEligibleLoanRial = maximumEligibleLoanRial,
+                IdempotencyKey = $"pilot-decimal-{applicationId:D}",
+                ExternalReference = "pilot-credit-reference",
+                ReasonCode = "provider_timeout",
+                AttemptCount = 1,
+                CreatedAtUtc = now.AddMinutes(-5),
+                UpdatedAtUtc = now,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        try
+        {
+            using var pilotFactory = _factory.WithWebHostBuilder(builder =>
+            {
+                builder.UseSetting("PilotOperations:Enabled", "true");
+                builder.UseSetting("PilotOperations:AllowedSubjects:0", operatorSubject);
+            });
+
+            using var client = pilotFactory.CreateClient();
+            client.DefaultRequestHeaders.Add("X-Test-Subject", operatorSubject);
+
+            var response = await client.GetAsync(
+                $"/api/v1/pilot/cases/{applicationId:D}");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            using var document = JsonDocument.Parse(
+                await response.Content.ReadAsStringAsync());
+            var credit = document.RootElement.GetProperty("creditEligibility");
+
+            var deposit = credit.GetProperty("fullDepositEquivalentRial");
+            var ratio = credit.GetProperty("loanRatio");
+            var maximum = credit.GetProperty("maximumEligibleLoanRial");
+
+            Assert.Equal(JsonValueKind.String, deposit.ValueKind);
+            Assert.Equal(JsonValueKind.String, ratio.ValueKind);
+            Assert.Equal(JsonValueKind.String, maximum.ValueKind);
+            Assert.Equal("1234567890123456.78", deposit.GetString());
+            Assert.Equal("0.123456789012345678", ratio.GetString());
+            Assert.Equal("987654321098765.43", maximum.GetString());
+        }
+        finally
+        {
+            await using var cleanupScope = _factory.Services.CreateAsyncScope();
+            var db = cleanupScope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+            await db.CreditEligibilityAssessments
+                .Where(x => x.Id == assessmentId)
+                .ExecuteDeleteAsync();
+            await db.CreditApplications
+                .Where(x => x.Id == applicationId)
+                .ExecuteDeleteAsync();
+            await db.Users
+                .Where(x => x.Id == applicantId)
+                .ExecuteDeleteAsync();
+        }
+    }
+
     private sealed class RecordingIdentityAdapter : IIdentityVerificationAdapter
     {
         public string Provider => "pilot-identity-provider";
