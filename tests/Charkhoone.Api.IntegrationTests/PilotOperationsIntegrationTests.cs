@@ -567,6 +567,79 @@ public sealed class PilotOperationsIntegrationTests(CharkhooneApiFactory factory
         }
     }
 
+    [Fact]
+    public async Task ReleaseConfiguredPilotOperator_RequiresExactSubject_ForRealPostgresCase()
+    {
+        var now = DateTimeOffset.Parse("2199-09-19T02:00:00+00:00");
+        var applicantId = Guid.NewGuid();
+        var applicationId = Guid.NewGuid();
+        var operatorSubject = $"release-pilot-operator-{Guid.NewGuid():D}";
+
+        await using (var seedScope = _factory.Services.CreateAsyncScope())
+        {
+            var db = seedScope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+            db.Users.Add(new UserRow
+            {
+                Id = applicantId,
+                OidcSubject = $"release-pilot-applicant-{applicantId:D}",
+                CreatedAtUtc = now.AddDays(-1),
+            });
+            db.CreditApplications.Add(new CreditApplicationRow
+            {
+                Id = applicationId,
+                ApplicantUserId = applicantId,
+                Status = CreditApplicationStatus.IdentityPending,
+                CreatedAtUtc = now.AddHours(-1),
+                UpdatedAtUtc = now,
+            });
+            await db.SaveChangesAsync();
+        }
+
+        try
+        {
+            using var pilotFactory = _factory.WithWebHostBuilder(builder =>
+            {
+                // These hierarchical keys are the .NET configuration equivalents of the
+                // release environment variables PilotOperations__Enabled and
+                // PilotOperations__AllowedSubjects__0.
+                builder.UseSetting("PilotOperations:Enabled", "true");
+                builder.UseSetting("PilotOperations:AllowedSubjects:0", operatorSubject);
+            });
+
+            using (var outsider = pilotFactory.CreateClient())
+            {
+                outsider.DefaultRequestHeaders.Add("X-Test-Subject", operatorSubject + "-near-match");
+                var forbidden = await outsider.GetAsync(
+                    "/api/v1/pilot/cases?status=IdentityPending&page=1&pageSize=25");
+                Assert.Equal(HttpStatusCode.Forbidden, forbidden.StatusCode);
+            }
+
+            using var client = pilotFactory.CreateClient();
+            client.DefaultRequestHeaders.Add("X-Test-Subject", operatorSubject);
+
+            var response = await client.GetAsync(
+                "/api/v1/pilot/cases?status=IdentityPending&page=1&pageSize=25");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            using var document = JsonDocument.Parse(
+                await response.Content.ReadAsStringAsync());
+            Assert.Contains(
+                document.RootElement.GetProperty("items").EnumerateArray(),
+                item => item.GetProperty("creditApplicationId").GetGuid() == applicationId);
+        }
+        finally
+        {
+            await using var cleanupScope = _factory.Services.CreateAsyncScope();
+            var db = cleanupScope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+            await db.CreditApplications
+                .Where(x => x.Id == applicationId)
+                .ExecuteDeleteAsync();
+            await db.Users
+                .Where(x => x.Id == applicantId)
+                .ExecuteDeleteAsync();
+        }
+    }
+
     private sealed class RecordingIdentityAdapter : IIdentityVerificationAdapter
     {
         public string Provider => "pilot-identity-provider";
