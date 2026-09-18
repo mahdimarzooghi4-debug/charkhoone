@@ -11,6 +11,11 @@ services:
       ConnectionStrings__Postgres: ${CHARKHOONE_POSTGRES_CONNECTION:?set the runtime PostgreSQL connection}
       Authentication__Authority: ${CHARKHOONE_AUTHORITY:?set the HTTPS OIDC authority}
       Authentication__Audience: ${CHARKHOONE_AUDIENCE:?set the OIDC audience}
+      PilotOperations__Enabled: ${CHARKHOONE_PILOT_OPERATIONS_ENABLED:-false}
+      PilotOperations__AllowedSubjects__0: ${CHARKHOONE_PILOT_OPERATOR_SUBJECT_0:-}
+      PilotOperations__AllowedSubjects__1: ${CHARKHOONE_PILOT_OPERATOR_SUBJECT_1:-}
+      PilotOperations__AllowedSubjects__2: ${CHARKHOONE_PILOT_OPERATOR_SUBJECT_2:-}
+      PilotOperations__AllowedSubjects__3: ${CHARKHOONE_PILOT_OPERATOR_SUBJECT_3:-}
       Observability__OtlpEndpoint: ${CHARKHOONE_OTLP_ENDPOINT:-}
       RabbitMq__Enabled: "true"
       RabbitMq__Host: ${CHARKHOONE_RABBITMQ_HOST:?set the RabbitMQ host}
@@ -52,6 +57,9 @@ services:
   web:
     image: ${CHARKHOONE_WEB_IMAGE:?set an immutable Web image reference}
     restart: unless-stopped
+    environment:
+      CHARKHOONE_API_BASE_URL: http://api:8080
+      CHARKHOONE_ADMIN_OIDC_LOGIN_URL: ${CHARKHOONE_ADMIN_OIDC_LOGIN_URL:?set the HTTPS admin OIDC login URL}
     expose:
       - "3000"
 
