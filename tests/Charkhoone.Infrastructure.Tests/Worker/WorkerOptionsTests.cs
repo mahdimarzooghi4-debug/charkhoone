@@ -51,6 +51,23 @@ public sealed class WorkerOptionsTests
     }
 
     [Fact]
+    public void RabbitMq_ParsesCancellationNotificationQueues()
+    {
+        var configuration = Build(new Dictionary<string, string?>
+        {
+            ["RabbitMq:CancellationNotificationQueue"] = "notifications.cancellation",
+            ["RabbitMq:CancellationNotificationReviewQueue"] = "notifications.cancellation.review",
+        });
+
+        var options = RabbitMqWorkerOptions.FromConfiguration(configuration);
+
+        Assert.Equal("notifications.cancellation", options.CancellationNotificationQueue);
+        Assert.Equal(
+            "notifications.cancellation.review",
+            options.CancellationNotificationReviewQueue);
+    }
+
+    [Fact]
     public void RabbitMq_MaxDeliveryAttemptsIsNeverZero()
     {
         var configuration = Build(new Dictionary<string, string?>
