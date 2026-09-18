@@ -49,7 +49,7 @@ public sealed class LostFundReturnPersistenceModelTests
     }
 
     [Fact]
-    public void LostFundReturn_DoesNotCoupleToFrozenPrincipalOrJournalBeforePolicyExists()
+    public void LostFundReturn_DoesNotCoupleToFrozenPrincipalOrDedicatedJournalRow()
     {
         using var context = CreateContext();
         var entity = context.Model.FindEntityType(typeof(LostFundReturnRow));
