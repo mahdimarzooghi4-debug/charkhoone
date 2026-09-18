@@ -68,6 +68,20 @@ public sealed class LeaseContractTermsIntegrationTests(CharkhooneApiFactory fact
                 payload => payload.Contains(
                     contractId.ToString("D"),
                     StringComparison.OrdinalIgnoreCase));
+
+            var tenantUserId = await db.LeaseContracts.AsNoTracking()
+                .Where(x => x.Id == contractId)
+                .Select(x => x.TenantUserId)
+                .SingleAsync();
+
+            var reader = new EfContractReadService(db);
+            var detail = await reader.GetDetailAsync(contractId, tenantUserId);
+
+            Assert.NotNull(detail);
+            Assert.NotNull(detail!.Terms);
+            Assert.Equal("Persian", detail.Terms!.Calendar);
+            Assert.Equal(3_000_000_000m, detail.Terms.FullDepositEquivalentRial);
+            Assert.Equal(12, detail.Terms.ScheduleMonths.Count);
         }
 
         await using (var db = CreateDbContext())
