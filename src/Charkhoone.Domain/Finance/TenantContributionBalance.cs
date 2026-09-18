@@ -19,10 +19,14 @@ public sealed record TenantContributionBalanceSnapshot(
         decimal confirmedCoverageRial,
         decimal reservedCoverageRial = 0m)
     {
-        var initial = Money.NonNegative(initialContributionRial, nameof(initialContributionRial));
-        var replenishments = Money.NonNegative(confirmedReplenishmentsRial, nameof(confirmedReplenishmentsRial));
-        var coverage = Money.NonNegative(confirmedCoverageRial, nameof(confirmedCoverageRial));
-        var reserved = Money.NonNegative(reservedCoverageRial, nameof(reservedCoverageRial));
+        var initial = Money.NonNegative(
+            RialAmountPolicy.RequireWholeNonNegative(initialContributionRial, nameof(initialContributionRial)));
+        var replenishments = Money.NonNegative(
+            RialAmountPolicy.RequireWholeNonNegative(confirmedReplenishmentsRial, nameof(confirmedReplenishmentsRial)));
+        var coverage = Money.NonNegative(
+            RialAmountPolicy.RequireWholeNonNegative(confirmedCoverageRial, nameof(confirmedCoverageRial)));
+        var reserved = Money.NonNegative(
+            RialAmountPolicy.RequireWholeNonNegative(reservedCoverageRial, nameof(reservedCoverageRial)));
 
         var postedBalanceRial = initial.Rial + replenishments.Rial - coverage.Rial;
         if (postedBalanceRial < 0m)

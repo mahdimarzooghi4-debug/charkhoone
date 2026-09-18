@@ -6,25 +6,34 @@ namespace Charkhoone.Domain.Tests.Finance;
 public sealed class DomainFinancialModelTests
 {
     [Fact]
-    public void MoneyArithmetic_DoesNotInventRoundingPolicy()
+    public void IntermediateMoneyArithmetic_PreservesDecimalPrecision()
     {
         var cashDeposit = Money.NonNegative(500_000_000m);
         var monthlyRent = Money.NonNegative(10_000_000m);
 
-        var fullDeposit = cashDeposit + (monthlyRent / 0.03m);
+        var exactCalculation = cashDeposit + (monthlyRent / 0.03m);
 
-        Assert.Equal(500_000_000m + (10_000_000m / 0.03m), fullDeposit.Rial);
+        Assert.Equal(500_000_000m + (10_000_000m / 0.03m), exactCalculation.Rial);
+        Assert.Equal(833_333_333m, RialAmountPolicy.FloorToWholeRial(exactCalculation.Rial));
     }
 
     [Fact]
-    public void FundingAllocation_UsesBankApprovedLoanForTenantContribution()
+    public void FundingAllocation_UsesWholeRialBankApprovedLoanForTenantContribution()
     {
-        var fullDeposit = Money.NonNegative(833_333_333.33333333333333333333m);
-        var approvedLoan = Money.NonNegative(458_333_333.33333333333333333333m);
+        var fullDeposit = Money.NonNegative(833_333_333m);
+        var approvedLoan = Money.NonNegative(458_333_333m);
 
         var allocation = FundingAllocation.Create(fullDeposit, approvedLoan);
 
-        Assert.Equal(fullDeposit.Rial - approvedLoan.Rial, allocation.TenantContribution.Rial);
+        Assert.Equal(375_000_000m, allocation.TenantContribution.Rial);
+    }
+
+    [Fact]
+    public void FundingAllocation_RejectsFractionalRialResources()
+    {
+        Assert.Throws<ArgumentException>(() => FundingAllocation.Create(
+            Money.NonNegative(833_333_333.5m),
+            Money.NonNegative(458_333_333m)));
     }
 
     [Fact]

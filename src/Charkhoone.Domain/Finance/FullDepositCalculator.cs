@@ -4,11 +4,26 @@ public static class FullDepositCalculator
 {
     public const decimal MonthlyRentToFullDepositRatio = 0.03m;
 
-    public static decimal Calculate(decimal cashDeposit, decimal monthlyRent)
+    public static decimal Calculate(decimal cashDepositRial, decimal monthlyRentRial)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(cashDeposit);
-        ArgumentOutOfRangeException.ThrowIfNegative(monthlyRent);
+        RialAmountPolicy.RequireWholeNonNegative(cashDepositRial, nameof(cashDepositRial));
+        RialAmountPolicy.RequireWholeNonNegative(monthlyRentRial, nameof(monthlyRentRial));
 
-        return cashDeposit + (monthlyRent / MonthlyRentToFullDepositRatio);
+        var exact = cashDepositRial + (monthlyRentRial / MonthlyRentToFullDepositRatio);
+        return RialAmountPolicy.FloorToWholeRial(exact);
+    }
+
+    public static decimal CalculateFullDepositFromMonthlyRent(decimal monthlyRentRial)
+    {
+        RialAmountPolicy.RequireWholeNonNegative(monthlyRentRial, nameof(monthlyRentRial));
+        return RialAmountPolicy.FloorToWholeRial(
+            monthlyRentRial / MonthlyRentToFullDepositRatio);
+    }
+
+    public static decimal CalculateMonthlyRentFromFullDeposit(decimal fullDepositRial)
+    {
+        RialAmountPolicy.RequireWholeNonNegative(fullDepositRial, nameof(fullDepositRial));
+        return RialAmountPolicy.FloorToWholeRial(
+            fullDepositRial * MonthlyRentToFullDepositRatio);
     }
 }

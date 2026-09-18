@@ -21,12 +21,10 @@ public sealed record FundingAllocation(
 {
     public static FundingAllocation Create(Money fullDepositEquivalent, Money bankApprovedLoan)
     {
-        if (fullDepositEquivalent.Rial < 0m)
-        {
-            throw new ArgumentOutOfRangeException(nameof(fullDepositEquivalent));
-        }
+        RialAmountPolicy.RequireWholeNonNegative(fullDepositEquivalent.Rial, nameof(fullDepositEquivalent));
+        RialAmountPolicy.RequireWholeNonNegative(bankApprovedLoan.Rial, nameof(bankApprovedLoan));
 
-        if (bankApprovedLoan.Rial < 0m || bankApprovedLoan.Rial > fullDepositEquivalent.Rial)
+        if (bankApprovedLoan.Rial > fullDepositEquivalent.Rial)
         {
             throw new ArgumentOutOfRangeException(nameof(bankApprovedLoan));
         }
@@ -49,7 +47,7 @@ public sealed record FrozenPrincipal
         if (contractId == Guid.Empty) throw new ArgumentException("Contract id is required.", nameof(contractId));
         ArgumentException.ThrowIfNullOrWhiteSpace(bankId);
         ArgumentException.ThrowIfNullOrWhiteSpace(fundReference);
-        if (amount.Rial < 0m) throw new ArgumentOutOfRangeException(nameof(amount));
+        RialAmountPolicy.RequireWholeNonNegative(amount.Rial, nameof(amount));
 
         ContractId = contractId;
         BankId = bankId.Trim();

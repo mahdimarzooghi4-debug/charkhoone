@@ -9,15 +9,8 @@ public sealed record JournalLineDraft(Guid LedgerAccountId, Money Debit, Money C
             throw new ArgumentException("Ledger account id is required.", nameof(ledgerAccountId));
         }
 
-        if (debitRial < 0m)
-        {
-            throw new ArgumentOutOfRangeException(nameof(debitRial));
-        }
-
-        if (creditRial < 0m)
-        {
-            throw new ArgumentOutOfRangeException(nameof(creditRial));
-        }
+        RialAmountPolicy.RequireWholeNonNegative(debitRial, nameof(debitRial));
+        RialAmountPolicy.RequireWholeNonNegative(creditRial, nameof(creditRial));
 
         var hasDebit = debitRial > 0m;
         var hasCredit = creditRial > 0m;
