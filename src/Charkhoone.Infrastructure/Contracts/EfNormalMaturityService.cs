@@ -86,7 +86,8 @@ public sealed class EfNormalMaturityService(CharkhooneDbContext dbContext)
 
         var delinquency = await dbContext.ContractDelinquencies
             .SingleOrDefaultAsync(x => x.ContractId == contract.Id, cancellationToken);
-        if (delinquency?.CancellationRequired == true)
+        if (delinquency?.CancellationRequired == true
+            || delinquency?.ConsecutiveMissedMonths >= ConsecutiveMissedMonths.CancellationThreshold)
         {
             await transaction.RollbackAsync(cancellationToken);
             return new PrepareNormalMaturityResult(
@@ -94,6 +95,45 @@ public sealed class EfNormalMaturityService(CharkhooneDbContext dbContext)
                 contract.Id,
                 finalMonth.DueAtUtc,
                 finalMonth.ClosedAtUtc);
+        }
+
+        if (await dbContext.CancellationSettlements.AnyAsync(
+                x => x.ContractId == contract.Id,
+                cancellationToken)
+            || await dbContext.NormalSettlements.AnyAsync(
+                x => x.ContractId == contract.Id,
+                cancellationToken))
+        {
+            await transaction.RollbackAsync(cancellationToken);
+            return new PrepareNormalMaturityResult(
+                PrepareNormalMaturityOutcome.Blocked,
+                contract.Id,
+                finalMonth.DueAtUtc,
+                finalMonth.ClosedAtUtc);
+        }
+
+        var coveredObligationIds = obligations
+            .Where(x => x.Status == MonthlyObligationStatus.Covered)
+            .Select(x => x.Id)
+            .ToArray();
+        if (coveredObligationIds.Length > 0)
+        {
+            var coveredWithSucceededTransferCount = await dbContext.CoveragePayments
+                .Where(x => coveredObligationIds.Contains(x.MonthlyObligationId)
+                    && x.Status == CoveragePaymentStatus.Succeeded)
+                .Select(x => x.MonthlyObligationId)
+                .Distinct()
+                .CountAsync(cancellationToken);
+
+            if (coveredWithSucceededTransferCount != coveredObligationIds.Length)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return new PrepareNormalMaturityResult(
+                    PrepareNormalMaturityOutcome.Blocked,
+                    contract.Id,
+                    finalMonth.DueAtUtc,
+                    finalMonth.ClosedAtUtc);
+            }
         }
 
         var hasUnresolvedCoverage = await dbContext.CoveragePayments
