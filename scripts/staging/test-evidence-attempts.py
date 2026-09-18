@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run the real smoke script with a local curl stand-in; never contact a provider."""
 import fcntl
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -73,9 +74,28 @@ sys.stdout.write("401" if name == "anonymous_contract" else "200")
     database = temp / "database.txt"
     database.write_text(
         f"environment=staging\ngit_sha={SHA}\nstaging_target_binding_sha256={target_hash}\n"
-        "staging_target_database_name_match=true\nmigration=completed\npost_migration_readiness=passed\n")
+        "staging_target_database_name_match=true\n"
+        "provider_backup_evidence=identity-and-raw-hash-verified\n"
+        f"provider_backup_raw_sha256={'a' * 64}\n"
+        f"provider_backup_metadata_sha256={'b' * 64}\n"
+        "provider_restore_evidence=identity-and-raw-hash-verified\n"
+        f"provider_restore_raw_sha256={'c' * 64}\n"
+        f"provider_restore_metadata_sha256={'d' * 64}\n"
+        "migration=completed\npost_migration_readiness=passed\n")
     worker = temp / "worker.txt"
     worker.write_text("synthetic-provider-evidence-only\n")
+    worker_metadata = temp / "worker-metadata.json"
+    worker_metadata.write_text(json.dumps({
+        "schema_version": 1,
+        "environment": "staging",
+        "evidence_kind": "worker-deployment",
+        "staging_target_binding_sha256": target_hash,
+        "provider": "fixture-compute",
+        "scope_id": "workspace-a",
+        "resource_id": "worker-a",
+        "raw_evidence_sha256": hashlib.sha256(worker.read_bytes()).hexdigest(),
+        "git_sha": SHA.lower(),
+    }), encoding="utf-8")
     output = temp / "evidence" / SHA
     env = dict(os.environ,
         PATH=str(bin_dir) + os.pathsep + os.environ["PATH"],
@@ -86,6 +106,7 @@ sys.stdout.write("401" if name == "anonymous_contract" else "200")
         CHARKHOONE_STAGING_CONTRACT_ID="11111111-1111-4111-8111-111111111111",
         CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY=str(database),
         CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE=str(worker),
+        CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA=str(worker_metadata),
         CHARKHOONE_STAGING_WORKER_GIT_SHA=SHA,
         CHARKHOONE_STAGING_TARGET_MANIFEST=str(target_manifest),
         CHARKHOONE_ALLOW_STAGING_APPLICATION_SMOKE="true",
@@ -114,6 +135,7 @@ sys.stdout.write("401" if name == "anonymous_contract" else "200")
         {"CHARKHOONE_STAGING_ACCESS_TOKEN_FILE": str(temp / "missing-token")},
         {"CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY": str(temp / "missing-summary")},
         {"CHARKHOONE_STAGING_TARGET_MANIFEST": str(temp / "missing-target-manifest")},
+        {"CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA": str(temp / "missing-worker-metadata")},
     ]:
         success()
         result = run(changes)
@@ -121,12 +143,41 @@ sys.stdout.write("401" if name == "anonymous_contract" else "200")
         assert not (output / "summary.txt").exists(), "Failed rerun retained prior completion"
         assert not list(output.glob(".attempt.*")), "Failed attempt was not cleaned"
 
+    # Mismatched Worker provider metadata must be rejected before any HTTP request.
+    success()
+    wrong_worker_metadata = temp / "wrong-worker-metadata.json"
+    wrong_worker_metadata.write_text(json.dumps({
+        "schema_version": 1,
+        "environment": "staging",
+        "evidence_kind": "worker-deployment",
+        "staging_target_binding_sha256": target_hash,
+        "provider": "fixture-compute",
+        "scope_id": "workspace-a",
+        "resource_id": "other-worker",
+        "raw_evidence_sha256": hashlib.sha256(worker.read_bytes()).hexdigest(),
+        "git_sha": SHA.lower(),
+    }), encoding="utf-8")
+    curl_called = temp / "curl-called"
+    curl_called.unlink(missing_ok=True)
+    result = run({"CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA": str(wrong_worker_metadata)})
+    assert result.returncode != 0
+    assert not curl_called.exists(), "Worker provider mismatch reached curl instead of failing closed"
+    assert not (output / "summary.txt").exists()
+    assert not list(output.glob(".attempt.*"))
+
     # A database rehearsal from another target must be rejected before any HTTP request.
     success()
     wrong_database = temp / "wrong-database-target.txt"
     wrong_database.write_text(
         f"environment=staging\ngit_sha={SHA}\nstaging_target_binding_sha256={'b' * 64}\n"
-        "staging_target_database_name_match=true\nmigration=completed\npost_migration_readiness=passed\n")
+        "staging_target_database_name_match=true\n"
+        "provider_backup_evidence=identity-and-raw-hash-verified\n"
+        f"provider_backup_raw_sha256={'a' * 64}\n"
+        f"provider_backup_metadata_sha256={'b' * 64}\n"
+        "provider_restore_evidence=identity-and-raw-hash-verified\n"
+        f"provider_restore_raw_sha256={'c' * 64}\n"
+        f"provider_restore_metadata_sha256={'d' * 64}\n"
+        "migration=completed\npost_migration_readiness=passed\n")
     curl_called = temp / "curl-called"
     curl_called.unlink(missing_ok=True)
     result = run({"CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY": str(wrong_database)})

@@ -8,7 +8,9 @@ cd "$ROOT_DIR"
 : "${CHARKHOONE_STAGING_MIGRATION_PSQL_CONNECTION:?psql-compatible staging migration conninfo/URI is required}"
 : "${CHARKHOONE_STAGING_RUNTIME_PSQL_CONNECTION:?psql-compatible staging runtime conninfo/URI is required}"
 : "${CHARKHOONE_STAGING_BACKUP_EVIDENCE:?path to provider-native backup/PITR evidence is required}"
+: "${CHARKHOONE_STAGING_BACKUP_EVIDENCE_METADATA:?path to backup evidence identity metadata is required}"
 : "${CHARKHOONE_STAGING_RESTORE_EVIDENCE:?path to provider-native restore-drill evidence is required}"
+: "${CHARKHOONE_STAGING_RESTORE_EVIDENCE_METADATA:?path to restore evidence identity metadata is required}"
 : "${CHARKHOONE_STAGING_TARGET_MANIFEST:?path to non-secret staging target manifest is required}"
 : "${CHARKHOONE_EXPECTED_GIT_SHA:?expected release git SHA is required}"
 
@@ -25,7 +27,11 @@ for command_name in git psql python3 sha256sum awk dotnet dotnet-ef; do
   command -v "$command_name" >/dev/null 2>&1 || { echo "$command_name is required" >&2; exit 1; }
 done
 
-for evidence_path in "$CHARKHOONE_STAGING_BACKUP_EVIDENCE" "$CHARKHOONE_STAGING_RESTORE_EVIDENCE"; do
+for evidence_path in \
+  "$CHARKHOONE_STAGING_BACKUP_EVIDENCE" \
+  "$CHARKHOONE_STAGING_BACKUP_EVIDENCE_METADATA" \
+  "$CHARKHOONE_STAGING_RESTORE_EVIDENCE" \
+  "$CHARKHOONE_STAGING_RESTORE_EVIDENCE_METADATA"; do
   [[ -f "$evidence_path" && -s "$evidence_path" ]] || {
     echo "Required staging provider evidence is missing or empty: $evidence_path" >&2
     exit 1
@@ -43,6 +49,34 @@ if [[ ! "$target_binding_sha" =~ ^[0-9a-f]{64}$ || -z "$target_database_name" ]]
   echo 'Staging target manifest verifier returned incomplete identity evidence.' >&2
   exit 1
 fi
+
+backup_provider_info="$(python3 scripts/staging/verify-provider-evidence.py \
+  --manifest "$CHARKHOONE_STAGING_TARGET_MANIFEST" \
+  --metadata "$CHARKHOONE_STAGING_BACKUP_EVIDENCE_METADATA" \
+  --raw-evidence "$CHARKHOONE_STAGING_BACKUP_EVIDENCE" \
+  --kind database-backup)"
+restore_provider_info="$(python3 scripts/staging/verify-provider-evidence.py \
+  --manifest "$CHARKHOONE_STAGING_TARGET_MANIFEST" \
+  --metadata "$CHARKHOONE_STAGING_RESTORE_EVIDENCE_METADATA" \
+  --raw-evidence "$CHARKHOONE_STAGING_RESTORE_EVIDENCE" \
+  --kind database-restore)"
+
+read_provider_record() {
+  local payload=$1
+  local key=$2
+  printf '%s\n' "$payload" | awk -F= -v wanted="$key" '$1 == wanted { sub(/^[^=]*=/, ""); print; exit }'
+}
+
+backup_raw_hash="$(read_provider_record "$backup_provider_info" provider_evidence_raw_sha256)"
+backup_metadata_hash="$(read_provider_record "$backup_provider_info" provider_evidence_metadata_sha256)"
+restore_raw_hash="$(read_provider_record "$restore_provider_info" provider_evidence_raw_sha256)"
+restore_metadata_hash="$(read_provider_record "$restore_provider_info" provider_evidence_metadata_sha256)"
+for evidence_hash in "$backup_raw_hash" "$backup_metadata_hash" "$restore_raw_hash" "$restore_metadata_hash"; do
+  [[ "$evidence_hash" =~ ^[0-9a-f]{64}$ ]] || {
+    echo 'Provider evidence verifier returned an invalid evidence hash.' >&2
+    exit 1
+  }
+done
 
 actual_sha="$(git rev-parse HEAD)"
 if [[ "$actual_sha" != "$CHARKHOONE_EXPECTED_GIT_SHA" ]]; then
@@ -117,8 +151,10 @@ migration_sql="$output_dir/migrations-idempotent.sql"
 scripts/database/generate-idempotent-sql.sh "$migration_sql" >/dev/null
 sha256sum "$migration_sql" > "$output_dir/migrations-idempotent.sha256"
 
-sha256sum "$CHARKHOONE_STAGING_BACKUP_EVIDENCE" | awk '{print $1}' > "$output_dir/provider-backup-evidence.sha256"
-sha256sum "$CHARKHOONE_STAGING_RESTORE_EVIDENCE" | awk '{print $1}' > "$output_dir/provider-restore-evidence.sha256"
+printf '%s\n' "$backup_raw_hash" > "$output_dir/provider-backup-evidence.sha256"
+printf '%s\n' "$backup_metadata_hash" > "$output_dir/provider-backup-evidence-metadata.sha256"
+printf '%s\n' "$restore_raw_hash" > "$output_dir/provider-restore-evidence.sha256"
+printf '%s\n' "$restore_metadata_hash" > "$output_dir/provider-restore-evidence-metadata.sha256"
 
 CHARKHOONE_DATABASE_CONNECTION="$CHARKHOONE_STAGING_MIGRATION_CONNECTION" \
 CHARKHOONE_DATABASE_ENVIRONMENT=staging \
@@ -153,8 +189,12 @@ scripts/database/capture-query-plans.sh
   printf 'pre_migration_runtime_role=passed\n'
   printf 'pre_migration_observability=captured\n'
   printf 'pre_migration_pitr_sql_evidence=captured-provider-native-proof-separate\n'
-  printf 'provider_backup_evidence=operator-supplied-hash-recorded\n'
-  printf 'provider_restore_evidence=operator-supplied-hash-recorded\n'
+  printf 'provider_backup_evidence=identity-and-raw-hash-verified\n'
+  printf 'provider_backup_raw_sha256=%s\n' "$backup_raw_hash"
+  printf 'provider_backup_metadata_sha256=%s\n' "$backup_metadata_hash"
+  printf 'provider_restore_evidence=identity-and-raw-hash-verified\n'
+  printf 'provider_restore_raw_sha256=%s\n' "$restore_raw_hash"
+  printf 'provider_restore_metadata_sha256=%s\n' "$restore_metadata_hash"
   printf 'migration=completed\n'
   printf 'post_migration_readiness=passed\n'
   printf 'query_plan_evidence=captured-on-operator-confirmed-representative-dataset\n'

@@ -17,7 +17,8 @@ Required inputs include:
 - `CHARKHOONE_STAGING_ACCESS_TOKEN_FILE`: read-only staging token file.
 - `CHARKHOONE_STAGING_CONTRACT_ID`: existing staging contract accessible to the smoke identity.
 - `CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY`: completed database rehearsal summary for the same SHA.
-- `CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE`: non-empty provider deployment evidence whose hash is retained.
+- `CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE`: raw provider deployment evidence.
+- `CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA`: non-secret identity/hash sidecar for the exact raw Worker deployment evidence.
 - `CHARKHOONE_STAGING_WORKER_GIT_SHA`: provider/operator-reported Worker release SHA.
 - `CHARKHOONE_ALLOW_STAGING_APPLICATION_SMOKE=true`: explicit operator opt-in.
 
@@ -25,7 +26,7 @@ Remote Worker health URLs must use HTTPS. Plain HTTP is allowed only for loopbac
 
 ## Read-only checks
 
-Before the first HTTP request, the target manifest fingerprint must match the completed database rehearsal summary. The supplied API base URL and Worker health URL must also match the manifest.
+Before the first HTTP request, the target manifest fingerprint must match the completed database rehearsal summary. The rehearsal summary must also show provider-bound backup and restore evidence with valid raw/metadata SHA-256 values. The supplied API base URL and Worker health URL must match the manifest. Worker deployment metadata must bind the same Worker provider/scope/resource, the exact raw deployment evidence SHA-256, and the exact release git SHA.
 
 The smoke runner performs GET-only checks:
 
@@ -53,7 +54,9 @@ The application-smoke summary records:
 - Worker HTTP release-header match,
 - Worker HTTP liveness success,
 - Worker service identity match,
-- hash binding to provider deployment evidence,
+- provider/resource identity match for Worker deployment evidence,
+- raw Worker deployment evidence hash binding,
+- Worker deployment metadata hash binding,
 - no financial mutations,
 - no retained response bodies or token,
 - no automatic promotion decision.

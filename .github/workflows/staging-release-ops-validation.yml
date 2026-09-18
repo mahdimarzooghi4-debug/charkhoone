@@ -8,6 +8,7 @@ on:
       - "scripts/database/staging-rehearsal.sh"
       - "deploy/staging-target-manifest.example.json"
       - "docs/staging-target-identity-binding-v1.md"
+      - "docs/staging-provider-evidence-identity-binding-v1.md"
       - "docs/staging-application-smoke-release-gate-v1.md"
       - "docs/staging-release-promotion-evidence-v1.md"
       - ".github/workflows/staging-release-ops-validation.yml"
@@ -17,6 +18,7 @@ on:
       - "scripts/database/staging-rehearsal.sh"
       - "deploy/staging-target-manifest.example.json"
       - "docs/staging-target-identity-binding-v1.md"
+      - "docs/staging-provider-evidence-identity-binding-v1.md"
       - "docs/staging-application-smoke-release-gate-v1.md"
       - "docs/staging-release-promotion-evidence-v1.md"
       - ".github/workflows/staging-release-ops-validation.yml"
@@ -40,6 +42,8 @@ jobs:
         run: |
           python3 scripts/staging/verify-target-manifest.py deploy/staging-target-manifest.example.json >/dev/null
           python3 scripts/staging/test-target-manifest.py
+      - name: Validate provider evidence identity binding
+        run: python3 scripts/staging/test-provider-evidence.py
       - name: Exercise promotion packet hash bindings
         shell: bash
         run: bash scripts/staging/ci-promotion-packet-fixture.sh

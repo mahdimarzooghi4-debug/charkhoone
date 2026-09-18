@@ -4,21 +4,55 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-for command_name in git mktemp mkdir rm sha256sum grep wc awk tr cp mv; do
+for command_name in git mktemp mkdir rm sha256sum grep wc awk tr cp mv python3; do
   command -v "$command_name" >/dev/null 2>&1 || { echo "$command_name is required" >&2; exit 1; }
 done
 
 expected_sha="$(git rev-parse HEAD | tr '[:upper:]' '[:lower:]')"
-target_hash='aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
 temp_dir="$(mktemp -d)"
 trap 'rm -rf "$temp_dir"' EXIT
 
 application_dir="$temp_dir/application-smoke"
 database_summary="$temp_dir/database-summary.txt"
 worker_evidence="$temp_dir/worker-deployment.txt"
+worker_metadata="$temp_dir/worker-deployment-metadata.json"
+target_manifest="$temp_dir/staging-target.json"
 ci_evidence="$temp_dir/ci-evidence.txt"
 packet_root="$temp_dir/promotion-packet"
 mkdir -p "$application_dir"
+
+cat > "$target_manifest" <<'EOF'
+{
+  "schema_version": 1,
+  "environment": "staging",
+  "database": {
+    "provider": "fixture-db",
+    "scope_id": "workspace-a",
+    "resource_id": "postgres-a",
+    "database_name": "charkhoone_staging"
+  },
+  "message_broker": {
+    "provider": "fixture-mq",
+    "scope_id": "workspace-a",
+    "resource_id": "rabbitmq-a"
+  },
+  "api": {
+    "provider": "fixture-compute",
+    "scope_id": "workspace-a",
+    "resource_id": "api-a",
+    "base_url": "https://api.invalid"
+  },
+  "worker": {
+    "provider": "fixture-compute",
+    "scope_id": "workspace-a",
+    "resource_id": "worker-a",
+    "health_url": "https://worker.invalid/health/live"
+  }
+}
+EOF
+
+target_hash="$(python3 scripts/staging/verify-target-manifest.py "$target_manifest" | awk -F= '$1 == "staging_target_binding_sha256" { print $2; exit }')"
+[[ "$target_hash" =~ ^[0-9a-f]{64}$ ]]
 
 cat > "$database_summary" <<EOF
 environment=staging
@@ -27,8 +61,12 @@ staging_target_binding_sha256=$target_hash
 staging_target_database_name_match=true
 migration_runtime_roles_distinct=true
 migration_runtime_database_name_match=true
-provider_backup_evidence=operator-supplied-hash-recorded
-provider_restore_evidence=operator-supplied-hash-recorded
+provider_backup_evidence=identity-and-raw-hash-verified
+provider_backup_raw_sha256=$(printf 'fixture-backup' | sha256sum | awk '{print $1}')
+provider_backup_metadata_sha256=$(printf 'fixture-backup-meta' | sha256sum | awk '{print $1}')
+provider_restore_evidence=identity-and-raw-hash-verified
+provider_restore_raw_sha256=$(printf 'fixture-restore' | sha256sum | awk '{print $1}')
+provider_restore_metadata_sha256=$(printf 'fixture-restore-meta' | sha256sum | awk '{print $1}')
 migration=completed
 post_migration_readiness=passed
 query_plan_evidence=captured-on-operator-confirmed-representative-dataset
@@ -53,7 +91,8 @@ worker_release_sha=matched-operator-platform-evidence
 worker_http_release_header=matched
 worker_http_liveness=passed
 worker_http_identity=matched
-worker_deployment_evidence=hash-recorded
+worker_deployment_evidence=identity-and-raw-hash-verified
+worker_deployment_metadata=hash-recorded
 financial_mutations=not-exercised
 response_bodies=not-retained
 access_token=not-retained
@@ -71,8 +110,31 @@ worker_health_live=200
 EOF
 
 printf 'provider=fixture\ngit_sha=%s\nstatus=deployed\n' "$expected_sha" > "$worker_evidence"
+worker_raw_hash="$(sha256sum "$worker_evidence" | awk '{print $1}')"
+cat > "$worker_metadata" <<EOF
+{
+  "schema_version": 1,
+  "environment": "staging",
+  "evidence_kind": "worker-deployment",
+  "staging_target_binding_sha256": "$target_hash",
+  "provider": "fixture-compute",
+  "scope_id": "workspace-a",
+  "resource_id": "worker-a",
+  "raw_evidence_sha256": "$worker_raw_hash",
+  "git_sha": "$expected_sha"
+}
+EOF
+
+python3 scripts/staging/verify-provider-evidence.py \
+  --manifest "$target_manifest" \
+  --metadata "$worker_metadata" \
+  --raw-evidence "$worker_evidence" \
+  --kind worker-deployment \
+  --expected-git-sha "$expected_sha" >/dev/null
+
 printf '%s\n' "$(sha256sum "$database_summary" | awk '{print $1}')" > "$application_dir/database-rehearsal-summary.sha256"
-printf '%s\n' "$(sha256sum "$worker_evidence" | awk '{print $1}')" > "$application_dir/worker-deployment-evidence.sha256"
+printf '%s\n' "$worker_raw_hash" > "$application_dir/worker-deployment-evidence.sha256"
+printf '%s\n' "$(sha256sum "$worker_metadata" | awk '{print $1}')" > "$application_dir/worker-deployment-evidence-metadata.sha256"
 printf '%s\n' "$target_hash" > "$application_dir/staging-target-binding.sha256"
 
 cat > "$ci_evidence" <<EOF
@@ -91,6 +153,8 @@ run_packet() {
   CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY="$database_summary" \
   CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR="$application_dir" \
   CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE="$worker_evidence" \
+  CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE_METADATA="$worker_metadata" \
+  CHARKHOONE_STAGING_TARGET_MANIFEST="$target_manifest" \
   CHARKHOONE_RELEASE_CI_EVIDENCE="$ci_evidence" \
   CHARKHOONE_ALLOW_STAGING_PROMOTION_PACKET=true \
   CHARKHOONE_STAGING_PROMOTION_PACKET_DIR="$packet_root" \
@@ -103,7 +167,10 @@ test -s "$output_dir/evidence-manifest.tsv"
 test -s "$output_dir/promotion-readiness.txt"
 grep -Fxq "git_sha=$expected_sha" "$output_dir/promotion-readiness.txt"
 grep -Fxq 'database_rehearsal_hash_binding=matched' "$output_dir/promotion-readiness.txt"
+grep -Fxq 'database_provider_evidence_hashes=validated' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'worker_deployment_evidence_hash_binding=matched' "$output_dir/promotion-readiness.txt"
+grep -Fxq 'worker_deployment_metadata_hash_binding=matched' "$output_dir/promotion-readiness.txt"
+grep -Fxq 'worker_provider_identity=matched-target-manifest' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'staging_target_binding=matched-across-database-and-application' "$output_dir/promotion-readiness.txt"
 grep -Fxq "staging_target_binding_sha256=$target_hash" "$output_dir/promotion-readiness.txt"
 grep -Fxq 'worker_http_release_header=validated' "$output_dir/promotion-readiness.txt"
@@ -111,7 +178,7 @@ grep -Fxq 'worker_http_liveness=validated' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'worker_http_identity=validated' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'promotion_decision=human-required' "$output_dir/promotion-readiness.txt"
 grep -Fxq 'deployment_action=none' "$output_dir/promotion-readiness.txt"
-[[ "$(wc -l < "$output_dir/evidence-manifest.tsv")" -eq 9 ]]
+[[ "$(wc -l < "$output_dir/evidence-manifest.tsv")" -eq 11 ]]
 
 cp "$application_dir/summary.txt" "$application_dir/summary.valid.txt"
 grep -v '^worker_http_liveness=passed$' "$application_dir/summary.valid.txt" > "$application_dir/summary.txt"
@@ -132,7 +199,6 @@ fi
 [[ ! -e "$output_dir/promotion-readiness.txt" ]]
 mv "$application_dir/summary.target-valid.txt" "$application_dir/summary.txt"
 
-# A packet reader must reject a smoke writer holding the source lock.
 run_packet >/dev/null
 exec {fixture_lock_fd}>"$application_dir/.evidence.lock"
 flock --exclusive "$fixture_lock_fd"
@@ -149,7 +215,14 @@ if run_packet >/dev/null 2>&1; then
   echo 'Promotion packet unexpectedly accepted worker evidence that changed after application smoke.' >&2
   exit 1
 fi
+[[ ! -e "$output_dir/promotion-readiness.txt" ]]
 
+printf 'provider=fixture\ngit_sha=%s\nstatus=deployed\n' "$expected_sha" > "$worker_evidence"
+printf '\n' >> "$worker_metadata"
+if run_packet >/dev/null 2>&1; then
+  echo 'Promotion packet unexpectedly accepted worker metadata bytes that changed after application smoke.' >&2
+  exit 1
+fi
 [[ ! -e "$output_dir/promotion-readiness.txt" ]]
 
 printf 'Promotion packet fixture tests passed.\n'
