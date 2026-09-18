@@ -14,6 +14,7 @@ export type PilotPaymentQueueItem = {
   paymentInstructionId: string;
   monthlyObligationId: string;
   contractId: string;
+  creditApplicationId: string | null;
   contractMonthNumber: number;
   kind: string;
   beneficiaryId: string;
