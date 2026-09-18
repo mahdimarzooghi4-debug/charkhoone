@@ -77,6 +77,17 @@ public sealed class EfCancellationBankPrincipalSettlementService(
                     null);
             }
 
+            if (await LoadFundFreezeEvidenceAsync(
+                    contract.Id,
+                    frozenPrincipal.FundReference,
+                    cancellationToken) is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return new SettleCancellationBankPrincipalResult(
+                    SettleCancellationBankPrincipalOutcome.InvalidState,
+                    null);
+            }
+
             idempotencyKey = ExternalTransactionIdempotencyKey(contract.Id);
             var externalTransaction = await dbContext.ExternalTransactions
                 .SingleOrDefaultAsync(x => x.IdempotencyKey == idempotencyKey, cancellationToken);
@@ -222,12 +233,18 @@ public sealed class EfCancellationBankPrincipalSettlementService(
                 failedView);
         }
 
+        var fundFreezeEvidence = await LoadFundFreezeEvidenceAsync(
+            contractId,
+            frozenPrincipalRow.FundReference,
+            cancellationToken);
+
         if (contractRow.Status != LeaseContractStatus.Cancelled
             || cancellationSettlementRow.Status != CancellationSettlementStatus.Completed
             || cancellationSettlementRow.CompletedAtUtc is null
             || frozenPrincipalRow.BankId != bankId
             || frozenPrincipalRow.FundReference != fundReference
             || frozenPrincipalRow.AmountRial != amountRial
+            || fundFreezeEvidence is null
             || !MatchesExternalTransaction(externalRow, contractId, amountRial, idempotencyKey)
             || await dbContext.NormalSettlements.AnyAsync(x => x.ContractId == contractId, cancellationToken))
         {
@@ -402,6 +419,41 @@ public sealed class EfCancellationBankPrincipalSettlementService(
             externalTransactionId = externalRow.Id,
             occurredAtUtc,
         });
+        AddOutbox("lease-contract.cancelled-fund-notification-requested.v1", occurredAtUtc, new
+        {
+            contractId,
+            cancellationSettlementId,
+            fundProvider = fundFreezeEvidence!.Provider,
+            fundReference = fundFreezeEvidence.FundReference,
+            bankId = frozenPrincipalRow.BankId,
+            amountRial = frozenPrincipalRow.AmountRial,
+            externalTransactionId = externalRow.Id,
+            occurredAtUtc,
+        });
+
+        AddAudit(
+            contractId,
+            "system:cancellation-financial-completion",
+            "cancellation_financially_completed",
+            "Cancellation owner settlement and frozen bank-principal return are both complete with stakeholder notification evidence.",
+            occurredAtUtc);
+        AddOutbox("lease-contract.cancellation-financially-completed.v1", occurredAtUtc, new
+        {
+            contractId,
+            cancellationSettlementId,
+            tenantUserId = contractRow.TenantUserId,
+            ownerUserId = cancellationSettlementRow.OwnerUserId,
+            ownerResidualAmountRial = cancellationSettlementRow.AmountRial,
+            ownerExternalTransactionId = cancellationSettlementRow.ExternalTransactionId,
+            ownerJournalEntryId = cancellationSettlementRow.JournalEntryId,
+            bankId = frozenPrincipalRow.BankId,
+            bankPrincipalAmountRial = frozenPrincipalRow.AmountRial,
+            fundProvider = fundFreezeEvidence.Provider,
+            fundReference = fundFreezeEvidence.FundReference,
+            bankExternalTransactionId = externalRow.Id,
+            bankJournalEntryId = returnJournal.Id,
+            occurredAtUtc,
+        });
 
         await dbContext.SaveChangesAsync(cancellationToken);
         await resultTransaction.CommitAsync(cancellationToken);
@@ -530,6 +582,36 @@ public sealed class EfCancellationBankPrincipalSettlementService(
             frozenPrincipal,
             externalTransaction,
             journal.Id);
+    }
+
+    private async Task<FundFreezeEvidence?> LoadFundFreezeEvidenceAsync(
+        Guid contractId,
+        string expectedFundReference,
+        CancellationToken cancellationToken)
+    {
+        var allocation = await dbContext.FundingAllocations
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.ContractId == contractId, cancellationToken);
+        if (allocation is null)
+        {
+            return null;
+        }
+
+        var freeze = await dbContext.FundPrincipalFreezes
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.FundingAllocationId == allocation.Id, cancellationToken);
+        if (freeze is null
+            || !string.Equals(freeze.Status, "Confirmed", StringComparison.Ordinal)
+            || string.IsNullOrWhiteSpace(freeze.Provider)
+            || string.IsNullOrWhiteSpace(freeze.FundReference)
+            || !string.Equals(freeze.FundReference.Trim(), expectedFundReference, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return new FundFreezeEvidence(
+            freeze.Provider.Trim(),
+            freeze.FundReference.Trim());
     }
 
     private async Task<FrozenPrincipalLedgerAccounts?> GetFrozenPrincipalLedgerAccountsAsync(
@@ -768,6 +850,10 @@ public sealed class EfCancellationBankPrincipalSettlementService(
 
     private static string ReturnJournalIdempotencyKey(Guid contractId) =>
         $"journal:cancellation-bank-principal:{contractId:D}:v1";
+
+    private sealed record FundFreezeEvidence(
+        string Provider,
+        string FundReference);
 
     private sealed record FrozenPrincipalLedgerAccounts(
         LedgerAccountRow FundFrozenAsset,
