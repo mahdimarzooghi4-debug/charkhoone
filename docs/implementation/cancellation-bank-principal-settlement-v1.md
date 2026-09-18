@@ -53,11 +53,18 @@ The frozen principal never enters owner residual, tenant contribution, delinquen
 
 ## Evidence and notifications
 
+Before the bank return starts, the workflow also requires the historical confirmed fund-freeze record to match the immutable frozen-principal `FundReference`. This preserves the real fund/provider routing identity instead of inventing a notification recipient.
+
 Successful return writes:
 
 - audit action `cancellation_bank_principal_returned`
 - outbox `lease-contract.cancellation-bank-principal-returned.v1`
 - bank notification request `lease-contract.cancelled-bank-notification-requested.v1`
+- fund notification request `lease-contract.cancelled-fund-notification-requested.v1`
+- terminal audit action `cancellation_financially_completed`
+- terminal outbox `lease-contract.cancellation-financially-completed.v1`
+
+The terminal completion event is written in the same database transaction as the confirmed bank-return journal. Its payload binds tenant, owner, bank, and fund identities to the cancellation-settlement and bank-principal accounting evidence.
 
 Replay validates the persisted external success, recognition journal, and return journal before returning `AlreadyCompleted`; it does not call the provider again.
 
