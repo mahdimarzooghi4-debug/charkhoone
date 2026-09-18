@@ -63,7 +63,7 @@ namespace Charkhoone.Infrastructure.Persistence.Migrations
                     table.CheckConstraint("CK_lease_contract_schedule_amounts", @"""OwnerPaymentRial"" >= 0 AND ""BankInterestRial"" >= 0 AND (""OwnerPaymentRial"" > 0 OR ""BankInterestRial"" > 0) AND ""OwnerPaymentRial"" = trunc(""OwnerPaymentRial"") AND ""BankInterestRial"" = trunc(""BankInterestRial"") AND ""OwnerPaymentRial""::text NOT IN ('NaN', 'Infinity', '-Infinity') AND ""BankInterestRial""::text NOT IN ('NaN', 'Infinity', '-Infinity')");
                     table.CheckConstraint("CK_lease_contract_schedule_month_number", @"""ContractMonthNumber"" BETWEEN 1 AND 12");
                     table.ForeignKey(
-                        name: "FK_lease_contract_schedule_months_lease_contract_terms_ContractId",
+                        name: "FK_lease_contract_schedule_months_lease_contract_terms_Contrac~",
                         column: x => x.ContractId,
                         principalTable: "lease_contract_terms",
                         principalColumn: "ContractId",
