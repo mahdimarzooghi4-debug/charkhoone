@@ -44,6 +44,36 @@ public sealed record SelectBankLoanPlanResult(
     SelectBankLoanPlanOutcome Outcome,
     BankLoanPlanSelectionView? Selection);
 
+
+public enum ListBankLoanPlansOutcome
+{
+    Available,
+    NotFound,
+    InvalidState,
+}
+
+public sealed record BankLoanPlanListItem(
+    Guid PlanId,
+    string Version,
+    string BankId,
+    string Title,
+    string InterestTerms,
+    int TermMonths);
+
+public sealed record ListBankLoanPlansResult(
+    ListBankLoanPlansOutcome Outcome,
+    Guid CreditApplicationId,
+    CreditApplicationStatus? ApplicationStatus,
+    IReadOnlyList<BankLoanPlanListItem> Plans);
+
+public interface IBankLoanPlanReadService
+{
+    Task<ListBankLoanPlansResult> ListAvailableAsync(
+        Guid applicationId,
+        Guid applicantUserId,
+        CancellationToken cancellationToken = default);
+}
+
 public interface IUserIdentityLookup
 {
     Task<Guid?> FindInternalUserIdAsync(
