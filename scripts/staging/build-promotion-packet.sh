@@ -5,17 +5,13 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
 : "${CHARKHOONE_EXPECTED_GIT_SHA:?expected release git SHA is required}"
-: "${CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY:?database rehearsal summary path is required}"
-: "${CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR:?application smoke evidence directory is required}"
-: "${CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE:?worker deployment evidence path is required}"
-: "${CHARKHOONE_RELEASE_CI_EVIDENCE:?release CI evidence path is required}"
 
 [[ ${CHARKHOONE_ALLOW_STAGING_PROMOTION_PACKET:-false} == true ]] || {
   echo 'Set CHARKHOONE_ALLOW_STAGING_PROMOTION_PACKET=true only after collecting the release evidence set.' >&2
   exit 1
 }
 
-for command_name in git sha256sum awk grep date mkdir tr; do
+for command_name in flock mktemp chmod mv rm git sha256sum awk grep date mkdir tr; do
   command -v "$command_name" >/dev/null 2>&1 || { echo "$command_name is required" >&2; exit 1; }
 done
 
@@ -25,11 +21,34 @@ if [[ ! "$expected_sha" =~ ^[0-9a-f]{40}$ ]]; then
   exit 1
 fi
 
+# Once the target SHA and explicit opt-in are valid, every new attempt
+# invalidates prior completion, including failures in subsequent input checks.
+source "$ROOT_DIR/scripts/staging/evidence-attempt.sh"
+output_root="${CHARKHOONE_STAGING_PROMOTION_PACKET_DIR:-artifacts/staging/promotion-packet}"
+begin_evidence_attempt "$output_root/$expected_sha" 'promotion-readiness.txt'
+
+: "${CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY:?database rehearsal summary path is required}"
+: "${CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR:?application smoke evidence directory is required}"
+: "${CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE:?worker deployment evidence path is required}"
+: "${CHARKHOONE_RELEASE_CI_EVIDENCE:?release CI evidence path is required}"
+
 actual_sha="$(git rev-parse HEAD | tr '[:upper:]' '[:lower:]')"
 if [[ "$actual_sha" != "$expected_sha" ]]; then
   echo 'Checked-out git SHA does not match CHARKHOONE_EXPECTED_GIT_SHA; packet generation blocked.' >&2
   exit 1
 fi
+
+# Hold a shared lock throughout validation and hashing. A smoke writer cannot
+# replace the completion marker or its artifact set while the packet consumes it.
+[[ -d "$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR" ]] || {
+  echo 'Application smoke evidence directory does not exist.' >&2
+  exit 1
+}
+exec {application_lock_fd}>"$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/.evidence.lock"
+flock --shared --nonblock "$application_lock_fd" || {
+  echo 'Application smoke evidence is being written; packet generation blocked.' >&2
+  exit 1
+}
 
 application_summary="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/summary.txt"
 application_statuses="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/http-statuses.txt"
@@ -132,11 +151,8 @@ if [[ "$actual_worker_hash" != "$recorded_worker_hash" ]]; then
   exit 1
 fi
 
-output_root="${CHARKHOONE_STAGING_PROMOTION_PACKET_DIR:-artifacts/staging/promotion-packet}"
-output_dir="$output_root/$expected_sha"
-mkdir -p "$output_dir"
 
-manifest="$output_dir/evidence-manifest.tsv"
+manifest="$attempt_dir/evidence-manifest.tsv"
 {
   printf 'evidence\tsha256\n'
   printf 'database_rehearsal_summary\t%s\n' "$actual_database_hash"
@@ -166,7 +182,9 @@ manifest="$output_dir/evidence-manifest.tsv"
   printf 'promotion_decision=human-required\n'
   printf 'deployment_action=none\n'
   date -u '+completed_at_utc=%Y-%m-%dT%H:%M:%SZ'
-} > "$output_dir/promotion-readiness.txt"
+} > "$attempt_dir/promotion-readiness.txt"
+
+publish_evidence_attempt
 
 printf 'Promotion evidence packet generated at %s\n' "$output_dir"
 printf 'The packet records hashes and normalized checks only; it does not deploy or approve promotion.\n'

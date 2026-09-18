@@ -110,12 +110,27 @@ if run_packet >/dev/null 2>&1; then
   echo 'Promotion packet unexpectedly accepted application evidence without Worker HTTP liveness proof.' >&2
   exit 1
 fi
+[[ ! -e "$output_dir/promotion-readiness.txt" ]]
 mv "$application_dir/summary.valid.txt" "$application_dir/summary.txt"
+
+# A packet reader must reject a smoke writer holding the source lock.
+run_packet >/dev/null
+exec {fixture_lock_fd}>"$application_dir/.evidence.lock"
+flock --exclusive "$fixture_lock_fd"
+if run_packet >/dev/null 2>&1; then
+  echo 'Promotion packet unexpectedly read evidence while a writer held its lock.' >&2
+  exit 1
+fi
+[[ ! -e "$output_dir/promotion-readiness.txt" ]]
+exec {fixture_lock_fd}>&-
+run_packet >/dev/null
 
 printf '\ntampered-after-smoke=true\n' >> "$worker_evidence"
 if run_packet >/dev/null 2>&1; then
   echo 'Promotion packet unexpectedly accepted worker evidence that changed after application smoke.' >&2
   exit 1
 fi
+
+[[ ! -e "$output_dir/promotion-readiness.txt" ]]
 
 printf 'Promotion packet fixture tests passed.\n'

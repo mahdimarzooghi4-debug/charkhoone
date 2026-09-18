@@ -2,7 +2,7 @@ name: staging-release-ops-validation
 
 on:
   push:
-    branches: ["feature/**"]
+    branches: [main, "feature/**"]
     paths:
       - "scripts/staging/**"
       - "docs/staging-application-smoke-release-gate-v1.md"
@@ -32,3 +32,5 @@ jobs:
       - name: Exercise promotion packet hash bindings
         shell: bash
         run: bash scripts/staging/ci-promotion-packet-fixture.sh
+      - name: Exercise fail-closed evidence reruns and writer locks
+        run: python3 scripts/staging/test-evidence-attempts.py

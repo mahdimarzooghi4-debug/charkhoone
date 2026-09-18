@@ -73,3 +73,11 @@ Before any production promotion, independently verify:
 - unresolved financial policy was not introduced through configuration or manual data operations.
 
 The packet is necessary evidence, not an automatic go/no-go decision.
+
+## Rerun and reader/writer consistency
+
+An opted-in packet attempt with a valid target SHA invalidates any previous `promotion-readiness.txt` before validating release inputs. A failure cannot leave the prior packet's completion marker in place. New hashes/normalized checks are staged privately; the readiness marker is atomically renamed last. A previous `evidence-manifest.tsv` without the readiness marker is incomplete evidence and must not be used to approve promotion.
+
+The packet builder holds a shared lock on the application smoke evidence directory while checking and hashing it, preventing a cooperating smoke writer from replacing that evidence mid-read. It holds an exclusive lock on its own output directory for the attempt. A concurrent writer/reader conflict fails closed. Operator-supplied external evidence must remain stable; these locks do not lock provider files or attest provider truth. Already generated packets are historical records and are not automatically revoked when a later smoke attempt fails; an operator must collect a fresh successful packet for the intended attempt.
+
+The CI packet fixture now verifies missing Worker proof and tampered provider evidence invalidate previous readiness, and that a held smoke writer lock blocks packet creation. The staging validation workflow also runs on matching `main` pushes, allowing post-merge verification. No deployment, credentials, live ruleset enforcement, staging contact or production contact is implied by these synthetic tests.

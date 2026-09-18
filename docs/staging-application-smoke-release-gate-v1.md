@@ -60,3 +60,11 @@ The Worker endpoint is a process/host liveness signal only. It does not claim Po
 A passing smoke does not prove provider provenance by itself and is not production approval. Real staging still requires actual provider credentials, deployment evidence, database backup/PITR and restore evidence, and human promotion review.
 
 Undefined financial policies remain intentionally unresolved: the exact 3% lost-fund return formula, partial-payment allocation, and early-cancellation frozen-principal release timing are not encoded or exercised.
+
+## Fail-closed evidence reruns (v1)
+
+Once explicit opt-in and a syntactically valid expected SHA identify the output directory, the smoke runner acquires an exclusive `.evidence.lock` and removes the previous `summary.txt` **before** validating the other inputs or contacting endpoints. A failed same-SHA rerun therefore cannot leave an earlier completion marker available for a new promotion packet. A busy directory rejects the new attempt without modifying the active attempt/reader's files.
+
+Evidence is prepared in a private `.attempt.*` directory on the same filesystem. Validated artifacts are renamed into place and `summary.txt` is renamed last as the completion marker. Consumers must require that marker and use the shared lock; existence of old status/hash files alone is not completion. EXIT/INT/TERM cleanup removes private attempt files; SIGKILL cannot run cleanup, but the prior completion was already invalidated. Lock files are intentionally retained to avoid unlink/inode races. These are advisory local-filesystem locks, not distributed provider locks. Operator inputs must remain stable during an attempt.
+
+`scripts/staging/test-evidence-attempts.py` runs the actual shell runner with a local `curl` stand-in. It verifies successful runs, missing input/incorrect SHA/early and late transport failure after a previous success, reader/writer exclusion, terminated attempts, clean retry, CRLF HTTP headers and token non-retention. It performs no network request and proves no actual staging readiness. The HTTP security-header check explicitly removes CR before testing `nosniff`, so real CRLF headers are accepted.
