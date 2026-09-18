@@ -146,10 +146,15 @@ public sealed class MonthlyScheduleProvisioningIntegrationTests(CharkhooneApiFac
             await finalDb.AuditEvents.CountAsync(x =>
                 x.AggregateId == fixture.ContractId
                 && x.Action == "monthly_schedule_provisioned"));
-        Assert.Equal(
-            1,
-            await finalDb.OutboxMessages.CountAsync(x =>
-                x.Type == "lease-contract.monthly-schedule-provisioned.v1"));
+        var finalProvisionedPayloads = await finalDb.OutboxMessages.AsNoTracking()
+            .Where(x => x.Type == "lease-contract.monthly-schedule-provisioned.v1")
+            .Select(x => x.PayloadJson)
+            .ToListAsync();
+        Assert.Single(
+            finalProvisionedPayloads,
+            payload => payload.Contains(
+                fixture.ContractId.ToString("D"),
+                StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -241,10 +246,15 @@ public sealed class MonthlyScheduleProvisioningIntegrationTests(CharkhooneApiFac
                 await db.AuditEvents.CountAsync(x =>
                     x.AggregateId == fixture.ContractId
                     && x.Action == "monthly_schedule_provisioning_conflict"));
-            Assert.Equal(
-                1,
-                await db.OutboxMessages.CountAsync(x =>
-                    x.Type == "lease-contract.monthly-schedule-provisioning-review-required.v1"));
+            var reviewPayloads = await db.OutboxMessages.AsNoTracking()
+                .Where(x => x.Type == "lease-contract.monthly-schedule-provisioning-review-required.v1")
+                .Select(x => x.PayloadJson)
+                .ToListAsync();
+            Assert.Single(
+                reviewPayloads,
+                payload => payload.Contains(
+                    fixture.ContractId.ToString("D"),
+                    StringComparison.OrdinalIgnoreCase));
             Assert.Equal(
                 0,
                 await db.AuditEvents.CountAsync(x =>
@@ -270,10 +280,15 @@ public sealed class MonthlyScheduleProvisioningIntegrationTests(CharkhooneApiFac
             await finalDb.AuditEvents.CountAsync(x =>
                 x.AggregateId == fixture.ContractId
                 && x.Action == "monthly_schedule_provisioning_conflict"));
-        Assert.Equal(
-            1,
-            await finalDb.OutboxMessages.CountAsync(x =>
-                x.Type == "lease-contract.monthly-schedule-provisioning-review-required.v1"));
+        var finalReviewPayloads = await finalDb.OutboxMessages.AsNoTracking()
+            .Where(x => x.Type == "lease-contract.monthly-schedule-provisioning-review-required.v1")
+            .Select(x => x.PayloadJson)
+            .ToListAsync();
+        Assert.Single(
+            finalReviewPayloads,
+            payload => payload.Contains(
+                fixture.ContractId.ToString("D"),
+                StringComparison.OrdinalIgnoreCase));
     }
 
     private async Task<Fixture> SeedActiveContractWithTermsAsync(DateTimeOffset now)
