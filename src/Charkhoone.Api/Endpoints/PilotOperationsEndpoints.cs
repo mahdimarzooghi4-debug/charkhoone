@@ -226,6 +226,7 @@ public static class PilotOperationsEndpoints
         paymentInstructionId = item.PaymentInstructionId,
         monthlyObligationId = item.MonthlyObligationId,
         contractId = item.ContractId,
+        creditApplicationId = item.CreditApplicationId,
         contractMonthNumber = item.ContractMonthNumber,
         kind = item.Kind.ToString(),
         beneficiaryId = item.BeneficiaryId,
