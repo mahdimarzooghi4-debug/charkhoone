@@ -2,7 +2,9 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using Charkhoone.Application.IdentityVerification;
+using Charkhoone.Domain.Contracts;
 using Charkhoone.Domain.CreditApplications;
+using Charkhoone.Domain.Payments;
 using Charkhoone.Infrastructure.Persistence;
 using Charkhoone.Infrastructure.Persistence.Models;
 using Microsoft.AspNetCore.Hosting;
@@ -392,6 +394,173 @@ public sealed class PilotOperationsIntegrationTests(CharkhooneApiFactory factory
                 .ExecuteDeleteAsync();
             await db.Users
                 .Where(x => x.Id == applicantId)
+                .ExecuteDeleteAsync();
+        }
+    }
+
+    [Fact]
+    public async Task AllowlistedOperator_ReadsRealPostgresPaymentQueue_WithExactAmountAndEvidence()
+    {
+        var now = DateTimeOffset.Parse("2199-09-19T01:00:00+00:00");
+        var operatorSubject = $"pilot-payment-operator-{Guid.NewGuid():D}";
+        var tenantUserId = Guid.NewGuid();
+        var ownerUserId = Guid.NewGuid();
+        var applicationId = Guid.NewGuid();
+        var contractId = Guid.NewGuid();
+        var obligationId = Guid.NewGuid();
+        var paymentInstructionId = Guid.NewGuid();
+        var externalTransactionId = Guid.NewGuid();
+        const decimal amountRial = 1234567890123456.78m;
+
+        await using (var seedScope = _factory.Services.CreateAsyncScope())
+        {
+            var db = seedScope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+            db.Users.AddRange(
+                new UserRow
+                {
+                    Id = tenantUserId,
+                    OidcSubject = $"pilot-payment-tenant-{tenantUserId:D}",
+                    CreatedAtUtc = now.AddDays(-2),
+                },
+                new UserRow
+                {
+                    Id = ownerUserId,
+                    OidcSubject = $"pilot-payment-owner-{ownerUserId:D}",
+                    CreatedAtUtc = now.AddDays(-2),
+                });
+            db.CreditApplications.Add(new CreditApplicationRow
+            {
+                Id = applicationId,
+                ApplicantUserId = tenantUserId,
+                Status = CreditApplicationStatus.ApprovedFunded,
+                CreatedAtUtc = now.AddDays(-1),
+                UpdatedAtUtc = now.AddHours(-4),
+            });
+            db.LeaseContracts.Add(new LeaseContractRow
+            {
+                Id = contractId,
+                TenantUserId = tenantUserId,
+                OwnerUserId = ownerUserId,
+                PropertyId = Guid.NewGuid(),
+                CreditApplicationId = applicationId,
+                Status = LeaseContractStatus.Active,
+                CreatedAtUtc = now.AddDays(-1),
+                UpdatedAtUtc = now.AddHours(-3),
+            });
+            db.MonthlyObligations.Add(new MonthlyObligationRow
+            {
+                Id = obligationId,
+                ContractId = contractId,
+                ContractMonthNumber = 4,
+                DueAtUtc = now.AddDays(2),
+                Status = MonthlyObligationStatus.Open,
+                CreatedAtUtc = now.AddHours(-2),
+                UpdatedAtUtc = now.AddMinutes(-20),
+            });
+            db.PaymentInstructions.Add(new PaymentInstructionRow
+            {
+                Id = paymentInstructionId,
+                ObligationId = obligationId,
+                DueAtUtc = now.AddDays(2),
+                BeneficiaryId = "pilot-owner-beneficiary",
+                AmountRial = amountRial,
+                IdempotencyKey = $"pilot-payment-{paymentInstructionId:D}",
+                Status = PaymentInstructionStatus.ReconciliationRequired,
+                CreatedAtUtc = now.AddHours(-1),
+                UpdatedAtUtc = now.AddMinutes(-10),
+            });
+            db.MonthlyObligationComponents.Add(new MonthlyObligationComponentRow
+            {
+                PaymentInstructionId = paymentInstructionId,
+                MonthlyObligationId = obligationId,
+                Kind = MonthlyObligationComponentKind.OwnerPayment,
+            });
+            db.ExternalTransactions.Add(new ExternalTransactionRow
+            {
+                Id = externalTransactionId,
+                Provider = "pilot-payment-provider",
+                OperationType = "payment_reconciliation",
+                AggregateType = "PaymentInstruction",
+                AggregateId = paymentInstructionId,
+                Status = ExternalTransactionStatus.Unknown,
+                AmountRial = amountRial,
+                Currency = "IRR",
+                IdempotencyKey = $"pilot-payment-external-{paymentInstructionId:D}",
+                ExternalReference = "pilot-payment-reference",
+                ReasonCode = "provider_timeout",
+                CreatedAtUtc = now.AddMinutes(-12),
+                UpdatedAtUtc = now.AddMinutes(-5),
+            });
+            await db.SaveChangesAsync();
+        }
+
+        try
+        {
+            using var pilotFactory = _factory.WithWebHostBuilder(builder =>
+            {
+                builder.UseSetting("PilotOperations:Enabled", "true");
+                builder.UseSetting("PilotOperations:AllowedSubjects:0", operatorSubject);
+            });
+
+            using var client = pilotFactory.CreateClient();
+            client.DefaultRequestHeaders.Add("X-Test-Subject", operatorSubject);
+
+            var response = await client.GetAsync(
+                "/api/v1/pilot/payments?status=ReconciliationRequired&page=1&pageSize=25");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            using var document = JsonDocument.Parse(
+                await response.Content.ReadAsStringAsync());
+            var items = document.RootElement.GetProperty("items");
+            var item = Assert.Single(
+                items.EnumerateArray().Where(x =>
+                    x.GetProperty("paymentInstructionId").GetGuid() == paymentInstructionId));
+
+            Assert.Equal(obligationId, item.GetProperty("monthlyObligationId").GetGuid());
+            Assert.Equal(contractId, item.GetProperty("contractId").GetGuid());
+            Assert.Equal(applicationId, item.GetProperty("creditApplicationId").GetGuid());
+            Assert.Equal(4, item.GetProperty("contractMonthNumber").GetInt32());
+            Assert.Equal("OwnerPayment", item.GetProperty("kind").GetString());
+            Assert.Equal("ReconciliationRequired", item.GetProperty("paymentStatus").GetString());
+
+            var amount = item.GetProperty("amountRial");
+            Assert.Equal(JsonValueKind.String, amount.ValueKind);
+            Assert.Equal("1234567890123456.78", amount.GetString());
+
+            Assert.Equal(externalTransactionId, item.GetProperty("externalTransactionId").GetGuid());
+            Assert.Equal("Unknown", item.GetProperty("externalTransactionStatus").GetString());
+            Assert.Equal("pilot-payment-provider", item.GetProperty("provider").GetString());
+            Assert.Equal("pilot-payment-reference", item.GetProperty("externalReference").GetString());
+            Assert.Equal("provider_timeout", item.GetProperty("reasonCode").GetString());
+
+            var invalidStatus = await client.GetAsync(
+                "/api/v1/pilot/payments?status=DefinitelyNotAStatus");
+            Assert.Equal(HttpStatusCode.BadRequest, invalidStatus.StatusCode);
+        }
+        finally
+        {
+            await using var cleanupScope = _factory.Services.CreateAsyncScope();
+            var db = cleanupScope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+            await db.ExternalTransactions
+                .Where(x => x.Id == externalTransactionId)
+                .ExecuteDeleteAsync();
+            await db.MonthlyObligationComponents
+                .Where(x => x.PaymentInstructionId == paymentInstructionId)
+                .ExecuteDeleteAsync();
+            await db.PaymentInstructions
+                .Where(x => x.Id == paymentInstructionId)
+                .ExecuteDeleteAsync();
+            await db.MonthlyObligations
+                .Where(x => x.Id == obligationId)
+                .ExecuteDeleteAsync();
+            await db.LeaseContracts
+                .Where(x => x.Id == contractId)
+                .ExecuteDeleteAsync();
+            await db.CreditApplications
+                .Where(x => x.Id == applicationId)
+                .ExecuteDeleteAsync();
+            await db.Users
+                .Where(x => x.Id == tenantUserId || x.Id == ownerUserId)
                 .ExecuteDeleteAsync();
         }
     }
