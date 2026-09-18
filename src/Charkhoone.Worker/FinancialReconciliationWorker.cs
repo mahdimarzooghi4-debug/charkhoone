@@ -32,12 +32,13 @@ public sealed class FinancialReconciliationWorker(
             {
                 var result = await ReconcileOnceAsync(stoppingToken);
                 logger.LogInformation(
-                    "Financial reconciliation batch completed: {LeaseFunding} lease funding lifecycles, {ScheduleProvisioning} monthly schedule provisions, {Payments} payment reconciliations, {DueLifecycle} due monthly lifecycles, {Coverage} coverage obligations, {Replenishments} confirmed tenant arrears repayments, {Cancellations} cancellation settlements, {CancellationBankPrincipals} cancellation bank-principal returns, {NormalMaturities} normal maturities, {NormalSettlements} normal settlements.",
+                    "Financial reconciliation batch completed: {LeaseFunding} lease funding lifecycles, {ScheduleProvisioning} monthly schedule provisions, {Payments} payment reconciliations, {DueLifecycle} due monthly lifecycles, {Coverage} coverage obligations, {ArrearsRepayments} tenant arrears repayment reconciliations, {Replenishments} confirmed tenant arrears repayments, {Cancellations} cancellation settlements, {CancellationBankPrincipals} cancellation bank-principal returns, {NormalMaturities} normal maturities, {NormalSettlements} normal settlements.",
                     result.LeaseFundingCandidates,
                     result.ScheduleProvisioningCandidates,
                     result.PaymentCandidates,
                     result.DueLifecycleCandidates,
                     result.CoverageCandidates,
+                    result.ArrearsRepaymentCandidates,
                     result.ReplenishmentCandidates,
                     result.CancellationCandidates,
                     result.CancellationBankPrincipalCandidates,
@@ -201,6 +202,40 @@ public sealed class FinancialReconciliationWorker(
                 () => coverageService.CoverAsync(obligationId, occurredAtUtc, cancellationToken));
         }
 
+        var arrearsRepaymentCandidates = await (
+                from external in dbContext.ExternalTransactions.AsNoTracking()
+                join contract in dbContext.LeaseContracts.AsNoTracking()
+                    on external.AggregateId equals contract.Id
+                where external.AggregateType == "LeaseContract"
+                    && external.OperationType == TenantContributionReplenishmentOperationType
+                    && (external.Status == ExternalTransactionStatus.Pending
+                        || external.Status == ExternalTransactionStatus.Unknown)
+                    && contract.Status == LeaseContractStatus.Active
+                    && !dbContext.ContractDelinquencies.Any(delinquency =>
+                        delinquency.ContractId == contract.Id
+                        && delinquency.CancellationRequired)
+                orderby external.UpdatedAtUtc, external.Id
+                select new ArrearsRepaymentCandidate(contract.Id, contract.TenantUserId))
+            .Take(options.BatchSize)
+            .ToListAsync(cancellationToken);
+
+        if (arrearsRepaymentCandidates.Count > 0)
+        {
+            var arrearsRepaymentService = scope.ServiceProvider
+                .GetRequiredService<ITenantArrearsRepaymentService>();
+            foreach (var candidate in arrearsRepaymentCandidates)
+            {
+                await RunCandidateAsync(
+                    "tenant-arrears-repayment-reconciliation",
+                    candidate.ContractId,
+                    () => arrearsRepaymentService.ReconcileAsync(
+                        candidate.ContractId,
+                        candidate.TenantUserId,
+                        occurredAtUtc,
+                        cancellationToken));
+            }
+        }
+
         var replenishmentCandidates = await dbContext.ExternalTransactions
             .AsNoTracking()
             .Where(x => x.AggregateType == "LeaseContract"
@@ -345,6 +380,7 @@ public sealed class FinancialReconciliationWorker(
         activity?.SetTag("charkhoone.reconciliation.payment_candidates", paymentCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.due_lifecycle_candidates", dueLifecycleCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.coverage_candidates", coverageCandidates.Count);
+        activity?.SetTag("charkhoone.reconciliation.arrears_repayment_candidates", arrearsRepaymentCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.replenishment_candidates", replenishmentCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.cancellation_candidates", cancellationCandidates.Count);
         activity?.SetTag(
@@ -364,6 +400,7 @@ public sealed class FinancialReconciliationWorker(
         {
             ScheduleProvisioningCandidates = scheduleProvisioningCandidates.Count,
             DueLifecycleCandidates = dueLifecycleCandidates.Count,
+            ArrearsRepaymentCandidates = arrearsRepaymentCandidates.Count,
             ReplenishmentCandidates = replenishmentCandidates.Count,
         };
     }
@@ -396,6 +433,7 @@ public sealed class FinancialReconciliationWorker(
     }
 
     private sealed record PaymentCandidate(Guid PaymentInstructionId, Guid TenantUserId);
+    private sealed record ArrearsRepaymentCandidate(Guid ContractId, Guid TenantUserId);
 }
 
 public sealed record FinancialReconciliationBatchResult(
@@ -409,5 +447,6 @@ public sealed record FinancialReconciliationBatchResult(
 {
     public int ScheduleProvisioningCandidates { get; init; }
     public int DueLifecycleCandidates { get; init; }
+    public int ArrearsRepaymentCandidates { get; init; }
     public int ReplenishmentCandidates { get; init; }
 }

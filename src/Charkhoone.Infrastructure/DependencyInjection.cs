@@ -31,6 +31,7 @@ public static class DependencyInjection
         "Fund",
         "Payment",
         "Coverage",
+        "ArrearsRepayment",
         "CancellationSettlement",
         "CancellationNotification",
         "NormalSettlementBank",
@@ -90,6 +91,7 @@ public static class DependencyInjection
         services.AddScoped<IMonthlyScheduleProvisioningService, EfMonthlyScheduleProvisioningService>();
         services.AddScoped<IMonthlyDueLifecycleService, EfMonthlyDueLifecycleService>();
         services.AddScoped<ITenantContributionCoverageService, EfTenantContributionCoverageService>();
+        services.AddScoped<ITenantArrearsRepaymentService, EfTenantArrearsRepaymentService>();
         services.AddScoped<ICancellationSettlementService, EfCancellationSettlementService>();
         services.AddScoped<ICancellationBankPrincipalSettlementService, EfCancellationBankPrincipalSettlementService>();
         services.AddScoped<INormalSettlementService, EfNormalSettlementService>();
@@ -152,6 +154,16 @@ public static class DependencyInjection
         else
         {
             services.AddSingleton<IExternalCoverageTransferAdapter, UnavailableCoverageTransferAdapter>();
+        }
+
+        var arrearsRepaymentAdapterMode = configuration["ExternalAdapters:ArrearsRepayment:Mode"];
+        if (IsDevelopmentMock(arrearsRepaymentAdapterMode))
+        {
+            services.AddSingleton<IExternalTenantArrearsRepaymentAdapter, DevelopmentTenantArrearsRepaymentAdapter>();
+        }
+        else
+        {
+            services.AddSingleton<IExternalTenantArrearsRepaymentAdapter, UnavailableTenantArrearsRepaymentAdapter>();
         }
 
         var cancellationSettlementAdapterMode = configuration["ExternalAdapters:CancellationSettlement:Mode"];

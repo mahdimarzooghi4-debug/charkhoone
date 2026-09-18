@@ -18,6 +18,7 @@ services:
       RabbitMq__UserName: ${CHARKHOONE_RABBITMQ_USERNAME:?set the RabbitMQ username}
       RabbitMq__Password: ${CHARKHOONE_RABBITMQ_PASSWORD:?set the RabbitMQ password}
       RabbitMq__VirtualHost: ${CHARKHOONE_RABBITMQ_VHOST:-/}
+      ExternalAdapters__ArrearsRepayment__Mode: "Unavailable"
     expose:
       - "8080"
 
@@ -41,6 +42,7 @@ services:
       RabbitMq__NormalSettlementNotificationQueue: ${CHARKHOONE_NORMAL_SETTLEMENT_NOTIFICATION_QUEUE:-charkhoone.normal-settlement-notifications}
       RabbitMq__NormalSettlementNotificationReviewQueue: ${CHARKHOONE_NORMAL_SETTLEMENT_NOTIFICATION_REVIEW_QUEUE:-charkhoone.normal-settlement-notifications.review}
       ExternalAdapters__NormalSettlementNotification__Mode: "Unavailable"
+      ExternalAdapters__ArrearsRepayment__Mode: "Unavailable"
       FinancialReconciliation__Enabled: ${CHARKHOONE_FINANCIAL_RECONCILIATION_ENABLED:-false}
     depends_on:
       - api
