@@ -1,10 +1,12 @@
+extern alias worker;
+
 using Charkhoone.Application.Payments;
 using Charkhoone.Domain.Contracts;
 using Charkhoone.Domain.CreditApplications;
 using Charkhoone.Infrastructure.Payments;
 using Charkhoone.Infrastructure.Persistence;
 using Charkhoone.Infrastructure.Persistence.Models;
-using Charkhoone.Worker;
+using CharkhooneWorker = worker::Charkhoone.Worker;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -98,15 +100,15 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
 
         var adapter = new ConfirmingBankPrincipalReturnAdapter();
         await using var provider = BuildWorkerServiceProvider(adapter, workerAt);
-        var worker = new FinancialReconciliationWorker(
+        var worker = new CharkhooneWorker.FinancialReconciliationWorker(
             provider.GetRequiredService<IServiceScopeFactory>(),
-            new FinancialReconciliationWorkerOptions
+            new CharkhooneWorker.FinancialReconciliationWorkerOptions
             {
                 Enabled = true,
                 BatchSize = 32,
             },
             provider.GetRequiredService<TimeProvider>(),
-            provider.GetRequiredService<ILogger<FinancialReconciliationWorker>>());
+            provider.GetRequiredService<ILogger<CharkhooneWorker.FinancialReconciliationWorker>>());
 
         var first = await worker.ReconcileOnceAsync();
 
