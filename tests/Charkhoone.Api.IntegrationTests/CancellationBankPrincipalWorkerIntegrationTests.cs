@@ -244,6 +244,7 @@ public sealed class CancellationBankPrincipalWorkerIntegrationTests(CharkhooneAp
         services.AddSingleton(adapter);
         services.AddScoped<ICancellationBankPrincipalSettlementService, EfCancellationBankPrincipalSettlementService>();
         services.AddScoped<ILeaseFundingLifecycleService, NoOpLeaseFundingLifecycleService>();
+        services.AddScoped<IMonthlyScheduleProvisioningService, EfMonthlyScheduleProvisioningService>();
         services.AddScoped<INormalMaturityService, NoOpNormalMaturityService>();
         services.AddScoped<IPaymentReconciliationService, NoOpPaymentReconciliationService>();
         services.AddScoped<ITenantContributionCoverageService, NoOpCoverageService>();
