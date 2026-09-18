@@ -69,16 +69,6 @@ public sealed class EfCancellationSettlementService(
                     existing is null ? null : ToView(existing));
             }
 
-            var delinquency = await dbContext.ContractDelinquencies
-                .SingleOrDefaultAsync(x => x.ContractId == contract.Id, cancellationToken);
-            if (delinquency is null || !delinquency.CancellationRequired)
-            {
-                await transaction.RollbackAsync(cancellationToken);
-                return new SettleCancellationResult(
-                    SettleCancellationOutcome.InvalidState,
-                    existing is null ? null : ToView(existing));
-            }
-
             if (await HasUnsettledCoveragePrerequisitesAsync(contract.Id, cancellationToken))
             {
                 await transaction.RollbackAsync(cancellationToken);
@@ -98,8 +88,34 @@ public sealed class EfCancellationSettlementService(
                     existing is null ? null : ToView(existing));
             }
 
+            var initialCancellationEffectiveAtUtc = await GetCancellationEffectiveAtUtcAsync(
+                contract.Id,
+                cancellationToken);
+            if (initialCancellationEffectiveAtUtc is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return new SettleCancellationResult(
+                    SettleCancellationOutcome.InvalidState,
+                    existing is null ? null : ToView(existing));
+            }
+
             var postedBalance = await CalculatePostedBalanceAsync(contribution, cancellationToken);
-            if (postedBalance < 0m)
+            CancellationFinancialSettlement initialFinancialSettlement;
+            List<CancellationLostFundReturnBinding> initialLostReturnBindings;
+            try
+            {
+                initialLostReturnBindings = await LoadOpenCancellationLostFundReturnsAsync(
+                    contract.Id,
+                    initialCancellationEffectiveAtUtc.Value,
+                    cancellationToken);
+                initialFinancialSettlement = CancellationFinancialSettlementCalculator.Calculate(
+                    postedBalance,
+                    initialLostReturnBindings.Select(x => x.Accrual));
+            }
+            catch (Exception exception) when (
+                exception is ArgumentException
+                    or InvalidOperationException
+                    or OverflowException)
             {
                 await transaction.RollbackAsync(cancellationToken);
                 return new SettleCancellationResult(
@@ -112,7 +128,7 @@ public sealed class EfCancellationSettlementService(
                 Id = Guid.NewGuid(),
                 ContractId = contract.Id,
                 OwnerUserId = contract.OwnerUserId,
-                AmountRial = postedBalance,
+                AmountRial = initialFinancialSettlement.OwnerResidualRial,
                 Status = CancellationSettlementStatus.Pending,
                 CreatedAtUtc = occurredAtUtc,
                 UpdatedAtUtc = occurredAtUtc,
@@ -122,17 +138,39 @@ public sealed class EfCancellationSettlementService(
             {
                 dbContext.CancellationSettlements.Add(settlement);
             }
-            else if (settlement.OwnerUserId != contract.OwnerUserId || settlement.AmountRial != postedBalance)
+            else if (settlement.OwnerUserId != contract.OwnerUserId
+                || settlement.AmountRial != initialFinancialSettlement.OwnerResidualRial)
             {
                 await transaction.RollbackAsync(cancellationToken);
                 return new SettleCancellationResult(SettleCancellationOutcome.InvalidState, ToView(settlement));
             }
 
-            if (postedBalance == 0m)
+            if (initialFinancialSettlement.OwnerResidualRial == 0m)
             {
+                JournalEntryRow? zeroResidualJournalEntry;
+                try
+                {
+                    zeroResidualJournalEntry = await PostCancellationFinancialJournalAsync(
+                        contract.Id,
+                        settlement,
+                        initialFinancialSettlement,
+                        initialLostReturnBindings,
+                        initialCancellationEffectiveAtUtc.Value,
+                        occurredAtUtc,
+                        cancellationToken);
+                }
+                catch (InvalidOperationException)
+                {
+                    await transaction.RollbackAsync(cancellationToken);
+                    return new SettleCancellationResult(
+                        SettleCancellationOutcome.InvalidState,
+                        ToView(settlement));
+                }
+
                 settlement.Status = CancellationSettlementStateMachine.Transition(
                     settlement.Status,
                     CancellationSettlementStatus.Completed);
+                settlement.JournalEntryId = zeroResidualJournalEntry?.Id;
                 settlement.RemainingTenantContributionRial = 0m;
                 settlement.UpdatedAtUtc = occurredAtUtc;
                 settlement.CompletedAtUtc = occurredAtUtc;
@@ -140,8 +178,10 @@ public sealed class EfCancellationSettlementService(
                 FinalizeContractCancellation(
                     contract,
                     settlement,
+                    initialFinancialSettlement,
+                    initialCancellationEffectiveAtUtc.Value,
                     "system:cancellation-settlement",
-                    "Cancellation completed with no tenant-contribution residual remaining for transfer to the owner.",
+                    "Cancellation completed after settling open lost-fund-return obligations from tenant contribution; no owner residual transfer was required.",
                     occurredAtUtc);
 
                 await dbContext.SaveChangesAsync(cancellationToken);
@@ -295,23 +335,44 @@ public sealed class EfCancellationSettlementService(
             return new SettleCancellationResult(SettleCancellationOutcome.Indeterminate, ToView(settlementRow));
         }
 
+        var cancellationEffectiveAtUtc = await GetCancellationEffectiveAtUtcAsync(
+            contractRow.Id,
+            cancellationToken);
         var currentBalance = await CalculatePostedBalanceAsync(contributionRow, cancellationToken);
-        var accounts = await GetContributionLedgerAccountsAsync(contractRow.Id, cancellationToken);
-        if (currentBalance != settlementRow.AmountRial || accounts is null)
+
+        CancellationFinancialSettlement financialSettlement;
+        List<CancellationLostFundReturnBinding> lostReturnBindings;
+        try
+        {
+            if (cancellationEffectiveAtUtc is null)
+            {
+                throw new InvalidOperationException("Cancellation transition timestamp is missing.");
+            }
+
+            lostReturnBindings = await LoadOpenCancellationLostFundReturnsAsync(
+                contractRow.Id,
+                cancellationEffectiveAtUtc.Value,
+                cancellationToken);
+            financialSettlement = CancellationFinancialSettlementCalculator.Calculate(
+                currentBalance,
+                lostReturnBindings.Select(x => x.Accrual));
+        }
+        catch (Exception exception) when (
+            exception is ArgumentException
+                or InvalidOperationException
+                or OverflowException)
         {
             settlementRow.Status = CancellationSettlementStateMachine.Transition(
                 settlementRow.Status,
                 CancellationSettlementStatus.Unknown);
             externalRow.Status = ExternalTransactionStatus.Unknown;
-            externalRow.ReasonCode = accounts is null
-                ? "tenant_contribution_ledger_accounts_missing"
-                : "tenant_contribution_balance_changed_after_transfer_confirmation";
+            externalRow.ReasonCode = "cancellation_financial_state_changed_after_transfer_confirmation";
 
             AddAudit(
                 contractRow.Id,
                 "system:cancellation-settlement",
                 "owner_residual_transfer_requires_manual_reconciliation",
-                "The provider reported confirmation but the local tenant-contribution ledger could not safely post the exact cancellation residual.",
+                "The provider reported confirmation but the cancellation financial split could not be reproduced from immutable contract history.",
                 occurredAtUtc);
 
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -319,43 +380,56 @@ public sealed class EfCancellationSettlementService(
             return new SettleCancellationResult(SettleCancellationOutcome.Indeterminate, ToView(settlementRow));
         }
 
-        var journalKey = JournalIdempotencyKey(contractRow.Id);
-        if (await dbContext.JournalEntries.AnyAsync(x => x.IdempotencyKey == journalKey, cancellationToken))
+        if (financialSettlement.OwnerResidualRial != settlementRow.AmountRial)
+        {
+            settlementRow.Status = CancellationSettlementStateMachine.Transition(
+                settlementRow.Status,
+                CancellationSettlementStatus.Unknown);
+            externalRow.Status = ExternalTransactionStatus.Unknown;
+            externalRow.ReasonCode = "tenant_contribution_balance_changed_after_transfer_confirmation";
+
+            AddAudit(
+                contractRow.Id,
+                "system:cancellation-settlement",
+                "owner_residual_transfer_requires_manual_reconciliation",
+                "The provider reported confirmation but the current tenant contribution no longer matches the frozen cancellation owner residual.",
+                occurredAtUtc);
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            await resultTransaction.CommitAsync(cancellationToken);
+            return new SettleCancellationResult(SettleCancellationOutcome.Indeterminate, ToView(settlementRow));
+        }
+
+        JournalEntryRow? journalEntry;
+        try
+        {
+            journalEntry = await PostCancellationFinancialJournalAsync(
+                contractRow.Id,
+                settlementRow,
+                financialSettlement,
+                lostReturnBindings,
+                cancellationEffectiveAtUtc!.Value,
+                occurredAtUtc,
+                cancellationToken);
+        }
+        catch (InvalidOperationException)
         {
             settlementRow.Status = CancellationSettlementStateMachine.Transition(
                 settlementRow.Status,
                 CancellationSettlementStatus.Unknown);
             externalRow.Status = ExternalTransactionStatus.Unknown;
             externalRow.ReasonCode = "cancellation_settlement_journal_state_inconsistent";
+
             await dbContext.SaveChangesAsync(cancellationToken);
             await resultTransaction.CommitAsync(cancellationToken);
             return new SettleCancellationResult(SettleCancellationOutcome.Indeterminate, ToView(settlementRow));
         }
 
-        var journalDraft = JournalEntryDraft.Create(
-        [
-            JournalLineDraft.Create(accounts.TenantBalance.Id, settlementRow.AmountRial, 0m),
-            JournalLineDraft.Create(accounts.FundAsset.Id, 0m, settlementRow.AmountRial),
-        ]);
-
-        var journalEntry = new JournalEntryRow
-        {
-            Id = Guid.NewGuid(),
-            ReferenceType = "CancellationSettlement",
-            ReferenceId = settlementRow.Id,
-            IdempotencyKey = journalKey,
-            Description = "Cancellation residual tenant contribution transferred to the owner without using frozen bank principal.",
-            OccurredAtUtc = occurredAtUtc,
-            PostedAtUtc = occurredAtUtc,
-        };
-        dbContext.JournalEntries.Add(journalEntry);
-        AddJournalLines(journalEntry.Id, journalDraft);
-
         settlementRow.Status = CancellationSettlementStateMachine.Transition(
             settlementRow.Status,
             CancellationSettlementStatus.Completed);
         settlementRow.ExternalReference = response.ExternalReference!.Trim();
-        settlementRow.JournalEntryId = journalEntry.Id;
+        settlementRow.JournalEntryId = journalEntry?.Id;
         settlementRow.RemainingTenantContributionRial = 0m;
         settlementRow.CompletedAtUtc = occurredAtUtc;
         settlementRow.UpdatedAtUtc = occurredAtUtc;
@@ -364,8 +438,10 @@ public sealed class EfCancellationSettlementService(
         FinalizeContractCancellation(
             contractRow,
             settlementRow,
+            financialSettlement,
+            cancellationEffectiveAtUtc.Value,
             $"cancellation-settlement:{externalRow.Provider}",
-            "Cancellation residual tenant contribution was confirmed transferred to the owner and posted to the ledger.",
+            "Cancellation owner residual was confirmed transferred after settling open lost-fund-return obligations from tenant contribution.",
             occurredAtUtc);
 
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -437,9 +513,256 @@ public sealed class EfCancellationSettlementService(
             : new ContributionLedgerAccounts(fundAsset, tenantBalance);
     }
 
+    private async Task<DateTimeOffset?> GetCancellationEffectiveAtUtcAsync(
+        Guid contractId,
+        CancellationToken cancellationToken)
+    {
+        var transitions = await dbContext.WorkflowTransitions
+            .AsNoTracking()
+            .Where(x => x.AggregateType == "LeaseContract"
+                && x.AggregateId == contractId
+                && x.ToStatus == LeaseContractStatus.CancellationPending.ToString())
+            .OrderBy(x => x.OccurredAtUtc)
+            .ThenBy(x => x.Id)
+            .Select(x => x.OccurredAtUtc)
+            .ToListAsync(cancellationToken);
+
+        return transitions.Count == 1 ? transitions[0] : null;
+    }
+
+    private async Task<List<CancellationLostFundReturnBinding>> LoadOpenCancellationLostFundReturnsAsync(
+        Guid contractId,
+        DateTimeOffset cancellationEffectiveAtUtc,
+        CancellationToken cancellationToken)
+    {
+        var successfulCoverage = await dbContext.CoveragePayments
+            .AsNoTracking()
+            .Where(x => x.ContractId == contractId && x.Status == CoveragePaymentStatus.Succeeded)
+            .Select(x => new
+            {
+                x.Id,
+                x.AmountRial,
+            })
+            .ToListAsync(cancellationToken);
+
+        var exposureRows = await dbContext.LostFundReturns
+            .Where(x => x.ContractId == contractId)
+            .OrderBy(x => x.WithdrawnAtUtc)
+            .ThenBy(x => x.CoveragePaymentId)
+            .ToListAsync(cancellationToken);
+
+        if (successfulCoverage.Count != exposureRows.Count)
+        {
+            throw new InvalidOperationException(
+                "Every successful coverage payment must have exactly one lost-fund-return exposure.");
+        }
+
+        var coverageById = successfulCoverage.ToDictionary(x => x.Id);
+        var bindings = new List<CancellationLostFundReturnBinding>();
+
+        foreach (var row in exposureRows)
+        {
+            if (!coverageById.TryGetValue(row.CoveragePaymentId, out var coverage)
+                || coverage.AmountRial != row.WithdrawnAmountRial
+                || row.MonthlyRate != LostFundReturnTerms.MonthlyRate
+                || row.CalculationPeriodStartUtc != row.WithdrawnAtUtc
+                || (row.CalculationPolicyVersion is not null
+                    && row.CalculationPolicyVersion != LostFundReturnTerms.CalculationPolicyVersion))
+            {
+                throw new InvalidOperationException(
+                    "Lost-fund-return exposure is inconsistent with its confirmed coverage payment.");
+            }
+
+            if (row.CalculatedReturnRial is not null)
+            {
+                if (row.CalculationPeriodEndUtc is null
+                    || string.IsNullOrWhiteSpace(row.CalculationPolicyVersion))
+                {
+                    throw new InvalidOperationException(
+                        "Finalized lost-fund-return exposure is missing calculation evidence.");
+                }
+
+                continue;
+            }
+
+            if (row.ReplacedAtUtc is not null || row.CalculationPeriodEndUtc is not null)
+            {
+                throw new InvalidOperationException(
+                    "Open lost-fund-return exposure contains contradictory finalization evidence.");
+            }
+
+            var exposure = LostFundReturnTerms.OpenExposure(
+                row.ContractId,
+                row.CoveragePaymentId,
+                row.WithdrawnAmountRial,
+                row.WithdrawnAtUtc);
+            var accrual = LostFundReturnTerms.CalculateAccruedReturn(
+                exposure,
+                cancellationEffectiveAtUtc);
+            bindings.Add(new CancellationLostFundReturnBinding(row, accrual));
+        }
+
+        return bindings;
+    }
+
+    private async Task<LedgerAccountRow> GetOrCreateLostFundReturnIncomeAccountAsync(
+        Guid contractId,
+        DateTimeOffset occurredAtUtc,
+        CancellationToken cancellationToken)
+    {
+        var code = $"contract:{contractId:D}:lost-fund-return-income";
+        var existing = await dbContext.LedgerAccounts
+            .SingleOrDefaultAsync(x => x.Code == code, cancellationToken);
+        if (existing is not null)
+        {
+            if (existing.ContractId != contractId || existing.Currency != "IRR")
+            {
+                throw new InvalidOperationException(
+                    "Lost-fund-return income account does not match the cancellation contract.");
+            }
+
+            return existing;
+        }
+
+        var account = new LedgerAccountRow
+        {
+            Id = Guid.NewGuid(),
+            Code = code,
+            Name = "Lost fund return income",
+            Currency = "IRR",
+            ContractId = contractId,
+            CreatedAtUtc = occurredAtUtc,
+        };
+        dbContext.LedgerAccounts.Add(account);
+        return account;
+    }
+
+    private async Task<JournalEntryRow?> PostCancellationFinancialJournalAsync(
+        Guid contractId,
+        CancellationSettlementRow settlement,
+        CancellationFinancialSettlement financialSettlement,
+        IReadOnlyList<CancellationLostFundReturnBinding> lostReturnBindings,
+        DateTimeOffset cancellationEffectiveAtUtc,
+        DateTimeOffset postedAtUtc,
+        CancellationToken cancellationToken)
+    {
+        if (financialSettlement.TenantContributionBeforeSettlementRial == 0m)
+        {
+            if (financialSettlement.OwnerResidualRial != 0m
+                || financialSettlement.LostFundReturnRial != 0m
+                || lostReturnBindings.Count != 0)
+            {
+                throw new InvalidOperationException(
+                    "Zero cancellation balance cannot contain owner residual or lost-fund-return settlement.");
+            }
+
+            return null;
+        }
+
+        var journalKey = JournalIdempotencyKey(contractId);
+        if (await dbContext.JournalEntries.AnyAsync(
+            x => x.IdempotencyKey == journalKey,
+            cancellationToken))
+        {
+            throw new InvalidOperationException(
+                "Cancellation financial journal already exists in a non-terminal settlement state.");
+        }
+
+        var accounts = await GetContributionLedgerAccountsAsync(contractId, cancellationToken)
+            ?? throw new InvalidOperationException("Tenant contribution ledger accounts are missing.");
+
+        LedgerAccountRow? lostReturnIncomeAccount = null;
+        if (financialSettlement.LostFundReturnRial > 0m)
+        {
+            lostReturnIncomeAccount = await GetOrCreateLostFundReturnIncomeAccountAsync(
+                contractId,
+                postedAtUtc,
+                cancellationToken);
+        }
+
+        var lines = new List<JournalLineDraft>
+        {
+            JournalLineDraft.Create(
+                accounts.TenantBalance.Id,
+                financialSettlement.TenantContributionBeforeSettlementRial,
+                0m),
+        };
+
+        if (financialSettlement.OwnerResidualRial > 0m)
+        {
+            lines.Add(JournalLineDraft.Create(
+                accounts.FundAsset.Id,
+                0m,
+                financialSettlement.OwnerResidualRial));
+        }
+
+        if (financialSettlement.LostFundReturnRial > 0m)
+        {
+            lines.Add(JournalLineDraft.Create(
+                lostReturnIncomeAccount!.Id,
+                0m,
+                financialSettlement.LostFundReturnRial));
+        }
+
+        var journalDraft = JournalEntryDraft.Create(lines);
+        var journalEntry = new JournalEntryRow
+        {
+            Id = Guid.NewGuid(),
+            ReferenceType = "CancellationSettlement",
+            ReferenceId = settlement.Id,
+            IdempotencyKey = journalKey,
+            Description = "Cancellation settled open lost-fund-return obligations from tenant contribution and transferred only the remaining residual to the owner.",
+            OccurredAtUtc = cancellationEffectiveAtUtc,
+            PostedAtUtc = postedAtUtc,
+        };
+        dbContext.JournalEntries.Add(journalEntry);
+        AddJournalLines(journalEntry.Id, journalDraft);
+
+        foreach (var binding in lostReturnBindings)
+        {
+            binding.Row.CalculationPeriodEndUtc = cancellationEffectiveAtUtc;
+            binding.Row.CalculationPolicyVersion = binding.Accrual.CalculationPolicyVersion;
+            binding.Row.CalculatedReturnRial = binding.Accrual.PayableReturn.Rial;
+            binding.Row.UpdatedAtUtc = postedAtUtc;
+        }
+
+        if (financialSettlement.LostFundReturnRial > 0m)
+        {
+            AddAudit(
+                contractId,
+                "system:cancellation-settlement",
+                "lost_fund_return_settled_from_tenant_contribution",
+                "Open simple 3% lost-fund-return obligations were settled from tenant contribution at the immutable cancellation cutoff; frozen bank principal was not used.",
+                postedAtUtc);
+            AddOutbox("tenant-contribution.cancellation-lost-fund-return-settled.v1", postedAtUtc, new
+            {
+                contractId,
+                cancellationSettlementId = settlement.Id,
+                tenantContributionBeforeSettlementRial = financialSettlement.TenantContributionBeforeSettlementRial,
+                lostFundReturnRial = financialSettlement.LostFundReturnRial,
+                ownerResidualRial = financialSettlement.OwnerResidualRial,
+                cancellationEffectiveAtUtc,
+                calculationPolicyVersion = LostFundReturnTerms.CalculationPolicyVersion,
+                exposures = lostReturnBindings.Select(x => new
+                {
+                    coveragePaymentId = x.Row.CoveragePaymentId,
+                    withdrawnPrincipalRial = x.Accrual.WithdrawnPrincipal.Rial,
+                    withdrawnAtUtc = x.Accrual.WithdrawnAtUtc,
+                    elapsedDays = x.Accrual.ElapsedDays,
+                    lostFundReturnRial = x.Accrual.PayableReturn.Rial,
+                }),
+                occurredAtUtc = postedAtUtc,
+            });
+        }
+
+        return journalEntry;
+    }
+
     private void FinalizeContractCancellation(
         LeaseContractRow contract,
         CancellationSettlementRow settlement,
+        CancellationFinancialSettlement financialSettlement,
+        DateTimeOffset cancellationEffectiveAtUtc,
         string actorId,
         string reason,
         DateTimeOffset occurredAtUtc)
@@ -471,7 +794,10 @@ public sealed class EfCancellationSettlementService(
             contractId = contract.Id,
             cancellationSettlementId = settlement.Id,
             ownerUserId = settlement.OwnerUserId,
+            tenantContributionBeforeSettlementRial = financialSettlement.TenantContributionBeforeSettlementRial,
+            lostFundReturnRial = financialSettlement.LostFundReturnRial,
             ownerResidualAmountRial = settlement.AmountRial,
+            cancellationEffectiveAtUtc,
             externalTransactionId = settlement.ExternalTransactionId,
             journalEntryId = settlement.JournalEntryId,
             occurredAtUtc,
@@ -531,10 +857,10 @@ public sealed class EfCancellationSettlementService(
         });
 
     private static string ExternalTransferIdempotencyKey(Guid contractId) =>
-        $"cancellation-owner-residual:{contractId:D}:v1";
+        $"cancellation-owner-residual:{contractId:D}:v2";
 
     private static string JournalIdempotencyKey(Guid contractId) =>
-        $"journal:cancellation-owner-residual:{contractId:D}:v1";
+        $"journal:cancellation-financial-settlement:{contractId:D}:v2";
 
     private static CancellationSettlementView ToView(CancellationSettlementRow row) =>
         new(
@@ -549,6 +875,10 @@ public sealed class EfCancellationSettlementService(
             row.RemainingTenantContributionRial,
             row.UpdatedAtUtc,
             row.CompletedAtUtc);
+
+    private sealed record CancellationLostFundReturnBinding(
+        LostFundReturnRow Row,
+        LostFundReturnAccrual Accrual);
 
     private sealed record ContributionLedgerAccounts(
         LedgerAccountRow FundAsset,

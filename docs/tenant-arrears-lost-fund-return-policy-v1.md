@@ -65,4 +65,6 @@ The existing rule remains: three consecutive missed contractual months require c
 
 Once cancellation is required, the normal tenant arrears repayment path is closed. Pending or indeterminate external transactions that were initiated earlier must still be reconciled rather than blindly abandoned or retried.
 
-How open lost-fund-return exposure is treated inside final cancellation settlement is a separate cancellation-settlement policy and must not be inferred by this document.
+At cancellation, coverage principal has already been deducted from tenant contribution and is not charged twice. Any still-open lost-fund-return is calculated at the immutable cancellation cutoff, retained by the fund as income, and only the remaining tenant contribution is transferred to the owner. Frozen bank principal remains separate.
+
+At normal maturity, the remaining tenant contribution is returned to the tenant, not the owner.

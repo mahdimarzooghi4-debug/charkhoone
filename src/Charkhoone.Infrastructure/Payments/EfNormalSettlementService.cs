@@ -80,9 +80,12 @@ public sealed class EfNormalSettlementService(
                     existing is null ? null : ToView(existing));
             }
 
-            // The 3% lost-fund-return policy is not yet complete enough to calculate and collect a receivable.
-            // Any such exposure therefore blocks normal residual release instead of guessing a payable amount.
-            if (await dbContext.LostFundReturns.AnyAsync(x => x.ContractId == contract.Id, cancellationToken))
+            // Normal maturity returns the remaining tenant contribution to the tenant.
+            // Historical lost-fund-return rows that were already finalized do not block settlement;
+            // only an open exposure may prevent release of the tenant residual.
+            if (await dbContext.LostFundReturns.AnyAsync(
+                x => x.ContractId == contract.Id && x.CalculatedReturnRial == null,
+                cancellationToken))
             {
                 await transaction.RollbackAsync(cancellationToken);
                 return new SettleNormalContractResult(
