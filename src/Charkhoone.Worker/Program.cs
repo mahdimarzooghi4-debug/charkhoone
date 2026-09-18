@@ -1,4 +1,6 @@
 using System.Globalization;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Charkhoone.Infrastructure;
 using Charkhoone.Infrastructure.Observability;
 using Charkhoone.Worker;
@@ -21,6 +23,12 @@ builder.Services.AddSingleton(rabbitMqOptions);
 
 var financialReconciliationOptions = FinancialReconciliationWorkerOptions.FromConfiguration(builder.Configuration);
 builder.Services.AddSingleton(financialReconciliationOptions);
+
+builder.Services
+    .AddHealthChecks()
+    .AddCheck<WorkerPostgresReadinessHealthCheck>("postgres", tags: ["ready"])
+    .AddCheck<WorkerRabbitMqReadinessHealthCheck>("rabbitmq", tags: ["ready"])
+    .AddCheck<WorkerExternalAdaptersReadinessHealthCheck>("external-adapters", tags: ["ready"]);
 
 builder.Services.AddHostedService<OutboxWorker>();
 builder.Services.AddHostedService<CreditApplicationSubmittedConsumer>();
@@ -53,8 +61,27 @@ static IResult WorkerLiveness() => Results.Ok(new
 
 app.MapGet("/health", WorkerLiveness);
 app.MapGet("/health/live", WorkerLiveness);
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = registration => registration.Tags.Contains("ready"),
+    ResponseWriter = WriteWorkerReadinessAsync,
+});
 
 app.Run();
+
+static Task WriteWorkerReadinessAsync(HttpContext context, HealthReport report)
+{
+    context.Response.ContentType = "application/json";
+    return context.Response.WriteAsJsonAsync(new
+    {
+        service = "Charkhoone.Worker",
+        status = report.Status == HealthStatus.Healthy ? "ready" : "unready",
+        checks = report.Entries.ToDictionary(
+            entry => entry.Key,
+            entry => entry.Value.Status.ToString().ToLowerInvariant(),
+            StringComparer.Ordinal),
+    });
+}
 
 static string? ResolveReleaseGitSha(IConfiguration configuration, string configurationKey)
 {
