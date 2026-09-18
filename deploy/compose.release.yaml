@@ -19,6 +19,7 @@ services:
       RabbitMq__Password: ${CHARKHOONE_RABBITMQ_PASSWORD:?set the RabbitMQ password}
       RabbitMq__VirtualHost: ${CHARKHOONE_RABBITMQ_VHOST:-/}
       ExternalAdapters__ArrearsRepayment__Mode: "Unavailable"
+      ExternalAdapters__PropertyContract__Mode: "Unavailable"
     expose:
       - "8080"
 
