@@ -30,6 +30,7 @@ public enum EvaluateCreditEligibilityOutcome
     AlreadyEvaluated,
     Indeterminate,
     NotFound,
+    Conflict,
     InvalidState,
 }
 
@@ -52,7 +53,7 @@ public interface ICreditEligibilityService
 {
     Task<EvaluateCreditEligibilityResult> EvaluateAsync(
         Guid applicationId,
-        decimal fullDepositEquivalentRial,
+        Guid applicantUserId,
         DateTimeOffset occurredAtUtc,
         CancellationToken cancellationToken = default);
 }
