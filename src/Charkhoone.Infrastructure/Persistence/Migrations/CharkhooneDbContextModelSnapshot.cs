@@ -819,6 +819,105 @@ namespace Charkhoone.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.LeaseContractScheduleMonthRow", b =>
+                {
+                    b.Property<Guid>("ContractId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("ContractMonthNumber")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("DueAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("BankInterestRial")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("OwnerPaymentRial")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("ContractId", "ContractMonthNumber");
+
+                    b.HasIndex("ContractId", "DueAtUtc")
+                        .IsUnique();
+
+                    b.ToTable("lease_contract_schedule_months", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_lease_contract_schedule_amounts", "\"OwnerPaymentRial\" >= 0 AND \"BankInterestRial\" >= 0 AND (\"OwnerPaymentRial\" > 0 OR \"BankInterestRial\" > 0) AND \"OwnerPaymentRial\" = trunc(\"OwnerPaymentRial\") AND \"BankInterestRial\" = trunc(\"BankInterestRial\") AND \"OwnerPaymentRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity') AND \"BankInterestRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity')");
+
+                            t.HasCheckConstraint("CK_lease_contract_schedule_month_number", "\"ContractMonthNumber\" BETWEEN 1 AND 12");
+                        });
+                });
+
+            modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.LeaseContractTermsRow", b =>
+                {
+                    b.Property<Guid>("ContractId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("BankBeneficiaryId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Calendar")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<decimal>("CashDepositRial")
+                        .HasColumnType("numeric");
+
+                    b.Property<DateTimeOffset>("CapturedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<decimal>("FullDepositEquivalentRial")
+                        .HasColumnType("numeric");
+
+                    b.Property<decimal>("MonthlyRentRial")
+                        .HasColumnType("numeric");
+
+                    b.Property<string>("OwnerBeneficiaryId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<int>("PersianStartDay")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PersianStartMonth")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("PersianStartYear")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("SourceReference")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<int>("TermMonths")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ContractId");
+
+                    b.ToTable("lease_contract_terms", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_lease_contract_terms_amounts", "\"CashDepositRial\" >= 0 AND \"MonthlyRentRial\" >= 0 AND \"FullDepositEquivalentRial\" > 0 AND \"CashDepositRial\" = trunc(\"CashDepositRial\") AND \"MonthlyRentRial\" = trunc(\"MonthlyRentRial\") AND \"FullDepositEquivalentRial\" = trunc(\"FullDepositEquivalentRial\") AND \"CashDepositRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity') AND \"MonthlyRentRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity') AND \"FullDepositEquivalentRial\"::text NOT IN ('NaN', 'Infinity', '-Infinity')");
+
+                            t.HasCheckConstraint("CK_lease_contract_terms_beneficiaries_nonblank", "btrim(\"OwnerBeneficiaryId\") <> '' AND btrim(\"BankBeneficiaryId\") <> ''");
+
+                            t.HasCheckConstraint("CK_lease_contract_terms_calendar", "\"Calendar\" = 'Persian'");
+
+                            t.HasCheckConstraint("CK_lease_contract_terms_full_deposit_equation", "\"FullDepositEquivalentRial\" = floor(\"CashDepositRial\" + (\"MonthlyRentRial\" / 0.03))");
+
+                            t.HasCheckConstraint("CK_lease_contract_terms_persian_start", "\"PersianStartYear\" > 0 AND \"PersianStartMonth\" BETWEEN 1 AND 12 AND \"PersianStartDay\" BETWEEN 1 AND 31");
+
+                            t.HasCheckConstraint("CK_lease_contract_terms_source_reference_nonblank", "btrim(\"SourceReference\") <> ''");
+
+                            t.HasCheckConstraint("CK_lease_contract_terms_term_months", "\"TermMonths\" = 12");
+                        });
+                });
+
             modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.LeaseContractRow", b =>
                 {
                     b.Property<Guid>("Id")
