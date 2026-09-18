@@ -33,9 +33,30 @@ Required deployment inputs include:
 - `Staging` or `Production` environment name;
 - runtime PostgreSQL connection;
 - HTTPS OIDC authority and audience;
+- HTTPS admin OIDC login URL;
 - RabbitMQ host and credentials.
 
-The compose file intentionally does not contain real secrets. It binds Nginx to `127.0.0.1:8080` by default. Public TLS termination, certificates, firewall rules, and public DNS remain the responsibility of the chosen deployment platform or ingress. Do not expose the default HTTP listener publicly without the approved TLS boundary.
+The compose file intentionally does not contain real secrets. `deploy/release.env.example` documents the provider-neutral input names with placeholders only.
+
+For the admin pilot surface, the Web container receives the internal server-only API origin `http://api:8080` as `CHARKHOONE_API_BASE_URL` and receives `CHARKHOONE_ADMIN_OIDC_LOGIN_URL` at runtime. Neither value is compiled into a `NEXT_PUBLIC_` variable. The API receives `PilotOperations__Enabled` plus indexed exact-subject allowlist values. Pilot operations remain disabled by default, and API startup fails if they are enabled without at least one nonblank subject.
+
+Nginx explicitly forwards the incoming `Authorization` header to both the API and Web upstreams. This is only a transport boundary: an approved external OIDC gateway/ingress must authenticate the operator and preserve or inject the real bearer before traffic reaches this Nginx layer. The repository does not mint an operator token and does not add a local password/session fallback.
+
+The compose file binds Nginx to `127.0.0.1:8080` by default. Public TLS termination, certificates, firewall rules, and public DNS remain the responsibility of the chosen deployment platform or ingress. Do not expose the default HTTP listener publicly without the approved TLS boundary.
+
+## Admin pilot activation
+
+Keep `CHARKHOONE_PILOT_OPERATIONS_ENABLED=false` until the environment has a real OIDC boundary and the exact approved operator `sub` values.
+
+When activating the pilot:
+
+1. Set the HTTPS `CHARKHOONE_ADMIN_OIDC_LOGIN_URL` for the approved login flow.
+2. Set one or more exact `CHARKHOONE_PILOT_OPERATOR_SUBJECT_<index>` values. Do not use roles, email addresses, wildcards, prefixes, or applicant identities as substitutes for the OIDC `sub`.
+3. Set `CHARKHOONE_PILOT_OPERATIONS_ENABLED=true`.
+4. Confirm the ingress/gateway forwards the authenticated bearer to Nginx and that Nginx forwards it to Web/API.
+5. Verify an allowlisted subject can read the real pilot queue and a near-match subject receives 403.
+
+The checked-in Compose file provides four indexed subject slots for the initial pilot. Expanding the operator cohort requires an explicit repository change or environment-specific configuration mechanism with equivalent exact-sub semantics.
 
 ## Database migration boundary
 
