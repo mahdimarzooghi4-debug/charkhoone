@@ -5,6 +5,7 @@ using Charkhoone.Application.IdentityVerification;
 using Charkhoone.Application.PilotOperations;
 using Charkhoone.Application.TenantContributionFunding;
 using Charkhoone.Domain.CreditApplications;
+using Charkhoone.Domain.Payments;
 using Charkhoone.Infrastructure.Persistence;
 using Charkhoone.Infrastructure.Persistence.Models;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,100 @@ public sealed class EfPilotOperationsService(
 {
     private const string AggregateType = "CreditApplication";
     private const string OperatorAuditAction = "pilot_operator_reconcile_requested";
+
+    public async Task<IReadOnlyList<PilotPaymentQueueItem>> ListPaymentsAsync(
+        PilotPaymentQueueQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        if (query.Page < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(query), "Page must be at least 1.");
+        }
+
+        if (query.PageSize is < 1 or > 200)
+        {
+            throw new ArgumentOutOfRangeException(nameof(query), "Page size must be between 1 and 200.");
+        }
+
+        var paymentsQuery = dbContext.PaymentInstructions.AsNoTracking();
+        if (query.Status is not null)
+        {
+            paymentsQuery = paymentsQuery.Where(x => x.Status == query.Status.Value);
+        }
+
+        var payments = await paymentsQuery
+            .OrderByDescending(x => x.UpdatedAtUtc)
+            .ThenBy(x => x.Id)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .ToListAsync(cancellationToken);
+
+        if (payments.Count == 0)
+        {
+            return Array.Empty<PilotPaymentQueueItem>();
+        }
+
+        var paymentIds = payments.Select(x => x.Id).ToArray();
+        var obligationIds = payments.Select(x => x.ObligationId).Distinct().ToArray();
+
+        var obligations = await dbContext.MonthlyObligations
+            .AsNoTracking()
+            .Where(x => obligationIds.Contains(x.Id))
+            .ToListAsync(cancellationToken);
+        var components = await dbContext.MonthlyObligationComponents
+            .AsNoTracking()
+            .Where(x => paymentIds.Contains(x.PaymentInstructionId))
+            .ToListAsync(cancellationToken);
+        var externalTransactions = await dbContext.ExternalTransactions
+            .AsNoTracking()
+            .Where(x =>
+                x.AggregateType == "PaymentInstruction"
+                && x.OperationType == "payment_reconciliation"
+                && paymentIds.Contains(x.AggregateId))
+            .OrderByDescending(x => x.UpdatedAtUtc)
+            .ThenByDescending(x => x.Id)
+            .ToListAsync(cancellationToken);
+
+        var obligationById = obligations.ToDictionary(x => x.Id);
+        var componentByPayment = components.ToDictionary(x => x.PaymentInstructionId);
+        var externalByPayment = externalTransactions
+            .GroupBy(x => x.AggregateId)
+            .ToDictionary(group => group.Key, group => group.First());
+
+        return payments.Select(payment =>
+        {
+            if (!obligationById.TryGetValue(payment.ObligationId, out var obligation))
+            {
+                throw new InvalidOperationException(
+                    $"Payment instruction {payment.Id:D} references missing monthly obligation {payment.ObligationId:D}.");
+            }
+
+            if (!componentByPayment.TryGetValue(payment.Id, out var component))
+            {
+                throw new InvalidOperationException(
+                    $"Payment instruction {payment.Id:D} is missing its monthly obligation component.");
+            }
+
+            externalByPayment.TryGetValue(payment.Id, out var external);
+
+            return new PilotPaymentQueueItem(
+                payment.Id,
+                obligation.Id,
+                obligation.ContractId,
+                obligation.ContractMonthNumber,
+                component.Kind,
+                payment.BeneficiaryId,
+                payment.AmountRial,
+                payment.Status,
+                external?.Id,
+                external?.Status,
+                external?.Provider,
+                external?.ExternalReference,
+                external?.ReasonCode,
+                payment.DueAtUtc,
+                payment.UpdatedAtUtc);
+        }).ToArray();
+    }
 
     public async Task<IReadOnlyList<PilotCaseQueueItem>> ListCasesAsync(
         PilotCaseQueueQuery query,
