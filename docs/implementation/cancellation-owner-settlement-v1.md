@@ -54,7 +54,7 @@ After successful financial settlement the contract moves `CancellationPending ->
 
 ## Separate bank principal policy
 
-Early cancellation does not release, debit, or settle frozen bank principal in this service. Bank principal remains separate and must be handled by its dedicated bank-principal policy/workflow.
+Early cancellation does not release, debit, or settle frozen bank principal in this owner-settlement service. After cancellation is completed, the dedicated `ICancellationBankPrincipalSettlementService` returns the exact persisted frozen principal to the bank with an independent external transaction and journal. See `docs/implementation/cancellation-bank-principal-settlement-v1.md`.
 
 ## Normal maturity is different
 

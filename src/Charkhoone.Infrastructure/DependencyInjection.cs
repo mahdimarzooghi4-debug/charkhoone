@@ -84,6 +84,7 @@ public static class DependencyInjection
         services.AddScoped<IMonthlyObligationService>(provider => provider.GetRequiredService<EfPaymentService>());
         services.AddScoped<ITenantContributionCoverageService, EfTenantContributionCoverageService>();
         services.AddScoped<ICancellationSettlementService, EfCancellationSettlementService>();
+        services.AddScoped<ICancellationBankPrincipalSettlementService, EfCancellationBankPrincipalSettlementService>();
         services.AddScoped<INormalSettlementService, EfNormalSettlementService>();
 
         var identityAdapterMode = configuration["ExternalAdapters:Identity:Mode"];
