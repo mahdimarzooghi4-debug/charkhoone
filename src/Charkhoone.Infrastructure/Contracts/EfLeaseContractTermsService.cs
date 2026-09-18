@@ -313,11 +313,14 @@ public sealed class EfLeaseContractTermsService(CharkhooneDbContext dbContext)
                 nameof(command));
         }
 
-        if (command.PersianYearOutOfRange())
+        var maximumPersianYear = PersianCalendar.GetYear(PersianCalendar.MaxSupportedDateTime);
+        if (command.PersianStartYear < 1
+            || command.PersianStartYear > maximumPersianYear
+            || command.PersianStartMonth is < 1 or > 12)
         {
             throw new ArgumentOutOfRangeException(
                 nameof(command),
-                "Persian start year is outside the supported calendar range.");
+                "Persian start year or month is outside the supported calendar range.");
         }
 
         var daysInStartMonth = PersianCalendar.GetDaysInMonth(
@@ -363,14 +366,4 @@ public sealed class EfLeaseContractTermsService(CharkhooneDbContext dbContext)
             }
         }
     }
-}
-
-file static class CaptureLeaseContractTermsCommandExtensions
-{
-    private static readonly PersianCalendar PersianCalendar = new();
-
-    public static bool PersianYearOutOfRange(this CaptureLeaseContractTermsCommand command) =>
-        command.PersianStartYear < 1
-        || command.PersianStartYear > PersianCalendar.GetYear(PersianCalendar.MaxSupportedDateTime)
-        || command.PersianStartMonth is < 1 or > 12;
 }
