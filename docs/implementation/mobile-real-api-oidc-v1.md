@@ -62,7 +62,7 @@ The response contains:
 - latest credit application for the user, when one exists;
 - up to 20 accessible tenant/owner contracts;
 - persisted monthly rent in rial when a trusted contract snapshot exists;
-- up to 50 payment instructions belonging to contracts where the user is the tenant.
+- up to 50 non-terminal payment instructions belonging to contracts where the user is the tenant.
 
 Payment data includes persisted payment id, obligation id, contract id, contract month, component kind, due timestamp, exact amount in rial, status, and update timestamp.
 
