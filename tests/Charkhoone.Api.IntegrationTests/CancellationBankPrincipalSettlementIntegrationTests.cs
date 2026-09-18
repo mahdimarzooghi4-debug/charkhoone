@@ -170,10 +170,16 @@ public sealed class CancellationBankPrincipalSettlementIntegrationTests(Charkhoo
                 .Where(x => x.Type == "lease-contract.cancelled-bank-notification-requested.v1")
                 .ToListAsync();
 
-            Assert.Single(principalReturnedEvents.Where(x =>
-                x.PayloadJson.Contains(contractId.ToString("D"), StringComparison.OrdinalIgnoreCase)));
-            Assert.Single(bankNotificationRequests.Where(x =>
-                x.PayloadJson.Contains(contractId.ToString("D"), StringComparison.OrdinalIgnoreCase)));
+            Assert.Single(
+                principalReturnedEvents,
+                x => x.PayloadJson.Contains(
+                    contractId.ToString("D"),
+                    StringComparison.OrdinalIgnoreCase));
+            Assert.Single(
+                bankNotificationRequests,
+                x => x.PayloadJson.Contains(
+                    contractId.ToString("D"),
+                    StringComparison.OrdinalIgnoreCase));
             Assert.Equal(
                 1,
                 await db.AuditEvents.CountAsync(x =>
