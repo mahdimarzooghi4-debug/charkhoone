@@ -26,6 +26,7 @@ public sealed record PilotPaymentQueueItem(
     Guid PaymentInstructionId,
     Guid MonthlyObligationId,
     Guid ContractId,
+    Guid? CreditApplicationId,
     int ContractMonthNumber,
     Charkhoone.Domain.Payments.MonthlyObligationComponentKind Kind,
     string BeneficiaryId,
