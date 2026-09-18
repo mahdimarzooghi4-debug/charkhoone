@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Claims;
 using Charkhoone.Api.Security;
 using Charkhoone.Application.PilotOperations;
@@ -198,14 +199,75 @@ public static class PilotOperationsEndpoints
         ownerUserId = detail.OwnerUserId,
         propertyId = detail.PropertyId,
         verificationRequests = detail.VerificationRequests,
-        creditEligibility = detail.CreditEligibility,
-        bankApproval = detail.BankApproval,
-        fundingAllocation = detail.FundingAllocation,
+        creditEligibility = detail.CreditEligibility is null ? null : ToCreditEligibilityResponse(detail.CreditEligibility),
+        bankApproval = detail.BankApproval is null ? null : ToBankApprovalResponse(detail.BankApproval),
+        fundingAllocation = detail.FundingAllocation is null ? null : ToFundingAllocationResponse(detail.FundingAllocation),
         fundFreeze = detail.FundFreeze,
-        tenantContributionFunding = detail.TenantContributionFunding,
+        tenantContributionFunding = detail.TenantContributionFunding is null
+            ? null
+            : ToTenantContributionFundingResponse(detail.TenantContributionFunding),
         recentAuditEvents = detail.RecentAuditEvents,
         suggestedOperation = detail.SuggestedOperation?.ToString(),
         updatedAtUtc = detail.UpdatedAtUtc,
+    };
+
+    private static string DecimalText(decimal value) =>
+        value.ToString(CultureInfo.InvariantCulture);
+
+    private static string? DecimalText(decimal? value) =>
+        value?.ToString(CultureInfo.InvariantCulture);
+
+    private static object ToCreditEligibilityResponse(PilotCreditEligibilityView value) => new
+    {
+        provider = value.Provider,
+        status = value.Status,
+        externalSubGrade = value.ExternalSubGrade,
+        fullDepositEquivalentRial = DecimalText(value.FullDepositEquivalentRial),
+        loanRatio = DecimalText(value.LoanRatio),
+        maximumEligibleLoanRial = DecimalText(value.MaximumEligibleLoanRial),
+        externalReference = value.ExternalReference,
+        reasonCode = value.ReasonCode,
+        attemptCount = value.AttemptCount,
+        updatedAtUtc = value.UpdatedAtUtc,
+    };
+
+    private static object ToBankApprovalResponse(PilotBankApprovalView value) => new
+    {
+        provider = value.Provider,
+        status = value.Status,
+        maximumEligibleLoanRial = DecimalText(value.MaximumEligibleLoanRial),
+        approvedLoanRial = DecimalText(value.ApprovedLoanRial),
+        externalReference = value.ExternalReference,
+        reasonCode = value.ReasonCode,
+        attemptCount = value.AttemptCount,
+        updatedAtUtc = value.UpdatedAtUtc,
+    };
+
+    private static object ToFundingAllocationResponse(PilotFundingAllocationView value) => new
+    {
+        id = value.Id,
+        contractId = value.ContractId,
+        bankId = value.BankId,
+        fullDepositEquivalentRial = DecimalText(value.FullDepositEquivalentRial),
+        maximumEligibleLoanRial = DecimalText(value.MaximumEligibleLoanRial),
+        bankApprovedLoanRial = DecimalText(value.BankApprovedLoanRial),
+        tenantContributionRial = DecimalText(value.TenantContributionRial),
+        updatedAtUtc = value.UpdatedAtUtc,
+    };
+
+    private static object ToTenantContributionFundingResponse(PilotTenantContributionFundingView value) => new
+    {
+        fundingId = value.FundingId,
+        externalTransactionId = value.ExternalTransactionId,
+        provider = value.Provider,
+        status = value.Status,
+        amountRial = DecimalText(value.AmountRial),
+        currency = value.Currency,
+        fundReference = value.FundReference,
+        externalReference = value.ExternalReference,
+        reasonCode = value.ReasonCode,
+        attemptCount = value.AttemptCount,
+        updatedAtUtc = value.UpdatedAtUtc,
     };
 
     private static object ToReconcileResponse(PilotReconcileResult result) => new
