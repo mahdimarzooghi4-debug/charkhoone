@@ -12,6 +12,7 @@ Required inputs include:
 
 - `CHARKHOONE_STAGING_API_BASE_URL`: HTTPS staging API base URL.
 - `CHARKHOONE_STAGING_WORKER_HEALTH_URL`: exact Worker `/health/live` URL.
+- `CHARKHOONE_STAGING_TARGET_MANIFEST`: non-secret target identity manifest validated before HTTP.
 - `CHARKHOONE_EXPECTED_GIT_SHA`: exact release SHA.
 - `CHARKHOONE_STAGING_ACCESS_TOKEN_FILE`: read-only staging token file.
 - `CHARKHOONE_STAGING_CONTRACT_ID`: existing staging contract accessible to the smoke identity.
@@ -23,6 +24,8 @@ Required inputs include:
 Remote Worker health URLs must use HTTPS. Plain HTTP is allowed only for loopback endpoints such as a provider tunnel bound to `127.0.0.1`, `localhost`, or `::1`. URL credentials, query strings, fragments, and paths other than `/health/live` are rejected.
 
 ## Read-only checks
+
+Before the first HTTP request, the target manifest fingerprint must match the completed database rehearsal summary. The supplied API base URL and Worker health URL must also match the manifest.
 
 The smoke runner performs GET-only checks:
 
@@ -42,6 +45,8 @@ No financial mutation endpoint is invoked. Response bodies and the access token 
 
 The application-smoke summary records:
 
+- canonical staging target identity fingerprint,
+- API/Worker target URL match,
 - API release identity/liveness/readiness,
 - database rehearsal binding,
 - Worker deployment SHA binding,

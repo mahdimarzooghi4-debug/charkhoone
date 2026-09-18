@@ -54,6 +54,7 @@ application_summary="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/summary.txt"
 application_statuses="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/http-statuses.txt"
 application_database_hash="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/database-rehearsal-summary.sha256"
 application_worker_hash="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/worker-deployment-evidence.sha256"
+application_target_hash="$CHARKHOONE_STAGING_APPLICATION_SMOKE_DIR/staging-target-binding.sha256"
 
 for evidence_path in \
   "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" \
@@ -61,6 +62,7 @@ for evidence_path in \
   "$application_statuses" \
   "$application_database_hash" \
   "$application_worker_hash" \
+  "$application_target_hash" \
   "$CHARKHOONE_STAGING_WORKER_DEPLOYMENT_EVIDENCE" \
   "$CHARKHOONE_RELEASE_CI_EVIDENCE"; do
   [[ -f "$evidence_path" && -s "$evidence_path" ]] || {
@@ -80,6 +82,7 @@ require_line() {
 
 require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'environment=staging'
 require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" "git_sha=$expected_sha"
+require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'staging_target_database_name_match=true'
 require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'migration_runtime_roles_distinct=true'
 require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'migration_runtime_database_name_match=true'
 require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'provider_backup_evidence=operator-supplied-hash-recorded'
@@ -91,6 +94,8 @@ require_line "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" 'promotion_decisio
 
 require_line "$application_summary" 'environment=staging'
 require_line "$application_summary" "git_sha=$expected_sha"
+require_line "$application_summary" 'staging_target_api_url=matched'
+require_line "$application_summary" 'staging_target_worker_health_url=matched'
 require_line "$application_summary" 'smoke_runner_git_sha=matched'
 require_line "$application_summary" 'api_release_header=matched'
 require_line "$application_summary" 'api_liveness=passed'
@@ -137,6 +142,14 @@ read_recorded_hash() {
   printf '%s' "$value"
 }
 
+database_target_hash="$(awk -F= '$1 == "staging_target_binding_sha256" { sub(/^[^=]*=/, ""); print; exit }' "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" | tr '[:upper:]' '[:lower:]')"
+application_summary_target_hash="$(awk -F= '$1 == "staging_target_binding_sha256" { sub(/^[^=]*=/, ""); print; exit }' "$application_summary" | tr '[:upper:]' '[:lower:]')"
+recorded_target_hash="$(read_recorded_hash "$application_target_hash")"
+if [[ ! "$database_target_hash" =~ ^[0-9a-f]{64}$ || "$application_summary_target_hash" != "$database_target_hash" || "$recorded_target_hash" != "$database_target_hash" ]]; then
+  echo 'Staging target identity does not match across database and application evidence.' >&2
+  exit 1
+fi
+
 actual_database_hash="$(sha256sum "$CHARKHOONE_STAGING_DATABASE_REHEARSAL_SUMMARY" | awk '{print $1}')"
 recorded_database_hash="$(read_recorded_hash "$application_database_hash")"
 if [[ "$actual_database_hash" != "$recorded_database_hash" ]]; then
@@ -160,6 +173,7 @@ manifest="$attempt_dir/evidence-manifest.tsv"
   printf 'application_smoke_http_statuses\t%s\n' "$(sha256sum "$application_statuses" | awk '{print $1}')"
   printf 'application_database_hash_record\t%s\n' "$(sha256sum "$application_database_hash" | awk '{print $1}')"
   printf 'application_worker_hash_record\t%s\n' "$(sha256sum "$application_worker_hash" | awk '{print $1}')"
+  printf 'application_target_hash_record\t%s\n' "$(sha256sum "$application_target_hash" | awk '{print $1}')"
   printf 'worker_deployment_evidence\t%s\n' "$actual_worker_hash"
   printf 'release_ci_evidence\t%s\n' "$(sha256sum "$CHARKHOONE_RELEASE_CI_EVIDENCE" | awk '{print $1}')"
 } > "$manifest"
@@ -172,6 +186,8 @@ manifest="$attempt_dir/evidence-manifest.tsv"
   printf 'database_rehearsal=validated\n'
   printf 'application_smoke=validated\n'
   printf 'database_rehearsal_hash_binding=matched\n'
+  printf 'staging_target_binding=matched-across-database-and-application\n'
+  printf 'staging_target_binding_sha256=%s\n' "$database_target_hash"
   printf 'worker_deployment_evidence_hash_binding=matched\n'
   printf 'worker_http_release_header=validated\n'
   printf 'worker_http_liveness=validated\n'

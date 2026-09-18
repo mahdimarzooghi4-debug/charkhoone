@@ -9,6 +9,7 @@ cd "$ROOT_DIR"
 : "${CHARKHOONE_STAGING_RUNTIME_PSQL_CONNECTION:?psql-compatible staging runtime conninfo/URI is required}"
 : "${CHARKHOONE_STAGING_BACKUP_EVIDENCE:?path to provider-native backup/PITR evidence is required}"
 : "${CHARKHOONE_STAGING_RESTORE_EVIDENCE:?path to provider-native restore-drill evidence is required}"
+: "${CHARKHOONE_STAGING_TARGET_MANIFEST:?path to non-secret staging target manifest is required}"
 : "${CHARKHOONE_EXPECTED_GIT_SHA:?expected release git SHA is required}"
 
 [[ ${CHARKHOONE_ALLOW_STAGING_REHEARSAL:-false} == true ]] || {
@@ -20,7 +21,7 @@ cd "$ROOT_DIR"
   exit 1
 }
 
-for command_name in git psql python3 sha256sum dotnet dotnet-ef; do
+for command_name in git psql python3 sha256sum awk dotnet dotnet-ef; do
   command -v "$command_name" >/dev/null 2>&1 || { echo "$command_name is required" >&2; exit 1; }
 done
 
@@ -30,6 +31,18 @@ for evidence_path in "$CHARKHOONE_STAGING_BACKUP_EVIDENCE" "$CHARKHOONE_STAGING_
     exit 1
   }
 done
+[[ -f "$CHARKHOONE_STAGING_TARGET_MANIFEST" && -s "$CHARKHOONE_STAGING_TARGET_MANIFEST" ]] || {
+  echo 'Required staging target manifest is missing or empty.' >&2
+  exit 1
+}
+
+target_manifest_info="$(python3 scripts/staging/verify-target-manifest.py "$CHARKHOONE_STAGING_TARGET_MANIFEST")"
+target_binding_sha="$(printf '%s\n' "$target_manifest_info" | awk -F= '$1 == "staging_target_binding_sha256" { sub(/^[^=]*=/, ""); print; exit }')"
+target_database_name="$(printf '%s\n' "$target_manifest_info" | awk -F= '$1 == "database_name" { sub(/^[^=]*=/, ""); print; exit }')"
+if [[ ! "$target_binding_sha" =~ ^[0-9a-f]{64}$ || -z "$target_database_name" ]]; then
+  echo 'Staging target manifest verifier returned incomplete identity evidence.' >&2
+  exit 1
+fi
 
 actual_sha="$(git rev-parse HEAD)"
 if [[ "$actual_sha" != "$CHARKHOONE_EXPECTED_GIT_SHA" ]]; then
@@ -40,6 +53,7 @@ fi
 output_root="${CHARKHOONE_DATABASE_EVIDENCE_DIR:-artifacts/database/staging-rehearsal}"
 output_dir="$output_root/$actual_sha"
 mkdir -p "$output_dir/pre-migration"
+printf '%s\n' "$target_binding_sha" > "$output_dir/pre-migration/staging-target-binding.sha256"
 
 CHARKHOONE_DATABASE_TARGET_IDENTITY_EVIDENCE_DIR="$output_dir/pre-migration/migration-target-identity" \
 scripts/database/verify-target-identity.sh
@@ -59,6 +73,10 @@ migration_database="$(psql "$CHARKHOONE_STAGING_MIGRATION_PSQL_CONNECTION" -X -q
 runtime_database="$(psql "$CHARKHOONE_STAGING_RUNTIME_PSQL_CONNECTION" -X -q -A -t -v ON_ERROR_STOP=1 -c 'SELECT current_database()')"
 if [[ "$migration_database" != "$runtime_database" ]]; then
   echo 'Migration and runtime psql connections resolve to different database names; rehearsal blocked.' >&2
+  exit 1
+fi
+if [[ "$migration_database" != "$target_database_name" ]]; then
+  echo 'Resolved staging database name does not match the staging target manifest; rehearsal blocked.' >&2
   exit 1
 fi
 
@@ -126,6 +144,8 @@ scripts/database/capture-query-plans.sh
 {
   printf 'environment=staging\n'
   printf 'git_sha=%s\n' "$actual_sha"
+  printf 'staging_target_binding_sha256=%s\n' "$target_binding_sha"
+  printf 'staging_target_database_name_match=true\n'
   printf 'connection_formats=separate-npgsql-migration-and-psql-evidence-connections\n'
   printf 'migration_npgsql_psql_target_identity=verified-by-advisory-lock-database-role-binding\n'
   printf 'migration_runtime_roles_distinct=true\n'

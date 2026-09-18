@@ -5,12 +5,18 @@ on:
     branches: [main, "feature/**"]
     paths:
       - "scripts/staging/**"
+      - "scripts/database/staging-rehearsal.sh"
+      - "deploy/staging-target-manifest.example.json"
+      - "docs/staging-target-identity-binding-v1.md"
       - "docs/staging-application-smoke-release-gate-v1.md"
       - "docs/staging-release-promotion-evidence-v1.md"
       - ".github/workflows/staging-release-ops-validation.yml"
   pull_request:
     paths:
       - "scripts/staging/**"
+      - "scripts/database/staging-rehearsal.sh"
+      - "deploy/staging-target-manifest.example.json"
+      - "docs/staging-target-identity-binding-v1.md"
       - "docs/staging-application-smoke-release-gate-v1.md"
       - "docs/staging-release-promotion-evidence-v1.md"
       - ".github/workflows/staging-release-ops-validation.yml"
@@ -29,6 +35,11 @@ jobs:
           for script in scripts/staging/*.sh; do
             bash -n "$script"
           done
+          bash -n scripts/database/staging-rehearsal.sh
+      - name: Validate staging target identity contract
+        run: |
+          python3 scripts/staging/verify-target-manifest.py deploy/staging-target-manifest.example.json >/dev/null
+          python3 scripts/staging/test-target-manifest.py
       - name: Exercise promotion packet hash bindings
         shell: bash
         run: bash scripts/staging/ci-promotion-packet-fixture.sh

@@ -12,7 +12,8 @@ For one full 40-character release SHA, collect:
 2. Full application-smoke evidence directory.
 3. The same Worker provider/deployment evidence file used during application smoke.
 4. `release-ci-evidence.txt` from the successful CI run for the same SHA.
-5. An exact repository checkout at that SHA.
+5. The application smoke's `staging-target-binding.sha256` record.
+6. An exact repository checkout at that SHA.
 
 The application smoke must now prove Worker HTTP health. Its summary must contain:
 
@@ -29,6 +30,7 @@ Its HTTP status evidence must include `worker_health_live=200`.
 `scripts/staging/build-promotion-packet.sh` rejects the packet unless:
 
 - release CI, database rehearsal, and application smoke all refer to the same SHA,
+- database rehearsal summary, application smoke summary, and target-hash record contain one identical staging target fingerprint,
 - database rehearsal passed migration/readiness/query-plan gates,
 - application smoke passed API auth/readiness checks,
 - Worker HTTP liveness, release header, and service identity were all validated,
@@ -40,6 +42,8 @@ The generated `promotion-readiness.txt` records:
 - `worker_http_liveness=validated`
 - `worker_http_identity=validated`
 - `worker_deployment_evidence_hash_binding=matched`
+- `staging_target_binding=matched-across-database-and-application`
+- `staging_target_binding_sha256=<sha256>`
 - `promotion_decision=human-required`
 - `deployment_action=none`
 
@@ -56,7 +60,9 @@ Worker `/health/live` is an independent host/process liveness check. It does not
 - syntax-checks all staging shell scripts,
 - builds a promotion packet from synthetic evidence,
 - proves Worker HTTP liveness evidence is mandatory,
-- proves post-smoke Worker provider evidence tampering is rejected.
+- proves cross-target database/application evidence is rejected,
+- proves post-smoke Worker provider evidence tampering is rejected,
+- validates canonical staging target manifest semantics.
 
 This validates tooling semantics only. It does not contact staging or production.
 

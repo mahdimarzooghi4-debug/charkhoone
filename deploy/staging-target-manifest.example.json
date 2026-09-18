@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "environment": "staging",
+  "database": {
+    "provider": "replace-me",
+    "scope_id": "replace-me",
+    "resource_id": "replace-me",
+    "database_name": "charkhoone_staging"
+  },
+  "message_broker": {
+    "provider": "replace-me",
+    "scope_id": "replace-me",
+    "resource_id": "replace-me"
+  },
+  "api": {
+    "provider": "replace-me",
+    "scope_id": "replace-me",
+    "resource_id": "replace-me",
+    "base_url": "https://staging-api.example.invalid"
+  },
+  "worker": {
+    "provider": "replace-me",
+    "scope_id": "replace-me",
+    "resource_id": "replace-me",
+    "health_url": "https://staging-worker.example.invalid/health/live"
+  }
+}
