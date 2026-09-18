@@ -24,6 +24,7 @@ jobs:
           python3 scripts/release/verify-base-image-pins.py
           python3 scripts/release/verify-ci-dependency-pins.py
           python3 scripts/release/verify-node-dependency-locks.py
+          python3 scripts/release/verify-admin-release-wiring.py
 
   api-image:
     runs-on: ubuntu-latest
@@ -223,6 +224,7 @@ jobs:
           worker_readiness=not-claimed
           web_image_build=success
           web_http_smoke=success
+          admin_release_wiring=verified
           runtime_user=non-root-verified
           registry_push=not-claimed
           deployment=not-performed
