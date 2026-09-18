@@ -10,6 +10,30 @@ export const PILOT_RECONCILE_OPERATIONS = [
 
 export type PilotReconcileOperation = (typeof PILOT_RECONCILE_OPERATIONS)[number];
 
+export type PilotPaymentQueueItem = {
+  paymentInstructionId: string;
+  monthlyObligationId: string;
+  contractId: string;
+  contractMonthNumber: number;
+  kind: string;
+  beneficiaryId: string;
+  amountRial: string;
+  paymentStatus: string;
+  externalTransactionId: string | null;
+  externalTransactionStatus: string | null;
+  provider: string | null;
+  externalReference: string | null;
+  reasonCode: string | null;
+  dueAtUtc: string;
+  updatedAtUtc: string;
+};
+
+export type PilotPaymentListResponse = {
+  page: number;
+  pageSize: number;
+  items: PilotPaymentQueueItem[];
+};
+
 export type PilotCaseQueueItem = {
   creditApplicationId: string;
   applicantUserId: string;
@@ -262,6 +286,18 @@ export async function pilotApiRequest<T>(
   }
 
   return (await response.json()) as T;
+}
+
+export async function getPilotPayments(page: number, pageSize: number, status?: string) {
+  const query = new URLSearchParams({
+    page: String(page),
+    pageSize: String(pageSize),
+  });
+  if (status) {
+    query.set("status", status);
+  }
+
+  return pilotApiRequest<PilotPaymentListResponse>(`/api/v1/pilot/payments?${query.toString()}`);
 }
 
 export async function getPilotCases(page: number, pageSize: number, status?: string) {
