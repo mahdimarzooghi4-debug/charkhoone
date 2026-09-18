@@ -16,7 +16,7 @@ public sealed class EfCreditEligibilityService(
 
     public async Task<EvaluateCreditEligibilityResult> EvaluateAsync(
         Guid applicationId,
-        decimal fullDepositEquivalentRial,
+        Guid applicantUserId,
         DateTimeOffset occurredAtUtc,
         CancellationToken cancellationToken = default)
     {
@@ -25,15 +25,17 @@ public sealed class EfCreditEligibilityService(
             throw new ArgumentException("Credit application id is required.", nameof(applicationId));
         }
 
-        ArgumentOutOfRangeException.ThrowIfNegative(fullDepositEquivalentRial);
+        if (applicantUserId == Guid.Empty)
+        {
+            throw new ArgumentException("Applicant user id is required.", nameof(applicantUserId));
+        }
 
         CreditEligibilityAssessmentRow assessment;
-        Guid applicantUserId;
 
         await using (var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken))
         {
             var application = await dbContext.CreditApplications
-                .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} FOR UPDATE")
+                .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} AND \"ApplicantUserId\" = {applicantUserId} FOR UPDATE")
                 .SingleOrDefaultAsync(cancellationToken);
 
             if (application is null)
@@ -41,6 +43,18 @@ public sealed class EfCreditEligibilityService(
                 await transaction.RollbackAsync(cancellationToken);
                 return new EvaluateCreditEligibilityResult(
                     EvaluateCreditEligibilityOutcome.NotFound,
+                    null);
+            }
+
+            var trustedFullDepositEquivalentRial = await LoadTrustedFullDepositEquivalentAsync(
+                application,
+                cancellationToken);
+
+            if (trustedFullDepositEquivalentRial is null)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return new EvaluateCreditEligibilityResult(
+                    EvaluateCreditEligibilityOutcome.InvalidState,
                     null);
             }
 
@@ -52,11 +66,20 @@ public sealed class EfCreditEligibilityService(
                     CreditApplicationId = applicationId,
                     Provider = adapter.Provider,
                     Status = ExternalCreditResultStatus.Unknown.ToString(),
-                    FullDepositEquivalentRial = fullDepositEquivalentRial,
+                    FullDepositEquivalentRial = trustedFullDepositEquivalentRial.Value,
                     IdempotencyKey = $"credit-grade:{applicationId:D}:v1",
                     CreatedAtUtc = occurredAtUtc,
                     UpdatedAtUtc = occurredAtUtc,
                 };
+
+            if (dbContext.Entry(assessment).State != EntityState.Detached
+                && assessment.FullDepositEquivalentRial != trustedFullDepositEquivalentRial.Value)
+            {
+                await transaction.RollbackAsync(cancellationToken);
+                return new EvaluateCreditEligibilityResult(
+                    EvaluateCreditEligibilityOutcome.Conflict,
+                    ToView(application.Status, assessment));
+            }
 
             if (IsCompleted(assessment))
             {
@@ -74,7 +97,6 @@ public sealed class EfCreditEligibilityService(
                     ToView(application.Status, assessment));
             }
 
-            assessment.FullDepositEquivalentRial = fullDepositEquivalentRial;
             assessment.UpdatedAtUtc = occurredAtUtc;
 
             if (dbContext.Entry(assessment).State == EntityState.Detached)
@@ -82,7 +104,6 @@ public sealed class EfCreditEligibilityService(
                 dbContext.CreditEligibilityAssessments.Add(assessment);
             }
 
-            applicantUserId = application.ApplicantUserId;
             await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
         }
@@ -97,12 +118,40 @@ public sealed class EfCreditEligibilityService(
         await using var resultTransaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
 
         var lockedApplication = await dbContext.CreditApplications
-            .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} FOR UPDATE")
-            .SingleAsync(cancellationToken);
+            .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {applicationId} AND \"ApplicantUserId\" = {applicantUserId} FOR UPDATE")
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (lockedApplication is null)
+        {
+            await resultTransaction.RollbackAsync(cancellationToken);
+            return new EvaluateCreditEligibilityResult(
+                EvaluateCreditEligibilityOutcome.NotFound,
+                null);
+        }
 
         var lockedAssessment = await dbContext.CreditEligibilityAssessments
             .FromSqlInterpolated($"SELECT * FROM credit_eligibility_assessments WHERE \"Id\" = {assessment.Id} FOR UPDATE")
             .SingleAsync(cancellationToken);
+
+        var currentTrustedFullDepositEquivalentRial = await LoadTrustedFullDepositEquivalentAsync(
+            lockedApplication,
+            cancellationToken);
+
+        if (currentTrustedFullDepositEquivalentRial is null)
+        {
+            await resultTransaction.RollbackAsync(cancellationToken);
+            return new EvaluateCreditEligibilityResult(
+                EvaluateCreditEligibilityOutcome.InvalidState,
+                ToView(lockedApplication.Status, lockedAssessment));
+        }
+
+        if (lockedAssessment.FullDepositEquivalentRial != currentTrustedFullDepositEquivalentRial.Value)
+        {
+            await resultTransaction.RollbackAsync(cancellationToken);
+            return new EvaluateCreditEligibilityResult(
+                EvaluateCreditEligibilityOutcome.Conflict,
+                ToView(lockedApplication.Status, lockedAssessment));
+        }
 
         if (IsCompleted(lockedAssessment))
         {
@@ -119,8 +168,12 @@ public sealed class EfCreditEligibilityService(
         lockedAssessment.ExternalSubGrade = string.IsNullOrWhiteSpace(response.ExternalSubGrade)
             ? null
             : response.ExternalSubGrade.Trim();
-        lockedAssessment.ExternalReference = response.ExternalReference;
-        lockedAssessment.ReasonCode = response.ReasonCode;
+        lockedAssessment.ExternalReference = string.IsNullOrWhiteSpace(response.ExternalReference)
+            ? null
+            : response.ExternalReference.Trim();
+        lockedAssessment.ReasonCode = string.IsNullOrWhiteSpace(response.ReasonCode)
+            ? null
+            : response.ReasonCode.Trim();
         lockedAssessment.AttemptCount += 1;
         lockedAssessment.UpdatedAtUtc = occurredAtUtc;
         lockedAssessment.LoanRatio = null;
@@ -200,7 +253,8 @@ public sealed class EfCreditEligibilityService(
         lockedAssessment.MaximumEligibleLoanRial = maximumEligibleLoanRial;
 
         var actorId = $"credit-grade:{lockedAssessment.Provider}";
-        const string reason = "External credit grade was evaluated against the authoritative loan-ratio policy.";
+        const string reason =
+            "External credit grade was evaluated against the authoritative loan-ratio policy using the immutable trusted contract full-deposit equivalent.";
         var workflow = CreditApplicationWorkflow.Restore(lockedApplication.Status);
         var transition = workflow.MoveTo(
             CreditApplicationStatus.DecisionReady,
@@ -245,6 +299,7 @@ public sealed class EfCreditEligibilityService(
                 assessmentId = lockedAssessment.Id,
                 provider = lockedAssessment.Provider,
                 externalSubGrade = lockedAssessment.ExternalSubGrade,
+                fullDepositEquivalentRial = lockedAssessment.FullDepositEquivalentRial,
                 loanRatio,
                 maximumEligibleLoanRial,
                 fromStatus = transition.From.ToString(),
@@ -259,6 +314,112 @@ public sealed class EfCreditEligibilityService(
         return new EvaluateCreditEligibilityResult(
             EvaluateCreditEligibilityOutcome.Applied,
             ToView(lockedApplication.Status, lockedAssessment));
+    }
+
+    private async Task<decimal?> LoadTrustedFullDepositEquivalentAsync(
+        CreditApplicationRow application,
+        CancellationToken cancellationToken)
+    {
+        if (application.BankLoanPlanId is null
+            || string.IsNullOrWhiteSpace(application.BankLoanPlanVersion))
+        {
+            return null;
+        }
+
+        var planId = application.BankLoanPlanId.Value;
+        var planVersion = application.BankLoanPlanVersion.Trim();
+
+        var exactPlanExists = await dbContext.BankLoanPlanVersions
+            .AsNoTracking()
+            .AnyAsync(
+                x => x.PlanId == planId
+                    && x.Version == planVersion
+                    && x.TermMonths == BankLoanPlanVersion.RequiredTermMonths,
+                cancellationToken);
+
+        if (!exactPlanExists)
+        {
+            return null;
+        }
+
+        var contract = await dbContext.LeaseContracts
+            .AsNoTracking()
+            .SingleOrDefaultAsync(
+                x => x.CreditApplicationId == application.Id,
+                cancellationToken);
+
+        if (contract is null
+            || contract.TenantUserId != application.ApplicantUserId
+            || contract.BankLoanPlanId != planId
+            || !string.Equals(contract.BankLoanPlanVersion, planVersion, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var terms = await dbContext.LeaseContractTerms
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.ContractId == contract.Id, cancellationToken);
+
+        if (terms is null
+            || terms.Calendar != "Persian"
+            || terms.TermMonths != BankLoanPlanVersion.RequiredTermMonths
+            || terms.CashDepositRial < 0m
+            || terms.MonthlyRentRial < 0m
+            || terms.FullDepositEquivalentRial <= 0m
+            || terms.CashDepositRial != decimal.Truncate(terms.CashDepositRial)
+            || terms.MonthlyRentRial != decimal.Truncate(terms.MonthlyRentRial)
+            || terms.FullDepositEquivalentRial != decimal.Truncate(terms.FullDepositEquivalentRial)
+            || string.IsNullOrWhiteSpace(terms.OwnerBeneficiaryId)
+            || string.IsNullOrWhiteSpace(terms.BankBeneficiaryId)
+            || string.IsNullOrWhiteSpace(terms.SourceReference))
+        {
+            return null;
+        }
+
+        decimal calculatedFullDeposit;
+        try
+        {
+            calculatedFullDeposit = FullDepositCalculator.Calculate(
+                terms.CashDepositRial,
+                terms.MonthlyRentRial);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+
+        if (calculatedFullDeposit != terms.FullDepositEquivalentRial)
+        {
+            return null;
+        }
+
+        var schedule = await dbContext.LeaseContractScheduleMonths
+            .AsNoTracking()
+            .Where(x => x.ContractId == contract.Id)
+            .OrderBy(x => x.ContractMonthNumber)
+            .ToListAsync(cancellationToken);
+
+        if (schedule.Count != BankLoanPlanVersion.RequiredTermMonths)
+        {
+            return null;
+        }
+
+        for (var index = 0; index < schedule.Count; index++)
+        {
+            var month = schedule[index];
+            if (month.ContractMonthNumber != index + 1
+                || month.OwnerPaymentRial < 0m
+                || month.BankInterestRial < 0m
+                || month.OwnerPaymentRial != decimal.Truncate(month.OwnerPaymentRial)
+                || month.BankInterestRial != decimal.Truncate(month.BankInterestRial)
+                || (month.OwnerPaymentRial == 0m && month.BankInterestRial == 0m)
+                || (index > 0 && schedule[index - 1].DueAtUtc >= month.DueAtUtc))
+            {
+                return null;
+            }
+        }
+
+        return terms.FullDepositEquivalentRial;
     }
 
     private void MarkIndeterminate(
