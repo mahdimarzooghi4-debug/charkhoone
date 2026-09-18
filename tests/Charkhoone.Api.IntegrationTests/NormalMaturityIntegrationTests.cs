@@ -36,7 +36,7 @@ public sealed class NormalMaturityIntegrationTests(CharkhooneApiFactory factory)
 
         Assert.Equal(PrepareNormalMaturityOutcome.Prepared, first.Outcome);
         Assert.NotNull(first.FinalMonthDueAtUtc);
-        Assert.True(first.FinalMonthDueAtUtc <= occurredAt);
+        Assert.True(first.FinalMonthDueAtUtc!.Value <= occurredAt);
         Assert.NotNull(first.FinalMonthClosedAtUtc);
 
         await using (var db = CreateDbContext())
@@ -85,10 +85,15 @@ public sealed class NormalMaturityIntegrationTests(CharkhooneApiFactory factory)
             await finalDb.AuditEvents.CountAsync(x =>
                 x.AggregateId == contractId
                 && x.Action == "contract_entered_normal_settlement_pending"));
-        Assert.Equal(
-            1,
-            await finalDb.OutboxMessages.CountAsync(x =>
-                x.Type == "lease-contract.normal-settlement-pending.v1"));
+        var finalPendingPayloads = await finalDb.OutboxMessages.AsNoTracking()
+            .Where(x => x.Type == "lease-contract.normal-settlement-pending.v1")
+            .Select(x => x.PayloadJson)
+            .ToListAsync();
+        Assert.Single(
+            finalPendingPayloads,
+            payload => payload.Contains(
+                contractId.ToString("D"),
+                StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
