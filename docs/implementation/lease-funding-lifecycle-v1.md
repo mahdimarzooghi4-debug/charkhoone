@@ -49,6 +49,8 @@ An in-flight tenant-funding external transaction in `Pending` or `Unknown` is tr
 
 For a zero tenant contribution, no synthetic zero-value external transaction, tenant-contribution row, or journal is created or required. Any conflicting tenant-funding evidence in that zero-contribution path fails closed.
 
+Activation also requires the immutable trusted contract terms/schedule snapshot defined in `docs/implementation/trusted-contract-terms-snapshot-v1.md`. Missing terms keep the contract in `AwaitingCompletion`; inconsistent terms fail closed.
+
 ## Atomic lifecycle evidence
 
 Each applied transition writes, in the same database transaction:
@@ -79,8 +81,8 @@ This ordering means a contract that becomes financially complete can become `Act
 
 ## Explicitly still separate
 
-This phase does not invent lease calendar terms, monthly rent, bank-interest amounts, beneficiaries, or a monthly schedule. Those values are not currently persisted on the lease-contract row.
+This phase itself does not invent lease calendar terms, monthly rent, bank-interest amounts, beneficiaries, or a monthly schedule.
 
-The next schedule-provisioning phase must consume an explicit trusted contract-terms/schedule snapshot rather than derive dates from `CreatedAtUtc` or parse opaque bank `InterestTerms`.
+Those values are now supplied by the separate trusted immutable snapshot boundary. The next schedule-provisioning phase must consume that snapshot rather than derive dates from `CreatedAtUtc` or parse opaque bank `InterestTerms`.
 
 No schema migration and no external provider call are introduced by this lifecycle phase.

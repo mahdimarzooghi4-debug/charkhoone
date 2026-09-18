@@ -47,6 +47,39 @@ public sealed class EfContractReadService(CharkhooneDbContext dbContext) : ICont
             return null;
         }
 
+        LeaseContractTermsReadView? terms = null;
+        var termsRow = await dbContext.LeaseContractTerms
+            .AsNoTracking()
+            .SingleOrDefaultAsync(x => x.ContractId == contractId, cancellationToken);
+        if (termsRow is not null)
+        {
+            var schedule = await dbContext.LeaseContractScheduleMonths
+                .AsNoTracking()
+                .Where(x => x.ContractId == contractId)
+                .OrderBy(x => x.ContractMonthNumber)
+                .Select(x => new LeaseContractScheduleMonthReadView(
+                    x.ContractMonthNumber,
+                    x.DueAtUtc,
+                    x.OwnerPaymentRial,
+                    x.BankInterestRial))
+                .ToListAsync(cancellationToken);
+
+            terms = new LeaseContractTermsReadView(
+                termsRow.Calendar,
+                termsRow.PersianStartYear,
+                termsRow.PersianStartMonth,
+                termsRow.PersianStartDay,
+                termsRow.TermMonths,
+                termsRow.CashDepositRial,
+                termsRow.MonthlyRentRial,
+                termsRow.FullDepositEquivalentRial,
+                termsRow.OwnerBeneficiaryId,
+                termsRow.BankBeneficiaryId,
+                termsRow.SourceReference,
+                termsRow.CapturedAtUtc,
+                schedule);
+        }
+
         var delinquencyRow = await dbContext.ContractDelinquencies
             .AsNoTracking()
             .SingleOrDefaultAsync(x => x.ContractId == contractId, cancellationToken);
@@ -203,6 +236,7 @@ public sealed class EfContractReadService(CharkhooneDbContext dbContext) : ICont
             contract.CreditGradePolicyVersion,
             contract.CreatedAtUtc,
             contract.UpdatedAtUtc,
+            terms,
             delinquencyRow is null
                 ? null
                 : new ContractDelinquencyView(

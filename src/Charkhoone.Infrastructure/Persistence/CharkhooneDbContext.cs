@@ -29,6 +29,8 @@ public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> op
     public DbSet<JournalEntryRow> JournalEntries => Set<JournalEntryRow>();
     public DbSet<JournalLineRow> JournalLines => Set<JournalLineRow>();
     public DbSet<LeaseContractRow> LeaseContracts => Set<LeaseContractRow>();
+    public DbSet<LeaseContractTermsRow> LeaseContractTerms => Set<LeaseContractTermsRow>();
+    public DbSet<LeaseContractScheduleMonthRow> LeaseContractScheduleMonths => Set<LeaseContractScheduleMonthRow>();
     public DbSet<WorkflowTransitionRow> WorkflowTransitions => Set<WorkflowTransitionRow>();
     public DbSet<AuditEventRow> AuditEvents => Set<AuditEventRow>();
     public DbSet<MonthlyObligationRow> MonthlyObligations => Set<MonthlyObligationRow>();
@@ -42,6 +44,7 @@ public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> op
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         EnforcePostedLedgerImmutability();
+        EnforceLeaseContractTermsImmutability();
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
@@ -50,6 +53,7 @@ public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> op
         CancellationToken cancellationToken = default)
     {
         EnforcePostedLedgerImmutability();
+        EnforceLeaseContractTermsImmutability();
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
@@ -72,6 +76,23 @@ public sealed class CharkhooneDbContext(DbContextOptions<CharkhooneDbContext> op
         {
             throw new InvalidOperationException(
                 "Posted journal entries and lines are immutable. Record corrections with a new reversal journal instead of updating or deleting posted ledger history.");
+        }
+    }
+
+    private void EnforceLeaseContractTermsImmutability()
+    {
+        ChangeTracker.DetectChanges();
+
+        var mutation = ChangeTracker.Entries()
+            .FirstOrDefault(entry =>
+                entry.State is EntityState.Modified or EntityState.Deleted
+                && (entry.Entity is LeaseContractTermsRow
+                    || entry.Entity is LeaseContractScheduleMonthRow));
+
+        if (mutation is not null)
+        {
+            throw new InvalidOperationException(
+                "Captured lease contract terms and schedule rows are immutable. Persist a new contract version rather than mutating an accepted snapshot.");
         }
     }
 }

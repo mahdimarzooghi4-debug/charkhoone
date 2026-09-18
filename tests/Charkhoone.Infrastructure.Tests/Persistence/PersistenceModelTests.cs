@@ -148,6 +148,43 @@ public sealed class PersistenceModelTests
             || property.Name.Contains("TenantContribution", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Fact]
+    public void LeaseContractTerms_UseOneImmutableSnapshotWithTwelveScheduleSlots()
+    {
+        using var context = CreateContext();
+        var terms = context.Model.FindEntityType(typeof(LeaseContractTermsRow));
+        var schedule = context.Model.FindEntityType(typeof(LeaseContractScheduleMonthRow));
+
+        Assert.NotNull(terms);
+        Assert.NotNull(schedule);
+        Assert.Equal("lease_contract_terms", terms!.GetTableName());
+        Assert.Equal("lease_contract_schedule_months", schedule!.GetTableName());
+
+        Assert.Equal(
+            nameof(LeaseContractTermsRow.ContractId),
+            Assert.Single(terms.FindPrimaryKey()!.Properties).Name);
+
+        Assert.Equal(
+            new[]
+            {
+                nameof(LeaseContractScheduleMonthRow.ContractId),
+                nameof(LeaseContractScheduleMonthRow.ContractMonthNumber),
+            },
+            schedule.FindPrimaryKey()!.Properties.Select(x => x.Name).ToArray());
+
+        var dueIndex = schedule.GetIndexes().Single(index =>
+            index.Properties.Select(x => x.Name).SequenceEqual(
+                new[]
+                {
+                    nameof(LeaseContractScheduleMonthRow.ContractId),
+                    nameof(LeaseContractScheduleMonthRow.DueAtUtc),
+                }));
+        Assert.True(dueIndex.IsUnique);
+
+        var scheduleForeignKey = schedule.GetForeignKeys().Single();
+        Assert.Equal(typeof(LeaseContractTermsRow), scheduleForeignKey.PrincipalEntityType.ClrType);
+    }
+
     private static CharkhooneDbContext CreateContext()
     {
         var options = new DbContextOptionsBuilder<CharkhooneDbContext>()

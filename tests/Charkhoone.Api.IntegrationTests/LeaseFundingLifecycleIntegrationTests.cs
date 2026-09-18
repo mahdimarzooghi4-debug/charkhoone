@@ -173,12 +173,42 @@ public sealed class LeaseFundingLifecycleIntegrationTests(CharkhooneApiFactory f
                 && x.AggregateId == fixture.ContractId));
     }
 
+    [Fact]
+    public async Task CompleteFundingWithoutTrustedTerms_StopsAtAwaitingCompletion()
+    {
+        var now = DateTimeOffset.Parse("2026-09-18T21:30:00+00:00");
+        var fixture = await SeedFundingAsync(
+            now,
+            tenantContributionRial: 0m,
+            includeTenantEvidence: false,
+            includeTermsSnapshot: false);
+
+        await using var db = CreateDbContext();
+        var service = new EfLeaseFundingLifecycleService(db);
+
+        var result = await service.AdvanceAsync(fixture.ContractId, now);
+
+        Assert.Equal(AdvanceLeaseFundingLifecycleOutcome.Advanced, result.Outcome);
+        Assert.Equal(LeaseContractStatus.AwaitingCompletion, result.Status);
+        Assert.Equal(2, result.AppliedTransitions);
+
+        var contract = await db.LeaseContracts.AsNoTracking()
+            .SingleAsync(x => x.Id == fixture.ContractId);
+        Assert.Equal(LeaseContractStatus.AwaitingCompletion, contract.Status);
+        Assert.Equal(
+            0,
+            await db.AuditEvents.CountAsync(x =>
+                x.AggregateId == fixture.ContractId
+                && x.Action == "contract_activated"));
+    }
+
     private async Task<Fixture> SeedFundingAsync(
         DateTimeOffset now,
         decimal tenantContributionRial,
         bool includeTenantEvidence,
         CreditApplicationStatus applicationStatus = CreditApplicationStatus.ApprovedFunded,
-        bool includePrincipalEvidence = true)
+        bool includePrincipalEvidence = true,
+        bool includeTermsSnapshot = true)
     {
         var contractId = Guid.NewGuid();
         var tenantId = Guid.NewGuid();
@@ -248,6 +278,38 @@ public sealed class LeaseFundingLifecycleIntegrationTests(CharkhooneApiFactory f
             CreatedAtUtc = now.AddMinutes(-8),
             UpdatedAtUtc = now.AddMinutes(-8),
         });
+
+        if (includeTermsSnapshot)
+        {
+            db.LeaseContractTerms.Add(new LeaseContractTermsRow
+            {
+                ContractId = contractId,
+                Calendar = "Persian",
+                PersianStartYear = 1405,
+                PersianStartMonth = 7,
+                PersianStartDay = 1,
+                TermMonths = 12,
+                CashDepositRial = bankPrincipalRial + tenantContributionRial,
+                MonthlyRentRial = 0m,
+                FullDepositEquivalentRial = bankPrincipalRial + tenantContributionRial,
+                OwnerBeneficiaryId = $"owner:{ownerId:D}",
+                BankBeneficiaryId = bankId,
+                SourceReference = $"fixture:lease-terms:{contractId:D}",
+                CapturedAtUtc = now.AddMinutes(-9),
+            });
+
+            for (var month = 1; month <= 12; month++)
+            {
+                db.LeaseContractScheduleMonths.Add(new LeaseContractScheduleMonthRow
+                {
+                    ContractId = contractId,
+                    ContractMonthNumber = month,
+                    DueAtUtc = now.AddMonths(month - 1),
+                    OwnerPaymentRial = 0m,
+                    BankInterestRial = 1_000_000m,
+                });
+            }
+        }
 
         if (includePrincipalEvidence)
         {

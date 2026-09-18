@@ -263,6 +263,35 @@ public sealed class NormalMaturityWorkerIntegrationTests(CharkhooneApiFactory fa
                 FrozenAtUtc = workerAt.AddMinutes(-7),
             });
 
+            db.LeaseContractTerms.Add(new LeaseContractTermsRow
+            {
+                ContractId = contractId,
+                Calendar = "Persian",
+                PersianStartYear = 1405,
+                PersianStartMonth = 7,
+                PersianStartDay = 1,
+                TermMonths = 12,
+                CashDepositRial = frozenPrincipalRial,
+                MonthlyRentRial = 0m,
+                FullDepositEquivalentRial = frozenPrincipalRial,
+                OwnerBeneficiaryId = $"owner:{ownerId:D}",
+                BankBeneficiaryId = bankId,
+                SourceReference = $"fixture:worker-activation:{contractId:D}",
+                CapturedAtUtc = workerAt.AddMinutes(-9),
+            });
+
+            for (var month = 1; month <= 12; month++)
+            {
+                db.LeaseContractScheduleMonths.Add(new LeaseContractScheduleMonthRow
+                {
+                    ContractId = contractId,
+                    ContractMonthNumber = month,
+                    DueAtUtc = workerAt.AddMonths(month - 1),
+                    OwnerPaymentRial = 0m,
+                    BankInterestRial = 1_000_000m,
+                });
+            }
+
             await db.SaveChangesAsync();
         }
 

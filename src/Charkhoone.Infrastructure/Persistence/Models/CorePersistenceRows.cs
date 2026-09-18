@@ -75,6 +75,33 @@ public sealed class VerificationRequestRow
     public DateTimeOffset UpdatedAtUtc { get; set; }
 }
 
+public sealed class LeaseContractTermsRow
+{
+    public Guid ContractId { get; set; }
+    public string Calendar { get; set; } = "Persian";
+    public int PersianStartYear { get; set; }
+    public int PersianStartMonth { get; set; }
+    public int PersianStartDay { get; set; }
+    public int TermMonths { get; set; }
+    public decimal CashDepositRial { get; set; }
+    public decimal MonthlyRentRial { get; set; }
+    public decimal FullDepositEquivalentRial { get; set; }
+    public string OwnerBeneficiaryId { get; set; } = string.Empty;
+    public string BankBeneficiaryId { get; set; } = string.Empty;
+    public string SourceReference { get; set; } = string.Empty;
+    public DateTimeOffset CapturedAtUtc { get; set; }
+    public ICollection<LeaseContractScheduleMonthRow> ScheduleMonths { get; set; } = [];
+}
+
+public sealed class LeaseContractScheduleMonthRow
+{
+    public Guid ContractId { get; set; }
+    public int ContractMonthNumber { get; set; }
+    public DateTimeOffset DueAtUtc { get; set; }
+    public decimal OwnerPaymentRial { get; set; }
+    public decimal BankInterestRial { get; set; }
+}
+
 public sealed class LeaseContractRow
 {
     public Guid Id { get; set; }

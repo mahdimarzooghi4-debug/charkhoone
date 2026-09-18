@@ -25,6 +25,27 @@ public sealed record ContractAuditPage(
     public bool HasNextPage => (long)Page * PageSize < TotalCount;
 }
 
+public sealed record LeaseContractScheduleMonthReadView(
+    int ContractMonthNumber,
+    DateTimeOffset DueAtUtc,
+    decimal OwnerPaymentRial,
+    decimal BankInterestRial);
+
+public sealed record LeaseContractTermsReadView(
+    string Calendar,
+    int PersianStartYear,
+    int PersianStartMonth,
+    int PersianStartDay,
+    int TermMonths,
+    decimal CashDepositRial,
+    decimal MonthlyRentRial,
+    decimal FullDepositEquivalentRial,
+    string OwnerBeneficiaryId,
+    string BankBeneficiaryId,
+    string SourceReference,
+    DateTimeOffset CapturedAtUtc,
+    IReadOnlyList<LeaseContractScheduleMonthReadView> ScheduleMonths);
+
 public sealed record ContractDelinquencyView(
     int ConsecutiveMissedMonths,
     bool CancellationRequired,
@@ -99,6 +120,7 @@ public sealed record ContractDetailView(
     string? CreditGradePolicyVersion,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset UpdatedAtUtc,
+    LeaseContractTermsReadView? Terms,
     ContractDelinquencyView? Delinquency,
     FrozenPrincipalReadView? FrozenPrincipal,
     TenantContributionBalanceView? TenantContribution,

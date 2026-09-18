@@ -271,6 +271,26 @@ public static class ContractEndpoints
             detail.CreditGradePolicyVersion,
             detail.CreatedAtUtc,
             detail.UpdatedAtUtc,
+            detail.Terms is null
+                ? null
+                : new LeaseContractTermsResponse(
+                    detail.Terms.Calendar,
+                    detail.Terms.PersianStartYear,
+                    detail.Terms.PersianStartMonth,
+                    detail.Terms.PersianStartDay,
+                    detail.Terms.TermMonths,
+                    detail.Terms.CashDepositRial,
+                    detail.Terms.MonthlyRentRial,
+                    detail.Terms.FullDepositEquivalentRial,
+                    detail.Terms.OwnerBeneficiaryId,
+                    detail.Terms.BankBeneficiaryId,
+                    detail.Terms.SourceReference,
+                    detail.Terms.CapturedAtUtc,
+                    detail.Terms.ScheduleMonths.Select(month => new LeaseContractScheduleMonthResponse(
+                        month.ContractMonthNumber,
+                        month.DueAtUtc,
+                        month.OwnerPaymentRial,
+                        month.BankInterestRial)).ToArray()),
             detail.Delinquency is null
                 ? null
                 : new ContractDelinquencyResponse(
@@ -367,6 +387,7 @@ public sealed record ContractDetailResponse(
     string? CreditGradePolicyVersion,
     DateTimeOffset CreatedAtUtc,
     DateTimeOffset UpdatedAtUtc,
+    LeaseContractTermsResponse? Terms,
     ContractDelinquencyResponse? Delinquency,
     FrozenPrincipalResponse? FrozenPrincipal,
     TenantContributionBalanceResponse? TenantContribution,
@@ -374,6 +395,27 @@ public sealed record ContractDetailResponse(
     IReadOnlyList<PaymentReconciliationAttentionResponse> PaymentsRequiringReconciliation,
     ContractNormalSettlementResponse? Settlement,
     int OpenLostFundReturnExposureCount);
+
+public sealed record LeaseContractScheduleMonthResponse(
+    int ContractMonthNumber,
+    DateTimeOffset DueAtUtc,
+    decimal OwnerPaymentRial,
+    decimal BankInterestRial);
+
+public sealed record LeaseContractTermsResponse(
+    string Calendar,
+    int PersianStartYear,
+    int PersianStartMonth,
+    int PersianStartDay,
+    int TermMonths,
+    decimal CashDepositRial,
+    decimal MonthlyRentRial,
+    decimal FullDepositEquivalentRial,
+    string OwnerBeneficiaryId,
+    string BankBeneficiaryId,
+    string SourceReference,
+    DateTimeOffset CapturedAtUtc,
+    IReadOnlyList<LeaseContractScheduleMonthResponse> ScheduleMonths);
 
 public sealed record ContractDelinquencyResponse(
     int ConsecutiveMissedMonths,
