@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import sys
 import urllib.error
 import urllib.parse
 import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, NoReturn
 
@@ -151,7 +153,12 @@ def main() -> None:
     status_rule = next(rule for rule in expected["rules"] if rule["type"] == "required_status_checks")
     evidence_dir = ROOT / "artifacts" / "repository-governance"
     evidence_dir.mkdir(parents=True, exist_ok=True)
+    spec_sha256 = hashlib.sha256(SPEC_PATH.read_bytes()).hexdigest()
     evidence = {
+        "evidence_schema_version": 2,
+        "live_verification": "passed",
+        "verified_at_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "ruleset_spec_sha256": spec_sha256,
         "repository": repository,
         "branch": "main",
         "ruleset_id": ruleset_id,
