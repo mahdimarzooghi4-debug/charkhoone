@@ -63,6 +63,11 @@ public sealed class EfPilotOperationsService(
             .AsNoTracking()
             .Where(x => obligationIds.Contains(x.Id))
             .ToListAsync(cancellationToken);
+        var contractIds = obligations.Select(x => x.ContractId).Distinct().ToArray();
+        var contracts = await dbContext.LeaseContracts
+            .AsNoTracking()
+            .Where(x => contractIds.Contains(x.Id))
+            .ToListAsync(cancellationToken);
         var components = await dbContext.MonthlyObligationComponents
             .AsNoTracking()
             .Where(x => paymentIds.Contains(x.PaymentInstructionId))
@@ -78,6 +83,7 @@ public sealed class EfPilotOperationsService(
             .ToListAsync(cancellationToken);
 
         var obligationById = obligations.ToDictionary(x => x.Id);
+        var contractById = contracts.ToDictionary(x => x.Id);
         var componentByPayment = components.ToDictionary(x => x.PaymentInstructionId);
         var externalByPayment = externalTransactions
             .GroupBy(x => x.AggregateId)
@@ -98,11 +104,13 @@ public sealed class EfPilotOperationsService(
             }
 
             externalByPayment.TryGetValue(payment.Id, out var external);
+            contractById.TryGetValue(obligation.ContractId, out var contract);
 
             return new PilotPaymentQueueItem(
                 payment.Id,
                 obligation.Id,
                 obligation.ContractId,
+                contract?.CreditApplicationId,
                 obligation.ContractMonthNumber,
                 component.Kind,
                 payment.BeneficiaryId,
