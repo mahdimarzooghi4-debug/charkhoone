@@ -135,11 +135,14 @@ public sealed class CancellationNotificationConsumerIntegrationTests(CharkhooneA
             await db.AuditEvents.CountAsync(x =>
                 x.AggregateId == fixture.ContractId
                 && x.Action == "cancellation_notification_delivered"));
-        Assert.Equal(
-            0,
-            await db.OutboxMessages.CountAsync(x =>
-                x.Type == CharkhooneWorker.CancellationNotificationConsumer.ReviewRequiredEventType
-                && messageIds.Any(id => x.PayloadJson.Contains(id.ToString("D")))));
+        var reviewMessages = await db.OutboxMessages.AsNoTracking()
+            .Where(x => x.Type == CharkhooneWorker.CancellationNotificationConsumer.ReviewRequiredEventType)
+            .Select(x => x.PayloadJson)
+            .ToListAsync();
+        Assert.DoesNotContain(
+            reviewMessages,
+            payload => messageIds.Any(id =>
+                payload.Contains(id.ToString("D"), StringComparison.OrdinalIgnoreCase)));
     }
 
     [Fact]
@@ -405,7 +408,6 @@ public sealed class CancellationNotificationConsumerIntegrationTests(CharkhooneA
         services.AddLogging();
         services.AddDbContext<CharkhooneDbContext>(db =>
             db.UseNpgsql(_factory.ConnectionString));
-        services.AddSingleton(adapter);
         services.AddSingleton<IExternalCancellationNotificationAdapter>(adapter);
         services.AddSingleton<TimeProvider>(new FixedTimeProvider(now));
         services.AddSingleton(options);
