@@ -342,7 +342,9 @@ public sealed class CancellationSettlementV2IntegrationTests(CharkhooneApiFactor
                 && x.CreditRial == expectedLostReturnRial);
 
             var ownerNotification = await db.OutboxMessages.AsNoTracking()
-                .SingleAsync(x => x.Type == "lease-contract.cancelled-owner-notification-requested.v1");
+                .SingleAsync(x =>
+                    x.Type == "lease-contract.cancelled-owner-notification-requested.v1"
+                    && x.PayloadJson.Contains(contractId.ToString()));
             using (var ownerPayload = JsonDocument.Parse(ownerNotification.PayloadJson))
             {
                 Assert.Equal(contractId, ownerPayload.RootElement.GetProperty("contractId").GetGuid());
@@ -351,7 +353,9 @@ public sealed class CancellationSettlementV2IntegrationTests(CharkhooneApiFactor
             }
 
             var tenantNotification = await db.OutboxMessages.AsNoTracking()
-                .SingleAsync(x => x.Type == "lease-contract.cancelled-tenant-notification-requested.v1");
+                .SingleAsync(x =>
+                    x.Type == "lease-contract.cancelled-tenant-notification-requested.v1"
+                    && x.PayloadJson.Contains(contractId.ToString()));
             using (var tenantPayload = JsonDocument.Parse(tenantNotification.PayloadJson))
             {
                 Assert.Equal(contractId, tenantPayload.RootElement.GetProperty("contractId").GetGuid());
