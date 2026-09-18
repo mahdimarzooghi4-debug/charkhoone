@@ -250,24 +250,48 @@ public sealed class EfLeaseFundingLifecycleService(CharkhooneDbContext dbContext
             return FundingReadiness.NotReady;
         }
 
-        if (contribution is null || funding is null)
+        if (funding is null)
         {
             return FundingReadiness.Invalid;
         }
 
         var external = await dbContext.ExternalTransactions
             .SingleOrDefaultAsync(x => x.Id == funding.ExternalTransactionId, cancellationToken);
-        var journal = await dbContext.JournalEntries
-            .SingleOrDefaultAsync(
-                x => x.IdempotencyKey == $"journal:tenant-contribution-funding:{allocation.Id:D}:v1",
-                cancellationToken);
-
-        if (external is null || journal is null)
+        if (external is null)
         {
             return FundingReadiness.Invalid;
         }
 
         var expectedExternalKey = $"tenant-contribution-funding:{allocation.Id:D}:v1";
+        var externalMatches =
+            external.AggregateType == "LeaseContract"
+            && external.AggregateId == contractId
+            && external.OperationType == TenantFundingOperationType
+            && external.AmountRial == allocation.TenantContributionRial
+            && external.Currency == "IRR"
+            && external.IdempotencyKey == expectedExternalKey;
+
+        if (!externalMatches)
+        {
+            return FundingReadiness.Invalid;
+        }
+
+        if (contribution is null)
+        {
+            return external.Status is ExternalTransactionStatus.Pending or ExternalTransactionStatus.Unknown
+                ? FundingReadiness.NotReady
+                : FundingReadiness.Invalid;
+        }
+
+        var journal = await dbContext.JournalEntries
+            .SingleOrDefaultAsync(
+                x => x.IdempotencyKey == $"journal:tenant-contribution-funding:{allocation.Id:D}:v1",
+                cancellationToken);
+        if (journal is null)
+        {
+            return FundingReadiness.Invalid;
+        }
+
         var valid =
             contribution.FundingAllocationId == allocation.Id
             && contribution.InitialAmountRial == allocation.TenantContributionRial
@@ -277,13 +301,7 @@ public sealed class EfLeaseFundingLifecycleService(CharkhooneDbContext dbContext
                 contribution.FundReference.Trim(),
                 funding.FundReference.Trim(),
                 StringComparison.Ordinal)
-            && external.AggregateType == "LeaseContract"
-            && external.AggregateId == contractId
-            && external.OperationType == TenantFundingOperationType
             && external.Status == ExternalTransactionStatus.Succeeded
-            && external.AmountRial == allocation.TenantContributionRial
-            && external.Currency == "IRR"
-            && external.IdempotencyKey == expectedExternalKey
             && journal.ReferenceType == "ExternalTransaction"
             && journal.ReferenceId == external.Id;
 
