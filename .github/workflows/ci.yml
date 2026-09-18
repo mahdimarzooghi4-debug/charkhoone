@@ -35,6 +35,14 @@ jobs:
         run: python3 scripts/release/verify-ci-dependency-pins.py
       - name: Verify deterministic Node dependency locks
         run: python3 scripts/release/verify-node-dependency-locks.py
+      - name: Validate pilot scenario cohort runner
+        run: |
+          python3 -m py_compile scripts/pilot/run-scenario-cohort.py
+          scenario_list="$(python3 scripts/pilot/run-scenario-cohort.py --list)"
+          test "$(printf '%s\n' "$scenario_list" | wc -l)" -eq 9
+          for scenario in success indeterminate retry decline needs-documents payment delinquency cancellation maturity; do
+            printf '%s\n' "$scenario_list" | grep -q "^${scenario}: "
+          done
       - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
         with:
           dotnet-version: 10.0.x
@@ -44,6 +52,20 @@ jobs:
         run: dotnet build Charkhoone.slnx --configuration Release --no-restore
       - name: Test
         run: dotnet test Charkhoone.slnx --configuration Release --no-build
+      - name: Run minimum real PostgreSQL pilot scenario cohort
+        env:
+          CHARKHOONE_SCENARIO_ALLOW_POSTGRES: "true"
+        run: >-
+          python3 scripts/pilot/run-scenario-cohort.py
+          --no-build
+          --report artifacts/pilot-scenario-cohort/ci-summary.json
+      - name: Upload pilot scenario cohort evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: pilot-scenario-cohort-${{ github.sha }}
+          path: artifacts/pilot-scenario-cohort/ci-summary.json
+          if-no-files-found: error
+          retention-days: 7
       - name: Install EF CLI
         run: dotnet tool install --global dotnet-ef --version 10.0.12
       - name: Verify no pending model changes
