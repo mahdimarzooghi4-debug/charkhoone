@@ -24,6 +24,7 @@ builder.Services.AddSingleton(financialReconciliationOptions);
 
 builder.Services.AddHostedService<OutboxWorker>();
 builder.Services.AddHostedService<CreditApplicationSubmittedConsumer>();
+builder.Services.AddHostedService<CancellationNotificationConsumer>();
 builder.Services.AddHostedService<FinancialReconciliationWorker>();
 
 var app = builder.Build();
