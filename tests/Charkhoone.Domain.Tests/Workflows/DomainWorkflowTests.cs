@@ -72,6 +72,26 @@ public sealed class DomainWorkflowTests
     }
 
     [Fact]
+    public void LeaseContract_RestoredFundingState_ContinuesOnlyAlongAllowedPath()
+    {
+        var workflow = LeaseContractWorkflow.Restore(LeaseContractStatus.AwaitingFunding);
+
+        workflow.MoveTo(
+            LeaseContractStatus.AwaitingCompletion,
+            "system:lease-funding-lifecycle",
+            "principal confirmed",
+            Now);
+        workflow.MoveTo(
+            LeaseContractStatus.Active,
+            "system:lease-funding-lifecycle",
+            "tenant contribution complete",
+            Now);
+
+        Assert.Equal(LeaseContractStatus.Active, workflow.Status);
+        Assert.Equal(2, workflow.Transitions.Count);
+    }
+
+    [Fact]
     public void LeaseContract_NormalSettlementPath_IsExplicit()
     {
         var workflow = ReachActiveLease();
