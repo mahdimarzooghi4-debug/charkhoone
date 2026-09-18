@@ -1,3 +1,4 @@
+using Charkhoone.Application.Contracts;
 using Charkhoone.Application.Payments;
 using Charkhoone.Domain.Contracts;
 using Charkhoone.Domain.Payments;
@@ -30,11 +31,12 @@ public sealed class FinancialReconciliationWorker(
             {
                 var result = await ReconcileOnceAsync(stoppingToken);
                 logger.LogInformation(
-                    "Financial reconciliation batch completed: {Payments} payments, {Coverage} coverage obligations, {Cancellations} cancellation settlements, {CancellationBankPrincipals} cancellation bank-principal returns, {NormalSettlements} normal settlements.",
+                    "Financial reconciliation batch completed: {Payments} payments, {Coverage} coverage obligations, {Cancellations} cancellation settlements, {CancellationBankPrincipals} cancellation bank-principal returns, {NormalMaturities} normal maturities, {NormalSettlements} normal settlements.",
                     result.PaymentCandidates,
                     result.CoverageCandidates,
                     result.CancellationCandidates,
                     result.CancellationBankPrincipalCandidates,
+                    result.NormalMaturityCandidates,
                     result.NormalSettlementCandidates);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
@@ -133,19 +135,6 @@ public sealed class FinancialReconciliationWorker(
             .Take(options.BatchSize)
             .ToListAsync(cancellationToken);
 
-        var normalSettlementCandidates = await dbContext.LeaseContracts
-            .AsNoTracking()
-            .Where(x => x.Status == LeaseContractStatus.SettlementPending)
-            .Where(x => !dbContext.NormalSettlements.Any(settlement =>
-                settlement.ContractId == x.Id
-                && (settlement.BankPrincipalStatus == NormalSettlementTransferStatus.Failed
-                    || settlement.TenantResidualStatus == NormalSettlementTransferStatus.Failed)))
-            .OrderBy(x => x.UpdatedAtUtc)
-            .ThenBy(x => x.Id)
-            .Select(x => x.Id)
-            .Take(options.BatchSize)
-            .ToListAsync(cancellationToken);
-
         var paymentService = scope.ServiceProvider.GetRequiredService<IPaymentReconciliationService>();
         foreach (var candidate in paymentCandidates)
         {
@@ -190,6 +179,42 @@ public sealed class FinancialReconciliationWorker(
                     cancellationToken));
         }
 
+        var normalMaturityCandidates = await dbContext.LeaseContracts
+            .AsNoTracking()
+            .Where(x => x.Status == LeaseContractStatus.Active)
+            .Where(x => dbContext.MonthlyObligations.Any(obligation =>
+                obligation.ContractId == x.Id
+                && obligation.ContractMonthNumber == 12
+                && obligation.ClosedAtUtc != null
+                && obligation.DueAtUtc <= occurredAtUtc))
+            .OrderBy(x => x.UpdatedAtUtc)
+            .ThenBy(x => x.Id)
+            .Select(x => x.Id)
+            .Take(options.BatchSize)
+            .ToListAsync(cancellationToken);
+
+        var normalMaturityService = scope.ServiceProvider.GetRequiredService<INormalMaturityService>();
+        foreach (var contractId in normalMaturityCandidates)
+        {
+            await RunCandidateAsync(
+                "normal-maturity",
+                contractId,
+                () => normalMaturityService.PrepareAsync(contractId, occurredAtUtc, cancellationToken));
+        }
+
+        var normalSettlementCandidates = await dbContext.LeaseContracts
+            .AsNoTracking()
+            .Where(x => x.Status == LeaseContractStatus.SettlementPending)
+            .Where(x => !dbContext.NormalSettlements.Any(settlement =>
+                settlement.ContractId == x.Id
+                && (settlement.BankPrincipalStatus == NormalSettlementTransferStatus.Failed
+                    || settlement.TenantResidualStatus == NormalSettlementTransferStatus.Failed)))
+            .OrderBy(x => x.UpdatedAtUtc)
+            .ThenBy(x => x.Id)
+            .Select(x => x.Id)
+            .Take(options.BatchSize)
+            .ToListAsync(cancellationToken);
+
         var normalSettlementService = scope.ServiceProvider.GetRequiredService<INormalSettlementService>();
         foreach (var contractId in normalSettlementCandidates)
         {
@@ -205,6 +230,7 @@ public sealed class FinancialReconciliationWorker(
         activity?.SetTag(
             "charkhoone.reconciliation.cancellation_bank_principal_candidates",
             cancellationBankPrincipalCandidates.Count);
+        activity?.SetTag("charkhoone.reconciliation.normal_maturity_candidates", normalMaturityCandidates.Count);
         activity?.SetTag("charkhoone.reconciliation.normal_settlement_candidates", normalSettlementCandidates.Count);
 
         return new FinancialReconciliationBatchResult(
@@ -212,6 +238,7 @@ public sealed class FinancialReconciliationWorker(
             coverageCandidates.Count,
             cancellationCandidates.Count,
             cancellationBankPrincipalCandidates.Count,
+            normalMaturityCandidates.Count,
             normalSettlementCandidates.Count);
     }
 
@@ -250,4 +277,5 @@ public sealed record FinancialReconciliationBatchResult(
     int CoverageCandidates,
     int CancellationCandidates,
     int CancellationBankPrincipalCandidates,
+    int NormalMaturityCandidates,
     int NormalSettlementCandidates);
