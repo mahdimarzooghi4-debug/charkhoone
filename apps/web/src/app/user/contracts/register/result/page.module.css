@@ -29,25 +29,27 @@
 .roleHeader p { width: 100%; color: var(--ch-color-muted); font-size: 13px; }
 .roleStack { width: 100%; display: flex; flex-direction: column; gap: 12px; }
 .roleOption { width: 100%; display: flex; flex-direction: column; gap: 8px; padding: 16px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 12px; cursor: pointer; }
-.roleSelected { background: #f0f7f6; border: 2px solid var(--ch-color-primary); }
+.roleSelected { background: rgb(13 59 54 / 8%); border: 2px solid var(--ch-color-primary); }
 .roleOptionTop { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; direction: ltr; }
 .roleOptionTop strong { color: var(--ch-color-text); font-size: 15px; font-weight: 700; direction: rtl; }
 .roleSelected .roleOptionTop strong { color: var(--ch-color-primary); }
-.roleOption input[type="radio"] { width: 18px; height: 18px; flex: 0 0 18px; margin: 0; accent-color: var(--ch-color-primary); cursor: pointer; }
-.roleOption:focus-within { outline: 3px solid rgb(255 138 0 / 30%); outline-offset: 2px; }
+.roleOption input[type="radio"] { width: 18px; height: 18px; flex: 0 0 18px; margin: 0; appearance: none; -webkit-appearance: none; border: 2px solid var(--ch-color-muted); border-radius: 50%; background: #fff; cursor: pointer; }
+.roleOption input[type="radio"]:checked { border-color: var(--ch-color-primary); background: var(--ch-color-primary); box-shadow: inset 0 0 0 3px #fff; }
+.roleOption input[type="radio"]:focus-visible { outline: 3px solid rgb(13 59 54 / 30%); outline-offset: 3px; }
+.roleOption:focus-within { outline: 2px solid rgb(13 59 54 / 30%); outline-offset: 2px; }
 .roleOption:hover { border-color: var(--ch-color-primary); }
 .partyInfo { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 .partyInfo > span, .partyInfo > strong { color: var(--ch-color-text); font-size: 14px; }
 .partyInfo > strong { font-weight: 600; }
 .partyInfo small { color: var(--ch-color-muted); font-size: 12px; }
-.nextNotice { width: 100%; min-height: 100px; padding: 10px 12px; color: #404d66; font-size: 13px; font-weight: 700; line-height: 1.8; text-align: right; background: #edf2fa; border-radius: 8px; }
+.nextNotice { width: 100%; min-height: 100px; padding: 10px 12px; color: var(--ch-color-primary); font-size: 13px; font-weight: 700; line-height: 1.8; text-align: right; background: rgb(13 59 54 / 8%); border-radius: 8px; }
 .actions { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .primaryAction { width: 100%; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; color: #fff; font-size: 14px; font-weight: 500; text-decoration: none; background: var(--ch-color-primary); border-radius: 12px; }
 .secondaryAction { color: var(--ch-color-primary); font-size: 13px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
 .sidebar { width: 260px; flex: 0 0 260px; display: flex; flex-direction: column; justify-content: space-between; padding: 40px 20px; direction: rtl; background: var(--ch-color-primary); }
 .sidebarTop { display: flex; flex-direction: column; gap: 32px; }
-.logoWrap { width: 100%; display: flex; justify-content: center; }
-.logoWrap img { width: 127px; height: 55px; display: block; object-fit: contain; }
+.logoWrap { position: relative; width: 100%; height: 55px; display: block; }
+.logoWrap img { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 127px; height: 55px; display: block; object-fit: contain; }
 .nav { display: flex; flex-direction: column; gap: 6px; }
 .navItem { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 16px; color: var(--ch-color-muted); font-size: 14px; text-decoration: none; border-radius: 12px; }
 .navItem > span:nth-child(2) { min-width: 0; flex: 1 1 auto; text-align: right; }
@@ -71,4 +73,5 @@
 .navItem { direction: ltr; text-align: right; }
 .navItem > span { direction: rtl; text-align: right; }
 .navItem img { flex: 0 0 20px; }
-.logoWrap { justify-content: center; }
+/* Center the IMAGE itself on the sidebar midpoint, independently of RTL flex alignment. */
+.logoWrap img { left: 50%; transform: translateX(-50%); }

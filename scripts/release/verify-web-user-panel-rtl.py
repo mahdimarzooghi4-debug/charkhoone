@@ -182,9 +182,15 @@ require('href={nextHref}' in lookup_text and
         "contract lookup continuation must honor selected owner or tenant preview route")
 require('<span className={styles.alertBadge}>۱</span>' not in lookup_text,
         "contract lookup result must not show the static contracts alert badge")
-require('.logoWrap { width: 100%; display: flex; justify-content: center; }' in lookup_css and
-        lookup_css.rstrip().endswith('.logoWrap { justify-content: center; }'),
-        "contract lookup result sidebar logo must remain centered after shared override")
+require('.logoWrap { position: relative; width: 100%; height: 55px; display: block; }' in lookup_css and
+        'position: absolute; top: 0; left: 50%; transform: translateX(-50%);' in lookup_css and
+        lookup_css.rstrip().endswith('.logoWrap img { left: 50%; transform: translateX(-50%); }'),
+        "contract lookup result logo image must center on the sidebar midpoint regardless of RTL flex")
+require('appearance: none; -webkit-appearance: none;' in lookup_css and
+        '.roleOption input[type="radio"]:checked { border-color: var(--ch-color-primary); background: var(--ch-color-primary);' in lookup_css and
+        '.roleOption input[type="radio"]:focus-visible { outline: 3px solid rgb(13 59 54 / 30%);' in lookup_css and
+        '.nextNotice { width: 100%; min-height: 100px; padding: 10px 12px; color: var(--ch-color-primary);' in lookup_css,
+        "lookup selected radio, focus and next-step notice must use brand green rather than browser blue")
 require('.roleOption input[type="radio"]' in lookup_css,
         "contract lookup choice must have visible native radio controls")
 for asset_name, asset_file in contracts_assets.items():
