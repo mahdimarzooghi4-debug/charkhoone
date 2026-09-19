@@ -152,6 +152,20 @@ for name, filename in contracts_assets.items():
 require("figma.com/api/mcp/asset/" not in contracts_text,
         "contracts page must not depend on expiring Figma image URLs")
 
+register_text = read(USER_ROOT / "contracts/register/page.tsx")
+register_css = read(USER_ROOT / "contracts/register/page.module.css")
+require('<span className={styles.alertBadge}>۱</span>' not in register_text and
+        '<span className={styles.navSpacer} /><span>قراردادها</span>' in register_text,
+        "tracking-code register contracts nav must have no static orange one")
+require(".logoWrap { width: 100%; display: flex; justify-content: center; }" in register_css and
+        register_css.rstrip().endswith(".logoWrap { justify-content: center; }"),
+        "tracking-code register sidebar logo must remain centered after final RTL CSS override")
+for asset_name, asset_file in contracts_assets.items():
+    require(f'{asset_name}: "/brand/{asset_file}"' in register_text,
+            f"tracking-code register must reuse stable {asset_name} asset")
+require("figma.com/api/mcp/asset/" not in register_text,
+        "tracking-code register must not rely on expiring Figma assets")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)
