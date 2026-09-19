@@ -2,15 +2,15 @@ import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
 import styles from "./page.module.css";
 
-const loginLogo =
-  "https://www.figma.com/api/mcp/asset/ed825bd9-8b36-4272-ae66-807b21816967.png";
+// Exact original Figma login-card logo, stored locally to avoid expiring asset URLs.
+const loginLogo = "/brand/login-card.png";
 
 export default function LoginPage() {
   return (
     <main className={styles.page} data-node-id="163:165" data-name="Web App / Login">
       <div className={styles.split} data-node-id="163:168" data-name="Split Container">
         <section className={styles.showcase} data-node-id="163:169" data-name="Brand Showcase">
-          <p className={styles.brandName} data-node-id="163:171">
+          <p className={styles.brandName} style={{ alignSelf: "flex-start", width: "auto", textAlign: "right" }} data-node-id="163:171">
             چارخونه
           </p>
           <h1 className={styles.tagline} data-node-id="142:1469">
