@@ -122,3 +122,11 @@ The existing required mobile workflow still runs locked dependency installation,
 This slice does not call a real bank, fund, payment provider, OIDC tenant, staging environment, or production system.
 
 It also does not define membership entitlement semantics. A real membership flow requires an authoritative backend model and cannot be inferred from `ApprovedFunded`.
+
+## Subsequent legacy tenant-route quarantine
+
+The follow-up mobile legacy tenant financial quarantine V1 replaces the old tenant-only mock routes with one fail-closed, authenticated informational view. This includes direct links to former membership and contribution screens, all three kinds of payment-result screens (success/failure/pending), receipt, final confirmation, calculator and result, old contract/termination details, terminated payments, and the old home review/termination views. Route names remain addressable to avoid falling through to unexpected navigation, but route names alone never imply any persisted financial state.
+
+The old `PaymentResultScreen` component is deleted and the authoritative home no longer links to the sample calculator. A verified application-status shortcut replaces it when a real application exists. Existing authenticated home, financing status/plan, contracts overview, and payments instruction views remain supported.
+
+This is a client-only quarantine: no backend model, PostgreSQL schema, monetary rule, provider, OIDC configuration, bank, fund, payment initiation, settlement/cancellation policy, or environment was changed. Because it makes no persisted-data read or mutation changes, new PostgreSQL integration tests are not applicable to this slice; the mobile verifier explicitly guards every quarantined path, authentication gate, and removal of the old payment-result component. The separate owner/shared prototype routes are not claimed as authoritative and remain a later audit target.

@@ -233,6 +233,67 @@ for prohibited in (
         f"rejected financing status contains prohibited synthetic token: {prohibited}",
     )
 
+
+# Every old tenant route remains resolvable by Expo Router but must fail closed
+# even when opened as a deep link. No route may select a result via its filename.
+legacy_tenant_routes = {
+    "apps/mobile/app/(tenant)/home-review.tsx": "خانهٔ قدیمی",
+    "apps/mobile/app/(tenant)/home-terminated.tsx": "خانهٔ فسخ‌شدهٔ قدیمی",
+    "apps/mobile/app/(tenant)/calculator.tsx": "محاسبهٔ نمونه",
+    "apps/mobile/app/(tenant)/calculator-result.tsx": "نتیجهٔ محاسبهٔ نمونه",
+    "apps/mobile/app/(tenant)/membership.tsx": "عضویت",
+    "apps/mobile/app/(tenant)/membership-payment-success.tsx": "نتیجهٔ پرداخت عضویت",
+    "apps/mobile/app/(tenant)/membership-payment-failed.tsx": "نتیجهٔ پرداخت عضویت",
+    "apps/mobile/app/(tenant)/membership-payment-pending.tsx": "نتیجهٔ پرداخت عضویت",
+    "apps/mobile/app/(tenant)/contribution-required.tsx": "آوردهٔ مستأجر",
+    "apps/mobile/app/(tenant)/contribution-payment-success.tsx": "نتیجهٔ پرداخت آورده",
+    "apps/mobile/app/(tenant)/contribution-payment-failed.tsx": "نتیجهٔ پرداخت آورده",
+    "apps/mobile/app/(tenant)/contribution-payment-pending.tsx": "نتیجهٔ پرداخت آورده",
+    "apps/mobile/app/(tenant)/installment-payment-success.tsx": "نتیجهٔ پرداخت ماهانه",
+    "apps/mobile/app/(tenant)/installment-payment-failed.tsx": "نتیجهٔ پرداخت ماهانه",
+    "apps/mobile/app/(tenant)/installment-payment-pending.tsx": "نتیجهٔ پرداخت ماهانه",
+    "apps/mobile/app/(tenant)/receipt.tsx": "رسید قدیمی",
+    "apps/mobile/app/(tenant)/final-confirmation.tsx": "تأیید نهایی قدیمی",
+    "apps/mobile/app/(tenant)/contract-detail.tsx": "جزئیات قرارداد قدیمی",
+    "apps/mobile/app/(tenant)/contract-active.tsx": "وضعیت قرارداد قدیمی",
+    "apps/mobile/app/(tenant)/contract-detail-terminated.tsx": "جزئیات فسخ قدیمی",
+    "apps/mobile/app/(tenant)/payments-terminated.tsx": "تسویهٔ قدیمی",
+}
+legacy_import = 'import { LegacyTenantRouteUnavailable } from "@/components/LegacyTenantRouteUnavailable";'
+for route, title in legacy_tenant_routes.items():
+    expected = (
+        f'{legacy_import}\n\n'
+        'export default function Screen() {\n'
+        f'  return <LegacyTenantRouteUnavailable title="{title}" />;\n'
+        '}\n'
+    )
+    require(read(route) == expected, f"legacy tenant route must fail closed: {route}")
+
+legacy_boundary = read("apps/mobile/src/components/LegacyTenantRouteUnavailable.tsx")
+for token in (
+    "useMobileAuth",
+    'status !== "authenticated"',
+    'status === "unauthenticated"',
+    'status === "config-error"',
+    'router.replace("/(auth)/login")',
+    'router.replace("/(tenant)/home")',
+    'router.replace("/(tenant)/payments")',
+    'router.replace("/(shared)/contracts")',
+):
+    require(token in legacy_boundary, f"legacy tenant guard missing: {token}")
+require(
+    not (ROOT / "apps/mobile/src/components/PaymentResultScreen.tsx").exists(),
+    "synthetic PaymentResultScreen must remain deleted",
+)
+require(
+    'router.push("/(tenant)/calculator")' not in home,
+    "authoritative home must not enter the sample calculator",
+)
+require(
+    "onPress={openApplicationStatus}" in home,
+    "home must keep a persisted-application shortcut",
+)
+
 if failures:
     for failure in failures:
         print(f"mobile runtime wiring verification failed: {failure}", file=sys.stderr)
