@@ -2,8 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import styles from "./page.module.css";
 
-const otpLogo =
-  "https://www.figma.com/api/mcp/asset/69553b44-1652-4f5c-a671-b3dd52bea8e9.png";
+const otpLogo = "/brand/login-card.png";
 
 const otpDigits = [
   { boxId: "167:190", textId: "167:191", value: "۴" },

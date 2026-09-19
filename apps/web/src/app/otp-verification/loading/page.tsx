@@ -1,7 +1,7 @@
 import Link from "next/link";
 import styles from "../page.module.css";
 
-const logoUrl = "https://www.figma.com/api/mcp/asset/63e769d6-d861-4929-a849-51329c1b8ad2.png";
+const logoUrl = "/brand/login-card.png";
 const otpDigits = ["۴", "۸", "۲", "۱", "۶"] as const;
 
 export default function OtpLoadingPage() {
