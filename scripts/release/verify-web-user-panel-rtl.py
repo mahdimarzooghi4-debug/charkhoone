@@ -249,6 +249,20 @@ require('.officialNotice { width: 100%; display: grid; grid-template-columns: 20
 plans_page = read(USER_ROOT / "contracts/register/plans/page.tsx")
 plans_css = read(USER_ROOT / "contracts/register/plans/page.module.css")
 plans_confirmation = read(USER_ROOT / "contracts/register/plans/confirmation/page.tsx")
+summary_pairs = (
+    ('مبلغ موردنیاز:', '۴۵۰٬۰۰۰٬۰۰۰ تومان'),
+    ('اجاره ماهانه:', '۲۰٬۰۰۰٬۰۰۰ تومان'),
+    ('مبلغ رهن:', '۵۰۰٬۰۰۰٬۰۰۰ تومان'),
+    ('قرارداد:', 'سعادت‌آباد'),
+)
+context_markup = plans_page.split('className={styles.contractContext}', 1)[1].split('</section>', 1)[0]
+require(context_markup.count('<div>') == len(summary_pairs) and
+        all(bool(re.search(r'<div>\\s*<span>' + re.escape(label) +
+                            r'</span>\\s*<strong(?:\\s+className=\\{styles\\.contextRegular\\})?>' +
+                            re.escape(value) + r'</strong>\\s*</div>', context_markup))
+            for label, value in summary_pairs) and
+        '.contractContext > div { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; direction: rtl; text-align: right; }' in plans_css,
+        "financing context must display all four labels on the right and values immediately to their left")
 require('"use client";' in plans_page and 'useState<PlanId>("staff")' in plans_page and
         'onChange={onSelect}' in plans_page and 'selected={selectedPlan === plan.id}' in plans_page and
         'onSelect={() => setSelectedPlan(plan.id)}' in plans_page and

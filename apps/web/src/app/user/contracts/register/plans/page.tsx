@@ -115,10 +115,10 @@ export default function EligibleFinancingPlansPage() {
         </section>
 
         <section className={styles.contractContext} data-node-id="150:917">
-          <div><strong>۴۵۰٬۰۰۰٬۰۰۰ تومان</strong><span>مبلغ موردنیاز:</span></div>
-          <div><strong className={styles.contextRegular}>۲۰٬۰۰۰٬۰۰۰ تومان</strong><span>اجاره ماهانه:</span></div>
-          <div><strong className={styles.contextRegular}>۵۰۰٬۰۰۰٬۰۰۰ تومان</strong><span>مبلغ رهن:</span></div>
-          <div><strong>سعادت‌آباد</strong><span>قرارداد:</span></div>
+          <div><span>مبلغ موردنیاز:</span><strong>۴۵۰٬۰۰۰٬۰۰۰ تومان</strong></div>
+          <div><span>اجاره ماهانه:</span><strong className={styles.contextRegular}>۲۰٬۰۰۰٬۰۰۰ تومان</strong></div>
+          <div><span>مبلغ رهن:</span><strong className={styles.contextRegular}>۵۰۰٬۰۰۰٬۰۰۰ تومان</strong></div>
+          <div><span>قرارداد:</span><strong>سعادت‌آباد</strong></div>
         </section>
 
         <section className={styles.planRow} data-node-id="150:930">
