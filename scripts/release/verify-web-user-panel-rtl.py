@@ -314,18 +314,30 @@ require('assets.info' not in plans_confirmation and 'assets.check' not in plans_
 
 review_page = read(USER_ROOT / "contracts/register/plans/review/page.tsx")
 review_css = read(USER_ROOT / "contracts/register/plans/review/page.module.css")
+review_icon_specs = {
+    "financing-review-clock.svg": ('stroke="#FF8A00"', 'width="24"', 'height="24"'),
+    "financing-review-pending.svg": ('fill="#E5E7E6"', 'width="28"', 'height="28"'),
+    "financing-review-active.svg": ('stroke="#0D3B36"', 'width="28"', 'height="28"'),
+    "financing-review-check.svg": ('stroke="white"', 'width="14"', 'height="14"'),
+}
 require("const assets = {" not in review_page and
         "figma.com/api/mcp/asset/" not in review_page and
         "assets." not in review_page and
-        review_page.count("<svg viewBox=") == 4 and
+        "<svg viewBox=" not in review_page and
+        all(review_page.count(f'/brand/{name}') == 1
+            for name in review_icon_specs) and
         'className={styles.clockWrap} aria-hidden="true"' in review_page and
-        "styles.pendingIcon" in review_page and "styles.activeIcon" in review_page and
         'className={styles.completedIcon} aria-hidden="true"' in review_page,
-        "finance review must use four stable inline status icons instead of broken Figma assets")
-require('.clockWrap svg {' in review_css and
-        '.timelineIcon svg {' in review_css and
-        '.completedIcon svg {' in review_css,
-        "finance review status icons must have explicit CSS dimensions")
+        "finance review must use all four permanent local Figma-exported icon files")
+for icon_name, attributes in review_icon_specs.items():
+    icon_path = ROOT / "apps/web/public/brand" / icon_name
+    require(icon_path.is_file() and
+            all(attribute in read(icon_path) for attribute in attributes),
+            f"finance review missing original Figma icon: {icon_name}")
+require('.clockWrap img {' in review_css and
+        '.timelineIcon img {' in review_css and
+        '.completedIcon img {' in review_css,
+        "finance review must dimension the local Figma SVG images explicitly")
 require("درخواست واقعی به بانک ارسال نشده است." in review_page and
         "این مرحله نمایشی است و نتیجه‌ای از بانک دریافت نمی‌شود." in review_page and
         "تاریخ نمونهٔ درخواست" in review_page and

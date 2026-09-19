@@ -49,9 +49,7 @@ export default function FinancingUnderReviewPage() {
             <section className={styles.heroStatus} data-node-id="150:1210">
               <div className={styles.heroCopy}><h2 data-node-id="150:1215">پیش‌نمایش بررسی بانک</h2><p data-node-id="150:1216">این مرحله نمایشی است و نتیجه‌ای از بانک دریافت نمی‌شود.</p></div>
               <span className={styles.clockWrap} aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />
-                </svg>
+                <img src="/brand/financing-review-clock.svg" alt="" width={24} height={24} />
               </span>
             </section>
 
@@ -59,28 +57,22 @@ export default function FinancingUnderReviewPage() {
               <h2 data-node-id="150:1218">وضعیت فرایند</h2>
               <div className={styles.timeline} data-node-id="150:1219">
                 <div className={styles.timelineStep}>
-                  <span className={`${styles.timelineIcon} ${styles.pendingIcon}`} aria-hidden="true">
-                    <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-                      <circle cx="14" cy="14" r="11" /><path d="M9 14h.01M14 14h.01M19 14h.01" strokeWidth="2.8" />
-                    </svg>
+                  <span className={styles.timelineIcon} aria-hidden="true">
+                    <img src="/brand/financing-review-pending.svg" alt="" width={28} height={28} />
                   </span>
                   <strong className={styles.muted}>اعلام نتیجه</strong><span className={styles.mutedSmall}>در انتظار (نمونه)</span>
                 </div>
                 <div className={`${styles.connector} ${styles.connectorMuted}`} />
                 <div className={styles.timelineStep}>
-                  <span className={`${styles.timelineIcon} ${styles.activeIcon}`} aria-hidden="true">
-                    <svg viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <circle cx="14" cy="14" r="11" /><path d="M14 8v6l4 2" />
-                    </svg>
+                  <span className={styles.timelineIcon} aria-hidden="true">
+                    <img src="/brand/financing-review-active.svg" alt="" width={28} height={28} />
                   </span>
                   <strong>بررسی بانک (نمونه)</strong><span>نمایش مرحله</span>
                 </div>
                 <div className={styles.connector} />
                 <div className={styles.timelineStep}>
                   <span className={styles.completedIcon} aria-hidden="true">
-                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m4 10 4 4 8-8" />
-                    </svg>
+                    <img src="/brand/financing-review-check.svg" alt="" width={14} height={14} />
                   </span>
                   <strong>ثبت درخواست (نمونه)</strong><span className={styles.success}>تکمیل نمونه</span>
                 </div>
