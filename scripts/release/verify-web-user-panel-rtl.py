@@ -346,6 +346,21 @@ require("درخواست واقعی به بانک ارسال نشده است." in
 require('<UserPanelSidebar nodeId="142:1738" />' in review_page,
         "finance review must keep the shared panel sidebar")
 
+contract_detail = read(USER_ROOT / "contracts/123456789012/page.tsx")
+contract_detail_css = read(USER_ROOT / "contracts/123456789012/page.module.css")
+require('مشاهده اطلاعات کامل ملک' not in contract_detail and
+        'styles.ghostAction' not in contract_detail and
+        '.ghostAction' not in contract_detail_css,
+        "contract detail must not show redundant nonfunctional full-property link")
+require('<span aria-hidden="true">‹</span>' in contract_detail and
+        'transform: rotate(180deg);' not in contract_detail_css and
+        '.backButton {' in contract_detail_css,
+        "contract detail upper-left back arrow must point left without CSS rotation")
+require('const isNationalId = label === "کد ملی مستأجر" || label === "کد ملی مالک";' in contract_detail and
+        'dir={isNationalId ? "ltr" : undefined}' in contract_detail and
+        '.nationalId { direction: ltr; unicode-bidi: isolate; text-align: left; }' in contract_detail_css,
+        "contract detail must render both owner and tenant national IDs left-to-right")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)

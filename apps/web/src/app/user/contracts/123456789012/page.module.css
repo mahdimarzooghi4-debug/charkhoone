@@ -46,7 +46,6 @@
   background: #fff;
   border: 1px solid var(--ch-color-border);
   border-radius: 12px;
-  transform: rotate(180deg);
 }
 
 .headerRight {
@@ -91,11 +90,11 @@
 .infoRow { width: 100%; min-height: 45px; justify-content: space-between; gap: 20px; padding: 12px 0; direction: ltr; border-bottom: 1px solid var(--ch-color-border); }
 .infoValue, .infoRow strong { min-width: 0; color: var(--ch-color-text); font-size: 14px; font-weight: 500; direction: rtl; text-align: left; }
 .infoRow strong { color: var(--ch-color-primary); font-weight: 700; }
+.nationalId { direction: ltr; unicode-bidi: isolate; text-align: left; }
 .infoLabel { flex: 0 0 auto; color: var(--ch-color-muted); font-size: 14px; direction: rtl; text-align: right; }
 .statusCopy { width: 100%; color: var(--ch-color-text); font-size: 13px; line-height: 22px; text-align: right; }
 
-.ghostAction, .primaryAction { font-family: inherit; cursor: pointer; }
-.ghostAction { width: 100%; padding: 12px; color: var(--ch-color-primary); font-size: 14px; font-weight: 600; text-align: center; background: transparent; border: 0; }
+.primaryAction { font-family: inherit; cursor: pointer; }
 .nextPaymentCard { border-color: var(--ch-color-accent); box-shadow: 0 4px 6px rgb(255 138 0 / 5%); }
 .paymentSummary { width: 100%; justify-content: space-between; gap: 24px; padding: 8px 0; direction: ltr; }
 .amount { display: flex; align-items: baseline; gap: 8px; color: var(--ch-color-accent); direction: rtl; }

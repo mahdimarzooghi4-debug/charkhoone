@@ -7,9 +7,20 @@ function Badge({ children, tone = "active" }: { children: React.ReactNode; tone?
 }
 
 function InfoRow({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+  const isNationalId = label === "کد ملی مستأجر" || label === "کد ملی مالک";
+
   return (
     <div className={styles.infoRow}>
-      {strong ? <strong>{value}</strong> : <span className={styles.infoValue}>{value}</span>}
+      {strong ? (
+        <strong>{value}</strong>
+      ) : (
+        <span
+          className={`${styles.infoValue} ${isNationalId ? styles.nationalId : ""}`}
+          dir={isNationalId ? "ltr" : undefined}
+        >
+          {value}
+        </span>
+      )}
       <span className={styles.infoLabel}>{label}</span>
     </div>
   );
@@ -66,7 +77,6 @@ export default function ContractDetailPage() {
               </div>
             </section>
 
-            <button type="button" className={styles.ghostAction} data-node-id="150:328">مشاهده اطلاعات کامل ملک ‹</button>
           </aside>
 
           <div className={styles.primaryColumn} data-node-id="150:330" data-name="Main Column">
