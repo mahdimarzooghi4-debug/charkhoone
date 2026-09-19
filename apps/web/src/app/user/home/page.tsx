@@ -2,15 +2,15 @@ import Link from "next/link";
 import styles from "./page.module.css";
 
 const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/7d135077-0bf9-420c-bc76-5201017f7071.png",
-  avatar: "https://www.figma.com/api/mcp/asset/d1ff3033-1363-4a19-b8ce-7ba75da52d60.png",
-  calculator: "https://www.figma.com/api/mcp/asset/e3dab72e-26fc-4734-ac8e-cfb11ec9ce86.svg",
-  quickFile: "https://www.figma.com/api/mcp/asset/b16749dc-7072-4b74-91f8-d073bb63471c.svg",
-  quickHome: "https://www.figma.com/api/mcp/asset/5d5785f5-8017-413c-8274-ed7a91ca068b.svg",
-  navHome: "https://www.figma.com/api/mcp/asset/355cc457-6aec-40df-b7cc-1abed37fe7b5.svg",
-  navFile: "https://www.figma.com/api/mcp/asset/69a4deb7-1d16-4105-aa13-14ca2fe5f649.svg",
-  navCard: "https://www.figma.com/api/mcp/asset/3396fbbb-9681-482a-90db-cefc605ca86b.svg",
-  navUser: "https://www.figma.com/api/mcp/asset/f60658ee-0ca0-44b6-8814-a24a4e762150.svg",
+  logo: "/brand/dashboard-logo.png",
+  avatar: "/brand/dashboard-avatar.png",
+  calculator: "/brand/dashboard-calculator.svg",
+  quickFile: "/brand/dashboard-quick-file.svg",
+  quickHome: "/brand/dashboard-quick-home.svg",
+  navHome: "/brand/dashboard-nav-home.svg",
+  navFile: "/brand/dashboard-nav-file.svg",
+  navCard: "/brand/dashboard-nav-card.svg",
+  navUser: "/brand/dashboard-nav-user.svg",
 } as const;
 
 const quickAccess = [
