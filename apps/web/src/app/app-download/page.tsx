@@ -45,7 +45,7 @@ export default function AppDownloadPage() {
         <div className="ch-app-visual" data-node-id="1002:14">
           <div className="ch-phone-mockup" data-node-id="1002:15">
             <div className="ch-phone-screen" data-node-id="1002:17">
-              <BrandLogo source="download" className="ch-phone-screen__logo" />
+              <BrandLogo source="download-phone" className="ch-phone-screen__logo" />
               <strong data-node-id="1002:19">همراه شما در مسیر قرارداد</strong>
               <span data-node-id="1002:20">اپلیکیشن چارخونه</span>
               <ButtonLink variant="accent" href="/login" className="ch-phone-screen__cta" data-node-id="1002:21">
