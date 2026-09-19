@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
 import styles from "./AccountModalScaffold.module.css";
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 type AssetSet = {
   logo: string;
@@ -20,7 +20,6 @@ export function AccountModalScaffold({ assets, children, nodeId }: { assets: Ass
         <div className={styles.columns}>
           <aside className={styles.secondaryColumn}>
             <section className={styles.settingsCard}><h2>تنظیمات</h2><div className={styles.settingsList}><div className={styles.settingsRow}><span className={styles.toggle}><i /></span><span>اعلان‌ها</span></div><div className={styles.divider} /><div className={styles.settingsRow}><img src={assets.chevron} alt="" width={20} height={20} /><span>قوانین و مقررات</span></div><div className={styles.divider} /><div className={styles.settingsRow}><img src={assets.chevron} alt="" width={20} height={20} /><span>حریم خصوصی</span></div></div></section>
-            <span className={styles.logout}>خروج از حساب</span>
           </aside>
           <div className={styles.primaryColumn}>
             <section className={`${styles.card} ${styles.profileCard}`}><div className={styles.profileHeader}><div className={styles.nameRow}><span className={styles.verified}>تأیید شده</span><strong>علی رضایی</strong></div><span className={styles.initialAvatar}>ع ر</span></div><span className={styles.textAction}>تغییر تصویر</span></section>
@@ -29,7 +28,7 @@ export function AccountModalScaffold({ assets, children, nodeId }: { assets: Ass
           </div>
         </div>
       </section>
-      <aside className={styles.sidebar}><div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav}><Link href="/user/home" className={styles.navItem}><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={styles.navItem}><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem}><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={`${styles.navItem} ${styles.navActive}`}><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><div className={styles.sidebarProfile}><img src={assets.avatar} alt="" width={40} height={40} /><div><strong>علی رضایی</strong><span>۰۹۱۲•••••۶۷</span></div></div></aside>
+      <UserPanelSidebar hideOnMobile />
       <div className={styles.backdrop}>{children}</div>
     </main>
   );

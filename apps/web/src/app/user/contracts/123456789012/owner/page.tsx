@@ -1,14 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
-
-const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/c6431f38-d3e5-4db4-a39f-f2255de54657.png",
-  avatar: "https://www.figma.com/api/mcp/asset/32d5d732-5a9b-42c9-b977-520e3e0ec119.png",
-  home: "https://www.figma.com/api/mcp/asset/f1d1e130-0a88-4bae-bb8b-ab21bc29a7b2.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/b283e2da-784d-4e10-bab7-648689b5bc7c.svg",
-  payments: "https://www.figma.com/api/mcp/asset/765a0d5a-2c19-4d01-bfb4-2be89db369bb.svg",
-  account: "https://www.figma.com/api/mcp/asset/08bcfd11-e3e6-4364-a997-53815684d597.svg",
-} as const;
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 const conditions = [
   ["مبلغ رهن", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
@@ -52,7 +44,7 @@ export default function OwnerContractActivePage() {
         </div>
       </section>
 
-      <aside className={styles.sidebar} data-node-id="142:1563"><div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav}><Link href="/user/home" className={styles.navItem}><span className={styles.navSpacer} /><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`}><span className={styles.alertBadge}>۱</span><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem}><span className={styles.navSpacer} /><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><div className={styles.profile}><img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} /><div className={styles.profileText}><strong>علی رضایی</strong><span>۰۹۱۲•••••۶۷</span></div></div></aside>
+      <UserPanelSidebar nodeId="142:1563" />
     </main>
   );
 }

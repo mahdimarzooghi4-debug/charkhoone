@@ -1,14 +1,6 @@
 import Link from "next/link";
 import styles from "../flow.module.css";
-
-const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/2a939e67-3009-4f30-a49f-7d71dcab52b5.png",
-  avatar: "https://www.figma.com/api/mcp/asset/d71dfa4b-2492-4f1a-b45e-229e5aca27c5.png",
-  home: "https://www.figma.com/api/mcp/asset/8903e066-88d3-4ca9-9b94-498e1bf628a9.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/a2b4219b-b792-4570-9aee-40231734a083.svg",
-  payments: "https://www.figma.com/api/mcp/asset/fad1f958-b1b2-4c4e-965f-3a18988f8829.svg",
-  account: "https://www.figma.com/api/mcp/asset/899ab2aa-a513-49fb-af12-97040eb02c8e.svg",
-} as const;
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 const settlementRows = [
   ["وضعیت قرارداد", "فسخ شده", "danger"],
@@ -58,7 +50,7 @@ export default function OwnerContractTerminatedPage() {
         </div>
       </section>
 
-      <aside className={styles.sidebar} data-node-id="142:2103"><div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav}><Link href="/user/home" className={styles.navItem}><span className={styles.navSpacer} /><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`}><span className={styles.alertBadge}>۱</span><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem}><span className={styles.navSpacer} /><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><div className={styles.profile}><img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} /><div className={styles.profileText}><strong>علی رضایی</strong><span>۰۹۱۲•••••۶۷</span></div></div></aside>
+      <UserPanelSidebar nodeId="142:2103" />
     </main>
   );
 }

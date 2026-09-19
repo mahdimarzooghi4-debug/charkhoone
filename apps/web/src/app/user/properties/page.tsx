@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 const assets = {
   logo: "https://www.figma.com/api/mcp/asset/fbf9d073-8b53-4f56-8f56-3700fe8b8ee2.png",
@@ -149,18 +150,7 @@ export default function PropertiesPage() {
         </section>
       </section>
 
-      <aside className={styles.sidebar} data-node-id="142:2138" data-name="Right Sidebar">
-        <div className={styles.sidebarTop} data-node-id="142:2139">
-          <div className={styles.logoWrap} data-node-id="142:2140"><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div>
-          <nav className={styles.nav} data-node-id="142:2141" aria-label="ناوبری حساب کاربری">
-            <Link href="/user/home" className={`${styles.navItem} ${styles.navActive}`} data-node-id="142:2142"><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link>
-            <Link href="/user/contracts" className={styles.navItem} data-node-id="142:2146"><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link>
-            <Link href="/user/receive-pay" className={styles.navItem} data-node-id="142:2150"><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link>
-            <div className={styles.navItem} data-node-id="142:2154"><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></div>
-          </nav>
-        </div>
-        <div className={styles.profile} data-node-id="142:2158"><img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} /><div className={styles.profileText}><strong data-node-id="142:2161">علی رضایی</strong><span data-node-id="142:2162">۰۹۱۲•••••۶۷</span></div></div>
-      </aside>
+      <UserPanelSidebar nodeId="142:2138" name="Right Sidebar" />
     </main>
   );
 }

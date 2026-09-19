@@ -18,3 +18,6 @@
 .secondaryLinks .cancel { color: var(--ch-color-muted); }
 .modal a:focus-visible { outline: 3px solid rgb(255 138 0 / 30%); outline-offset: 3px; }
 @media (max-width: 520px) { .modal { padding: 20px 16px; } .otpRow { gap: 8px; } .otpDigit { width: 44px; } }
+
+/* User-account dialogs follow the same Persian RTL reading direction. */
+.modal { direction: rtl; text-align: right; }
