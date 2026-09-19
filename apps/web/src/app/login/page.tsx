@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
 import styles from "./page.module.css";
 
-const loginLogo =
-  "https://www.figma.com/api/mcp/asset/ed825bd9-8b36-4272-ae66-807b21816967.png";
+// Exact original Figma login-card logo, stored locally to avoid expiring asset URLs.
+const loginLogo = "/brand/login-card.png";
 
 export default function LoginPage() {
   return (
