@@ -182,7 +182,9 @@ export default function TenantHomeScreen() {
 
         <Text style={styles.quickTitle}>دسترسی سریع</Text>
         <View style={styles.quickRow}>
-          <Shortcut icon={figmaAssets.calculator} label="ماشین‌حساب" onPress={() => router.push("/(tenant)/calculator")} />
+          {bootstrap?.latestCreditApplication ? (
+            <Shortcut icon={figmaAssets.calculator} label="وضعیت درخواست" onPress={openApplicationStatus} />
+          ) : null}
           <Shortcut icon={figmaAssets.wallet} label="دریافت و پرداخت" onPress={() => router.push("/(tenant)/payments")} />
           <Shortcut icon={figmaAssets.file} label="قراردادها" onPress={() => router.push("/(shared)/contracts")} />
           <Shortcut icon={figmaAssets.home} label="خانه" />

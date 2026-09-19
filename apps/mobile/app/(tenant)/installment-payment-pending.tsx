@@ -1,5 +1,5 @@
-import { PaymentResultScreen } from "@/components/PaymentResultScreen";
+import { LegacyTenantRouteUnavailable } from "@/components/LegacyTenantRouteUnavailable";
 
 export default function Screen() {
-  return <PaymentResultScreen kind="installment" status="pending" />;
+  return <LegacyTenantRouteUnavailable title="نتیجهٔ پرداخت ماهانه" />;
 }
