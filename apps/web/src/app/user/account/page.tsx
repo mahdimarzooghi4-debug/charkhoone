@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
+import { UserPanelExit } from "@/components/user/UserPanelExit";
 
 const assets = {
   logo: "https://www.figma.com/api/mcp/asset/a2a337ac-2d09-4a34-9133-34a036902ee1.png",
@@ -76,7 +77,7 @@ export default function AccountPage() {
       </section>
 
       <aside className={styles.sidebar} data-node-id="161:491">
-        <div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav} aria-label="ناوبری حساب کاربری"><Link href="/user/home" className={styles.navItem}><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={styles.navItem}><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem}><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={`${styles.navItem} ${styles.navActive}`}><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><div className={styles.sidebarProfile}><img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} /><div className={styles.sidebarProfileText}><strong>علی رضایی</strong><span>۰۹۱۲•••••۶۷</span></div></div>
+        <div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav} aria-label="ناوبری حساب کاربری"><Link href="/user/home" className={styles.navItem}><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={styles.navItem}><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem}><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={`${styles.navItem} ${styles.navActive}`}><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><UserPanelExit />
       </aside>
     </main>
   );

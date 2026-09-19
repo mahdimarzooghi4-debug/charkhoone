@@ -2,7 +2,7 @@
 .mainContent { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 24px; padding: 32px; direction: rtl; }
 .headerBar { width: 100%; display: flex; align-items: center; justify-content: space-between; direction: ltr; }
 .backButton { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: var(--ch-color-text); font-size: 18px; font-weight: 700; text-decoration: none; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 12px; }
-.headerRight, .pageHeader, .roleHeader { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.headerRight, .pageHeader, .roleHeader { display: flex; flex-direction: column; align-items: flex-start; text-align: right; }
 .headerRight { gap: 4px; }
 .pageHeader { width: 100%; gap: 6px; }
 .roleHeader { width: 100%; gap: 6px; }
@@ -13,7 +13,7 @@
 .pageHeader h2 { color: var(--ch-color-text); font-size: 20px; font-weight: 700; }
 .columns { width: 100%; display: flex; align-items: center; justify-content: flex-end; gap: 24px; direction: ltr; }
 .mainColumn { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 16px; direction: rtl; }
-.detailCard { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; padding: 24px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 16px; }
+.detailCard { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 16px; }
 .detailCard h2 { width: 100%; color: var(--ch-color-text); font-size: 16px; font-weight: 600; text-align: right; }
 .detailList { width: 100%; display: flex; flex-direction: column; padding-top: 12px; }
 .detailRow { width: 100%; min-height: 41px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; color: var(--ch-color-text); font-size: 14px; direction: ltr; border-bottom: 1px solid var(--ch-color-border); }
@@ -37,7 +37,7 @@
 .radio img { width: 16px; height: 16px; display: block; }
 .selectedCheck { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; background: var(--ch-color-primary); border-radius: 10px; }
 .selectedCheck img { width: 12px; height: 12px; display: block; }
-.partyInfo { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.partyInfo { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
 .partyInfo > span, .partyInfo > strong { color: var(--ch-color-text); font-size: 14px; }
 .partyInfo > strong { font-weight: 600; }
 .partyInfo small { color: var(--ch-color-muted); font-size: 12px; }
@@ -58,10 +58,19 @@
 .alertBadge { min-width: 20px; display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; color: #fff; font-size: 11px; font-weight: 600; background: var(--ch-color-accent); border-radius: 99px; }
 .profile { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid rgb(255 255 255 / 13%); }
 .avatar { width: 40px; height: 40px; display: block; object-fit: cover; border-radius: 20px; }
-.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: right; }
 .profileText strong { color: #fff; font-size: 14px; font-weight: 600; }
 .profileText span { color: var(--ch-color-muted); font-size: 11px; }
 .page a:focus-visible { outline: 3px solid rgb(255 138 0 / 30%); outline-offset: 3px; }
 @media (max-width: 1120px) { .roleCard { width: 360px; flex-basis: 360px; } }
 @media (max-width: 920px) { .page { flex-direction: column-reverse; } .sidebar { width: 100%; flex-basis: auto; padding: 16px 20px; } .sidebarTop { gap: 16px; } .logoWrap, .profile { display: none; } .nav { flex-direction: row; overflow-x: auto; } .navItem { width: auto; flex: 0 0 auto; } .mainContent { padding: 24px; } .columns { align-items: stretch; flex-direction: column-reverse; } .roleCard, .mainColumn { width: 100%; flex-basis: auto; } }
 @media (max-width: 640px) { .mainContent { padding: 20px 16px; gap: 20px; } .detailCard, .roleCard { padding: 20px 16px; } .detailRow { align-items: flex-start; flex-direction: column; gap: 4px; direction: rtl; } .detailRow > strong, .detailRow > span:first-child { text-align: right; } }
+
+/* Shared web-panel RTL alignment. Preserve outer LTR so the sidebar is
+   on the right; Persian content and nav labels read right-to-left. */
+.mainContent { direction: rtl; text-align: right; }
+.sidebar { direction: rtl; text-align: right; }
+.navItem { direction: ltr; text-align: right; }
+.navItem > span { direction: rtl; text-align: right; }
+.navItem img { flex: 0 0 20px; }
+.logoWrap { justify-content: flex-start; }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
+import { UserPanelExit } from "@/components/user/UserPanelExit";
 
 const assets = {
   logo: "https://www.figma.com/api/mcp/asset/281e2ee6-cffc-430a-b5e1-45ab4452963c.png",
@@ -80,7 +81,7 @@ export default function ReceiptPage() {
             <div className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></div>
           </nav>
         </div>
-        <div className={styles.profile}><img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} /><div className={styles.profileText}><strong>علی رضایی</strong><span>۰۹۱۲•••••۶۷</span></div></div>
+        <UserPanelExit />
       </aside>
     </main>
   );

@@ -2,7 +2,7 @@
 .mainContent { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 24px; padding: 32px; direction: rtl; }
 .headerBar { width: 100%; display: flex; align-items: center; justify-content: space-between; direction: ltr; }
 .backButton { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: var(--ch-color-text); font-size: 18px; font-weight: 700; text-decoration: none; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 12px; }
-.headerRight, .pageHeader { display: flex; flex-direction: column; align-items: flex-end; text-align: right; }
+.headerRight, .pageHeader { display: flex; flex-direction: column; align-items: flex-start; text-align: right; }
 .headerRight { gap: 4px; }
 .pageHeader { width: 100%; gap: 6px; }
 .headerRight h1, .headerRight p, .pageHeader h2, .pageHeader p, .planTitle h3, .planTitle p, .generalNote, .informationNote p { margin: 0; }
@@ -28,7 +28,7 @@
 .eligible { color: var(--ch-color-primary); background: #e6f4e6; }
 .public { color: var(--ch-color-muted); background: var(--ch-color-page); }
 .special { color: #0369a1; background: #e0f2fe; }
-.planTitle { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; direction: rtl; white-space: nowrap; }
+.planTitle { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; direction: rtl; white-space: nowrap; }
 .planTitle h3 { color: var(--ch-color-text); font-size: 18px; font-weight: 700; }
 .planTitle p { color: var(--ch-color-muted); font-size: 12px; }
 .divider { width: 100%; height: 1px; flex: 0 0 1px; background: var(--ch-color-border); }
@@ -62,10 +62,19 @@
 .alertBadge { min-width: 20px; display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; color: #fff; font-size: 11px; font-weight: 600; background: var(--ch-color-accent); border-radius: 99px; }
 .profile { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid rgb(255 255 255 / 13%); }
 .avatar { width: 40px; height: 40px; display: block; object-fit: cover; border-radius: 20px; }
-.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: right; }
 .profileText strong { color: #fff; font-size: 14px; font-weight: 600; }
 .profileText span { color: var(--ch-color-muted); font-size: 11px; }
 .page a:focus-visible { outline: 3px solid rgb(255 138 0 / 30%); outline-offset: 3px; }
 @media (max-width: 1120px) { .contractContext { flex-wrap: wrap; } .contractContext > div { flex: 1 1 calc(50% - 10px); justify-content: flex-start; } .planRow { flex-direction: column; } }
 @media (max-width: 920px) { .page { flex-direction: column-reverse; } .sidebar { width: 100%; flex-basis: auto; padding: 16px 20px; } .sidebarTop { gap: 16px; } .logoWrap, .profile { display: none; } .nav { flex-direction: row; overflow-x: auto; } .navItem { width: auto; flex: 0 0 auto; } .mainContent { padding: 24px; } }
 @media (max-width: 640px) { .mainContent { padding: 20px 16px; gap: 20px; } .contractContext { align-items: stretch; flex-direction: column; gap: 10px; } .contractContext > div { width: 100%; flex-basis: auto; justify-content: space-between; } .planCard { padding: 20px 16px; } .cardHeader { align-items: flex-start; } .titleGroup { align-items: flex-end; flex-direction: column-reverse; gap: 8px; } .metricRow { align-items: flex-start; flex-direction: column; gap: 4px; direction: rtl; } .metricRow strong { text-align: right; } }
+
+/* Shared web-panel RTL alignment. Preserve outer LTR so the sidebar is
+   on the right; Persian content and nav labels read right-to-left. */
+.mainContent { direction: rtl; text-align: right; }
+.sidebar { direction: rtl; text-align: right; }
+.navItem { direction: ltr; text-align: right; }
+.navItem > span { direction: rtl; text-align: right; }
+.navItem img { flex: 0 0 20px; }
+.logoWrap { justify-content: flex-start; }

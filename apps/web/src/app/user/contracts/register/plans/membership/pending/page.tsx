@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styles from "../result/page.module.css";
+import { UserPanelExit } from "@/components/user/UserPanelExit";
 
 const assets = {
   logo: "https://www.figma.com/api/mcp/asset/d5416d2d-81a7-4e6d-9fb0-f24a3c0b3e21.png",
@@ -73,7 +74,7 @@ export default function MembershipPaymentPendingPage() {
             <Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link>
           </nav>
         </div>
-        <div className={styles.profile}><img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} /><div className={styles.profileText}><strong>علی رضایی</strong><span>۰۹۱۲•••••۶۷</span></div></div>
+        <UserPanelExit />
       </aside>
     </main>
   );

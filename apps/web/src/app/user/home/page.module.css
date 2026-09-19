@@ -234,7 +234,7 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 4px;
 }
 
@@ -505,3 +505,12 @@
   .tableHeader,
   .tableRow { min-width: 720px; }
 }
+
+/* Shared web-panel RTL alignment. Preserve outer LTR so the sidebar is
+   on the right; Persian content and nav labels read right-to-left. */
+.mainContent { direction: rtl; text-align: right; }
+.sidebar { direction: rtl; text-align: right; }
+.navItem { direction: ltr; text-align: right; }
+.navItem > span { direction: rtl; text-align: right; }
+.navItem img { flex: 0 0 20px; }
+.sidebarLogo { justify-content: flex-start; }

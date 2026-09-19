@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
+import { UserPanelExit } from "@/components/user/UserPanelExit";
 
 const assets = {
   logo: "https://www.figma.com/api/mcp/asset/fbf9d073-8b53-4f56-8f56-3700fe8b8ee2.png",
@@ -159,7 +160,7 @@ export default function PropertiesPage() {
             <div className={styles.navItem} data-node-id="142:2154"><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></div>
           </nav>
         </div>
-        <div className={styles.profile} data-node-id="142:2158"><img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} /><div className={styles.profileText}><strong data-node-id="142:2161">علی رضایی</strong><span data-node-id="142:2162">۰۹۱۲•••••۶۷</span></div></div>
+        <UserPanelExit />
       </aside>
     </main>
   );

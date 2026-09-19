@@ -1,5 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
+import { UserPanelExit } from "@/components/user/UserPanelExit";
 
 const assets = {
   logo: "https://www.figma.com/api/mcp/asset/96ed86fe-5191-4a83-8d51-d95c0d671f00.png",
@@ -154,13 +155,7 @@ export default function ContractDetailPage() {
           </nav>
         </div>
 
-        <div className={styles.profile} data-node-id="142:1977" data-name="User Profile Block">
-          <img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} />
-          <div className={styles.profileText} data-node-id="142:1979">
-            <strong data-node-id="142:1980">علی رضایی</strong>
-            <span data-node-id="142:1981">۰۹۱۲•••••۶۷</span>
-          </div>
-        </div>
+        <UserPanelExit />
       </aside>
     </main>
   );
