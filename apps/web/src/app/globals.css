@@ -477,10 +477,10 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 32px;
-  /* Figma: 1440px frame, 1280px content and 80px side gutters.
-     Keep the header background full-bleed on wider monitors. */
+  /* Keep Figma's 80px gutters at its 1440px artboard. On wider
+     desktops grow the content lane up to 1440px without crowding. */
   padding-block: 0;
-  padding-inline: max(80px, calc((100% - 1280px) / 2));
+  padding-inline: max(80px, calc((100% - 1440px) / 2));
   color: var(--ch-color-page);
   background: var(--ch-color-primary);
   border-bottom: 1px solid var(--ch-color-border);
@@ -516,7 +516,7 @@ button:disabled {
 
 .ch-hero {
   width: 100%;
-  max-width: 1440px;
+  max-width: 1600px;
   margin-inline: auto;
   min-height: 640px;
   display: flex;
@@ -912,8 +912,9 @@ button:disabled {
   background: var(--ch-color-primary);
 }
 
-/* Use the same inner content column in every full-bleed landing section.
-   Only actual content containers are constrained; CTA button stays intrinsic. */
+/* At the 1440px Figma viewport, 80px section gutters leave 1280px.
+   Above that, allow the content to grow to 1440px, aligned with the
+   header and hero; full-bleed backgrounds and intrinsic CTA remain. */
 .ch-dark-section > .ch-section-heading,
 .ch-dark-section > .ch-audience-grid,
 .ch-light-section > .ch-section-heading,
@@ -923,7 +924,7 @@ button:disabled {
 .ch-site-footer > .ch-footer-divider,
 .ch-site-footer > .ch-footer-bottom {
   width: 100%;
-  max-width: 1280px;
+  max-width: 1440px;
   margin-inline: auto;
 }
 
