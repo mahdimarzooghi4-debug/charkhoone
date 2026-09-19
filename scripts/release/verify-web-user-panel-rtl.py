@@ -105,10 +105,6 @@ require(".valueRow strong.ltrNumber," in account_css and
 require("logoutAction" not in account_text and 'styles.logout}' not in modal_text,
         "remove redundant nonfunctional account/logout pseudo-buttons")
 
-if failures:
-    print("\n".join("ERROR: " + issue for issue in failures))
-    raise SystemExit(1)
-print(f"Web user RTL verified: {panel_count} preview shells, {len(styles_checked)} CSS modules, 4 account dialogs")
 
 
 home_text = read(USER_ROOT / "home/page.tsx")
@@ -118,8 +114,14 @@ require(".sidebarLogo { justify-content: center; }" in home_css,
 require(".remainingInfo { direction: rtl; }" in home_css,
         "home remaining-uses count must be left of its label")
 require("styles.remainingInfo" in home_text, "home remaining-uses layout hook missing")
-require(bool(re.search(r"\\.actionContent\\s*\\{[^}]*direction:\\s*rtl\\s*;", home_css)) and
+require(bool(re.search(r"\.actionContent\s*\{[^}]*direction:\s*rtl\s*;", home_css)) and
         ".actionTitleRow {\n  /* Preserve badges left / title right inside the right-aligned content. */\n  direction: ltr;" in home_css,
         "home required-action card content must align right")
 require('<Link href="/user/contracts/123456789012/owner/final-confirmation" className={styles.actionButton}>بررسی قرارداد</Link>' in home_text,
         "review contract CTA must open existing owner final-confirmation preview")
+
+
+if failures:
+    print("\n".join("ERROR: " + issue for issue in failures))
+    raise SystemExit(1)
+print(f"Web user RTL verified: {panel_count} preview shells, {len(styles_checked)} CSS modules, 4 account dialogs")
