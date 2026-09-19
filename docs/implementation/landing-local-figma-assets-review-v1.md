@@ -13,3 +13,9 @@ Source file: Figma `kIJQxlRhLRhjCCckMfcmsa`.
 Assets are committed under `apps/web/public/brand/`, and the web now addresses them using stable, same-origin URLs. The user reviews this in their **existing** Windows Visual Studio working tree/localhost:3000 using a narrowly scoped fetch + restore of changed web files/assets. We do not switch branches, change their login stylesheet, alter unrelated local files, create a worktree, or merge without explicit UX approval.
 
 Known separate issues not changed in this slice: placeholder public footer address/phone/legal links, real OIDC/web-user onboarding, installer URL and provider integration.
+
+## Reviewed landing width / desktop alignment
+
+The landing Figma frame is 1440px wide with a 1280px content column and 80px side gutters. In the existing CSS, fixed 80px left/right padding let a 1650px browser stretch hero content and card grids beyond the Figma proportions. Desktop review now caps the hero at 1440px including its 80px gutters, centers it, and centers the header's 1280px content lane using responsive horizontal padding. Each full-width audience, steps, why-us and footer content container is capped to 1280px; their section backgrounds remain full-bleed. The CTA's intrinsic button width is intentionally unaffected. Existing <=1180px and <=620px responsive padding/grid breakpoints remain in force; the code does not change user-web/admin/login layout or RTL direction.
+
+The exact contact address and phone are **pending owner-provided values**, so this slice does not invent replacements. Keep PR in draft until visual review and these inputs are resolved.

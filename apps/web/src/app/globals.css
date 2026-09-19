@@ -477,7 +477,10 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   gap: 32px;
-  padding: 0 80px;
+  /* Figma: 1440px frame, 1280px content and 80px side gutters.
+     Keep the header background full-bleed on wider monitors. */
+  padding-block: 0;
+  padding-inline: max(80px, calc((100% - 1280px) / 2));
   color: var(--ch-color-page);
   background: var(--ch-color-primary);
   border-bottom: 1px solid var(--ch-color-border);
@@ -512,6 +515,9 @@ button:disabled {
 }
 
 .ch-hero {
+  width: 100%;
+  max-width: 1440px;
+  margin-inline: auto;
   min-height: 640px;
   display: flex;
   align-items: center;
@@ -904,6 +910,21 @@ button:disabled {
   padding: 36px 80px 24px;
   color: #ffffff;
   background: var(--ch-color-primary);
+}
+
+/* Use the same inner content column in every full-bleed landing section.
+   Only actual content containers are constrained; CTA button stays intrinsic. */
+.ch-dark-section > .ch-section-heading,
+.ch-dark-section > .ch-audience-grid,
+.ch-light-section > .ch-section-heading,
+.ch-light-section > .ch-step-grid,
+.ch-why > .ch-benefit-grid,
+.ch-site-footer > .ch-footer-columns,
+.ch-site-footer > .ch-footer-divider,
+.ch-site-footer > .ch-footer-bottom {
+  width: 100%;
+  max-width: 1280px;
+  margin-inline: auto;
 }
 
 .ch-footer-columns {
