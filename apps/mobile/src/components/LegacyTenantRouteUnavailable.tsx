@@ -11,9 +11,9 @@ type Props = {
 };
 
 /**
- * Direct links to the old tenant financial prototypes must fail closed.
- * The authenticated home, contracts, payments, and financing status pages
- * are the only supported entry points for their persisted mobile evidence.
+ * Direct links to all legacy mobile financial, contract, identity and
+ * profile prototypes must fail closed. Only authenticated API/OIDC pages
+ * can report persisted identity, contract, payment and financing evidence.
  */
 export function LegacyTenantRouteUnavailable({ title }: Props) {
   const router = useRouter();
@@ -37,11 +37,11 @@ export function LegacyTenantRouteUnavailable({ title }: Props) {
           <Text style={styles.heading}>این مسیر هنوز به دادهٔ معتبر متصل نیست</Text>
           <Text style={styles.body}>
             این صفحه از نسخهٔ نمایشی قدیمی است. بدون شاهد ثبت‌شدهٔ backend،
-            هیچ مبلغ، نتیجهٔ تراکنش، وضعیت عضویت، قرارداد یا تسویه‌ای در اینجا اعلام نمی‌شود.
+            هیچ هویت، شمارهٔ موبایل، کد تأیید، نقش، مبلغ، نتیجهٔ تراکنش، وضعیت عضویت، قرارداد یا تسویه‌ای در اینجا اعلام نمی‌شود.
           </Text>
           <Text style={styles.body}>
-            این مسیر نه پرداختی را آغاز می‌کند و نه آن را موفق، ناموفق یا در انتظار تأیید اعلام می‌کند.
-            وضعیت‌های واقعی را فقط در صفحه‌های متصل به حساب احراز هویت‌شده ببینید.
+            این مسیر نه پرداخت، استعلام قرارداد، تأیید هویت، تغییر شماره، انتخاب روش تسویه یا تأیید نهایی را آغاز یا تکمیل می‌کند
+            و هیچ نتیجه‌ای از نام مسیر استنباط نمی‌کند. وضعیت واقعی را فقط در صفحه‌های متصل به حساب احراز هویت‌شده ببینید.
           </Text>
         </View>
         <AppButton onPress={() => router.replace("/(tenant)/home")}>بازگشت به خانه</AppButton>
@@ -63,3 +63,6 @@ const styles = StyleSheet.create({
   heading: { color: colors.primary, fontFamily: fonts.bold, fontSize: 17, textAlign: "right", writingDirection: "rtl" },
   body: { color: colors.text, fontFamily: fonts.regular, fontSize: 13, lineHeight: 23, textAlign: "right", writingDirection: "rtl" },
 });
+
+// Shared legacy owner/auth/contract routes use the same authenticated fail-closed boundary.
+export const LegacyMobileRouteUnavailable = LegacyTenantRouteUnavailable;

@@ -41,3 +41,7 @@ Covered routes (each `apps/mobile/app/(tenant)/<name>.tsx`):
 `scripts/release/verify-mobile-runtime-wiring.py` checks the exact no-data wrapper on every route, authenticates the shared guard, asserts old payment-result code is gone, and guards the home shortcut. The required mobile workflow additionally runs TypeScript typecheck and Expo Android/iOS exports. There is no relevant new PostgreSQL test for a UI-only fail-closed quarantine; existing PostgreSQL coverage for authoritative mobile bootstrap and financing evidence is unchanged and continues in `ci`.
 
 No API or database changes; no real payment, bank, fund, OIDC tenant, environment or credentials touched. All monetary rules stay in the backend. This PR does not claim owner/shared prototype routes are authoritative or deliver a membership/payment initiation endpoint.
+
+## Next: owner/shared and obsolete identity quarantine
+
+PR #114 extends the same authenticated fail-closed screen to the remaining owner and shared prototype routes and the three obsolete local identity/OTP-error routes. The strict route inventory, security/authentication boundaries and residual gaps are documented in `mobile-owner-shared-legacy-quarantine-v1.md`. Real OIDC login, the OTP redirect, authenticated profile/contracts/payment screens and sign-out are not quarantined.
