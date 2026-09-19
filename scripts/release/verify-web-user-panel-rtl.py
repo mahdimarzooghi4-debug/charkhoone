@@ -182,10 +182,11 @@ require('href={nextHref}' in lookup_text and
         "contract lookup continuation must honor selected owner or tenant preview route")
 require('<span className={styles.alertBadge}>۱</span>' not in lookup_text,
         "contract lookup result must not show the static contracts alert badge")
-require('.logoWrap { position: relative; width: 100%; height: 55px; display: block; }' in lookup_css and
-        'position: absolute; top: 0; left: 50%; transform: translateX(-50%);' in lookup_css and
+require('<img src={assets.logo} alt="چارخونه" width={200} height={86} />' in lookup_text and
+        '.logoWrap { position: relative; width: 100%; height: 90px; display: block; }' in lookup_css and
+        'position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 200px; height: 86px;' in lookup_css and
         lookup_css.rstrip().endswith('.logoWrap img { left: 50%; transform: translateX(-50%); }'),
-        "contract lookup result logo image must center on the sidebar midpoint regardless of RTL flex")
+        "contract lookup result logo should display at 200px and remain centered on sidebar midpoint")
 require('appearance: none; -webkit-appearance: none;' in lookup_css and
         '.roleOption input[type="radio"]:checked { border-color: var(--ch-color-primary); background: var(--ch-color-primary);' in lookup_css and
         '.roleOption input[type="radio"]:focus-visible { outline: 3px solid rgb(13 59 54 / 30%);' in lookup_css and
@@ -201,10 +202,10 @@ require('className={styles.officialNotice}' in lookup_text and
         'از سامانهٔ خودنویس استعلام نشده است.' in lookup_text and
         'assets.info' not in lookup_text,
         "lookup bottom notice must show a stable information marker and disclose sample data")
-require('.officialNotice { width: 100%; display: flex; align-items: center; justify-content: flex-start;' in lookup_css and
+require('.officialNotice { width: 100%; display: grid; grid-template-columns: 20px minmax(0, 1fr);' in lookup_css and
         'direction: rtl; text-align: right; }' in lookup_css and
-        '.noticeText { min-width: 0; flex: 0 1 auto; direction: rtl; text-align: right; }' in lookup_css,
-        "lookup bottom notice icon and copy must cluster at the right edge")
+        '.noticeText { min-width: 0; width: 100%; direction: rtl; text-align: right; }' in lookup_css,
+        "lookup bottom notice icon must stay in rightmost grid cell and Persian copy next to it")
 
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
