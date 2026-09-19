@@ -196,6 +196,15 @@ require('.roleOption input[type="radio"]' in lookup_css,
 for asset_name, asset_file in contracts_assets.items():
     require(f'{asset_name}: "/brand/{asset_file}"' in lookup_text,
             f"contract lookup result should use stable {asset_name} sidebar asset")
+require('className={styles.officialNotice}' in lookup_text and
+        '<span className={styles.noticeIcon} aria-hidden="true">ⓘ</span><span className={styles.noticeText}>' in lookup_text and
+        'از سامانهٔ خودنویس استعلام نشده است.' in lookup_text and
+        'assets.info' not in lookup_text,
+        "lookup bottom notice must show a stable information marker and disclose sample data")
+require('.officialNotice { width: 100%; display: flex; align-items: center; justify-content: flex-start;' in lookup_css and
+        'direction: rtl; text-align: right; }' in lookup_css and
+        '.noticeText { min-width: 0; flex: 0 1 auto; direction: rtl; text-align: right; }' in lookup_css,
+        "lookup bottom notice icon and copy must cluster at the right edge")
 
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))

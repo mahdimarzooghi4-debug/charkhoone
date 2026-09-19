@@ -8,7 +8,6 @@ import { UserPanelExit } from "@/components/user/UserPanelExit";
 // Stable same-origin Figma sidebar exports already reviewed on the home page.
 const assets = {
   logo: "/brand/dashboard-logo.png",
-  info: "https://www.figma.com/api/mcp/asset/f63e649c-59de-40a0-bfa2-61a87464ae30.svg",
   home: "/brand/dashboard-nav-home.svg",
   contracts: "/brand/dashboard-nav-file.svg",
   payments: "/brand/dashboard-nav-card.svg",
@@ -58,7 +57,7 @@ export default function ContractLookupResultPage() {
           <div className={styles.mainColumn} data-node-id="150:778">
             <DetailCard title="اطلاعات قرارداد" rows={contractRows} />
             <DetailCard title="اطلاعات ملک" rows={propertyRows} />
-            <div className={styles.officialNotice} data-node-id="150:819"><span>اطلاعات این قرارداد از سامانه رسمی خودنویس دریافت شده و غیرقابل تغییر است.</span><img src={assets.info} alt="" width={20} height={20} /></div>
+            <div className={styles.officialNotice} data-node-id="150:819" role="note"><span className={styles.noticeIcon} aria-hidden="true">ⓘ</span><span className={styles.noticeText}>اطلاعات این قرارداد نمونهٔ نمایشی است و از سامانهٔ خودنویس استعلام نشده است.</span></div>
           </div>
 
           <aside className={styles.roleCard} data-node-id="150:824">
