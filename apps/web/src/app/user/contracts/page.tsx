@@ -5,13 +5,13 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelExit } from "@/components/user/UserPanelExit";
 
+// Share the stable, same-origin Figma exports used by the approved home sidebar.
 const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/ecbf0b2d-90c4-4e6b-8d2f-010d28b2fbc2.png",
-  avatar: "https://www.figma.com/api/mcp/asset/c5bc1706-ecc4-41f6-837a-1260615b02f6.png",
-  home: "https://www.figma.com/api/mcp/asset/90ad22c1-5030-4fb0-9ac4-88ba341cd671.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/becc09b2-8a80-48d4-8ce4-06b01893266b.svg",
-  payments: "https://www.figma.com/api/mcp/asset/302144e6-7d88-4fa8-94b4-01f0e91b32b2.svg",
-  account: "https://www.figma.com/api/mcp/asset/c08d6587-07b1-48c2-98c8-883d4bcc3c6d.svg",
+  logo: "/brand/dashboard-logo.png",
+  home: "/brand/dashboard-nav-home.svg",
+  contracts: "/brand/dashboard-nav-file.svg",
+  payments: "/brand/dashboard-nav-card.svg",
+  account: "/brand/dashboard-nav-user.svg",
 } as const;
 
 type Tone = "tenant" | "owner" | "active" | "attention" | "ended";

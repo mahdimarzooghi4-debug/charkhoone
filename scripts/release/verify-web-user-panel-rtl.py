@@ -137,6 +137,21 @@ require(".logoWrap { justify-content: center; }" in contracts_css and
         bool(re.search(r"\.contractHeader,\s*\.contractBottom\s*\{[^}]*direction:\s*rtl\s*;", contracts_css)),
         "contracts logo and card layout must align to right")
 
+contracts_assets = {
+    "logo": "dashboard-logo.png",
+    "home": "dashboard-nav-home.svg",
+    "contracts": "dashboard-nav-file.svg",
+    "payments": "dashboard-nav-card.svg",
+    "account": "dashboard-nav-user.svg",
+}
+for name, filename in contracts_assets.items():
+    path = ROOT / "apps/web/public/brand" / filename
+    require(path.is_file(), f"missing local contracts {name} asset: {filename}")
+    require(f'{name}: "/brand/{filename}"' in contracts_text,
+            f"contracts {name} must use its permanent same-origin asset")
+require("figma.com/api/mcp/asset/" not in contracts_text,
+        "contracts page must not depend on expiring Figma image URLs")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)
