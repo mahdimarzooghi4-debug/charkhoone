@@ -96,7 +96,18 @@ public static class MobileBootstrapEndpoints
                     contract.Role,
                     contract.Status.ToString(),
                     DecimalText(contract.MonthlyRentRial),
-                    contract.UpdatedAtUtc))
+                    contract.UpdatedAtUtc,
+                    contract.Terms is null
+                        ? null
+                        : new MobileContractTermsResponse(
+                            contract.Terms.Calendar,
+                            contract.Terms.PersianStartYear,
+                            contract.Terms.PersianStartMonth,
+                            contract.Terms.PersianStartDay,
+                            contract.Terms.TermMonths,
+                            DecimalText(contract.Terms.CashDepositRial)!,
+                            DecimalText(contract.Terms.FullDepositEquivalentRial)!,
+                            contract.Terms.CapturedAtUtc)))
                 .ToArray(),
             view.Payments
                 .Select(payment => new MobilePaymentResponse(
@@ -159,7 +170,18 @@ public sealed record MobileContractResponse(
     string Role,
     string Status,
     string? MonthlyRentRial,
-    DateTimeOffset UpdatedAtUtc);
+    DateTimeOffset UpdatedAtUtc,
+    MobileContractTermsResponse? Terms);
+
+public sealed record MobileContractTermsResponse(
+    string Calendar,
+    int PersianStartYear,
+    int PersianStartMonth,
+    int PersianStartDay,
+    int TermMonths,
+    string CashDepositRial,
+    string FullDepositEquivalentRial,
+    DateTimeOffset CapturedAtUtc);
 
 public sealed record MobilePaymentResponse(
     Guid PaymentInstructionId,

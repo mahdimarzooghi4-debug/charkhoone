@@ -28,6 +28,7 @@ public sealed class MobileBootstrapIntegrationTests(CharkhooneApiFactory factory
         var now = DateTimeOffset.Parse("2199-09-19T03:00:00+00:00");
         var tenantId = Guid.NewGuid();
         var ownerId = Guid.NewGuid();
+        var otherOwnerId = Guid.NewGuid();
         var unrelatedTenantId = Guid.NewGuid();
         var applicationId = Guid.NewGuid();
         var unrelatedApplicationId = Guid.NewGuid();
@@ -37,6 +38,7 @@ public sealed class MobileBootstrapIntegrationTests(CharkhooneApiFactory factory
         var unrelatedPlanRowId = Guid.NewGuid();
         var contractId = Guid.NewGuid();
         var unrelatedContractId = Guid.NewGuid();
+        var otherOwnerContractId = Guid.NewGuid();
         var obligationId = Guid.NewGuid();
         var paymentId = Guid.NewGuid();
         var unrelatedObligationId = Guid.NewGuid();
@@ -63,6 +65,12 @@ public sealed class MobileBootstrapIntegrationTests(CharkhooneApiFactory factory
                 {
                     Id = ownerId,
                     OidcSubject = $"mobile-owner-{ownerId:D}",
+                    CreatedAtUtc = now.AddDays(-3),
+                },
+                new UserRow
+                {
+                    Id = otherOwnerId,
+                    OidcSubject = $"mobile-other-owner-{otherOwnerId:D}",
                     CreatedAtUtc = now.AddDays(-3),
                 },
                 new UserRow
@@ -148,7 +156,37 @@ public sealed class MobileBootstrapIntegrationTests(CharkhooneApiFactory factory
                     BankLoanPlanVersion = "unrelated-v1",
                     CreatedAtUtc = now.AddDays(-1),
                     UpdatedAtUtc = now.AddHours(-1),
+                },
+                new LeaseContractRow
+                {
+                    Id = otherOwnerContractId,
+                    TenantUserId = unrelatedTenantId,
+                    OwnerUserId = otherOwnerId,
+                    PropertyId = Guid.NewGuid(),
+                    CreditApplicationId = null,
+                    Status = LeaseContractStatus.Draft,
+                    CreatedAtUtc = now.AddDays(-1),
+                    UpdatedAtUtc = now.AddHours(-1),
                 });
+
+            // Terms are an immutable, trusted Persian-calendar snapshot of
+            // the funded lease. Its amount must match the funded allocation.
+            db.LeaseContractTerms.Add(new LeaseContractTermsRow
+            {
+                ContractId = contractId,
+                Calendar = "Persian",
+                PersianStartYear = 1405,
+                PersianStartMonth = 7,
+                PersianStartDay = 15,
+                TermMonths = 12,
+                CashDepositRial = 2234564556790156m,
+                MonthlyRentRial = 99999999m,
+                FullDepositEquivalentRial = fullDepositEquivalentRial,
+                OwnerBeneficiaryId = "owned-owner-beneficiary",
+                BankBeneficiaryId = "owned-bank-beneficiary",
+                SourceReference = "trusted-mobile-contract-source",
+                CapturedAtUtc = now.AddHours(-2),
+            });
 
             db.BankApprovals.AddRange(
                 new BankApprovalRow
@@ -324,6 +362,18 @@ public sealed class MobileBootstrapIntegrationTests(CharkhooneApiFactory factory
                 contracts.EnumerateArray(),
                 item => item.GetProperty("contractId").GetGuid() == contractId);
             Assert.Equal("Tenant", contract.GetProperty("role").GetString());
+            Assert.Equal("99999999", contract.GetProperty("monthlyRentRial").GetString());
+            var terms = contract.GetProperty("terms");
+            Assert.Equal("Persian", terms.GetProperty("calendar").GetString());
+            Assert.Equal(1405, terms.GetProperty("persianStartYear").GetInt32());
+            Assert.Equal(7, terms.GetProperty("persianStartMonth").GetInt32());
+            Assert.Equal(15, terms.GetProperty("persianStartDay").GetInt32());
+            Assert.Equal(12, terms.GetProperty("termMonths").GetInt32());
+            Assert.Equal(JsonValueKind.String, terms.GetProperty("cashDepositRial").ValueKind);
+            Assert.Equal("2234564556790156", terms.GetProperty("cashDepositRial").GetString());
+            Assert.Equal("2234567890123456", terms.GetProperty("fullDepositEquivalentRial").GetString());
+            Assert.DoesNotContain("owned-owner-beneficiary", terms.GetRawText());
+            Assert.DoesNotContain("trusted-mobile-contract-source", terms.GetRawText());
             Assert.DoesNotContain(
                 contracts.EnumerateArray(),
                 item => item.GetProperty("contractId").GetGuid() == unrelatedContractId);
@@ -343,6 +393,46 @@ public sealed class MobileBootstrapIntegrationTests(CharkhooneApiFactory factory
             Assert.DoesNotContain(
                 payments.EnumerateArray(),
                 item => item.GetProperty("paymentInstructionId").GetGuid() == unrelatedPaymentId);
+
+            // Real owner OIDC subject sees both of their contracts, including
+            // one without a terms snapshot, but no other owner's contract,
+            // no tenant payment instructions and no tenant application data.
+            using var ownerClient = _factory.CreateAuthenticatedClient($"mobile-owner-{ownerId:D}");
+            var ownerResponse = await ownerClient.GetAsync("/api/v1/mobile/bootstrap");
+            Assert.Equal(HttpStatusCode.OK, ownerResponse.StatusCode);
+            using var ownerDocument = JsonDocument.Parse(await ownerResponse.Content.ReadAsStringAsync());
+            var ownerRoot = ownerDocument.RootElement;
+            Assert.Equal(ownerId, ownerRoot.GetProperty("userId").GetGuid());
+            Assert.Equal(JsonValueKind.Null, ownerRoot.GetProperty("latestCreditApplication").ValueKind);
+            Assert.Empty(ownerRoot.GetProperty("payments").EnumerateArray());
+            var ownerContracts = ownerRoot.GetProperty("contracts").EnumerateArray().ToArray();
+            Assert.Equal(2, ownerContracts.Length);
+            Assert.All(ownerContracts, item => Assert.Equal("Owner", item.GetProperty("role").GetString()));
+            var fundedOwnerContract = Assert.Single(
+                ownerContracts,
+                item => item.GetProperty("contractId").GetGuid() == contractId);
+            Assert.Equal("2234567890123456",
+                fundedOwnerContract.GetProperty("terms").GetProperty("fullDepositEquivalentRial").GetString());
+            Assert.Equal("99999999", fundedOwnerContract.GetProperty("monthlyRentRial").GetString());
+            var withoutTerms = Assert.Single(
+                ownerContracts,
+                item => item.GetProperty("contractId").GetGuid() == unrelatedContractId);
+            Assert.Equal(JsonValueKind.Null, withoutTerms.GetProperty("terms").ValueKind);
+            Assert.Equal(JsonValueKind.Null, withoutTerms.GetProperty("monthlyRentRial").ValueKind);
+            Assert.DoesNotContain(ownerContracts,
+                item => item.GetProperty("contractId").GetGuid() == otherOwnerContractId);
+            Assert.DoesNotContain("tenant-bank-provider", ownerRoot.GetRawText());
+
+            using var otherOwner = _factory.CreateAuthenticatedClient($"mobile-other-owner-{otherOwnerId:D}");
+            var otherOwnerResponse = await otherOwner.GetAsync("/api/v1/mobile/bootstrap");
+            Assert.Equal(HttpStatusCode.OK, otherOwnerResponse.StatusCode);
+            using var otherOwnerDocument = JsonDocument.Parse(await otherOwnerResponse.Content.ReadAsStringAsync());
+            var otherOwnerRoot = otherOwnerDocument.RootElement;
+            var onlyOtherOwnerContract = Assert.Single(otherOwnerRoot.GetProperty("contracts").EnumerateArray());
+            Assert.Equal(otherOwnerContractId, onlyOtherOwnerContract.GetProperty("contractId").GetGuid());
+            Assert.Equal("Owner", onlyOtherOwnerContract.GetProperty("role").GetString());
+            Assert.Equal(JsonValueKind.Null, onlyOtherOwnerContract.GetProperty("terms").ValueKind);
+            Assert.Empty(otherOwnerRoot.GetProperty("payments").EnumerateArray());
 
             using var unknown = _factory.CreateAuthenticatedClient($"mobile-unknown-{Guid.NewGuid():D}");
             var forbidden = await unknown.GetAsync("/api/v1/mobile/bootstrap");
@@ -367,8 +457,11 @@ public sealed class MobileBootstrapIntegrationTests(CharkhooneApiFactory factory
             await db.BankApprovals
                 .Where(x => x.CreditApplicationId == applicationId || x.CreditApplicationId == unrelatedApplicationId)
                 .ExecuteDeleteAsync();
+            await db.LeaseContractTerms
+                .Where(x => x.ContractId == contractId)
+                .ExecuteDeleteAsync();
             await db.LeaseContracts
-                .Where(x => x.Id == contractId || x.Id == unrelatedContractId)
+                .Where(x => x.Id == contractId || x.Id == unrelatedContractId || x.Id == otherOwnerContractId)
                 .ExecuteDeleteAsync();
             await db.CreditApplications
                 .Where(x => x.Id == applicationId || x.Id == unrelatedApplicationId)
@@ -377,7 +470,7 @@ public sealed class MobileBootstrapIntegrationTests(CharkhooneApiFactory factory
                 .Where(x => x.Id == planRowId || x.Id == unrelatedPlanRowId)
                 .ExecuteDeleteAsync();
             await db.Users
-                .Where(x => x.Id == tenantId || x.Id == ownerId || x.Id == unrelatedTenantId)
+                .Where(x => x.Id == tenantId || x.Id == ownerId || x.Id == otherOwnerId || x.Id == unrelatedTenantId)
                 .ExecuteDeleteAsync();
         }
     }

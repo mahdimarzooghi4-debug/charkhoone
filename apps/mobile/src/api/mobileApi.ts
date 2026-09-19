@@ -35,12 +35,24 @@ export type MobileCreditApplicationSummary = {
   fundingAllocation: MobileFundingAllocationSummary | null;
 };
 
+export type MobileContractTermsSummary = {
+  calendar: string;
+  persianStartYear: number;
+  persianStartMonth: number;
+  persianStartDay: number;
+  termMonths: number;
+  cashDepositRial: string;
+  fullDepositEquivalentRial: string;
+  capturedAtUtc: string;
+};
+
 export type MobileContractSummary = {
   contractId: string;
   role: "Tenant" | "Owner";
   status: string;
   monthlyRentRial: string | null;
   updatedAtUtc: string;
+  terms: MobileContractTermsSummary | null;
 };
 
 export type MobilePaymentSummary = {

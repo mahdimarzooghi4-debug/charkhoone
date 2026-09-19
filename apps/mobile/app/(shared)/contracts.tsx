@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { formatRial } from "@/api/mobileApi";
 import { useMobileBootstrap } from "@/api/useMobileBootstrap";
@@ -56,6 +56,18 @@ export default function ContractsOverviewScreen() {
               <Text style={styles.label}>اجاره ماهانه persisted</Text>
             </View>
 
+            {contract.role === "Owner" ? (
+              <Pressable
+                accessibilityRole="button"
+                style={styles.ownerLink}
+                onPress={() => router.push({
+                  pathname: "/(owner)/contract-active",
+                  params: { contractId: contract.contractId },
+                })}
+              >
+                <Text style={styles.ownerLinkText}>مشاهده شرایط معتبر قرارداد مالک</Text>
+              </Pressable>
+            ) : null}
             <Text style={styles.note}>
               اطلاعات ملک، شهر یا کد رهگیری تا زمانی که read-model واقعی آن‌ها به mobile API اضافه نشود در این صفحه ساخته نمی‌شود.
             </Text>
@@ -84,5 +96,7 @@ const styles = StyleSheet.create({
   label: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "right", writingDirection: "rtl" },
   value: { flex: 1, color: colors.primary, fontFamily: fonts.medium, fontSize: 12, textAlign: "left" },
   id: { flex: 1, color: colors.muted, fontFamily: fonts.regular, fontSize: 9, textAlign: "left" },
+  ownerLink: { backgroundColor: colors.successSoft, padding: 12, borderRadius: radii.md, alignItems: "center" },
+  ownerLinkText: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 12, writingDirection: "rtl" },
   note: { color: colors.muted, fontFamily: fonts.regular, fontSize: 10, lineHeight: 17, textAlign: "right", writingDirection: "rtl" },
 });

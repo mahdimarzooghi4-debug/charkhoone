@@ -37,12 +37,25 @@ public sealed record MobileCreditApplicationSummary(
     MobileBankApprovalSummary? BankApproval,
     MobileFundingAllocationSummary? FundingAllocation);
 
+public sealed record MobileContractTermsSummary(
+    Guid ContractId,
+    string Calendar,
+    int PersianStartYear,
+    int PersianStartMonth,
+    int PersianStartDay,
+    int TermMonths,
+    decimal CashDepositRial,
+    decimal MonthlyRentRial,
+    decimal FullDepositEquivalentRial,
+    DateTimeOffset CapturedAtUtc);
+
 public sealed record MobileContractSummary(
     Guid ContractId,
     string Role,
     LeaseContractStatus Status,
     decimal? MonthlyRentRial,
-    DateTimeOffset UpdatedAtUtc);
+    DateTimeOffset UpdatedAtUtc,
+    MobileContractTermsSummary? Terms);
 
 public sealed record MobilePaymentSummary(
     Guid PaymentInstructionId,

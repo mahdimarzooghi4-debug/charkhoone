@@ -299,7 +299,6 @@ require(
 # and obsolete local identity/OTP prototype routes. OIDC login, persisted
 # profile/contracts/payment and signed-out behavior remain independent.
 legacy_owner_shared_auth_routes = {
-    "apps/mobile/app/(owner)/contract-active.tsx": "وضعیت قرارداد مالک",
     "apps/mobile/app/(owner)/contract-connected.tsx": "اتصال قرارداد مالک",
     "apps/mobile/app/(owner)/contract-terminated.tsx": "فسخ قرارداد مالک",
     "apps/mobile/app/(owner)/final-confirmation.tsx": "تأیید نهایی مالک",
@@ -356,6 +355,45 @@ for route in (
         "LegacyMobileRouteUnavailable" not in read(route),
         f"real OIDC/API/sign-out route must not be quarantined: {route}",
     )
+
+
+# Owner read-model restoration: still no synthetic owner payout/settlement UI.
+owner_contracts = read("apps/mobile/app/(owner)/contract-active.tsx")
+contracts_list = read("apps/mobile/app/(shared)/contracts.tsx")
+for token in (
+    "useMobileBootstrap",
+    "useLocalSearchParams",
+    'contract.role === "Owner"',
+    "contract.contractId === contractId",
+    'status !== "authenticated"',
+    "contract.terms",
+    'terms.calendar === "Persian"',
+    "terms.persianStartYear",
+    "terms.persianStartMonth",
+    "terms.persianStartDay",
+    "terms.cashDepositRial",
+    "terms.fullDepositEquivalentRial",
+    "formatRial",
+):
+    require(token in owner_contracts, f"owner read model missing: {token}")
+
+for prohibited in (
+    " تومان",
+    "سعادت‌آباد",
+    "۱۹٬۹۰۰٬۰۰۰",
+    "۵۰۰٬۰۰۰٬۰۰۰",
+    "۱۲۳۴۵۶۷۸۹۰۱۲",
+    "settlement-preference",
+    "receive-pay",
+):
+    require(prohibited not in owner_contracts, f"owner contract view contains mock value/route: {prohibited}")
+
+require(
+    'contract.role === "Owner"' in contracts_list
+    and 'pathname: "/(owner)/contract-active"' in contracts_list
+    and "params: { contractId: contract.contractId }" in contracts_list,
+    "only persisted owner contracts may link to owner contract details",
+)
 
 if failures:
     for failure in failures:
