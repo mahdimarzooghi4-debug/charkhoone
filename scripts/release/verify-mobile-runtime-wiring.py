@@ -294,6 +294,69 @@ require(
     "home must keep a persisted-application shortcut",
 )
 
+
+# Deep-link coverage for remaining synthetic owner, shared contract/profile,
+# and obsolete local identity/OTP prototype routes. OIDC login, persisted
+# profile/contracts/payment and signed-out behavior remain independent.
+legacy_owner_shared_auth_routes = {
+    "apps/mobile/app/(owner)/contract-active.tsx": "وضعیت قرارداد مالک",
+    "apps/mobile/app/(owner)/contract-connected.tsx": "اتصال قرارداد مالک",
+    "apps/mobile/app/(owner)/contract-terminated.tsx": "فسخ قرارداد مالک",
+    "apps/mobile/app/(owner)/final-confirmation.tsx": "تأیید نهایی مالک",
+    "apps/mobile/app/(owner)/receive-pay.tsx": "دریافت و تسویه مالک",
+    "apps/mobile/app/(owner)/settlement-preference.tsx": "انتخاب روش تسویه مالک",
+    "apps/mobile/app/(shared)/change-mobile.tsx": "تغییر شماره موبایل",
+    "apps/mobile/app/(shared)/verify-new-mobile.tsx": "تأیید شماره موبایل",
+    "apps/mobile/app/(shared)/contract-tracking.tsx": "استعلام قرارداد",
+    "apps/mobile/app/(shared)/role-selection.tsx": "انتخاب نقش قرارداد",
+    "apps/mobile/app/(shared)/contracts-terminated.tsx": "فهرست قراردادهای قدیمی",
+    "apps/mobile/app/(shared)/profile-photo.tsx": "ویرایش عکس پروفایل",
+    "apps/mobile/app/(auth)/identity.tsx": "استعلام هویت قدیمی",
+    "apps/mobile/app/(auth)/identity-error.tsx": "خطای استعلام هویت قدیمی",
+    "apps/mobile/app/(auth)/otp-error.tsx": "کد تأیید قدیمی",
+}
+shared_legacy_import = 'import { LegacyMobileRouteUnavailable } from "@/components/LegacyTenantRouteUnavailable";'
+for route, title in legacy_owner_shared_auth_routes.items():
+    expected = (
+        f'{shared_legacy_import}\n\n'
+        'export default function Screen() {\n'
+        f'  return <LegacyMobileRouteUnavailable title="{title}" />;\n'
+        '}\n'
+    )
+    require(
+        read(route) == expected,
+        f"owner/shared/auth prototype route must fail closed: {route}",
+    )
+
+require(
+    "export const LegacyMobileRouteUnavailable = LegacyTenantRouteUnavailable;" in legacy_boundary,
+    "shared legacy guard must alias the authenticated tenant quarantine",
+)
+for token in (
+    "هیچ هویت",
+    "شمارهٔ موبایل",
+    "کد تأیید",
+    "استعلام قرارداد",
+    "تأیید نهایی",
+):
+    require(token in legacy_boundary, f"shared legacy guard missing neutral boundary: {token}")
+
+require(
+    'return <Redirect href="/(auth)/login" />;' in read("apps/mobile/app/(auth)/otp.tsx"),
+    "legacy OTP route must continue redirecting to real OIDC login",
+)
+for route in (
+    "apps/mobile/app/(auth)/login.tsx",
+    "apps/mobile/app/(shared)/profile.tsx",
+    "apps/mobile/app/(shared)/contracts.tsx",
+    "apps/mobile/app/(shared)/sign-out.tsx",
+    "apps/mobile/app/(tenant)/payments.tsx",
+):
+    require(
+        "LegacyMobileRouteUnavailable" not in read(route),
+        f"real OIDC/API/sign-out route must not be quarantined: {route}",
+    )
+
 if failures:
     for failure in failures:
         print(f"mobile runtime wiring verification failed: {failure}", file=sys.stderr)
