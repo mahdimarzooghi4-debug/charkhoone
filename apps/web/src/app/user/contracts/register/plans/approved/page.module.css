@@ -1,6 +1,7 @@
 .page { min-height: 100svh; display: flex; align-items: stretch; direction: ltr; background: var(--ch-color-page); }
 .mainContent { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 24px; padding: 32px; direction: rtl; }
-.pageHeader { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; text-align: right; }
+.pageHeader { width: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 8px; direction: rtl; text-align: right; }
+.pageHeader > p { width: 100%; text-align: right; }
 .pageHeader h1, .pageHeader p, .card h2, .heroCard h2, .heroCard p, .primaryCopy p, .rentNotice p { margin: 0; }
 .pageHeader > p { color: var(--ch-color-muted); font-size: 13px; }
 .pageHeader > p:last-child { font-size: 14px; }
@@ -36,13 +37,15 @@
 .row span { color: var(--ch-color-muted); font-size: 14px; direction: rtl; text-align: right; }
 .contractLink { align-self: center; color: var(--ch-color-primary); font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .heroCard { width: 100%; display: flex; align-items: center; gap: 16px; padding: 24px; direction: ltr; background: #e6f4e6; border: 1px solid #d4ecd4; border-radius: 16px; }
-.heroIcon { width: 48px; height: 48px; flex: 0 0 48px; display: inline-flex; align-items: center; justify-content: center; background: rgb(13 59 54 / 10%); border-radius: 24px; }
-.heroIcon img { width: 24px; height: 24px; display: block; }
-.heroCard > div { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; direction: rtl; text-align: right; }
+.heroIcon { width: 48px; height: 48px; flex: 0 0 48px; display: inline-flex; align-items: center; justify-content: center; background: var(--ch-color-primary); border-radius: 24px; }
+.heroIcon img { width: 14px; height: 14px; display: block; }
+.heroCard > div { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: stretch; gap: 4px; direction: rtl; text-align: right; }
+.heroCard h2, .heroCard p { width: 100%; text-align: right; }
 .heroCard h2 { color: var(--ch-color-primary); font-size: 18px; font-weight: 700; }
 .heroCard p { color: var(--ch-color-text); font-size: 14px; }
 .primaryCard { gap: 20px; padding: 28px; box-shadow: 0 4px 6px rgb(0 0 0 / 3%); }
-.primaryCopy { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: right; }
+.primaryCopy { width: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 4px; direction: rtl; text-align: right; }
+.primaryCopy > span, .primaryCopy > strong, .primaryCopy p { width: 100%; text-align: right; }
 .primaryCopy > span { color: var(--ch-color-muted); font-size: 15px; }
 .primaryCopy > strong { color: var(--ch-color-primary); font-size: 32px; font-weight: 700; }
 .primaryCopy p { color: var(--ch-color-text); font-size: 14px; }

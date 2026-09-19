@@ -83,7 +83,7 @@ export default function FinancingUnderReviewPage() {
             <DataCard title="مشخصات قرارداد مرتبط" rows={contractRows} />
 
             <div className={styles.actions} data-node-id="150:1277">
-              <Link href="/user/contracts/123456789012" className={styles.primaryAction} data-node-id="150:1278">مشاهده قرارداد</Link>
+              <Link href="/user/contracts/register/plans/approved" className={styles.primaryAction} data-node-id="150:1278">مشاهده نتیجهٔ نمونهٔ بررسی بانک</Link>
               <Link href="/user/contracts" className={styles.secondaryAction} data-node-id="150:1281">بازگشت به قراردادها</Link>
             </div>
           </div>

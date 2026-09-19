@@ -361,6 +361,30 @@ require('const isNationalId = label === "کد ملی مستأجر" || label === 
         '.nationalId { direction: ltr; unicode-bidi: isolate; text-align: left; }' in contract_detail_css,
         "contract detail must render both owner and tenant national IDs left-to-right")
 
+# Keep the sample financing flow inside bank review, decision and membership.
+approved_page = read(USER_ROOT / "contracts/register/plans/approved/page.tsx")
+approved_css = read(USER_ROOT / "contracts/register/plans/approved/page.module.css")
+membership_page = read(USER_ROOT / "contracts/register/plans/membership/page.tsx")
+require('<Link href="/user/contracts/register/plans/approved" className={styles.primaryAction}' in review_page and
+        'مشاهده نتیجهٔ نمونهٔ بررسی بانک' in review_page and
+        '<Link href="/user/contracts/123456789012" className={styles.primaryAction}' not in review_page,
+        "review primary action must lead to the sample bank decision, not ordinary contracts/payments")
+require('اعلام نتیجهٔ نمونهٔ بررسی بانک' in approved_page and
+        'title: "بررسی بانک (نمونه)"' in approved_page and
+        'title: "اعلام نتیجه (نمونه)"' in approved_page and
+        'title: "خرید عضویت چارخونه"' in approved_page and
+        '<Link href="/user/contracts/register/plans/membership" className={styles.primaryAction}' in approved_page and
+        'انتخاب و خرید عضویت (نمونه)' in approved_page and
+        'data-name="Web App / Tenant Membership"' in membership_page,
+        "review -> sample result -> membership selection must be an unbroken route")
+require('نتیجهٔ واقعی از بانک دریافت نشده است.' in approved_page and
+        'پرداخت واقعی انجام نمی‌شود.' in approved_page and
+        'تأمین مالی شما توسط بانک تأیید شده است' not in approved_page and
+        'src="/brand/financing-review-check.svg"' in approved_page and
+        'figma.com/api/mcp/asset/' not in approved_page and
+        '.heroIcon img { width: 14px; height: 14px; display: block; }' in approved_css,
+        "bank result preview must avoid live bank/payment claims and temporary icon links")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)
