@@ -21,7 +21,6 @@ export function AccountModalScaffold({ assets, children, nodeId }: { assets: Ass
         <div className={styles.columns}>
           <aside className={styles.secondaryColumn}>
             <section className={styles.settingsCard}><h2>تنظیمات</h2><div className={styles.settingsList}><div className={styles.settingsRow}><span className={styles.toggle}><i /></span><span>اعلان‌ها</span></div><div className={styles.divider} /><div className={styles.settingsRow}><img src={assets.chevron} alt="" width={20} height={20} /><span>قوانین و مقررات</span></div><div className={styles.divider} /><div className={styles.settingsRow}><img src={assets.chevron} alt="" width={20} height={20} /><span>حریم خصوصی</span></div></div></section>
-            <span className={styles.logout}>خروج از حساب</span>
           </aside>
           <div className={styles.primaryColumn}>
             <section className={`${styles.card} ${styles.profileCard}`}><div className={styles.profileHeader}><div className={styles.nameRow}><span className={styles.verified}>تأیید شده</span><strong>علی رضایی</strong></div><span className={styles.initialAvatar}>ع ر</span></div><span className={styles.textAction}>تغییر تصویر</span></section>

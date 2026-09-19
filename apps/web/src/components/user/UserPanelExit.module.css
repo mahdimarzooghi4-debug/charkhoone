@@ -11,7 +11,7 @@
   min-height: 46px;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 10px;
   padding: 10px 14px;
   border: 1px solid rgb(255 255 255 / 28%);
@@ -21,7 +21,7 @@
   font-size: 14px;
   font-weight: 600;
   text-decoration: none;
-  text-align: right;
+  text-align: center;
   background: rgb(255 255 255 / 7%);
 }
 

@@ -34,7 +34,6 @@ export default function AccountPage() {
                 <button type="button" className={styles.settingsRow} data-node-id="163:210"><img src={assets.chevron} alt="" width={20} height={20} /><span>حریم خصوصی</span></button>
               </div>
             </section>
-            <button type="button" className={styles.logoutAction} data-node-id="163:213">خروج از حساب</button>
           </aside>
 
           <div className={styles.primaryColumn} data-node-id="163:215">
@@ -48,7 +47,7 @@ export default function AccountPage() {
 
             <section className={styles.card} data-node-id="163:228">
               <div className={styles.cardHeader}><Link href="/user/account/change-mobile" className={styles.outlineButton} data-node-id="163:230">تغییر شماره موبایل</Link><h2 data-node-id="163:235">شماره موبایل</h2></div>
-              <div className={styles.valueRow}><strong data-node-id="163:237">۰۹۱۲•••••۶۷</strong><VerifiedBadge /></div>
+              <div className={styles.valueRow}><strong className={styles.ltrNumber} dir="ltr" data-node-id="163:237">۰۹۱۲•••••۶۷</strong><VerifiedBadge /></div>
               <p className={styles.hint} data-node-id="163:240">برای تغییر شماره، شماره جدید باید با کد تأیید ثبت شود.</p>
             </section>
 
@@ -60,7 +59,7 @@ export default function AccountPage() {
 
             <section className={styles.card} data-node-id="163:241">
               <h2 data-node-id="163:242">اطلاعات هویتی</h2>
-              <div className={styles.identityList}><div className={styles.identityRow}><strong>علی رضایی</strong><span>نام و نام خانوادگی</span></div><div className={styles.divider} /><div className={styles.identityRow}><strong>۰۰۱•••••۷۸۹</strong><span>کد ملی</span></div></div>
+              <div className={styles.identityList}><div className={styles.identityRow}><strong>علی رضایی</strong><span>نام و نام خانوادگی</span></div><div className={styles.divider} /><div className={styles.identityRow}><strong className={styles.ltrNumber} dir="ltr">۰۰۱•••••۷۸۹</strong><span>کد ملی</span></div></div>
             </section>
 
             <section className={`${styles.card} ${styles.membershipCard}`} data-node-id="204:100">

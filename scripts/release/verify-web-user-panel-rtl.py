@@ -35,6 +35,8 @@ require('href="/login"' in exit_code, "preview exit must return to login")
 require("خروج" in exit_code and "پیش‌نمایش" in exit_code, "preview exit must not claim live logout")
 require("localStorage" not in exit_code and "sessionStorage" not in exit_code, "preview exit must not pretend to clear browser credentials")
 require(".exit {" in exit_css and ":focus-visible" in exit_css, "exit must have visible/focus styling")
+require("justify-content: center;" in exit_css and "text-align: center;" in exit_css,
+        "sidebar exit must center its icon and text")
 
 panel_pages = sorted(USER_ROOT.rglob("page.tsx"))
 require(len(panel_pages) >= 30, "expected complete web user route set, including owner and tenant flows")
@@ -80,6 +82,27 @@ for modal in (
 ):
     require(".modal { direction: rtl; text-align: right; }" in read(USER_ROOT / modal),
             f"account modal is not right-to-left: {modal}")
+
+
+account_text = read(USER_ROOT / "account/page.tsx")
+account_css = read(USER_ROOT / "account/page.module.css")
+modal_text = read(SCAFFOLD)
+modal_css = read(CSS_SCAFFOLD)
+for label, css in (("account", account_css), ("account modal", modal_css)):
+    require(bool(re.search(r"\.columns\s*\{[^}]*direction:\s*rtl\s*;", css)),
+            f"{label}: settings column must be on the right")
+    require(".settingsRow { direction: ltr;" in css,
+            f"{label}: settings indicators left and Persian label right")
+for label, value in (("mobile", "۰۹۱۲•••••۶۷"), ("national ID", "۰۰۱•••••۷۸۹")):
+    require(bool(re.search(r'<strong className=\{styles\.ltrNumber\} dir="ltr"[^>]*>'
+                           + re.escape(value) + r"</strong>", account_text)),
+            f"account {label}: masked digits must be isolated LTR")
+require(".valueRow strong.ltrNumber," in account_css and
+        ".identityRow strong.ltrNumber" in account_css and
+        "unicode-bidi: isolate;" in account_css,
+        "masked account numbers must override previous strong direction: rtl")
+require("logoutAction" not in account_text and 'styles.logout}' not in modal_text,
+        "remove redundant nonfunctional account/logout pseudo-buttons")
 
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))

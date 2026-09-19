@@ -4,7 +4,7 @@
 .header h1, .header p, .settingsCard h2, .card h2, .hint { margin: 0; }
 .header h1 { color: var(--ch-color-text); font-size: 24px; font-weight: 700; }
 .header p { color: var(--ch-color-muted); font-size: 14px; }
-.columns { display: flex; align-items: flex-start; gap: 24px; direction: ltr; }
+.columns { display: flex; align-items: flex-start; gap: 24px; direction: rtl; }
 .secondaryColumn { width: 420px; flex: 0 0 420px; display: flex; flex-direction: column; gap: 24px; direction: rtl; }
 .primaryColumn { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 24px; direction: rtl; }
 .settingsCard, .card { background: #fff; border: 1px solid var(--ch-color-border); border-radius: 16px; }
@@ -60,3 +60,8 @@
 .navItem { direction: ltr; text-align: right; }
 .navItem > span { direction: rtl; text-align: right; }
 .navItem img { flex: 0 0 20px; }
+
+/* Account modal background mirrors the approved right-side settings column. */
+.settingsCard { align-items: flex-start; text-align: right; }
+.settingsRow { direction: ltr; text-align: right; }
+.settingsRow > span:last-child { direction: rtl; text-align: right; }
