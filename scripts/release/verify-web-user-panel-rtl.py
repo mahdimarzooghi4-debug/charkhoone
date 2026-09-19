@@ -219,6 +219,15 @@ require('.roleOption input[type="radio"]' in lookup_css and
         'max-height: 18px;' in lookup_css and
         'aspect-ratio: 1 / 1;' in lookup_css,
         "lookup radio must stay circular despite global 48px input minimum height")
+require('<p data-node-id="150:769">سلام، علی رضایی</p>' in lookup_text and
+        '.headerRight { gap: 4px; direction: rtl; align-items: stretch; }' in lookup_css and
+        '.headerRight h1, .headerRight p { width: 100%; direction: rtl; text-align: right; }' in lookup_css,
+        "lookup top greeting must align to the right edge under the inquiry title")
+require(lookup_text.count('className={styles.nationalId} dir="rtl"') == 2 and
+        lookup_text.count('<bdi dir="ltr">') == 2 and
+        '.partyInfo > .nationalId { width: 100%; display: flex; flex-direction: row; justify-content: flex-start;' in lookup_css and
+        '.nationalId bdi { direction: ltr; unicode-bidi: isolate; }' in lookup_css,
+        "both role-card national ID labels must start at the right with isolated LTR numerals")
 require(lookup_text.count('<span className={styles.partyInfo} dir="rtl">') == 2 and
         '<strong>علی رضایی</strong>' in lookup_text and
         bool(re.search(r"\.partyInfo\s*\{[^}]*display:\s*grid\s*;[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*;[^}]*direction:\s*rtl\s*;[^}]*text-align:\s*right\s*;", lookup_css)) and

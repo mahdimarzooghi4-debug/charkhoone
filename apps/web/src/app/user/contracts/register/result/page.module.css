@@ -3,7 +3,8 @@
 .headerBar { width: 100%; display: flex; align-items: center; justify-content: space-between; direction: ltr; }
 .backButton { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: var(--ch-color-text); font-size: 18px; font-weight: 700; text-decoration: none; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 12px; }
 .headerRight, .pageHeader, .roleHeader { display: flex; flex-direction: column; align-items: flex-start; text-align: right; }
-.headerRight { gap: 4px; }
+.headerRight { gap: 4px; direction: rtl; align-items: stretch; }
+.headerRight h1, .headerRight p { width: 100%; direction: rtl; text-align: right; }
 .pageHeader { width: 100%; gap: 6px; }
 .roleHeader { width: 100%; gap: 6px; }
 .headerRight h1, .headerRight p, .pageHeader h2, .pageHeader p, .detailCard h2, .roleHeader h2, .roleHeader p { margin: 0; }
@@ -73,6 +74,8 @@
 .partyInfo > span, .partyInfo > strong { color: var(--ch-color-text); font-size: 14px; }
 .partyInfo > strong { font-weight: 600; }
 .partyInfo small { color: var(--ch-color-muted); font-size: 12px; }
+.partyInfo > .nationalId { width: 100%; display: flex; flex-direction: row; justify-content: flex-start; align-items: baseline; gap: 4px; direction: rtl; text-align: right; }
+.nationalId bdi { direction: ltr; unicode-bidi: isolate; }
 .nextNotice { width: 100%; min-height: 100px; padding: 10px 12px; color: var(--ch-color-primary); font-size: 13px; font-weight: 700; line-height: 1.8; text-align: right; background: rgb(13 59 54 / 8%); border-radius: 8px; }
 .actions { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .primaryAction { width: 100%; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; color: #fff; font-size: 14px; font-weight: 500; text-decoration: none; background: var(--ch-color-primary); border-radius: 12px; }

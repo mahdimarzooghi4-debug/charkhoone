@@ -57,11 +57,11 @@ export default function ContractLookupResultPage() {
             <div className={styles.roleStack} data-node-id="150:828" role="radiogroup" aria-label="نقش شما در این قرارداد">
               <label className={`${styles.roleOption} ${selectedRole === "owner" ? styles.roleSelected : ""}`} data-node-id="150:829">
                 <span className={styles.roleOptionTop}><input type="radio" name="contract-role" value="owner" checked={selectedRole === "owner"} onChange={() => setSelectedRole("owner")} /><strong data-node-id="150:831">مالک (موجر)</strong></span>
-                <span className={styles.partyInfo} dir="rtl"><span>محمد رضایی</span><small>کد ملی: ۰۰۲•••••۴۵۶</small></span>
+                <span className={styles.partyInfo} dir="rtl"><span>محمد رضایی</span><small className={styles.nationalId} dir="rtl"><span>کد ملی:</span><bdi dir="ltr">۰۰۲•••••۴۵۶</bdi></small></span>
               </label>
               <label className={`${styles.roleOption} ${selectedRole === "tenant" ? styles.roleSelected : ""}`} data-node-id="150:836">
                 <span className={styles.roleOptionTop}><input type="radio" name="contract-role" value="tenant" checked={selectedRole === "tenant"} onChange={() => setSelectedRole("tenant")} /><strong data-node-id="150:838">مستأجر</strong></span>
-                <span className={styles.partyInfo} dir="rtl"><strong>علی رضایی</strong><small>کد ملی: ۰۰۱•••••۷۸۹</small></span>
+                <span className={styles.partyInfo} dir="rtl"><strong>علی رضایی</strong><small className={styles.nationalId} dir="rtl"><span>کد ملی:</span><bdi dir="ltr">۰۰۱•••••۷۸۹</bdi></small></span>
               </label>
             </div>
             <div className={styles.nextNotice} data-node-id="203:242">{selectedRole === "tenant" ? "در مرحله بعد، طرح‌های تأمین مالی واجد شرایط این قرارداد نمایش داده می‌شوند." : "در مرحله بعد، پیش‌نمایش وضعیت اتصال قرارداد با نقش مالک نمایش داده می‌شود."}</div>
