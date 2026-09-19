@@ -257,9 +257,9 @@ summary_pairs = (
 )
 context_markup = plans_page.split('className={styles.contractContext}', 1)[1].split('</section>', 1)[0]
 require(context_markup.count('<div>') == len(summary_pairs) and
-        all(bool(re.search(r'<div>\\s*<span>' + re.escape(label) +
-                            r'</span>\\s*<strong(?:\\s+className=\\{styles\\.contextRegular\\})?>' +
-                            re.escape(value) + r'</strong>\\s*</div>', context_markup))
+        all(bool(re.search(r'<div>\s*<span>' + re.escape(label) +
+                            r'</span>\s*<strong(?:\s+className=\{styles\.contextRegular\})?>' +
+                            re.escape(value) + r'</strong>\s*</div>', context_markup))
             for label, value in summary_pairs) and
         '.contractContext > div { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; direction: rtl; text-align: right; }' in plans_css,
         "financing context must display all four labels on the right and values immediately to their left")
