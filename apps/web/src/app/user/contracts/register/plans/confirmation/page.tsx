@@ -13,10 +13,17 @@ const assets = {
   account: "https://www.figma.com/api/mcp/asset/18c4c0ec-61e5-4d92-94f5-727d6daf2717.svg",
 } as const;
 
-const planRows = [
+const staffPlanRows = [
   ["مبلغ تأمین مالی", "۴۵۰٬۰۰۰٬۰۰۰ تومان", false],
   ["آورده موردنیاز شما", "۵۰٬۰۰۰٬۰۰۰ تومان", false],
   ["پرداخت ماهانه تأمین مالی", "۱۸٬۵۰۰٬۰۰۰ تومان", true],
+  ["مدت بازپرداخت", "۱۲ ماه", false],
+] as const;
+
+const generalPlanRows = [
+  ["مبلغ تأمین مالی", "۴۰۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["آورده موردنیاز شما", "۱۰۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["پرداخت ماهانه تأمین مالی", "۲۰٬۵۰۰٬۰۰۰ تومان", true],
   ["مدت بازپرداخت", "۱۲ ماه", false],
 ] as const;
 
@@ -27,12 +34,20 @@ const contractRows = [
   ["مدت زمان قرارداد", "۱۵ مهر ۱۴۰۵ تا ۱۵ مهر ۱۴۰۶"],
 ] as const;
 
-const summaryRows = [
+const staffSummaryRows = [
   ["طرح انتخاب‌شده", "طرح ویژه کارکنان", false],
   ["بانک ارائه‌دهنده", "بانک نمونه", false],
   ["مبلغ درخواست", "۴۵۰٬۰۰۰٬۰۰۰ تومان", true],
   ["آورده موردنیاز شما", "۵۰٬۰۰۰٬۰۰۰ تومان", false],
   ["پرداخت ماهانه", "۱۸٬۵۰۰٬۰۰۰ تومان", true],
+] as const;
+
+const generalSummaryRows = [
+  ["طرح انتخاب‌شده", "طرح عمومی", false],
+  ["بانک ارائه‌دهنده", "بانک نمونه", false],
+  ["مبلغ درخواست", "۴۰۰٬۰۰۰٬۰۰۰ تومان", true],
+  ["آورده موردنیاز شما", "۱۰۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["پرداخت ماهانه", "۲۰٬۵۰۰٬۰۰۰ تومان", true],
 ] as const;
 
 const steps = [
@@ -54,7 +69,17 @@ function DataRows({ rows }: { rows: readonly (readonly [string, string, boolean?
   );
 }
 
-export default function PlanConfirmationPage() {
+export default async function PlanConfirmationPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ plan?: string }>;
+}) {
+  // Query string carries preview selection only; it does not submit a bank request.
+  const { plan } = await searchParams;
+  const isGeneral = plan === "general";
+  const planRows = isGeneral ? generalPlanRows : staffPlanRows;
+  const summaryRows = isGeneral ? generalSummaryRows : staffSummaryRows;
+
   return (
     <main className={styles.page} data-node-id="150:1053" data-name="Web App / Plan Confirmation">
       <section className={styles.mainContent} data-node-id="150:1054">
@@ -84,8 +109,8 @@ export default function PlanConfirmationPage() {
           <div className={styles.detailColumn} data-node-id="150:1093">
             <section className={styles.card} data-node-id="150:1094">
               <div className={styles.planHeader} data-node-id="150:1095">
-                <div className={styles.badges}><span className={styles.badgeEligible}>واجد شرایط</span><span className={styles.badgeSpecial}>ویژه</span></div>
-                <div className={styles.planTitle}><h2 data-node-id="150:1102">طرح ویژه کارکنان</h2><p data-node-id="150:1103">بانک نمونه</p></div>
+                <div className={styles.badges}><span className={styles.badgeEligible}>واجد شرایط</span><span className={styles.badgeSpecial}>{isGeneral ? "عمومی" : "ویژه"}</span></div>
+                <div className={styles.planTitle}><h2 data-node-id="150:1102">{isGeneral ? "طرح عمومی" : "طرح ویژه کارکنان"}</h2><p data-node-id="150:1103">بانک نمونه</p></div>
               </div>
               <div className={styles.divider} />
               <DataRows rows={planRows} />

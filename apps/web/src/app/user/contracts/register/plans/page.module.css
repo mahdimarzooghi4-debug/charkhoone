@@ -2,8 +2,9 @@
 .mainContent { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 24px; padding: 32px; direction: rtl; }
 .headerBar { width: 100%; display: flex; align-items: center; justify-content: space-between; direction: ltr; }
 .backButton { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: var(--ch-color-text); font-size: 18px; font-weight: 700; text-decoration: none; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 12px; }
-.headerRight, .pageHeader { display: flex; flex-direction: column; align-items: flex-start; text-align: right; }
+.headerRight, .pageHeader { display: flex; flex-direction: column; align-items: stretch; direction: rtl; text-align: right; }
 .headerRight { gap: 4px; }
+.headerRight h1, .headerRight p, .pageHeader h2, .pageHeader p { width: 100%; direction: rtl; text-align: right; }
 .pageHeader { width: 100%; gap: 6px; }
 .headerRight h1, .headerRight p, .pageHeader h2, .pageHeader p, .planTitle h3, .planTitle p, .generalNote, .informationNote p { margin: 0; }
 .headerRight h1 { color: var(--ch-color-text); font-size: 24px; font-weight: 700; }
@@ -11,16 +12,18 @@
 .pageHeader > p { color: var(--ch-color-muted); font-size: 13px; }
 .pageHeader h2 { color: var(--ch-color-text); font-size: 20px; font-weight: 700; }
 .contractContext { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 16px; background: rgb(230 244 230 / 25%); border: 1px solid var(--ch-color-border); border-radius: 12px; }
-.contractContext > div { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.contractContext > div { display: flex; align-items: baseline; gap: 4px; white-space: nowrap; direction: rtl; text-align: right; }
 .contractContext strong { color: var(--ch-color-primary); font-size: 14px; font-weight: 700; }
 .contractContext strong.contextRegular { color: var(--ch-color-text); font-weight: 600; }
 .contractContext span { color: var(--ch-color-muted); font-size: 12px; }
 .planRow { width: 100%; display: flex; align-items: stretch; gap: 16px; direction: ltr; }
-.planCard { min-width: 0; flex: 1 1 0; display: flex; flex-direction: column; gap: 16px; padding: 24px; direction: rtl; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 16px; }
+.planCard { min-width: 0; flex: 1 1 0; position: relative; display: flex; flex-direction: column; gap: 16px; padding: 24px; direction: rtl; text-align: right; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 16px; cursor: pointer; }
+.planCard:hover { border-color: var(--ch-color-primary); }
+.planCard:focus-within { outline: 3px solid rgb(13 59 54 / 35%); outline-offset: 3px; }
+.planRadio { position: absolute; width: 1px; height: 1px; min-width: 1px; min-height: 1px; padding: 0; margin: 0; overflow: hidden; opacity: 0; clip-path: inset(50%); }
 .planCardSelected { background: #f0f7f6; border: 2px solid var(--ch-color-primary); }
 .cardHeader { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
-.selectedMark { width: 24px; height: 24px; flex: 0 0 24px; display: inline-flex; align-items: center; justify-content: center; background: var(--ch-color-primary); border-radius: 12px; }
-.selectedMark img { width: 14px; height: 14px; display: block; }
+.selectedMark { width: 24px; height: 24px; flex: 0 0 24px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; font-weight: 700; background: var(--ch-color-primary); border-radius: 50%; }
 .selectionSpacer { width: 24px; height: 24px; flex: 0 0 24px; }
 .titleGroup { min-width: 0; display: flex; align-items: center; gap: 12px; direction: ltr; }
 .badges { display: flex; align-items: center; gap: 8px; }
@@ -28,7 +31,8 @@
 .eligible { color: var(--ch-color-primary); background: #e6f4e6; }
 .public { color: var(--ch-color-muted); background: var(--ch-color-page); }
 .special { color: #0369a1; background: #e0f2fe; }
-.planTitle { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; direction: rtl; white-space: nowrap; }
+.planTitle { display: flex; flex-direction: column; align-items: stretch; gap: 4px; direction: rtl; text-align: right; white-space: nowrap; }
+.planTitle h3, .planTitle p { width: 100%; text-align: right; }
 .planTitle h3 { color: var(--ch-color-text); font-size: 18px; font-weight: 700; }
 .planTitle p { color: var(--ch-color-muted); font-size: 12px; }
 .divider { width: 100%; height: 1px; flex: 0 0 1px; background: var(--ch-color-border); }
@@ -41,14 +45,13 @@
 .metricRow strong.emphasized { color: var(--ch-color-primary); font-weight: 700; }
 .metricRow > span { color: var(--ch-color-muted); font-size: 14px; direction: rtl; text-align: right; }
 .generalNote { width: 100%; color: var(--ch-color-muted); font-size: 13px; text-align: right; }
-.specialNote { width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 6px; color: #0369a1; font-size: 13px; font-weight: 600; direction: rtl; }
-.specialNote img { width: 16px; height: 16px; display: block; flex: 0 0 16px; }
+.specialNote { width: 100%; color: var(--ch-color-primary); font-size: 13px; font-weight: 600; direction: rtl; text-align: right; }
 .actions { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 16px; }
 .primaryAction { width: 100%; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; background: var(--ch-color-primary); border-radius: 12px; }
 .secondaryAction { color: var(--ch-color-primary); font-size: 13px; font-weight: 500; text-decoration: underline; text-underline-offset: 3px; }
-.informationNote { width: 100%; display: flex; align-items: center; gap: 12px; padding: 16px; color: #5c3b3b; background: #faf2f2; border: 1px solid #e5d6d6; border-radius: 12px; direction: rtl; }
-.informationNote p { min-width: 0; flex: 1 1 auto; font-size: 13px; text-align: right; }
-.informationNote img { width: 20px; height: 20px; display: block; flex: 0 0 20px; }
+.informationNote { width: 100%; display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: center; gap: 12px; padding: 16px; color: #5c3b3b; background: #faf2f2; border: 1px solid #e5d6d6; border-radius: 12px; direction: rtl; text-align: right; }
+.informationNote p { min-width: 0; width: 100%; font-size: 13px; direction: rtl; text-align: right; }
+.noticeIcon { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; }
 .sidebar { width: 260px; flex: 0 0 260px; display: flex; flex-direction: column; justify-content: space-between; padding: 40px 20px; direction: rtl; background: var(--ch-color-primary); }
 .sidebarTop { display: flex; flex-direction: column; gap: 32px; }
 .logoWrap { display: flex; justify-content: center; }

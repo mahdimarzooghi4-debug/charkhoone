@@ -246,6 +246,31 @@ require('.officialNotice { width: 100%; display: grid; grid-template-columns: 20
         '.noticeText { min-width: 0; width: 100%; direction: rtl; text-align: right; }' in lookup_css,
         "lookup bottom notice icon must stay in rightmost grid cell and Persian copy next to it")
 
+plans_page = read(USER_ROOT / "contracts/register/plans/page.tsx")
+plans_css = read(USER_ROOT / "contracts/register/plans/page.module.css")
+plans_confirmation = read(USER_ROOT / "contracts/register/plans/confirmation/page.tsx")
+require('"use client";' in plans_page and 'useState<PlanId>("staff")' in plans_page and
+        'onChange={onSelect}' in plans_page and 'selected={selectedPlan === plan.id}' in plans_page and
+        'onSelect={() => setSelectedPlan(plan.id)}' in plans_page and
+        'type="radio" name="financing-plan"' in plans_page,
+        "finance plan selection must be interactive and exclusive")
+require('confirmation?plan=${selectedPlan}' in plans_page and
+        'const isGeneral = plan === "general";' in plans_confirmation and
+        'const planRows = isGeneral ? generalPlanRows : staffPlanRows;' in plans_confirmation and
+        'const summaryRows = isGeneral ? generalSummaryRows : staffSummaryRows;' in plans_confirmation,
+        "finance plan confirmation must show the selected sample plan and its amounts")
+require('assets.sparkles' not in plans_page and 'assets.info' not in plans_page and
+        'figma.com/api/mcp/asset/' not in plans_page and
+        '<span className={styles.noticeIcon} aria-hidden="true">ⓘ</span>' in plans_page,
+        "finance plan preview must not use expiring Figma sparkle/info images")
+require('.headerRight h1, .headerRight p, .pageHeader h2, .pageHeader p { width: 100%; direction: rtl; text-align: right; }' in plans_css and
+        '.planTitle h3, .planTitle p { width: 100%; text-align: right; }' in plans_css and
+        '.informationNote { width: 100%; display: grid; grid-template-columns: 20px minmax(0, 1fr);' in plans_css,
+        "finance plans heading, plan titles and bottom warning must be right-aligned")
+require('نمونهٔ طراحی‌اند' in plans_page and
+        'background: var(--ch-color-primary); border-radius: 50%;' in plans_css,
+        "finance plans selection must use brand green and identify fixture values as a preview")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)
