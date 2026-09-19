@@ -208,7 +208,8 @@ require("<UserPanelSidebar" in lookup_text and 'alertBadge' not in sidebar_code,
         "contract lookup result must use shared sidebar without static count")
 require("<UserPanelSidebar" in lookup_text and "place-items: center;" in sidebar_css,
         "contract lookup result must reuse the 200px shared centered sidebar logo")
-require('appearance: none; -webkit-appearance: none;' in lookup_css and
+require(bool(re.search(r"appearance:\\s*none\\s*;", lookup_css)) and
+        bool(re.search(r"-webkit-appearance:\\s*none\\s*;", lookup_css)) and
         '.roleOption input[type="radio"]:checked { border-color: var(--ch-color-primary); background: var(--ch-color-primary);' in lookup_css and
         '.roleOption input[type="radio"]:focus-visible { outline: 3px solid rgb(13 59 54 / 30%);' in lookup_css and
         '.nextNotice { width: 100%; min-height: 100px; padding: 10px 12px; color: var(--ch-color-primary);' in lookup_css,
