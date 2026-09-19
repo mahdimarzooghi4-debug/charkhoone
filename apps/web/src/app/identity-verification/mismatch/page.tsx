@@ -1,7 +1,7 @@
 import Link from "next/link";
 import styles from "../page.module.css";
 
-const logoUrl = "https://www.figma.com/api/mcp/asset/005a132e-1758-4a6f-8404-7138c6ba188b.png";
+const logoUrl = "/brand/login-card.png";
 
 export default function IdentityMismatchPage() {
   return (

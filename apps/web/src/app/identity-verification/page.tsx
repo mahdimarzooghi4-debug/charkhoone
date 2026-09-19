@@ -2,8 +2,7 @@ import Link from "next/link";
 import { TextField } from "@/components/ui/TextField";
 import styles from "./page.module.css";
 
-const identityLogo =
-  "https://www.figma.com/api/mcp/asset/cdc60312-c448-40bf-b6d6-c22bc8232100.png";
+const identityLogo = "/brand/login-card.png";
 
 export default function IdentityVerificationPage() {
   return (

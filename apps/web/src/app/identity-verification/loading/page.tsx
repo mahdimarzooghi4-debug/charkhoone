@@ -1,6 +1,6 @@
 import styles from "../page.module.css";
 
-const logoUrl = "https://www.figma.com/api/mcp/asset/af3f33ef-c8f5-4734-88c3-a526aac0dfe9.png";
+const logoUrl = "/brand/login-card.png";
 
 export default function IdentityLoadingPage() {
   return (
