@@ -15,3 +15,15 @@ All assets are exact Figma PNG/SVG exports; do not invent placeholders or use re
 ## Scope limits / correctness
 
 Visual asset stability only. No page layout, financial math, role membership, button behavior, API, backend, auth or navigation changes. The visible user name, contract counts, money amounts, membership `فعال` badge and activity statuses are **hardcoded design fixtures**, not authenticated or bank/provider-derived truth. The inactive `بررسی قرارداد` button is unchanged and does not approve a real contract. Future demo/product readiness work must make those demo states explicit and connect safe server-owned read models before making live claims. PR remains draft until owner screenshot approval. Existing Visual Studio `main` working-tree files must not be discarded or blindly overwritten for preview.
+
+## Owner's RTL alignment follow-up (Figma frame 144:154)
+
+After asset preview the owner correctly flagged that the dashboard was not aligned like Figma: the top «خانه» title was on the viewport's far left, recent contract names were left while their badges were right, quick-access was on the right of recent contracts, and other horizontally ordered items were reversed. Root cause: the main column inherits RTL but many components were authored with left-to-right flex/grid assumptions (e.g. `flex-end` in RTL points to the **left**). Correct component-level directions to match the reference **without changing page/sidebar width, paddings, card sizes or sample data**:
+
+- Main header text: RTL `flex-start` = right edge.
+- Four overview cards: LTR *grid order* (active left, attention right), RTL *within each card*; badge-left/label-right top row.
+- Membership row and action cards: LTR flex placement so membership title/action CTA is left, information is right; Persian copy retains right alignment.
+- Quick-access left / recent contracts right; shortcut chevron left/icon right; recent section heading right, link left; recent contract address and period right, badges/payment left.
+- Financial table column placement LTR (status/date/amount/contract/type) with text right-aligned in each column; bottom sidebar profile text RTL-right aligned.
+
+This is explicitly **RTL geometry** for the Figma home node, not an API/contract/payment/identity change. Keep PR draft until the owner approves a new screenshot of the same localhost:3000/user/home preview.

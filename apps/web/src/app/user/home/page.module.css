@@ -26,7 +26,8 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  /* The main column is RTL: flex-start is the right edge. */
+  align-items: flex-start;
   gap: 4px;
   text-align: right;
 }
@@ -59,13 +60,17 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 16px;
+  /* Figma: active on the left, attention on the right. */
+  direction: ltr;
 }
 
 .overviewCard {
   min-height: 127px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  /* Cards still read right-to-left even though the grid orders left-to-right. */
+  direction: rtl;
+  align-items: flex-start;
   gap: 8px;
   padding: 16px;
   background: #fff;
@@ -90,6 +95,8 @@
 .cardTopRow {
   width: 100%;
   justify-content: space-between;
+  /* Badge on the left; descriptive label on the right. */
+  direction: ltr;
 }
 
 .cardLabel {
@@ -135,6 +142,8 @@
 .badge_gray { color: var(--ch-color-muted); background: var(--ch-color-page); }
 
 .membershipCard {
+  /* Figma's membership title is left; usage information is right. */
+  direction: ltr;
   justify-content: space-between;
   gap: 20px;
   padding: 12px 16px;
@@ -195,6 +204,8 @@
 }
 
 .actionCard {
+  /* CTA left, RTL content right, matching both Figma action cards. */
+  direction: ltr;
   gap: 16px;
   padding: 20px;
   background: #fff;
@@ -248,6 +259,8 @@
 .contractsSplit {
   display: flex;
   align-items: flex-start;
+  /* Quick access left; recent contracts right. */
+  direction: ltr;
   gap: 20px;
 }
 
@@ -264,6 +277,8 @@
 }
 
 .quickItem {
+  /* Chevron left and icon right; keep labels right-aligned in Persian. */
+  direction: ltr;
   justify-content: space-between;
   padding: 16px;
   background: #fff;
@@ -296,7 +311,7 @@
   flex: 1 1 auto;
 }
 
-.sectionHeader { justify-content: space-between; }
+.sectionHeader { direction: ltr; justify-content: space-between; }
 .sectionHeader button {
   padding: 0;
   color: var(--ch-color-primary);
@@ -320,7 +335,9 @@
 }
 
 .contractHeader,
-.contractMeta { justify-content: space-between; gap: 16px; }
+.contractMeta { direction: ltr; justify-content: space-between; gap: 16px; }
+.contractHeader > strong,
+.contractMeta > span { direction: rtl; }
 .contractHeader > strong { color: var(--ch-color-text); font-size: 15px; font-weight: 600; }
 .badgeRow { gap: 8px; }
 
@@ -344,6 +361,8 @@
 .tableHeader,
 .tableRow {
   display: grid;
+  /* Figma left-to-right column placement: status / date / amount / contract / type. */
+  direction: ltr;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   align-items: center;
   text-align: right;
@@ -442,8 +461,9 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 2px;
+  text-align: right;
 }
 
 .profileText strong { color: #fff; font-size: 14px; font-weight: 600; }
