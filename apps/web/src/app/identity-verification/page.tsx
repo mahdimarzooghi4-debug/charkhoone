@@ -50,9 +50,9 @@ export default function IdentityVerificationPage() {
               شماره موبایل
             </p>
             <div className={styles.verifiedRow} data-node-id="167:225" data-name="Frame">
-              <span className={styles.mobileValue} data-node-id="167:227">
+              <bdi dir="ltr" className={styles.mobileValue} data-node-id="167:227">
                 ۰۹۱۲•••••۶۷
-              </span>
+              </bdi>
               <span className={styles.verifiedBadge} data-node-id="167:241" data-name="Verified Badge">
                 <span data-node-id="167:240">تأیید شده</span>
               </span>
@@ -60,7 +60,7 @@ export default function IdentityVerificationPage() {
           </div>
 
           <div className={styles.inputSection} data-node-id="167:228" data-name="Input Section">
-            <div className={styles.inputWidth} data-node-id="167:229" data-name="Input">
+            <div className={styles.inputWidth} style={{ width: "100%" }} data-node-id="167:229" data-name="Input">
               <TextField
                 id="national-id"
                 name="nationalId"
