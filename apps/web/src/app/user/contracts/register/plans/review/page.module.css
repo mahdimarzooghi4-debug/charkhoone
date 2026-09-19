@@ -14,19 +14,24 @@
 .heroCopy h2 { color: #b25e00; font-size: 18px; font-weight: 700; }
 .heroCopy p { color: var(--ch-color-text); font-size: 14px; }
 .clockWrap { width: 48px; height: 48px; flex: 0 0 48px; display: inline-flex; align-items: center; justify-content: center; background: rgb(255 138 0 / 12%); border-radius: 24px; }
-.clockWrap img { width: 24px; height: 24px; display: block; }
+.clockWrap { color: #b25e00; }
+.clockWrap svg { width: 24px; height: 24px; display: block; }
 .card { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 24px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 16px; }
 .card h2 { width: 100%; color: var(--ch-color-text); font-size: 16px; font-weight: 700; text-align: right; }
 .timeline { width: 100%; display: flex; align-items: center; padding: 12px 0; direction: ltr; }
 .timelineStep { min-width: 0; flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
-.timelineIcon { width: 28px; height: 28px; display: block; }
+.timelineIcon { width: 28px; height: 28px; flex: 0 0 28px; display: inline-flex; align-items: center; justify-content: center; }
+.timelineIcon svg { width: 28px; height: 28px; display: block; }
+.pendingIcon { color: var(--ch-color-muted); }
+.activeIcon { color: var(--ch-color-primary); }
 .timelineStep strong { color: var(--ch-color-primary); font-size: 12px; font-weight: 600; direction: rtl; }
 .timelineStep span { color: var(--ch-color-primary); font-size: 11px; font-weight: 500; direction: rtl; }
 .timelineStep .muted { color: var(--ch-color-muted); font-weight: 400; }
 .timelineStep .mutedSmall { color: var(--ch-color-muted); font-weight: 400; }
 .timelineStep .success { color: #10b981; font-weight: 400; }
 .completedIcon { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; background: var(--ch-color-primary); border-radius: 14px; }
-.completedIcon img { width: 14px; height: 14px; display: block; }
+.completedIcon { color: #fff; }
+.completedIcon svg { width: 18px; height: 18px; display: block; }
 .connector { min-width: 40px; flex: 1 1 0; height: 2px; background: var(--ch-color-primary); border-radius: 1px; }
 .connectorMuted { background: var(--ch-color-border); }
 .dataRows { width: 100%; display: flex; flex-direction: column; }

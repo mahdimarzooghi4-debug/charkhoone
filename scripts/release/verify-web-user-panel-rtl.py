@@ -312,6 +312,28 @@ require('<span className={styles.infoBubble} aria-hidden="true">ⓘ</span><span 
 require('assets.info' not in plans_confirmation and 'assets.check' not in plans_confirmation,
         "confirmation page must not depend on temporary Figma icon links")
 
+review_page = read(USER_ROOT / "contracts/register/plans/review/page.tsx")
+review_css = read(USER_ROOT / "contracts/register/plans/review/page.module.css")
+require("const assets = {" not in review_page and
+        "figma.com/api/mcp/asset/" not in review_page and
+        "assets." not in review_page and
+        review_page.count("<svg viewBox=") == 4 and
+        'className={styles.clockWrap} aria-hidden="true"' in review_page and
+        "styles.pendingIcon" in review_page and "styles.activeIcon" in review_page and
+        'className={styles.completedIcon} aria-hidden="true"' in review_page,
+        "finance review must use four stable inline status icons instead of broken Figma assets")
+require('.clockWrap svg {' in review_css and
+        '.timelineIcon svg {' in review_css and
+        '.completedIcon svg {' in review_css,
+        "finance review status icons must have explicit CSS dimensions")
+require("درخواست واقعی به بانک ارسال نشده است." in review_page and
+        "این مرحله نمایشی است و نتیجه‌ای از بانک دریافت نمی‌شود." in review_page and
+        "تاریخ نمونهٔ درخواست" in review_page and
+        "درخواست شما برای بررسی به بانک ارسال شده است." not in review_page,
+        "finance review prototype must not claim bank submission or real review")
+require('<UserPanelSidebar nodeId="142:1738" />' in review_page,
+        "finance review must keep the shared panel sidebar")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)
