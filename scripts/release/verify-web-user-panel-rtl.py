@@ -213,8 +213,15 @@ require('appearance: none; -webkit-appearance: none;' in lookup_css and
         '.roleOption input[type="radio"]:focus-visible { outline: 3px solid rgb(13 59 54 / 30%);' in lookup_css and
         '.nextNotice { width: 100%; min-height: 100px; padding: 10px 12px; color: var(--ch-color-primary);' in lookup_css,
         "lookup selected radio, focus and next-step notice must use brand green rather than browser blue")
-require('.roleOption input[type="radio"]' in lookup_css,
-        "contract lookup choice must have visible native radio controls")
+require('.roleOption input[type="radio"]' in lookup_css and
+        'min-height: 18px; /* Override global input min-height: 48px. */' in lookup_css and
+        'max-height: 18px;' in lookup_css and
+        'aspect-ratio: 1 / 1;' in lookup_css,
+        "lookup radio must stay circular despite global 48px input minimum height")
+require('.partyInfo { width: 100%; display: flex; flex-direction: column; align-items: flex-end;' in lookup_css and
+        '.partyInfo > * { direction: rtl; text-align: right; }' in lookup_css and
+        '<strong>علی رضایی</strong>' in lookup_text,
+        "owner and tenant names and national-ID labels must align to the right inside role cards")
 for asset_name, asset_file in contracts_assets.items():
     require(f'/brand/{asset_file}' in sidebar_code,
             f"contract lookup result should use stable {asset_name} sidebar asset")
