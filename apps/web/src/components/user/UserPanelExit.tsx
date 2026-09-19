@@ -14,7 +14,6 @@ export function UserPanelExit() {
         aria-label="خروج از پیش‌نمایش و بازگشت به صفحه ورود"
         title="بازگشت به صفحه ورود (حالت نمایشی)"
       >
-        <span aria-hidden="true">←</span>
         <span>خروج</span>
       </Link>
     </div>

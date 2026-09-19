@@ -180,6 +180,8 @@
 }
 
 .infoPair { gap: 8px; }
+/* The remaining-uses count sits to the LEFT of its Persian label. */
+.remainingInfo { direction: rtl; }
 .infoPair > span { color: var(--ch-color-muted); }
 .infoPair > strong { color: var(--ch-color-text); font-weight: 500; }
 
@@ -227,6 +229,7 @@
   background: var(--ch-color-primary);
   border: 0;
   border-radius: 12px;
+  text-decoration: none;
 }
 
 .actionContent {
@@ -234,11 +237,15 @@
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+  /* Keep CTA at left but align Persian action content at the right edge. */
+  direction: rtl;
   align-items: flex-start;
   gap: 4px;
 }
 
 .actionTitleRow {
+  /* Preserve badges left / title right inside the right-aligned content. */
+  direction: ltr;
   flex-wrap: wrap;
   gap: 8px;
 }
@@ -513,4 +520,4 @@
 .navItem { direction: ltr; text-align: right; }
 .navItem > span { direction: rtl; text-align: right; }
 .navItem img { flex: 0 0 20px; }
-.sidebarLogo { justify-content: flex-start; }
+.sidebarLogo { justify-content: center; }

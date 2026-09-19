@@ -36,7 +36,8 @@ require("خروج" in exit_code and "پیش‌نمایش" in exit_code, "preview
 require("localStorage" not in exit_code and "sessionStorage" not in exit_code, "preview exit must not pretend to clear browser credentials")
 require(".exit {" in exit_css and ":focus-visible" in exit_css, "exit must have visible/focus styling")
 require("justify-content: center;" in exit_css and "text-align: center;" in exit_css,
-        "sidebar exit must center its icon and text")
+        "sidebar exit must center its text")
+require("←" not in exit_code, "sidebar exit must not show a decorative arrow")
 
 panel_pages = sorted(USER_ROOT.rglob("page.tsx"))
 require(len(panel_pages) >= 30, "expected complete web user route set, including owner and tenant flows")
@@ -108,3 +109,17 @@ if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)
 print(f"Web user RTL verified: {panel_count} preview shells, {len(styles_checked)} CSS modules, 4 account dialogs")
+
+
+home_text = read(USER_ROOT / "home/page.tsx")
+home_css = read(USER_ROOT / "home/page.module.css")
+require(".sidebarLogo { justify-content: center; }" in home_css,
+        "home sidebar logo must be centered")
+require(".remainingInfo { direction: rtl; }" in home_css,
+        "home remaining-uses count must be left of its label")
+require("styles.remainingInfo" in home_text, "home remaining-uses layout hook missing")
+require(bool(re.search(r"\\.actionContent\\s*\\{[^}]*direction:\\s*rtl\\s*;", home_css)) and
+        ".actionTitleRow {\n  /* Preserve badges left / title right inside the right-aligned content. */\n  direction: ltr;" in home_css,
+        "home required-action card content must align right")
+require('<Link href="/user/contracts/123456789012/owner/final-confirmation" className={styles.actionButton}>بررسی قرارداد</Link>' in home_text,
+        "review contract CTA must open existing owner final-confirmation preview")
