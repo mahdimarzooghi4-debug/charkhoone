@@ -19,7 +19,6 @@ export function PlanConfirmationConsent() {
           checked={agreed}
           onChange={(event) => setAgreed(event.target.checked)}
         />
-        <span className={styles.checkbox} aria-hidden="true">✓</span>
         <span className={styles.confirmationText} data-node-id="150:1085">
           شرایط طرح و مبالغ نمایش‌داده‌شده را بررسی کرده‌ام و صحت آن‌ها را تأیید می‌کنم.
         </span>

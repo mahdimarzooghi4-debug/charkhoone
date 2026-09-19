@@ -295,6 +295,16 @@ require('import { PlanConfirmationConsent } from "./PlanConfirmationConsent";' i
         'disabled={!agreed}' in consent_code and
         'router.push("/user/contracts/register/plans/review")' in consent_code,
         "confirmation preview checkbox must toggle and block navigation until checked")
+require(consent_code.count('type="checkbox"') == 1 and
+        'styles.checkbox' not in consent_code and
+        'aria-hidden="true">✓</span>' not in consent_code and
+        '.confirmationRow { width: 100%; display: grid; grid-template-columns: 20px minmax(0, 1fr);' in confirmation_css and
+        'direction: rtl; cursor: pointer; }' in confirmation_css and
+        'position: static;' in confirmation_css and
+        'appearance: none;' in confirmation_css and
+        '.consentInput:checked::after { content: "✓";' in confirmation_css and
+        '.consentInput:focus-visible {' in confirmation_css,
+        "consent must render exactly one visible green checkbox in the rightmost RTL column")
 require('<span className={styles.infoBubble} aria-hidden="true">ⓘ</span><span data-node-id="150:1124">اجاره ماهانه قرارداد مرتبط</span>' in plans_confirmation and
         '.rentRow > div { display: flex; align-items: center; flex-direction: row; gap: 8px; direction: rtl; }' in confirmation_css and
         '.rentRow > div > span:last-child' in confirmation_css,
