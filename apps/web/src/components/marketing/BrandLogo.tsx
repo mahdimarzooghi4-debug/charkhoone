@@ -1,11 +1,16 @@
 type BrandLogoProps = {
   className?: string;
-  source?: "landing" | "download";
+  source?: "landing" | "hub" | "footer" | "download" | "download-phone";
 };
 
+// Original exported Figma logo variants, bundled locally so temporary MCP
+// asset URLs cannot break public web pages after they expire.
 const sources = {
-  landing: "https://www.figma.com/api/mcp/asset/2158ad7d-bdb2-4d7d-b608-b0cab1dc187a.png",
-  download: "https://www.figma.com/api/mcp/asset/f3c9c445-3383-492c-8684-11614924436c.png",
+  landing: "/brand/landing-header.png",
+  hub: "/brand/landing-hub.png",
+  footer: "/brand/landing-footer.png",
+  download: "/brand/download-header.png",
+  "download-phone": "/brand/download-phone.png",
 } as const;
 
 export function BrandLogo({ className = "", source = "landing" }: BrandLogoProps) {

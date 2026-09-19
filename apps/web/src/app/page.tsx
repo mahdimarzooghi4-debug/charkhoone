@@ -2,17 +2,17 @@ import { BrandLogo } from "@/components/marketing/BrandLogo";
 import { ButtonLink } from "@/components/marketing/ButtonLink";
 
 const benefitIcons = {
-  secure: "https://www.figma.com/api/mcp/asset/89785621-70b9-4474-b05e-17f2c5f3e4a8.svg",
-  smart: "https://www.figma.com/api/mcp/asset/4072100e-5345-46e0-b7ff-044ce6e88c70.svg",
-  transparent: "https://www.figma.com/api/mcp/asset/a6e2f773-fa59-4e96-a133-ab3f49cfd7e2.svg",
+  secure: "/brand/benefit-secure.svg",
+  smart: "/brand/benefit-smart.svg",
+  transparent: "/brand/benefit-transparent.svg",
 } as const;
 
 const footerIcons = {
-  map: "https://www.figma.com/api/mcp/asset/bb3939e3-f883-4481-b80a-029716fcc3ee.svg",
-  phone: "https://www.figma.com/api/mcp/asset/4760acfa-5dc0-4527-acb2-7ce6e288f0b8.svg",
-  mail: "https://www.figma.com/api/mcp/asset/54bd5bc8-f504-40e3-a9bf-3d45ae15d1b0.svg",
-  instagram: "https://www.figma.com/api/mcp/asset/6052cfd8-df31-4d38-b41a-c01822adcd83.svg",
-  linkedin: "https://www.figma.com/api/mcp/asset/3c1cf4c9-3ee9-4d59-b1b6-16fe1fa5f19f.svg",
+  map: "/brand/footer-map.svg",
+  phone: "/brand/footer-phone.svg",
+  mail: "/brand/footer-mail.svg",
+  instagram: "/brand/footer-instagram.svg",
+  linkedin: "/brand/footer-linkedin.svg",
 } as const;
 
 const audiences = [
@@ -103,9 +103,6 @@ export default function HomePage() {
         </nav>
 
         <div className="ch-site-header__actions" data-node-id="631:476">
-          <a className="ch-site-header__partner-link" href="#partners" data-node-id="631:480">
-            همکاران
-          </a>
           <ButtonLink variant="surface" href="/login" data-node-id="631:477">
             ورود / ثبت‌نام
           </ButtonLink>
@@ -139,7 +136,7 @@ export default function HomePage() {
           <div className="ch-ecosystem__hub-row">
             <span className="ch-ecosystem__line" aria-hidden="true" />
             <div className="ch-ecosystem__hub" data-node-id="631:505">
-              <BrandLogo />
+              <BrandLogo source="hub" />
             </div>
             <span className="ch-ecosystem__line" aria-hidden="true" />
           </div>
@@ -216,7 +213,7 @@ export default function HomePage() {
       <footer className="ch-site-footer" id="partners" data-node-id="631:615">
         <div className="ch-footer-columns" data-node-id="643:10">
           <div className="ch-footer-column ch-footer-brand" data-node-id="643:11">
-            <BrandLogo className="ch-footer-brand__logo" />
+            <BrandLogo source="footer" className="ch-footer-brand__logo" />
             <p data-node-id="643:13">راهکاری یکپارچه برای ارتباط میان مستأجر، مالک و شرکای مالی.</p>
           </div>
 
