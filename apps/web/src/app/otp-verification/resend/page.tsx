@@ -1,7 +1,7 @@
 import Link from "next/link";
 import styles from "../page.module.css";
 
-const logoUrl = "https://www.figma.com/api/mcp/asset/f0ed9039-f6b4-467b-978d-9da8c2980be2.png";
+const logoUrl = "/brand/login-card.png";
 const emptyDigits = [0, 1, 2, 3, 4] as const;
 
 export default function OtpResendPage() {
