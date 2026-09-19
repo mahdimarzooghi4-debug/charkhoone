@@ -90,22 +90,38 @@ public sealed class EfMobileBootstrapService(CharkhooneDbContext dbContext) : IM
             .ToListAsync(cancellationToken);
 
         var contractIds = contractRows.Select(x => x.Id).ToArray();
-        var monthlyRentByContract = contractIds.Length == 0
-            ? new Dictionary<Guid, decimal>()
+        // Scope persisted lease terms to the already-authorized contract ids.
+        // Do not expose beneficiaries, unrelated owner settlements or tenant payments.
+        var termsByContract = contractIds.Length == 0
+            ? new Dictionary<Guid, MobileContractTermsSummary>()
             : await dbContext.LeaseContractTerms
                 .AsNoTracking()
                 .Where(x => contractIds.Contains(x.ContractId))
-                .ToDictionaryAsync(x => x.ContractId, x => x.MonthlyRentRial, cancellationToken);
+                .Select(x => new MobileContractTermsSummary(
+                    x.ContractId,
+                    x.Calendar,
+                    x.PersianStartYear,
+                    x.PersianStartMonth,
+                    x.PersianStartDay,
+                    x.TermMonths,
+                    x.CashDepositRial,
+                    x.MonthlyRentRial,
+                    x.FullDepositEquivalentRial,
+                    x.CapturedAtUtc))
+                .ToDictionaryAsync(x => x.ContractId, cancellationToken);
 
         var contracts = contractRows
-            .Select(row => new MobileContractSummary(
-                row.Id,
-                row.TenantUserId == userId ? "Tenant" : "Owner",
-                row.Status,
-                monthlyRentByContract.TryGetValue(row.Id, out var monthlyRent)
-                    ? monthlyRent
-                    : null,
-                row.UpdatedAtUtc))
+            .Select(row =>
+            {
+                termsByContract.TryGetValue(row.Id, out var terms);
+                return new MobileContractSummary(
+                    row.Id,
+                    row.TenantUserId == userId ? "Tenant" : "Owner",
+                    row.Status,
+                    terms?.MonthlyRentRial,
+                    row.UpdatedAtUtc,
+                    terms);
+            })
             .ToArray();
 
         var tenantContractIds = contractRows
