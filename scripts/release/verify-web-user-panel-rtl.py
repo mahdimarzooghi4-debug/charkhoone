@@ -285,6 +285,23 @@ require('نمونهٔ طراحی‌اند' in plans_page and
         'background: var(--ch-color-primary); border-radius: 50%;' in plans_css,
         "finance plans selection must use brand green and identify fixture values as a preview")
 
+confirmation_css = read(USER_ROOT / "contracts/register/plans/confirmation/page.module.css")
+consent_code = read(USER_ROOT / "contracts/register/plans/confirmation/PlanConfirmationConsent.tsx")
+require('import { PlanConfirmationConsent } from "./PlanConfirmationConsent";' in plans_confirmation and
+        '<PlanConfirmationConsent />' in plans_confirmation and
+        'type="checkbox"' in consent_code and
+        'useState(false)' in consent_code and
+        'onChange={(event) => setAgreed(event.target.checked)}' in consent_code and
+        'disabled={!agreed}' in consent_code and
+        'router.push("/user/contracts/register/plans/review")' in consent_code,
+        "confirmation preview checkbox must toggle and block navigation until checked")
+require('<span className={styles.infoBubble} aria-hidden="true">ⓘ</span><span data-node-id="150:1124">اجاره ماهانه قرارداد مرتبط</span>' in plans_confirmation and
+        '.rentRow > div { display: flex; align-items: center; flex-direction: row; gap: 8px; direction: rtl; }' in confirmation_css and
+        '.rentRow > div > span:last-child' in confirmation_css,
+        "related contract monthly rent info icon must appear at the right of its RTL label")
+require('assets.info' not in plans_confirmation and 'assets.check' not in plans_confirmation,
+        "confirmation page must not depend on temporary Figma icon links")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)

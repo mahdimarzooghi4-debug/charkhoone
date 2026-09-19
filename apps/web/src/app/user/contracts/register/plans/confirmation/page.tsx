@@ -1,17 +1,6 @@
-import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
-
-const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/42402834-b287-4a2c-9df2-b041c1bb4d86.png",
-  avatar: "https://www.figma.com/api/mcp/asset/cbe87eb8-7020-4dcc-9e13-ed3b57f71c55.png",
-  check: "https://www.figma.com/api/mcp/asset/68470f9c-a962-438b-b66e-430e565babb5.svg",
-  info: "https://www.figma.com/api/mcp/asset/9eaae733-41b7-418b-bbe5-37cce108ddfe.svg",
-  home: "https://www.figma.com/api/mcp/asset/6c123ec7-4ca4-473a-b2f9-58a4c59a1147.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/3a58ab0c-58ba-4187-af7e-c04122762b79.svg",
-  payments: "https://www.figma.com/api/mcp/asset/2edf3b2d-f107-41e3-bf93-767c19463d6b.svg",
-  account: "https://www.figma.com/api/mcp/asset/18c4c0ec-61e5-4d92-94f5-727d6daf2717.svg",
-} as const;
+import { PlanConfirmationConsent } from "./PlanConfirmationConsent";
 
 const staffPlanRows = [
   ["مبلغ تأمین مالی", "۴۵۰٬۰۰۰٬۰۰۰ تومان", false],
@@ -95,14 +84,7 @@ export default async function PlanConfirmationPage({
               <h2 data-node-id="150:1062">خلاصه درخواست</h2>
               <DataRows rows={summaryRows} />
               <div className={styles.divider} />
-              <div className={styles.confirmationRow} data-node-id="150:1084">
-                <p data-node-id="150:1085">شرایط طرح و مبالغ نمایش‌داده‌شده را بررسی کرده‌ام و صحت آن‌ها را تأیید می‌کنم.</p>
-                <span className={styles.checkbox} aria-label="تأیید شده"><img src={assets.check} alt="" width={10} height={10} /></span>
-              </div>
-              <div className={styles.summaryActions}>
-                <Link href="/user/contracts/register/plans/review" className={styles.primaryAction} data-node-id="150:1089">ارسال درخواست تأمین مالی</Link>
-                <Link href="/user/contracts/register/plans" className={styles.secondaryAction} data-node-id="150:1091">تغییر طرح انتخاب‌شده</Link>
-              </div>
+              <PlanConfirmationConsent />
             </section>
           </aside>
 
@@ -116,7 +98,7 @@ export default async function PlanConfirmationPage({
               <DataRows rows={planRows} />
               <div className={styles.rentRow} data-node-id="150:1121">
                 <strong data-node-id="150:1122">۲۰٬۰۰۰٬۰۰۰ تومان</strong>
-                <div><span data-node-id="150:1124">اجاره ماهانه قرارداد مرتبط</span><span className={styles.infoBubble}><img src={assets.info} alt="" width={14} height={14} /></span></div>
+                <div><span className={styles.infoBubble} aria-hidden="true">ⓘ</span><span data-node-id="150:1124">اجاره ماهانه قرارداد مرتبط</span></div>
               </div>
             </section>
 

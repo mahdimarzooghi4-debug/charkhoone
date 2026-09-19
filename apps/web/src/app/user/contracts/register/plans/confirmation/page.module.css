@@ -25,19 +25,21 @@
 .dataRow strong { color: var(--ch-color-text); font-size: 14px; font-weight: 600; direction: rtl; text-align: left; white-space: nowrap; }
 .dataRow strong.emphasized { color: var(--ch-color-primary); font-weight: 700; }
 .dataRow span { color: var(--ch-color-muted); font-size: 14px; direction: rtl; text-align: right; }
-.confirmationRow { width: 100%; display: flex; align-items: center; justify-content: flex-end; gap: 10px; direction: ltr; }
-.confirmationRow p { min-width: 0; flex: 1 1 auto; color: var(--ch-color-text); font-size: 13px; line-height: 1.9; text-align: right; direction: rtl; }
-.checkbox { width: 20px; height: 20px; flex: 0 0 20px; display: inline-flex; align-items: center; justify-content: center; background: var(--ch-color-primary); border-radius: 6px; }
-.checkbox img { width: 10px; height: 10px; display: block; }
+.confirmationRow { position: relative; width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 10px; direction: rtl; cursor: pointer; }
+.confirmationText { min-width: 0; flex: 1 1 auto; color: var(--ch-color-text); font-size: 13px; line-height: 1.9; direction: rtl; text-align: right; }
+.consentInput { position: absolute; width: 20px; height: 20px; min-width: 20px; min-height: 20px; max-height: 20px; margin: 0; opacity: 0; }
+.checkbox { width: 20px; height: 20px; flex: 0 0 20px; display: inline-flex; align-items: center; justify-content: center; color: transparent; background: #fff; border: 2px solid var(--ch-color-muted); border-radius: 6px; }
+.consentInput:checked + .checkbox { color: #fff; background: var(--ch-color-primary); border-color: var(--ch-color-primary); }
+.confirmationRow:focus-within { outline: 3px solid rgb(13 59 54 / 30%); outline-offset: 3px; border-radius: 6px; }
 .summaryActions { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.primaryAction { width: 100%; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; background: var(--ch-color-primary); border-radius: 12px; }
+.primaryAction { width: 100%; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; background: var(--ch-color-primary); border: 0; border-radius: 12px; cursor: pointer; }
+.primaryAction:disabled { color: #fff; background: #9caaa6; cursor: not-allowed; }
 .secondaryAction { color: var(--ch-color-primary); font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .rentRow { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px; direction: ltr; background: #f0f7f6; border-radius: 12px; }
 .rentRow > strong { color: var(--ch-color-primary); font-size: 15px; font-weight: 700; direction: rtl; white-space: nowrap; }
-.rentRow > div { display: flex; align-items: center; gap: 8px; direction: rtl; }
-.rentRow > div > span:first-child { color: var(--ch-color-text); font-size: 14px; font-weight: 500; white-space: nowrap; }
-.infoBubble { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; background: rgb(13 59 54 / 10%); border-radius: 12px; }
-.infoBubble img { width: 14px; height: 14px; display: block; }
+.rentRow > div { display: flex; align-items: center; flex-direction: row; gap: 8px; direction: rtl; }
+.rentRow > div > span:last-child { color: var(--ch-color-text); font-size: 14px; font-weight: 500; white-space: nowrap; }
+.infoBubble { width: 24px; height: 24px; flex: 0 0 24px; display: inline-flex; align-items: center; justify-content: center; color: var(--ch-color-primary); font-size: 16px; background: rgb(13 59 54 / 10%); border-radius: 50%; }
 .steps { width: 100%; display: flex; align-items: stretch; gap: 16px; direction: ltr; }
 .step { min-width: 0; flex: 1 1 0; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; padding: 16px; direction: rtl; text-align: right; background: var(--ch-color-page); border-radius: 12px; }
 .stepNumber { width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; color: var(--ch-color-primary); font-size: 14px; font-weight: 700; background: #e6f4e6; border-radius: 14px; }
