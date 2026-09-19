@@ -1,18 +1,21 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelExit } from "@/components/user/UserPanelExit";
 
+// Stable same-origin Figma sidebar exports already reviewed on the home page.
 const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/06e084d5-656e-4b73-ba16-344b4ae7cdb8.png",
-  avatar: "https://www.figma.com/api/mcp/asset/3685a4cd-ab22-4be8-a401-6c87e57b9eb7.png",
+  logo: "/brand/dashboard-logo.png",
   info: "https://www.figma.com/api/mcp/asset/f63e649c-59de-40a0-bfa2-61a87464ae30.svg",
-  radio: "https://www.figma.com/api/mcp/asset/2522a076-942a-4d6f-89e4-7826b746dab8.svg",
-  check: "https://www.figma.com/api/mcp/asset/af53da02-ac4d-4a2b-acf0-51f9b0923346.svg",
-  home: "https://www.figma.com/api/mcp/asset/0a2213a6-1a8f-4807-a3aa-d31738ac139c.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/64a8c022-7f77-4fc0-a2a8-0481ffa09233.svg",
-  payments: "https://www.figma.com/api/mcp/asset/74125325-17f3-4ee1-8ed1-8aa31444a078.svg",
-  account: "https://www.figma.com/api/mcp/asset/5d6e333b-dbb9-4351-8cdf-7d9a12356391.svg",
+  home: "/brand/dashboard-nav-home.svg",
+  contracts: "/brand/dashboard-nav-file.svg",
+  payments: "/brand/dashboard-nav-card.svg",
+  account: "/brand/dashboard-nav-user.svg",
 } as const;
+
+type ContractRole = "owner" | "tenant";
 
 const contractRows = [
   ["کد رهگیری", "۱۲۳۴۵۶۷۸۹۰۱۲", true],
@@ -39,6 +42,12 @@ function DetailCard({ title, rows }: { title: string; rows: readonly (readonly [
 }
 
 export default function ContractLookupResultPage() {
+  // This is a client-only Figma preview choice, not a persisted role assignment.
+  const [selectedRole, setSelectedRole] = useState<ContractRole>("tenant");
+  const nextHref = selectedRole === "owner"
+    ? "/user/contracts/123456789012/owner/connected"
+    : "/user/contracts/register/plans";
+
   return (
     <main className={styles.page} data-node-id="150:761" data-name="Web App / Contract Lookup Result">
       <section className={styles.mainContent} data-node-id="150:762">
@@ -54,17 +63,23 @@ export default function ContractLookupResultPage() {
 
           <aside className={styles.roleCard} data-node-id="150:824">
             <div className={styles.roleHeader} data-node-id="150:825"><h2 data-node-id="150:826">نقش خود را انتخاب کنید</h2><p data-node-id="150:827">مشخص کنید در این قرارداد مالک هستید یا مستأجر.</p></div>
-            <div className={styles.roleStack} data-node-id="150:828">
-              <article className={styles.roleOption} data-node-id="150:829"><div className={styles.roleOptionTop}><span className={styles.radio}><img src={assets.radio} alt="" width={16} height={16} /></span><strong data-node-id="150:831">مالک (موجر)</strong></div><div className={styles.partyInfo}><span>محمد رضایی</span><small>کد ملی: ۰۰۲•••••۴۵۶</small></div></article>
-              <article className={`${styles.roleOption} ${styles.roleSelected}`} data-node-id="150:836"><div className={styles.roleOptionTop}><span className={styles.selectedCheck}><img src={assets.check} alt="" width={12} height={12} /></span><strong data-node-id="150:838">مستأجر</strong></div><div className={styles.partyInfo}><strong>علی رضایی</strong><small>کد ملی: ۰۰۱•••••۷۸۹</small></div></article>
+            <div className={styles.roleStack} data-node-id="150:828" role="radiogroup" aria-label="نقش شما در این قرارداد">
+              <label className={`${styles.roleOption} ${selectedRole === "owner" ? styles.roleSelected : ""}`} data-node-id="150:829">
+                <span className={styles.roleOptionTop}><input type="radio" name="contract-role" value="owner" checked={selectedRole === "owner"} onChange={() => setSelectedRole("owner")} /><strong data-node-id="150:831">مالک (موجر)</strong></span>
+                <span className={styles.partyInfo}><span>محمد رضایی</span><small>کد ملی: ۰۰۲•••••۴۵۶</small></span>
+              </label>
+              <label className={`${styles.roleOption} ${selectedRole === "tenant" ? styles.roleSelected : ""}`} data-node-id="150:836">
+                <span className={styles.roleOptionTop}><input type="radio" name="contract-role" value="tenant" checked={selectedRole === "tenant"} onChange={() => setSelectedRole("tenant")} /><strong data-node-id="150:838">مستأجر</strong></span>
+                <span className={styles.partyInfo}><strong>علی رضایی</strong><small>کد ملی: ۰۰۱•••••۷۸۹</small></span>
+              </label>
             </div>
-            <div className={styles.nextNotice} data-node-id="203:242">در مرحله بعد، طرح‌های تأمین مالی واجد شرایط این قرارداد نمایش داده می‌شوند.</div>
-            <div className={styles.actions} data-node-id="150:845"><Link href="/user/contracts/register/plans" className={styles.primaryAction} data-node-id="150:846">تأیید نقش و ادامه</Link><Link href="/user/contracts/register" className={styles.secondaryAction} data-node-id="150:850">استعلام کد دیگری</Link></div>
+            <div className={styles.nextNotice} data-node-id="203:242">{selectedRole === "tenant" ? "در مرحله بعد، طرح‌های تأمین مالی واجد شرایط این قرارداد نمایش داده می‌شوند." : "در مرحله بعد، پیش‌نمایش وضعیت اتصال قرارداد با نقش مالک نمایش داده می‌شود."}</div>
+            <div className={styles.actions} data-node-id="150:845"><Link href={nextHref} className={styles.primaryAction} data-node-id="150:846">تأیید نقش و ادامه</Link><Link href="/user/contracts/register" className={styles.secondaryAction} data-node-id="150:850">استعلام کد دیگری</Link></div>
           </aside>
         </div>
       </section>
 
-      <aside className={styles.sidebar} data-node-id="142:1843"><div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav}><Link href="/user/home" className={styles.navItem}><span className={styles.navSpacer} /><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`}><span className={styles.alertBadge}>۱</span><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem}><span className={styles.navSpacer} /><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><UserPanelExit /></aside>
+      <aside className={styles.sidebar} data-node-id="142:1843"><div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav}><Link href="/user/home" className={styles.navItem}><span className={styles.navSpacer} /><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`}><span className={styles.navSpacer} /><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem}><span className={styles.navSpacer} /><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><UserPanelExit /></aside>
     </main>
   );
 }

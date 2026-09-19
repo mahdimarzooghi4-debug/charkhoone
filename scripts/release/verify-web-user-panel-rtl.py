@@ -166,6 +166,31 @@ for asset_name, asset_file in contracts_assets.items():
 require("figma.com/api/mcp/asset/" not in register_text,
         "tracking-code register must not rely on expiring Figma assets")
 
+lookup_text = read(USER_ROOT / "contracts/register/result/page.tsx")
+lookup_css = read(USER_ROOT / "contracts/register/result/page.module.css")
+require('"use client";' in lookup_text and 'useState<ContractRole>("tenant")' in lookup_text,
+        "contract lookup result role selection must be interactive")
+require('checked={selectedRole === "owner"}' in lookup_text and
+        'checked={selectedRole === "tenant"}' in lookup_text and
+        'onChange={() => setSelectedRole("owner")}' in lookup_text and
+        'onChange={() => setSelectedRole("tenant")}' in lookup_text and
+        'role="radiogroup"' in lookup_text,
+        "contract lookup role radio buttons must update exclusive selection")
+require('href={nextHref}' in lookup_text and
+        '"/user/contracts/123456789012/owner/connected"' in lookup_text and
+        '"/user/contracts/register/plans"' in lookup_text,
+        "contract lookup continuation must honor selected owner or tenant preview route")
+require('<span className={styles.alertBadge}>۱</span>' not in lookup_text,
+        "contract lookup result must not show the static contracts alert badge")
+require('.logoWrap { width: 100%; display: flex; justify-content: center; }' in lookup_css and
+        lookup_css.rstrip().endswith('.logoWrap { justify-content: center; }'),
+        "contract lookup result sidebar logo must remain centered after shared override")
+require('.roleOption input[type="radio"]' in lookup_css,
+        "contract lookup choice must have visible native radio controls")
+for asset_name, asset_file in contracts_assets.items():
+    require(f'{asset_name}: "/brand/{asset_file}"' in lookup_text,
+            f"contract lookup result should use stable {asset_name} sidebar asset")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)
