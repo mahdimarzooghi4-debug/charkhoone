@@ -219,10 +219,11 @@ require('.roleOption input[type="radio"]' in lookup_css and
         'max-height: 18px;' in lookup_css and
         'aspect-ratio: 1 / 1;' in lookup_css,
         "lookup radio must stay circular despite global 48px input minimum height")
-require('.partyInfo { width: 100%; display: flex; flex-direction: column; align-items: flex-end;' in lookup_css and
-        '.partyInfo > * { direction: rtl; text-align: right; }' in lookup_css and
-        '<strong>علی رضایی</strong>' in lookup_text,
-        "owner and tenant names and national-ID labels must align to the right inside role cards")
+require(lookup_text.count('<span className={styles.partyInfo} dir="rtl">') == 2 and
+        '<strong>علی رضایی</strong>' in lookup_text and
+        bool(re.search(r"\.partyInfo\s*\{[^}]*display:\s*grid\s*;[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*;[^}]*direction:\s*rtl\s*;[^}]*text-align:\s*right\s*;", lookup_css)) and
+        bool(re.search(r"\.partyInfo\s*>\s*\*\s*\{[^}]*width:\s*100%\s*;[^}]*display:\s*block\s*;[^}]*text-align:\s*right\s*;", lookup_css)),
+        "owner/tenant names including Ali Rezaei must occupy full-width RTL rows flush right inside role cards")
 for asset_name, asset_file in contracts_assets.items():
     require(f'/brand/{asset_file}' in sidebar_code,
             f"contract lookup result should use stable {asset_name} sidebar asset")

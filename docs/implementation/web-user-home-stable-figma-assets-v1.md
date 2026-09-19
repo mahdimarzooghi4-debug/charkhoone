@@ -81,3 +81,7 @@ Follow-up to repeated visual issues: replace the duplicated sidebar JSX across *
 ## Lookup role radio geometry and party name alignment
 
 Owner screenshot on `localhost:3000/user/contracts/register/result` shows tall elliptical role controls because `apps/web/src/app/globals.css` globally sets `button, input { min-height: var(--ch-control-height) }` (48px), overriding the prior 18px radio height. Scope an explicit 18×18px min/max height, 1:1 aspect ratio and zero padding to **the result screen's role radio inputs only**, preserving the accessible native input and brand-green checked state. Explicitly pin tenant/owner party names (including «علی رضایی») and masked ID captions to the right edge using LTR flex cross-axis positioning with RTL text. Do not modify other page controls or shared sidebar. #120 remains draft/unmerged until owner visual review.
+
+## Lookup result second party-name alignment follow-up
+
+Owner reported that «علی رضایی» remained visually offset after the prior Flex-based alignment. Explicitly mark both owner/tenant information groups `dir="rtl"` and render the name and masked ID as **full-width block rows in a one-column RTL grid**, so right alignment does not depend on cross-axis `align-items` plus LTR overrides. This affects only the lookup result role cards, not the shared sidebar or previously approved pages. Regression tests assert RTL grouping and full-width children rather than relying on appearance-only or flex-direction heuristics. Await the owner's actual localhost preview and approval before merging PR #120.
