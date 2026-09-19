@@ -37,6 +37,8 @@
 }
 
 .brandName {
+  width: 100%;
+  text-align: right;
   color: rgb(255 255 255 / 70%);
   font-size: 14px;
   font-weight: 500;
