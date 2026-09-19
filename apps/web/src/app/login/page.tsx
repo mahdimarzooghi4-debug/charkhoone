@@ -10,7 +10,7 @@ export default function LoginPage() {
     <main className={styles.page} data-node-id="163:165" data-name="Web App / Login">
       <div className={styles.split} data-node-id="163:168" data-name="Split Container">
         <section className={styles.showcase} data-node-id="163:169" data-name="Brand Showcase">
-          <p className={styles.brandName} style={{ width: "100%" }} data-node-id="163:171">
+          <p className={styles.brandName} style={{ alignSelf: "flex-start", width: "auto", textAlign: "right" }} data-node-id="163:171">
             چارخونه
           </p>
           <h1 className={styles.tagline} data-node-id="142:1469">

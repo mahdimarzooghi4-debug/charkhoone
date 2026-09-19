@@ -9,6 +9,7 @@
 
 .split {
   width: 100%;
+  max-width: 1200px;
   min-width: 0;
   display: flex;
   align-items: center;
@@ -21,7 +22,7 @@
   flex: 0 0 711px;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 24px;
   direction: rtl;
   text-align: right;
@@ -37,7 +38,6 @@
 }
 
 .brandName {
-  width: 100%;
   text-align: right;
   color: rgb(255 255 255 / 70%);
   font-size: 14px;
@@ -184,6 +184,23 @@
 .legal span {
   color: var(--ch-color-primary);
   font-weight: 500;
+}
+
+/* Narrower desktop viewports: shrink the copy column before allowing
+   the fixed Figma card to overflow; keep the card/field dimensions stable. */
+@media (max-width: 1439px) and (min-width: 961px) {
+  .page {
+    padding-inline: clamp(32px, 8.333vw, 120px);
+  }
+
+  .split {
+    gap: clamp(24px, 3.4vw, 48px);
+  }
+
+  .showcase {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
 }
 
 @media (max-width: 1240px) {
