@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
-import { UserPanelExit } from "@/components/user/UserPanelExit";
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 const assets = {
   logo: "/brand/dashboard-logo.png",
@@ -18,13 +18,6 @@ const quickAccess = [
   { label: "ماشین‌حساب", icon: assets.calculator, nodeId: "144:205", href: "/user/calculator" },
   { label: "ثبت کد رهگیری", icon: assets.quickFile, nodeId: "144:211", href: "/user/contracts/register" },
   { label: "املاک من", icon: assets.quickHome, nodeId: "144:217", href: "/user/properties" },
-];
-
-const navItems = [
-  { label: "خانه", icon: assets.navHome, active: true, nodeId: "144:291", href: "/user/home" },
-  { label: "قراردادها", icon: assets.navFile, active: false, nodeId: "144:294", href: "/user/contracts" },
-  { label: "دریافت و پرداخت", icon: assets.navCard, active: false, nodeId: "144:297", href: "/user/receive-pay" },
-  { label: "حساب من", icon: assets.navUser, active: false, nodeId: "144:300", href: "/user/account" },
 ];
 
 function Badge({ children, tone = "green" }: { children: React.ReactNode; tone?: "green" | "orange" | "blue" | "red" | "gray" }) {
@@ -52,7 +45,7 @@ export default function UserHomePage() {
         <section className={styles.contractsSplit} data-node-id="144:201"><div className={styles.quickBlock}><h2>دسترسی سریع</h2><div className={styles.quickList}>{quickAccess.map((item) => <QuickItem key={item.label} {...item} />)}</div></div><div className={styles.recentBlock}><div className={styles.sectionHeader}><Link href="/user/contracts">مشاهده همه قراردادها</Link><h2>قراردادهای اخیر</h2></div><div className={styles.contractList}><article className={styles.contractCard}><div className={styles.contractHeader}><div className={styles.badgeRow}><Badge>مستأجر</Badge><Badge>فعال</Badge></div><strong>سعادت‌آباد</strong></div><div className={styles.divider} /><div className={styles.contractMeta}><strong>پرداخت بعدی: ۱۸٬۵۰۰٬۰۰۰ تومان</strong><span>تا ۱۵ مهر ۱۴۰۶</span></div></article><article className={styles.contractCard}><div className={styles.contractHeader}><div className={styles.badgeRow}><Badge tone="blue">مالک</Badge><Badge>فعال</Badge></div><strong>پونک</strong></div><div className={styles.divider} /><div className={styles.contractMeta}><strong>دریافتی بعدی: ۱۴٬۹۲۵٬۰۰۰ تومان</strong><span>تا ۱ آبان ۱۴۰۶</span></div></article></div></div></section>
         <section className={styles.financialSection} data-node-id="144:252"><div className={styles.sectionHeader}><Link href="/user/receive-pay">مشاهده همه</Link><h2>دریافت و پرداخت</h2></div><div className={styles.activityTable}><div className={styles.tableHeader}><span>وضعیت</span><span>تاریخ</span><span>مبلغ</span><span>قرارداد</span><span>نوع</span></div><div className={styles.tableRow}><span><Badge tone="orange">در انتظار پرداخت</Badge></span><span className={styles.muted}>۱۵ آبان ۱۴۰۵</span><strong>۱۸٬۵۰۰٬۰۰۰ تومان</strong><span>سعادت‌آباد</span><span><Badge tone="red">پرداخت</Badge></span></div><div className={styles.tableRow}><span><Badge tone="gray">آینده</Badge></span><span className={styles.muted}>۱ آذر ۱۴۰۵</span><strong>۱۵٬۰۰۰٬۰۰۰ تومان</strong><span>پونک</span><span><Badge>دریافت</Badge></span></div></div></section>
       </section>
-      <aside className={styles.sidebar} data-node-id="144:284"><div className={styles.sidebarTop}><div className={styles.sidebarLogo}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav} aria-label="ناوبری حساب کاربری">{navItems.map((item) => item.href ? <Link key={item.label} href={item.href} className={`${styles.navItem} ${item.active ? styles.navItemActive : ""}`} data-node-id={item.nodeId}><span>{item.label}</span><img src={item.icon} alt="" width={20} height={20} /></Link> : <div key={item.label} className={styles.navItem} data-node-id={item.nodeId}><span>{item.label}</span><img src={item.icon} alt="" width={20} height={20} /></div>)}</nav></div><UserPanelExit /></aside>
+      <UserPanelSidebar nodeId="144:284" />
     </main>
   );
 }

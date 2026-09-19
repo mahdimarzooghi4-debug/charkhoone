@@ -1,15 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
-import { UserPanelExit } from "@/components/user/UserPanelExit";
-
-const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/399e08bc-b4fe-4b20-beae-2aaad6130d7f.png",
-  avatar: "https://www.figma.com/api/mcp/asset/0d0a53c2-e56d-4053-aa5b-20e330ae7d55.png",
-  home: "https://www.figma.com/api/mcp/asset/32db6b2a-b5b4-483f-a297-3ed178223e9f.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/cb9d1dc0-0e5c-4851-8ac7-d295e520a706.svg",
-  payments: "https://www.figma.com/api/mcp/asset/0cbdd092-1fb5-4cca-9fb8-fc92fc0a36f6.svg",
-  account: "https://www.figma.com/api/mcp/asset/5d28013b-5b01-4aa2-a880-76309d0923e4.svg",
-} as const;
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 const resultRows = [
   ["طرح انتخاب‌شده", "طرح ویژه کارکنان", "default"],
@@ -47,7 +38,7 @@ export default function FinancingNotApprovedPage() {
         </div></div>
       </section>
 
-      <aside className={styles.sidebar} data-node-id="142:1598"><div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav}><Link href="/user/home" className={styles.navItem}><span className={styles.navSpacer} /><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`}><span className={styles.alertBadge}>۱</span><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem}><span className={styles.navSpacer} /><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><UserPanelExit /></aside>
+      <UserPanelSidebar nodeId="142:1598" />
     </main>
   );
 }

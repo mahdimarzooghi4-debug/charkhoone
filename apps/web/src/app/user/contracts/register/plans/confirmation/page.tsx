@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
-import { UserPanelExit } from "@/components/user/UserPanelExit";
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 const assets = {
   logo: "https://www.figma.com/api/mcp/asset/42402834-b287-4a2c-9df2-b041c1bb4d86.png",
@@ -117,18 +117,7 @@ export default function PlanConfirmationPage() {
         </div>
       </section>
 
-      <aside className={styles.sidebar} data-node-id="142:1773">
-        <div className={styles.sidebarTop}>
-          <div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div>
-          <nav className={styles.nav} aria-label="ناوبری حساب کاربری">
-            <Link href="/user/home" className={styles.navItem}><span className={styles.navSpacer} /><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link>
-            <Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`}><span className={styles.alertBadge}>۱</span><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link>
-            <Link href="/user/receive-pay" className={styles.navItem}><span className={styles.navSpacer} /><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link>
-            <Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link>
-          </nav>
-        </div>
-        <UserPanelExit />
-      </aside>
+      <UserPanelSidebar nodeId="142:1773" />
     </main>
   );
 }

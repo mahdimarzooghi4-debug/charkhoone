@@ -3,17 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
-import { UserPanelExit } from "@/components/user/UserPanelExit";
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 // Share the stable, same-origin Figma exports used by the approved home sidebar.
-const assets = {
-  logo: "/brand/dashboard-logo.png",
-  home: "/brand/dashboard-nav-home.svg",
-  contracts: "/brand/dashboard-nav-file.svg",
-  payments: "/brand/dashboard-nav-card.svg",
-  account: "/brand/dashboard-nav-user.svg",
-} as const;
-
 type Tone = "tenant" | "owner" | "active" | "attention" | "ended";
 
 function Badge({ children, tone }: { children: React.ReactNode; tone: Tone }) {
@@ -61,7 +53,7 @@ export default function ContractsPage() {
           {visibleContracts.length === 0 && <p className={styles.emptyState} role="status">قراردادی با فیلترهای انتخاب‌شده پیدا نشد.</p>}
         </section>
       </section>
-      <aside className={styles.sidebar} data-node-id="142:1983"><div className={styles.sidebarTop} data-node-id="142:1984"><div className={styles.logoWrap} data-node-id="142:1985"><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav} data-node-id="142:1986" aria-label="ناوبری حساب کاربری"><Link href="/user/home" className={styles.navItem} data-node-id="142:1987"><span className={styles.navSpacer} /><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`} data-node-id="142:1993"><span className={styles.navSpacer} /><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem} data-node-id="142:2000"><span className={styles.navSpacer} /><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={styles.navItem} data-node-id="142:2006"><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><UserPanelExit /></aside>
+      <UserPanelSidebar nodeId="142:1983" />
     </main>
   );
 }

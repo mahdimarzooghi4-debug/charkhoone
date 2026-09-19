@@ -3,17 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
-import { UserPanelExit } from "@/components/user/UserPanelExit";
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 // Stable same-origin Figma sidebar exports already reviewed on the home page.
-const assets = {
-  logo: "/brand/dashboard-logo.png",
-  home: "/brand/dashboard-nav-home.svg",
-  contracts: "/brand/dashboard-nav-file.svg",
-  payments: "/brand/dashboard-nav-card.svg",
-  account: "/brand/dashboard-nav-user.svg",
-} as const;
-
 type ContractRole = "owner" | "tenant";
 
 const contractRows = [
@@ -78,7 +70,7 @@ export default function ContractLookupResultPage() {
         </div>
       </section>
 
-      <aside className={styles.sidebar} data-node-id="142:1843"><div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={200} height={86} /></div><nav className={styles.nav}><Link href="/user/home" className={styles.navItem}><span className={styles.navSpacer} /><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`}><span className={styles.navSpacer} /><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem}><span className={styles.navSpacer} /><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><UserPanelExit /></aside>
+      <UserPanelSidebar nodeId="142:1843" />
     </main>
   );
 }

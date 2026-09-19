@@ -1,15 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
-import { UserPanelExit } from "@/components/user/UserPanelExit";
-
-const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/459a75fb-5788-4239-b8c6-954d523291b8.png",
-  avatar: "https://www.figma.com/api/mcp/asset/a151dc85-98f0-4232-882d-2e09a9eee090.png",
-  home: "https://www.figma.com/api/mcp/asset/32654715-9a3b-4059-b3cd-18a5d3aca38b.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/c9647ac1-46ca-4421-8dff-271f5bf8cf90.svg",
-  payments: "https://www.figma.com/api/mcp/asset/21aded04-1ee0-47d9-aacb-5e20bde62954.svg",
-  account: "https://www.figma.com/api/mcp/asset/7255fb55-c0a2-4dfa-b399-7af7ef07eccf.svg",
-} as const;
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 type Tone = "payment" | "receipt" | "overdue" | "waiting" | "future" | "success";
 
@@ -52,7 +43,7 @@ export default function ReceivePayPage() {
         <section className={styles.filters} data-node-id="150:462"><button type="button" className={styles.filterPill}>همه وضعیت‌ها ▾</button><div className={styles.filterGroup}><button type="button" className={styles.filterPill}>دریافتی‌ها</button><button type="button" className={styles.filterPill}>پرداخت‌ها</button><button type="button" className={`${styles.filterPill} ${styles.filterActive}`}>همه</button></div></section>
         <section className={styles.tableWrap} data-node-id="150:472"><div className={styles.tableScroller}><div className={`${styles.tableRow} ${styles.tableHeader}`}><span>عملیات</span><span>وضعیت</span><span>تاریخ</span><span>مبلغ</span><span>شرح</span><span>قرارداد</span><span>نوع</span></div>{activities.map((item) => <div className={styles.tableRow} data-node-id={item.nodeId} key={item.nodeId}><span className={styles.actionCell}>{item.href ? <Link href={item.href} className={item.primaryAction ? styles.primaryButton : styles.linkButton}>{item.action}</Link> : <button type="button" className={item.primaryAction ? styles.primaryButton : styles.linkButton}>{item.action}</button>}</span><span><Badge tone={item.statusTone}>{item.status}</Badge></span><span className={styles.muted}>{item.date}</span><strong>{item.amount}</strong><span>{item.description}</span><span className={styles.contractCell}><strong>{item.contract}</strong><small>{item.role}</small></span><span><Badge tone={item.kindTone}>{item.kind}</Badge></span></div>)}</div></section>
       </section>
-      <aside className={styles.sidebar} data-node-id="150:562"><div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav} aria-label="ناوبری حساب کاربری"><Link href="/user/home" className={styles.navItem}><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={styles.navItem}><span className={styles.alertBadge}>۱</span><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={`${styles.navItem} ${styles.navActive}`}><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><UserPanelExit /></aside>
+      <UserPanelSidebar nodeId="150:562" />
     </main>
   );
 }

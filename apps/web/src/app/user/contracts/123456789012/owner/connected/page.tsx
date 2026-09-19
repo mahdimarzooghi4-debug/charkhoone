@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styles from "../flow.module.css";
-import { UserPanelExit } from "@/components/user/UserPanelExit";
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 const assets = {
   logo: "https://www.figma.com/api/mcp/asset/6e9cc480-58ea-4d4c-bd5f-e77e7e312f70.png",
@@ -63,7 +63,7 @@ export default function OwnerContractConnectedPage() {
         <footer className={styles.bottomBar} data-node-id="170:383"><Link href="/user/contracts" className={styles.outlineButton} data-node-id="170:384">بازگشت به قراردادها</Link><div className={styles.bottomNote}><span>در حال حاضر اقدامی از طرف شما لازم نیست.</span><img src={assets.alert} alt="" width={16} height={16} /></div></footer>
       </section>
 
-      <aside className={styles.sidebar} data-node-id="142:1633"><div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav}><Link href="/user/home" className={styles.navItem}><span className={styles.navSpacer} /><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`}><span className={styles.alertBadge}>۱</span><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem}><span className={styles.navSpacer} /><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><UserPanelExit /></aside>
+      <UserPanelSidebar nodeId="142:1633" />
     </main>
   );
 }

@@ -15,6 +15,8 @@ SCAFFOLD = ROOT / "apps/web/src/components/account/AccountModalScaffold.tsx"
 CSS_SCAFFOLD = ROOT / "apps/web/src/components/account/AccountModalScaffold.module.css"
 EXIT = ROOT / "apps/web/src/components/user/UserPanelExit.tsx"
 EXIT_CSS = ROOT / "apps/web/src/components/user/UserPanelExit.module.css"
+SIDEBAR = ROOT / "apps/web/src/components/user/UserPanelSidebar.tsx"
+SIDEBAR_CSS = ROOT / "apps/web/src/components/user/UserPanelSidebar.module.css"
 
 failures: list[str] = []
 
@@ -39,21 +41,52 @@ require("justify-content: center;" in exit_css and "text-align: center;" in exit
         "sidebar exit must center its text")
 require("←" not in exit_code, "sidebar exit must not show a decorative arrow")
 
+sidebar_code = read(SIDEBAR)
+sidebar_css = read(SIDEBAR_CSS)
+require(sidebar_code.count("<UserPanelExit />") == 1, "one shared preview exit belongs inside shared sidebar")
+require('usePathname()' in sidebar_code and 'aria-current={selected ? "page" : undefined}' in sidebar_code,
+        "shared sidebar must select the active tab from current route")
+require('width={200} height={86}' in sidebar_code and
+        ".logoWrap img {" in sidebar_css and "width: 200px;" in sidebar_css and "height: 86px;" in sidebar_css and
+        "place-items: center;" in sidebar_css,
+        "all web preview sidebars must use the large centered permanent logo")
+require('src="/brand/dashboard-logo.png"' in sidebar_code,
+        "shared sidebar logo must be a stable local file")
+for filename in ("dashboard-logo.png", "dashboard-nav-home.svg", "dashboard-nav-file.svg",
+                 "dashboard-nav-card.svg", "dashboard-nav-user.svg"):
+    require((ROOT / "apps/web/public/brand" / filename).is_file(),
+            f"missing sidebar asset: {filename}")
+require('alertBadge' not in sidebar_code and 'styles.profile' not in sidebar_code,
+        "shared sidebar must not show static counts or fake profile details")
+require('hideOnMobile' in sidebar_code and ".hideOnMobile { display: none; }" in sidebar_css,
+        "account dialog previews must be able to hide the sidebar on mobile")
+
 panel_pages = sorted(USER_ROOT.rglob("page.tsx"))
-require(len(panel_pages) >= 30, "expected complete web user route set, including owner and tenant flows")
+require(len(panel_pages) >= 36, "expected complete owner and tenant user web page set")
+modal_subpages = {
+    "account/change-mobile/page.tsx",
+    "account/change-mobile/otp/page.tsx",
+    "account/profile-image/page.tsx",
+    "account/profile-image/preview/page.tsx",
+}
 panel_count = 0
 styles_checked: set[Path] = set()
 
 for path in panel_pages + [SCAFFOLD]:
     text = read(path)
-    if "<aside className={styles.sidebar}" not in text:
+    name = path.relative_to(ROOT)
+    if "<UserPanelSidebar" not in text:
+        require(path in panel_pages and path.relative_to(USER_ROOT).as_posix() in modal_subpages,
+                f"{name}: route must use the shared sidebar or an account modal scaffold")
         continue
     panel_count += 1
-    name = path.relative_to(ROOT)
-    require(text.count("<UserPanelExit />") == 1, f"{name}: one shared footer exit required")
-    require('import { UserPanelExit } from "@/components/user/UserPanelExit";' in text, f"{name}: import shared exit")
+    require(text.count("<UserPanelSidebar") == 1, f"{name}: render exactly one shared sidebar")
+    require('import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";' in text,
+            f"{name}: import shared sidebar")
+    require("<aside className={styles.sidebar}" not in text and "<UserPanelExit />" not in text,
+            f"{name}: do not duplicate sidebar markup or exit")
     require(not re.search(r"<div className=\{styles\.(?:profile|sidebarProfile)\}", text),
-            f"{name}: remove static name and phone from sidebar")
+            f"{name}: remove static profile footer")
     match = re.search(r'import styles from "([^"]+)";', text)
     require(match is not None, f"{name}: missing CSS module import")
     if match is None:
@@ -64,15 +97,11 @@ for path in panel_pages + [SCAFFOLD]:
         continue
     styles_checked.add(css_file)
     css = read(css_file)
-    for token in (
-        ".mainContent { direction: rtl; text-align: right; }",
-        ".sidebar { direction: rtl; text-align: right; }",
-        ".navItem { direction: ltr; text-align: right; }",
-        ".navItem > span { direction: rtl; text-align: right; }",
-    ):
-        require(token in css, f"{css_file.relative_to(ROOT)}: missing shared RTL rule: {token}")
+    require(".mainContent { direction: rtl; text-align: right; }" in css,
+            f"{css_file.relative_to(ROOT)}: Persian panel content must stay RTL")
 
-require(panel_count >= 30, f"insufficient user panel pages/scaffold with shared exit: {panel_count}")
+require(panel_count == len(panel_pages) - len(modal_subpages) + 1,
+        f"all web user panels and account scaffold must use one shared sidebar: {panel_count}")
 require(CSS_SCAFFOLD in styles_checked, "account modal scaffold must share right-aligned sidebar and exit")
 require("direction: ltr" in read(CSS_SCAFFOLD), "account modal sidebar placement must remain on right")
 for modal in (
@@ -109,8 +138,8 @@ require("logoutAction" not in account_text and 'styles.logout}' not in modal_tex
 
 home_text = read(USER_ROOT / "home/page.tsx")
 home_css = read(USER_ROOT / "home/page.module.css")
-require(".sidebarLogo { justify-content: center; }" in home_css,
-        "home sidebar logo must be centered")
+require("<UserPanelSidebar" in home_text and 'src="/brand/dashboard-logo.png"' in sidebar_code,
+        "home must reuse the centered permanent shared sidebar")
 require(".remainingInfo { direction: rtl; }" in home_css,
         "home remaining-uses count must be left of its label")
 require("styles.remainingInfo" in home_text, "home remaining-uses layout hook missing")
@@ -131,11 +160,10 @@ require("aria-pressed={roleFilter === role}" in contracts_text and
         "aria-pressed={statusFilter === status}" in contracts_text and
         "visibleContracts.length === 0" in contracts_text,
         "contracts filters must show active state and empty results")
-require('<span className={styles.alertBadge}>۱</span>' not in contracts_text,
-        "contracts tab must not show a static 1 alert badge")
-require(".logoWrap { justify-content: center; }" in contracts_css and
-        bool(re.search(r"\.contractHeader,\s*\.contractBottom\s*\{[^}]*direction:\s*rtl\s*;", contracts_css)),
-        "contracts logo and card layout must align to right")
+require("<UserPanelSidebar" in contracts_text and "alertBadge" not in sidebar_code,
+        "contracts must use the shared sidebar without a static count")
+require(bool(re.search(r"\.contractHeader,\s*\.contractBottom\s*\{[^}]*direction:\s*rtl\s*;", contracts_css)),
+        "contracts card layout must align to right")
 
 contracts_assets = {
     "logo": "dashboard-logo.png",
@@ -147,21 +175,17 @@ contracts_assets = {
 for name, filename in contracts_assets.items():
     path = ROOT / "apps/web/public/brand" / filename
     require(path.is_file(), f"missing local contracts {name} asset: {filename}")
-    require(f'{name}: "/brand/{filename}"' in contracts_text,
-            f"contracts {name} must use its permanent same-origin asset")
+    require(f'/brand/{filename}' in sidebar_code,
+            f"shared sidebar {name} must use its permanent same-origin asset")
 require("figma.com/api/mcp/asset/" not in contracts_text,
         "contracts page must not depend on expiring Figma image URLs")
 
 register_text = read(USER_ROOT / "contracts/register/page.tsx")
 register_css = read(USER_ROOT / "contracts/register/page.module.css")
-require('<span className={styles.alertBadge}>۱</span>' not in register_text and
-        '<span className={styles.navSpacer} /><span>قراردادها</span>' in register_text,
-        "tracking-code register contracts nav must have no static orange one")
-require(".logoWrap { width: 100%; display: flex; justify-content: center; }" in register_css and
-        register_css.rstrip().endswith(".logoWrap { justify-content: center; }"),
-        "tracking-code register sidebar logo must remain centered after final RTL CSS override")
+require("<UserPanelSidebar" in register_text and 'alertBadge' not in sidebar_code,
+        "register tracking code route must use the shared sidebar without count")
 for asset_name, asset_file in contracts_assets.items():
-    require(f'{asset_name}: "/brand/{asset_file}"' in register_text,
+    require(f'/brand/{asset_file}' in sidebar_code,
             f"tracking-code register must reuse stable {asset_name} asset")
 require("figma.com/api/mcp/asset/" not in register_text,
         "tracking-code register must not rely on expiring Figma assets")
@@ -180,13 +204,10 @@ require('href={nextHref}' in lookup_text and
         '"/user/contracts/123456789012/owner/connected"' in lookup_text and
         '"/user/contracts/register/plans"' in lookup_text,
         "contract lookup continuation must honor selected owner or tenant preview route")
-require('<span className={styles.alertBadge}>۱</span>' not in lookup_text,
-        "contract lookup result must not show the static contracts alert badge")
-require('<img src={assets.logo} alt="چارخونه" width={200} height={86} />' in lookup_text and
-        '.logoWrap { position: relative; width: 100%; height: 90px; display: block; }' in lookup_css and
-        'position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 200px; height: 86px;' in lookup_css and
-        lookup_css.rstrip().endswith('.logoWrap img { left: 50%; transform: translateX(-50%); }'),
-        "contract lookup result logo should display at 200px and remain centered on sidebar midpoint")
+require("<UserPanelSidebar" in lookup_text and 'alertBadge' not in sidebar_code,
+        "contract lookup result must use shared sidebar without static count")
+require("<UserPanelSidebar" in lookup_text and "place-items: center;" in sidebar_css,
+        "contract lookup result must reuse the 200px shared centered sidebar logo")
 require('appearance: none; -webkit-appearance: none;' in lookup_css and
         '.roleOption input[type="radio"]:checked { border-color: var(--ch-color-primary); background: var(--ch-color-primary);' in lookup_css and
         '.roleOption input[type="radio"]:focus-visible { outline: 3px solid rgb(13 59 54 / 30%);' in lookup_css and
@@ -195,7 +216,7 @@ require('appearance: none; -webkit-appearance: none;' in lookup_css and
 require('.roleOption input[type="radio"]' in lookup_css,
         "contract lookup choice must have visible native radio controls")
 for asset_name, asset_file in contracts_assets.items():
-    require(f'{asset_name}: "/brand/{asset_file}"' in lookup_text,
+    require(f'/brand/{asset_file}' in sidebar_code,
             f"contract lookup result should use stable {asset_name} sidebar asset")
 require('className={styles.officialNotice}' in lookup_text and
         '<span className={styles.noticeIcon} aria-hidden="true">ⓘ</span><span className={styles.noticeText}>' in lookup_text and
