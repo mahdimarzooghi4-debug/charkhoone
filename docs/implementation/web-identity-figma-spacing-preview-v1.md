@@ -7,3 +7,7 @@ Reference Figma file `kIJQxlRhLRhjCCckMfcmsa`, node `167:211`. Match approved Lo
 The page and 3 visual variants now reuse the original bundled Figma logo `/brand/login-card.png`, existing on main since PR #117. No new asset download or expiring URL. No OTP/identity functionality, routing, credentials, provider connection or domain code changes.
 
 **Important truth-in-UX:** masked phone and `تأیید شده` currently come from a fixed design fixture; the button navigates to `/user/home` without an authoritative identity response. Neither phone nor national ID has actually been verified by this page. That concern is out of this visual-only slice and must be resolved before presenting it as authenticated onboarding. Keep PR draft until user's screenshot review. Do not overwrite unrelated local Visual Studio changes, switch branches or create another server.
+
+## Owner's follow-up visual adjustments
+
+After previewing the centered layout, the owner requested the masked phone number to read left-to-right (digits remain Persian; the fixed sample is unchanged) and the national-ID input to align to the entire 360px card inner width, matching the verified-phone row and orange CTA. Set `.mobileValue` to isolated LTR direction and `.inputWidth` to 100% in the shared identity stylesheet so all identity visual variants remain consistent. The field expansion is an explicit owner-approved adjustment from the original Figma 320px input width. This is a CSS-only change, not phone verification or identity validation.

@@ -153,6 +153,9 @@
 }
 
 .mobileValue {
+  /* Preserve the phone-number reading order inside the RTL row. */
+  direction: ltr;
+  unicode-bidi: isolate;
   color: var(--ch-color-text-secondary);
   font-size: 14px;
   font-weight: 500;
@@ -179,7 +182,8 @@
 }
 
 .inputWidth {
-  width: 320px;
+  /* Align the national-ID field to the full 360px inner card width. */
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 8px;
