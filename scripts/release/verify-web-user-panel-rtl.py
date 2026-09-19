@@ -120,6 +120,22 @@ require(bool(re.search(r"\.actionContent\s*\{[^}]*direction:\s*rtl\s*;", home_cs
 require('<Link href="/user/contracts/123456789012/owner/final-confirmation" className={styles.actionButton}>بررسی قرارداد</Link>' in home_text,
         "review contract CTA must open existing owner final-confirmation preview")
 
+contracts_text = read(USER_ROOT / "contracts/page.tsx")
+contracts_css = read(USER_ROOT / "contracts/page.module.css")
+require('"use client";' in contracts_text and "useState<RoleFilter>" in contracts_text and
+        "useState<StatusFilter>" in contracts_text, "contracts filters must keep interactive selection state")
+require("visibleContracts = contracts.filter(" in contracts_text and
+        "contract.role === roleFilter" in contracts_text and "contract.status === statusFilter" in contracts_text and
+        "visibleContracts.map(" in contracts_text, "contracts list must filter role and status together")
+require("aria-pressed={roleFilter === role}" in contracts_text and
+        "aria-pressed={statusFilter === status}" in contracts_text and
+        "visibleContracts.length === 0" in contracts_text,
+        "contracts filters must show active state and empty results")
+require('<span className={styles.alertBadge}>۱</span>' not in contracts_text,
+        "contracts tab must not show a static 1 alert badge")
+require(".logoWrap { justify-content: center; }" in contracts_css and
+        bool(re.search(r"\.contractHeader,\s*\.contractBottom\s*\{[^}]*direction:\s*rtl\s*;", contracts_css)),
+        "contracts logo and card layout must align to right")
 
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
