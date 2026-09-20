@@ -616,8 +616,9 @@ require('<section id="owner-property-info" className={styles.card} data-node-id=
         '.quickActions > a, .quickActions > div {' in owner_active_css and
         owner_active.count('href="/user/receive-pay"') == 3 and
         'export default function ReceivePayPage()' in receive_pay and
-        all('href="' + target + '"' in shared_sidebar for target in
+        all('href: "' + target + '"' in shared_sidebar for target in
             ('/user/home', '/user/contracts', '/user/receive-pay', '/user/account')) and
+        'href={href}' in shared_sidebar and
         'href="/login"' in shared_exit,
         "owner active preview must have working property anchor, three receipt-history/payment links and shared sidebar destinations")
 
