@@ -727,8 +727,11 @@ require('<span>نوع</span><span>قرارداد</span><span>شرح</span><span>
         receive_pay_controls.index('>{item.action}</Link>') and
         'direction: rtl;' in receive_pay_css.split('.tableRow {', 1)[1].split('}', 1)[0] and
         'grid-template-columns: minmax(88px, 0.7fr)' in receive_pay_css and
-        '.tableRow > .badge { justify-self: start; }' in receive_pay_css and
-        '.contractCell { align-items: flex-start; gap: 2px; }' in receive_pay_css and
+        '.badgeCell, .actionCell { display: flex; align-items: center; justify-content: flex-start; direction: rtl; text-align: right; }' in receive_pay_css and
+        '.badgeCell > .badge { width: fit-content; flex: 0 0 auto; }' in receive_pay_css and
+        '.contractCell { width: 100%; align-items: flex-start; direction: rtl; text-align: right; gap: 2px; }' in receive_pay_css and
+        '<span className={styles.badgeCell}><span className={[styles.badge, styles["badge_" + item.kindTone]].join(" ")}' in receive_pay_controls and
+        '<span className={styles.badgeCell}><span className={[styles.badge, styles["badge_" + item.statusTone]].join(" ")}' in receive_pay_controls and
         'href="/user/receive-pay?scenario=termination"' in tenant_terminated and
         'href="/user/receive-pay?scenario=termination"' in owner_terminated,
         "receive/pay headers and rows must have matching RTL columns and scenario must be opt-in")
