@@ -31,7 +31,7 @@ const plans: readonly Plan[] = [
       ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان"],
       ["نحوه تسویه اصل وام", "طبق قرارداد بانک"],
     ],
-    note: "برای کاربران واجد شرایط عمومی",
+    note: "پیش‌نمایش طرح عمومی با سناریوی مشترک C3؛ بدون تأیید واقعی بانک",
   },
   {
     id: "staff",
@@ -47,7 +47,7 @@ const plans: readonly Plan[] = [
       ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان", true],
       ["نحوه تسویه اصل وام", "طبق قرارداد بانک"],
     ],
-    note: "شرایط بهتر نسبت به طرح عمومی",
+    note: "اعداد مالی فعلاً برای هر دو طرح یکسان و صرفاً نمونه رتبه C3 هستند",
   },
 ] as const;
 
@@ -94,6 +94,7 @@ function PlanCard({ plan, selected, onSelect }: { plan: Plan; selected: boolean;
 }
 
 export default function EligibleFinancingPlansPage() {
+  // Both presentation variants use the same C3 mock; real bank plan terms are unavailable.
   // Client-only illustrative plan choice; no bank request is submitted.
   const [selectedPlan, setSelectedPlan] = useState<PlanId>("staff");
 
@@ -111,7 +112,7 @@ export default function EligibleFinancingPlansPage() {
         <section className={styles.pageHeader} data-node-id="150:913">
           <p data-node-id="150:914">قراردادها / انتخاب طرح تأمین مالی</p>
           <h2 data-node-id="150:915">طرح‌های قابل استفاده برای شما</h2>
-          <p data-node-id="150:916">براساس شرایط شما و این قرارداد، طرح‌های زیر قابل انتخاب هستند.</p>
+          <p data-node-id="150:916">دو چیدمان نمایشی از طرح‌ها با اعداد مشترک نمونه C3 را ببینید؛ هنوز طرح واقعی از بانک دریافت نشده است.</p>
         </section>
 
         <section className={styles.contractContext} data-node-id="150:917">
