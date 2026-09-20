@@ -800,7 +800,7 @@ require('"use client";' in calculator_page and
         'figma.com/api/mcp/asset/' not in calculator_page and
         'styles.gaugeTrack' in calculator_page and
         '.rangeInput::-webkit-slider-thumb {' in calculator_css and
-        'فرمول بانک' in calculator_page and
+        'نرخ و نحوه محاسبه باید توسط بانک تأیید شود' in calculator_page and
         'href="/user/contracts/register/plans"' in calculator_page and
         'href="/user/calculator"' in plans_page,
         "calculator must be accessible from financing plans, interactive and clearly sample-only")
