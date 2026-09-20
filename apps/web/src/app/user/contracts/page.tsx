@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
+import { demoFinance, demoFinanceNote } from "@/lib/demo-financing";
 
 // Share the stable, same-origin Figma exports used by the approved home sidebar.
 type Tone = "tenant" | "owner" | "active" | "attention" | "ended";
@@ -13,7 +14,7 @@ function Badge({ children, tone }: { children: React.ReactNode; tone: Tone }) {
 }
 
 const contracts = [
-  { nodeId: "149:195", address: "تهران، سعادت‌آباد", role: "مستأجر", roleTone: "tenant" as const, status: "فعال", statusTone: "active" as const, detail: "پرداخت بعدی: ۱۸٬۵۰۰٬۰۰۰ تومان — ۱۵ آبان ۱۴۰۵", period: "۱۵ مهر ۱۴۰۵ تا ۱۵ مهر ۱۴۰۶", action: "مشاهده قرارداد", href: "/user/contracts/123456789012" },
+  { nodeId: "149:195", address: "تهران، سعادت‌آباد", role: "مستأجر", roleTone: "tenant" as const, status: "فعال", statusTone: "active" as const, detail: `پرداخت بعدی: ${demoFinance.monthlyText} — ۱۵ آبان ۱۴۰۵`, period: "۱۵ مهر ۱۴۰۵ تا ۱۵ مهر ۱۴۰۶", action: "مشاهده قرارداد", href: "/user/contracts/123456789012" },
   { nodeId: "149:209", address: "تهران، پونک", role: "مالک", roleTone: "owner" as const, status: "فعال", statusTone: "active" as const, detail: "دریافتی بعدی: ۱۴٬۹۲۵٬۰۰۰ تومان — ۱ آذر ۱۴۰۵", period: "۱ آبان ۱۴۰۵ تا ۱ آبان ۱۴۰۶", action: "مشاهده قرارداد (نمونه)", href: "/user/contracts/demo/pounak" },
   { nodeId: "149:223", address: "تهران، ونک", role: "مالک", roleTone: "owner" as const, status: "نیاز به اقدام", statusTone: "attention" as const, detail: "در انتظار تأیید نهایی شما", period: "۲۰ مهر ۱۴۰۵ تا ۲۰ مهر ۱۴۰۶", action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/settlement-preference" },
   { nodeId: "149:238", address: "تهران، جردن", role: "مستأجر", roleTone: "tenant" as const, status: "پایان‌یافته", statusTone: "ended" as const, detail: "قرارداد به پایان رسیده است", period: "۱ فروردین ۱۴۰۴ تا ۱ فروردین ۱۴۰۵", action: "مشاهده قرارداد (نمونه)", href: "/user/contracts/demo/jordan" },
@@ -52,6 +53,7 @@ export default function ContractsPage() {
           {visibleContracts.map((contract) => <article key={contract.nodeId} className={styles.contractCard} data-node-id={contract.nodeId}><div className={styles.contractHeader}><strong>{contract.address}</strong><div className={styles.badgeRow}><Badge tone={contract.roleTone}>{contract.role}</Badge><Badge tone={contract.statusTone}>{contract.status}</Badge></div></div><div className={styles.divider} /><div className={styles.contractBottom}><span className={styles.period}>{contract.period}</span><div className={styles.contractActionRow}><Link href={contract.href} className={contract.statusTone === "attention" ? styles.reviewButton : styles.detailButton}>{contract.action}</Link><span className={styles.contractDetail}>{contract.detail}</span></div></div></article>)}
           {visibleContracts.length === 0 && <p className={styles.emptyState} role="status">قراردادی با فیلترهای انتخاب‌شده پیدا نشد.</p>}
         </section>
+        <p role="note" style={{fontSize:12,lineHeight:2,color:"var(--ch-color-muted)"}}>{demoFinanceNote}</p>
       </section>
       <UserPanelSidebar nodeId="142:1983" />
     </main>

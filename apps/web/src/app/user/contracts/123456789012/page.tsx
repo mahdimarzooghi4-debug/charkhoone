@@ -1,6 +1,7 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
+import { demoFinance, demoFinanceNote } from "@/lib/demo-financing";
 
 function Badge({ children, tone = "active" }: { children: React.ReactNode; tone?: "active" | "tenant" | "waiting" }) {
   return <span className={`${styles.badge} ${styles[`badge_${tone}`]}`}>{children}</span>;
@@ -87,12 +88,12 @@ export default function ContractDetailPage() {
               </div>
               <div className={styles.paymentSummary} data-node-id="150:336">
                 <div className={styles.amount} data-node-id="150:337">
-                  <strong data-node-id="150:338">۱۸٬۵۰۰٬۰۰۰</strong>
+                  <strong data-node-id="150:338">{demoFinance.monthlyNumberText}</strong>
                   <span data-node-id="150:339">تومان</span>
                 </div>
                 <div className={styles.paymentMeta} data-node-id="150:340">
                   <strong data-node-id="150:341">سررسید: ۱۵ آبان ۱۴۰۵</strong>
-                  <span data-node-id="150:342">بابت قسط ماهانه تأمین مالی</span>
+                  <span data-node-id="150:342">بابت سود ماهانه وام (نمونه؛ بدون اصل وام)</span>
                 </div>
               </div>
               <Link href="/user/receive-pay" className={styles.primaryAction} data-node-id="150:344">مشاهده در دریافت و پرداخت</Link>
@@ -117,14 +118,16 @@ export default function ContractDetailPage() {
               <div className={styles.infoList}>
                 <InfoRow label="طرح انتخاب‌شده" value="طرح ویژه واجد شرایط" />
                 <InfoRow label="بانک صادرکننده" value="بانک نمونه" />
-                <InfoRow label="مبلغ تأمین‌شده توسط بانک" value="۴۵۰٬۰۰۰٬۰۰۰ تومان" />
-                <InfoRow label="آورده نقدی مستأجر" value="۵۰٬۰۰۰٬۰۰۰ تومان" />
-                <InfoRow label="پرداخت ماهانه تأمین مالی" value="۱۸٬۵۰۰٬۰۰۰ تومان" strong />
+                <InfoRow label="وام بانک (نمونه C3، ۳۰٪ رهن معادل)" value={demoFinance.loanText} />
+                <InfoRow label="رهن کامل معادل قرارداد" value={demoFinance.fullEquivalentText} />
+                <InfoRow label="آورده از رهن معادل (نمونه، نه وجه نقد قطعی)" value={demoFinance.contributionText} />
+                <InfoRow label="پرداختی ماهانه مستأجر (فقط سود؛ نرخ نمونه ۲۳٪)" value={demoFinance.monthlyText} strong />
               </div>
-              <p className={styles.infoNotice} data-node-id="150:385">ℹ️ شرایط این طرح برای این قرارداد نهایی شده است و غیرقابل ویرایش می‌باشد.</p>
+              <p className={styles.infoNotice} data-node-id="150:385">ℹ️ این جزئیات نمونه طراحی‌اند؛ تأیید بانک و تسویه اصل وام باید با قرارداد واقعی مشخص شود.</p>
             </section>
           </div>
         </div>
+        <p role="note" style={{fontSize:12,lineHeight:2,color:"var(--ch-color-muted)"}}>{demoFinanceNote}</p>
       </section>
 
       <UserPanelSidebar nodeId="142:1948" name="Right Sidebar" />

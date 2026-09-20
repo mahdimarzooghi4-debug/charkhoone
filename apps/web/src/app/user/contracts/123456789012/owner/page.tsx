@@ -1,6 +1,7 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
+import { demoFinance, demoFinanceNote } from "@/lib/demo-financing";
 
 const conditions = [
   ["مبلغ رهن", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
@@ -45,9 +46,10 @@ export default async function OwnerContractActivePage({
 
             <section className={styles.card} data-node-id="161:264"><h2 data-node-id="161:265">شرایط قرارداد</h2><div className={styles.divider} /><div className={styles.grid} data-node-id="161:267">{conditions.map(([label, value]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}</div></section>
 
-            <section className={styles.card} data-node-id="161:283"><div className={styles.cardHeader}><span className={styles.completeBadge}>تکمیل شده</span><h2 data-node-id="161:287">وضعیت تأمین مالی</h2></div><div className={styles.divider} /><div className={styles.financingGrid} data-node-id="161:289"><div><strong data-node-id="161:291">۴۵۰٬۰۰۰٬۰۰۰ تومان</strong><span data-node-id="161:292">مبلغ تأمین‌شده</span></div><div><strong data-node-id="161:294">بانک نمونه</strong><span data-node-id="161:295">بانک ارائه دهنده</span></div></div><p className={styles.successInfo} data-node-id="161:297">فرایند تأمین مالی این قرارداد تکمیل شده است.</p></section>
+            <section className={styles.card} data-node-id="161:283"><div className={styles.cardHeader}><span className={styles.completeBadge}>تکمیل شده</span><h2 data-node-id="161:287">وضعیت تأمین مالی</h2></div><div className={styles.divider} /><div className={styles.financingGrid} data-node-id="161:289"><div><strong data-node-id="161:291">{demoFinance.loanText}</strong><span data-node-id="161:292">وام بانک برای رتبه C3 (نمونه)</span></div><div><strong data-node-id="161:294">بانک نمونه</strong><span data-node-id="161:295">بانک ارائه دهنده</span></div></div><p className={styles.successInfo} data-node-id="161:297">فرایند تأمین مالی این قرارداد فقط در سناریوی نمونه تکمیل شده است؛ تأیید واقعی بانک دریافت نشده است.</p></section>
           </div>
         </div>
+        <p role="note" style={{fontSize:12,lineHeight:2,color:"var(--ch-color-muted)"}}>{demoFinanceNote}</p>
       </section>
 
       <UserPanelSidebar nodeId="142:1563" />

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
+import { demoFinance, demoFinanceNote } from "@/lib/demo-financing";
 import { PreviewAction } from "@/components/user/PreviewAction";
 
 const assets = { mapPin: "/brand/footer-map.svg", fileText: "/brand/dashboard-quick-file.svg" } as const;
@@ -100,7 +101,7 @@ export default function PropertiesPage() {
             address="تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴، واحد ۳"
             postalCode="۱۹۹۸۷۶۵۴۳۲"
             contractStatus="قرارداد فعال تا ۱۵ مهر ۱۴۰۶"
-            footerText="پرداخت بعدی: ۱۸٬۵۰۰٬۰۰۰ تومان"
+            footerText={`پرداخت بعدی: ${demoFinance.monthlyText}`}
             action="مشاهده قرارداد"
             href="/user/contracts/123456789012"
           />
@@ -128,6 +129,7 @@ export default function PropertiesPage() {
           />
         </section>
 
+        <p role="note" style={{fontSize:12,lineHeight:2,color:"var(--ch-color-muted)"}}>{demoFinanceNote}</p>
       </section>
 
       <UserPanelSidebar nodeId="142:2138" name="Right Sidebar" />
