@@ -4,8 +4,9 @@ import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 import { OwnerFinalConfirmationConsent } from "./OwnerFinalConfirmationConsent";
 
 const conditions = [
-  ["رهن کامل معادل", "۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان"],
+  ["رهن نقدی قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
   ["اجاره ماهانه قرارداد", "۲۰٬۰۰۰٬۰۰۰ تومان"],
+  ["رهن کامل معادل", "۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان"],
   ["تاریخ شروع", "۱۵ مهر ۱۴۰۵"],
   ["تاریخ پایان", "۱۵ مهر ۱۴۰۶"],
   ["مدت قرارداد", "۱۲ ماه"],
