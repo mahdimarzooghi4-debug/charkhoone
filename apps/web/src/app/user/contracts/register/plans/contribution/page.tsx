@@ -10,17 +10,17 @@ const contractRows = [
 ] as const;
 
 const financeRows = [
-  ["مبلغ رهن قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان", "default"],
-  ["مبلغ تأمین‌شده توسط بانک", "۴۵۰٬۰۰۰٬۰۰۰ تومان", "primary"],
-  ["آورده شما", "۵۰٬۰۰۰٬۰۰۰ تومان", "accent"],
+  ["رهن کامل معادل", "۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان", "default"],
+  ["مبلغ تأمین‌شده توسط بانک", "۳۸۱۶٬۶۶۶٬۶۶۷ تومان", "primary"],
+  ["آورده شما", "۸۱۶٬۶۶۶٬۶۶۷ تومان", "accent"],
 ] as const;
 
 const planRows = [
   ["طرح", "طرح ویژه کارکنان", "default"],
   ["بانک", "بانک نمونه", "default"],
-  ["مبلغ تأمین مالی", "۴۵۰٬۰۰۰٬۰۰۰ تومان", "default"],
-  ["پرداخت ماهانه تأمین مالی", "۱۸٬۵۰۰٬۰۰۰ تومان", "primary"],
-  ["مدت بازپرداخت", "۱۲ ماه", "default"],
+  ["مبلغ تأمین مالی", "۳۸۱۶٬۶۶۶٬۶۶۷ تومان", "default"],
+  ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان", "primary"],
+  ["نحوه تسویه اصل وام", "طبق قرارداد بانک", "default"],
   ["وضعیت طرح", "تأیید بانک", "primary"],
 ] as const;
 
@@ -62,7 +62,7 @@ export default function ContributionPage() {
         <header className={styles.pageHeader} data-node-id="150:1319">
           <p data-node-id="150:1320">قراردادها / وضعیت تأمین مالی</p>
           <div className={styles.titleRow} data-node-id="150:1321"><h1 data-node-id="150:1324">پرداخت آورده</h1><span className={styles.approvedBadge}>تأیید شده</span></div>
-          <p data-node-id="150:1325">عضویت چارخونه فعال است. برای ادامه، آورده موردنیاز را پرداخت کنید.</p>
+          <p data-node-id="150:1325">عضویت چارخونه فعال است. برای ادامه، آورده مستأجر از رهن کامل معادل را پرداخت کنید.</p>
         </header>
 
         <div className={styles.columns} data-node-id="150:1326">
@@ -93,16 +93,16 @@ export default function ContributionPage() {
             </section>
 
             <section className={`${styles.card} ${styles.primaryCard}`} data-node-id="150:1397">
-              <div className={styles.primaryCopy}><span data-node-id="150:1399">آورده موردنیاز شما</span><strong data-node-id="150:1400">۵۰٬۰۰۰٬۰۰۰ تومان</strong><p data-node-id="150:1401">پس از پرداخت آورده، فرایند تأیید نهایی قرارداد ادامه پیدا می‌کند.</p></div>
+              <div className={styles.primaryCopy}><span data-node-id="150:1399">آورده مستأجر از رهن کامل معادل</span><strong data-node-id="150:1400">۸۱۶٬۶۶۶٬۶۶۷ تومان</strong><p data-node-id="150:1401">پس از پرداخت آورده، فرایند تأیید نهایی قرارداد ادامه پیدا می‌کند.</p></div>
               <Link href="/user/contracts/register/plans/final-confirmation" className={styles.primaryAction} data-node-id="150:1403">پرداخت آورده</Link>
             </section>
 
-            <section className={styles.card} data-node-id="150:1405"><h2 data-node-id="150:1406">جزئیات مالی</h2><Rows rows={financeRows} /><div className={styles.formula} data-node-id="150:1418">رهن قرارداد = تأمین مالی + آورده شما</div></section>
+            <section className={styles.card} data-node-id="150:1405"><h2 data-node-id="150:1406">جزئیات مالی</h2><Rows rows={financeRows} /><div className={styles.formula} data-node-id="150:1418">رهن کامل معادل = تأمین مالی بانک + آورده مستأجر</div></section>
 
             <section className={styles.card} data-node-id="150:1420">
               <h2 data-node-id="150:1421">جزئیات طرح تأییدشده</h2>
               <Rows rows={planRows} />
-              <div className={styles.rentNotice} data-node-id="150:1447"><div><strong data-node-id="150:1449">۲۰٬۰۰۰٬۰۰۰ تومان در ماه</strong><span data-node-id="150:1450">اجاره ماهانه قرارداد</span></div><p data-node-id="150:1451">تذکر: اجاره ماهانه قرارداد اطلاعاتی است و ارتباطی به پرداخت ماهانه تأمین مالی ندارد.</p></div>
+              <div className={styles.rentNotice} data-node-id="150:1447"><div><strong data-node-id="150:1449">۲۰٬۰۰۰٬۰۰۰ تومان در ماه</strong><span data-node-id="150:1450">اجاره ماهانه قرارداد</span></div><p data-node-id="150:1451">تذکر: اجاره ماهانه قرارداد اطلاعاتی است و ارتباطی به پرداختی ماهانه مستأجر (فقط سود وام) ندارد.</p></div>
             </section>
           </div>
         </div>
