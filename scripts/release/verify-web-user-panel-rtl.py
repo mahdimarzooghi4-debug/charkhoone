@@ -528,6 +528,11 @@ require('<span className={styles.connectedNationalId}><span>کد ملی:</span><
         '.connectedNationalIdValue { direction: ltr; unicode-bidi: isolate; white-space: nowrap; text-align: left; }' in owner_flow_css and
         '<strong>علی رضایی</strong>' in owner_connected,
         "owner-connected masked national-ID value must be LTR while its Persian label and tenant name stay RTL")
+require('const toPersianDigits = (value: number) =>' in owner_connected and
+        'String(value).replace(/[0-9]/g,' in owner_connected and
+        '>{toPersianDigits(index + 1)}</span><div className={styles.timelineCopy}>' in owner_connected and
+        '>{index + 1}</span><div className={styles.timelineCopy}>' not in owner_connected,
+        "owner-connected five process step numbers must display Persian digits")
 
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))

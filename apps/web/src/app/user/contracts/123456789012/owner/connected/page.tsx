@@ -13,6 +13,9 @@ function InfoIcon({ size = 20 }: { size?: number }) {
   );
 }
 
+const toPersianDigits = (value: number) =>
+  String(value).replace(/[0-9]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
+
 const process = [
   ["اتصال قرارداد", "تکمیل شده", "done"],
   ["فرایند تأمین مالی مستأجر", "در حال انجام", "active"],
@@ -48,7 +51,7 @@ export default function OwnerContractConnectedPage() {
             <section className={styles.card} data-node-id="170:314">
               <h2 data-node-id="170:315">وضعیت فرایند</h2><div className={styles.divider} />
               <div className={styles.timeline} data-node-id="170:317">
-                {process.map(([title, subtitle, state], index) => <div key={title} className={styles.timelineRow}><span className={`${styles.stepDot} ${state === "done" ? styles.stepDone : state === "active" ? styles.stepActive : ""}`}>{index + 1}</span><div className={styles.timelineCopy}><strong className={state === "active" ? styles.activeText : ""}>{title}</strong><small>{subtitle}</small></div></div>)}
+                {process.map(([title, subtitle, state], index) => <div key={title} className={styles.timelineRow}><span className={`${styles.stepDot} ${state === "done" ? styles.stepDone : state === "active" ? styles.stepActive : ""}`}>{toPersianDigits(index + 1)}</span><div className={styles.timelineCopy}><strong className={state === "active" ? styles.activeText : ""}>{title}</strong><small>{subtitle}</small></div></div>)}
               </div>
             </section>
           </aside>
