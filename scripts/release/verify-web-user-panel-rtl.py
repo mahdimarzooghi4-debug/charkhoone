@@ -786,7 +786,7 @@ require('"use client";' in calculator_page and
         'const maxFinancing = Math.round(deposit * MAX_FINANCING_PERCENT / 100);' in calculator_page and
         'const selectedFinancing = Math.round(deposit * financingPercent / 100);' in calculator_page and
         'const contribution = deposit - selectedFinancing;' in calculator_page and
-        'const monthlyInterest = rateValid ? Math.round(selectedFinancing * bankAnnualRate / 100 / 12) : null;' in calculator_page and
+        'const monthlyInterest = rateValid && bankAnnualRate !== null ? Math.round(selectedFinancing * bankAnnualRate / 100 / 12) : null;' in calculator_page and
         'useState("")' in calculator_page and
         'نرخ سود سالانه اسمی اعلام‌شده بانک' in calculator_page and
         'اصل وام جزو قسط ماهانه این برآورد نیست' in calculator_page and

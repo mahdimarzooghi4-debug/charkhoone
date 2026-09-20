@@ -70,7 +70,7 @@ export default function CalculatorPage() {
   const contribution = deposit - selectedFinancing;
   // Annual nominal simple interest divided into 12 monthly payments. The
   // bank must confirm its quote and calculation convention; do not add principal.
-  const monthlyInterest = rateValid ? Math.round(selectedFinancing * bankAnnualRate / 100 / 12) : null;
+  const monthlyInterest = rateValid && bankAnnualRate !== null ? Math.round(selectedFinancing * bankAnnualRate / 100 / 12) : null;
   const rentDifference = monthlyInterest === null ? null : rent - monthlyInterest;
   const belowRent = rentDifference !== null && rentDifference > 0;
   const financingMillion = Math.round(selectedFinancing / 1_000_000).toLocaleString("fa-IR");
