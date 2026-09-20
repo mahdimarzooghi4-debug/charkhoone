@@ -83,3 +83,22 @@
 .navItem > span { direction: rtl; text-align: right; }
 .navItem img { flex: 0 0 20px; }
 .logoWrap { justify-content: flex-start; }
+
+/* Usable native controls replace decorative, expiring Figma slider/gauge image URLs. */
+.header, .pageHeader, .cardHeader, .metric, .comparison, .sliderWidget, .estimate { align-items: stretch; text-align: right; }
+.inputsCard { align-items: stretch; }
+.gaugeTrack, .gaugeFill { position: absolute; bottom: 0; left: 10px; width: 220px; height: 110px; border: 17px solid var(--ch-color-border); border-bottom: 0; border-radius: 220px 220px 0 0; box-sizing: border-box; }
+.gaugeFill { border-color: var(--ch-color-primary); }
+.gaugeText { top: 64px; }
+.sliderNumber { display: inline-flex; align-items: center; gap: 6px; direction: ltr; color: var(--ch-color-primary); font-weight: 700; }
+.sliderNumber span { white-space: nowrap; direction: rtl; }
+.numberInput { min-width: 0; width: 145px; padding: 7px 8px; border: 1px solid var(--ch-color-border); border-radius: 8px; color: var(--ch-color-primary); font: inherit; text-align: left; direction: ltr; }
+.numberInput:focus-visible, .rangeInput:focus-visible { outline: 3px solid rgb(13 59 54 / 25%); outline-offset: 3px; }
+.rangeInput { display: block; width: 100%; height: 8px; margin: 10px 0; border-radius: 999px; appearance: none; -webkit-appearance: none; cursor: pointer; accent-color: var(--ch-color-primary); }
+.rangeInput::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; background: var(--ch-color-primary); border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px var(--ch-color-primary); }
+.rangeInput::-moz-range-thumb { width: 14px; height: 14px; background: var(--ch-color-primary); border: 3px solid #fff; border-radius: 50%; }
+.sliderHeader { flex-wrap: wrap; }
+.metric strong { overflow-wrap: anywhere; }
+.gaugeLimits { gap: 8px; }
+.planLink { width: 100%; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 8px 16px; border-radius: 10px; color: #fff; background: var(--ch-color-primary); text-decoration: none; text-align: center; }
+.planLink:focus-visible { outline: 3px solid rgb(13 59 54 / 25%); outline-offset: 3px; }

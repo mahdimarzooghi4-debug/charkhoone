@@ -129,6 +129,7 @@ export default function EligibleFinancingPlansPage() {
         <section className={styles.actions} data-node-id="150:995">
           <Link href={`/user/contracts/register/plans/confirmation?plan=${selectedPlan}`} className={styles.primaryAction} data-node-id="150:996">انتخاب طرح و ادامه</Link>
           <Link href="/user/contracts/register/result" className={styles.secondaryAction} data-node-id="150:998">بازگشت به اطلاعات قرارداد</Link>
+          <Link href="/user/calculator" className={styles.secondaryAction}>ماشین‌حساب (پیش‌نمایش)</Link>
         </section>
 
         <div className={styles.informationNote} data-node-id="150:999">

@@ -768,6 +768,32 @@ require('<span>نوع</span><span>قرارداد</span><span>شرح</span><span>
         'href="/user/receive-pay?scenario=termination"' in owner_terminated,
         "receive/pay headers and rows must have matching RTL columns and scenario must be opt-in")
 
+
+# Figma Web App / Calculator (150:588) was previously a fully static image
+# fixture, despite the home quick link and financing-plan discovery route.
+calculator_page = read(USER_ROOT / "calculator/page.tsx")
+calculator_css = read(USER_ROOT / "calculator/page.module.css")
+require('"use client";' in calculator_page and
+        'useState(EXAMPLE_DEPOSIT)' in calculator_page and
+        'useState(20_000_000)' in calculator_page and
+        'type="range"' in calculator_page and
+        'type="number"' in calculator_page and
+        'onChange={(event) => setAmount(Number(event.target.value))}' in calculator_page and
+        'setAmount(clamp(Number(event.target.value), max))' in calculator_page and
+        'const minFinancing = Math.round(deposit * 0.7);' in calculator_page and
+        'const maxFinancing = Math.round(deposit * 0.9);' in calculator_page and
+        'const contribution = deposit - maxFinancing;' in calculator_page and
+        'const monthly = Math.round((18_500_000 * deposit) / EXAMPLE_DEPOSIT);' in calculator_page and
+        'money(rent)' in calculator_page and
+        'figma.com/api/mcp/asset/' not in calculator_page and
+        'styles.gaugeTrack' in calculator_page and
+        '.rangeInput::-webkit-slider-thumb {' in calculator_css and
+        'فرمول بانک' in calculator_page and
+        'href="/user/contracts/register/plans"' in calculator_page and
+        'href="/user/calculator"' in plans_page,
+        "calculator must be accessible from financing plans, interactive and clearly sample-only")
+
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)
