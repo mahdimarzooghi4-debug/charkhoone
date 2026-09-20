@@ -513,6 +513,22 @@ require('<div className={styles.notice} data-node-id="171:339"><img src={assets.
         '.completedList > div { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }' in waiting_owner_css,
         "waiting-owner footer notice must align icon and text right; buttons and green badges must stay unchanged")
 
+owner_connected = read(USER_ROOT / "contracts/123456789012/owner/connected/page.tsx")
+owner_flow_css = read(USER_ROOT / "contracts/123456789012/owner/flow.module.css")
+require('function InfoIcon({ size = 20 }:' in owner_connected and
+        'className={`${styles.infoHeader} ${styles.connectedInfoHeader}`}' in owner_connected and
+        '<InfoIcon /><h3 data-node-id="170:380">مرحله بعد</h3>' in owner_connected and
+        '<div className={styles.bottomNote}><InfoIcon size={16} />' in owner_connected and
+        'figma.com/api/mcp/asset/' not in owner_connected and
+        '.connectedInfoHeader { justify-content: flex-start; gap: 8px; direction: rtl; text-align: right; }' in owner_flow_css and
+        '.connectedInfoHeader svg { width: 20px; height: 20px;' in owner_flow_css,
+        "owner-connected next step icon must render permanently on the right without changing other owner routes")
+require('<span className={styles.connectedNationalId}><span>کد ملی:</span><bdi dir="ltr" className={styles.connectedNationalIdValue}>۰۰۱•••••۷۸۹</bdi></span>' in owner_connected and
+        '.connectedNationalId { display: inline-flex; align-items: baseline; gap: 6px; direction: rtl; text-align: right; }' in owner_flow_css and
+        '.connectedNationalIdValue { direction: ltr; unicode-bidi: isolate; white-space: nowrap; text-align: left; }' in owner_flow_css and
+        '<strong>علی رضایی</strong>' in owner_connected,
+        "owner-connected masked national-ID value must be LTR while its Persian label and tenant name stay RTL")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)

@@ -169,3 +169,9 @@
 .navItem > span { direction: rtl; text-align: right; }
 .navItem img { flex: 0 0 20px; }
 .logoWrap { justify-content: flex-start; }
+
+/* Owner-connected route only: stable icon at right; masked national ID LTR. */
+.connectedInfoHeader { justify-content: flex-start; gap: 8px; direction: rtl; text-align: right; }
+.connectedInfoHeader svg { width: 20px; height: 20px; flex: 0 0 20px; display: block; color: var(--ch-color-primary); }
+.connectedNationalId { display: inline-flex; align-items: baseline; gap: 6px; direction: rtl; text-align: right; }
+.connectedNationalIdValue { direction: ltr; unicode-bidi: isolate; white-space: nowrap; text-align: left; }
