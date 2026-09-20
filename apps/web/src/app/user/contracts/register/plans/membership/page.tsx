@@ -68,7 +68,7 @@ export default function MembershipPage() {
               <div className={styles.contextTitle}><span className={styles.tenantBadge}>مستأجر</span><h2 data-node-id="195:388">قرارداد سعادت‌آباد</h2></div>
               <div className={styles.divider} />
               <div className={styles.contextMetric}><strong>۵۰۰٬۰۰۰٬۰۰۰ تومان</strong><span>مبلغ رهن</span></div>
-              <div className={styles.contextMetric}><strong className={styles.emphasis}>۳۸۱۶٬۶۶۶٬۶۶۷ تومان</strong><span>تأمین مالی موردنیاز</span></div>
+              <div className={styles.contextMetric}><strong className={styles.emphasis}>۳۵۰٬۰۰۰٬۰۰۰ تومان</strong><span>تأمین مالی موردنیاز</span></div>
             </section>
 
             <section className={styles.contextCard} data-node-id="195:397">
