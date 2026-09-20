@@ -14,9 +14,10 @@
 .secondaryColumn { width: 420px; flex: 0 0 420px; display: flex; flex-direction: column; gap: 24px; direction: rtl; }
 .successCard { width: 100%; display: flex; flex-direction: column; gap: 16px; padding: 24px; background: #e6f4e6; border: 1px solid #d4ecd4; border-radius: 16px; }
 .successTop { width: 100%; display: flex; align-items: center; gap: 16px; direction: ltr; }
-.successIcon { width: 48px; height: 48px; flex: 0 0 48px; display: inline-flex; align-items: center; justify-content: center; background: rgb(13 59 54 / 10%); border-radius: 24px; }
-.successIcon img { width: 24px; height: 24px; display: block; }
-.successTop > div { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; direction: rtl; text-align: right; }
+.successIcon { width: 48px; height: 48px; flex: 0 0 48px; display: inline-flex; align-items: center; justify-content: center; background: var(--ch-color-primary); border-radius: 24px; }
+.successIcon img { width: 14px; height: 14px; display: block; }
+.successTop > div { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: stretch; gap: 4px; direction: rtl; text-align: right; }
+.successTop h2, .successTop p { width: 100%; text-align: right; }
 .successTop h2 { color: var(--ch-color-primary); font-size: 18px; font-weight: 700; }
 .successTop p { color: var(--ch-color-text); font-size: 14px; }
 .successDivider { width: 100%; height: 1px; background: #d4ecd4; }
@@ -71,11 +72,32 @@
 .nextSteps ol { display: flex; flex-direction: column; gap: 12px; margin: 0; padding: 0 22px 0 0; color: #000; font-size: 13px; line-height: 1.8; text-align: right; }
 .nextSteps li::marker { color: var(--ch-color-primary); font-weight: 700; }
 .confirmationArea { width: 100%; display: flex; flex-direction: column; gap: 16px; }
-.confirmationRow { width: 100%; display: flex; align-items: flex-start; gap: 10px; direction: rtl; }
-.confirmationRow p { min-width: 0; flex: 1 1 auto; color: var(--ch-color-text); font-size: 13px; line-height: 1.8; text-align: right; }
-.checkbox { width: 20px; height: 20px; flex: 0 0 20px; display: inline-flex; align-items: center; justify-content: center; background: var(--ch-color-primary); border-radius: 4px; }
-.checkbox img { width: 12px; height: 12px; display: block; }
-.primaryAction { width: 100%; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; background: var(--ch-color-primary); border-radius: 12px; }
+.confirmationRow { width: 100%; display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: start; gap: 10px; direction: rtl; cursor: pointer; }
+.confirmationText { min-width: 0; width: 100%; color: var(--ch-color-text); font-size: 13px; line-height: 1.8; direction: rtl; text-align: right; }
+.confirmationCheckbox {
+  position: static;
+  display: block;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px; /* Override the global input minimum. */
+  max-width: 20px;
+  max-height: 20px;
+  margin: 2px 0 0;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 2px solid var(--ch-color-muted);
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+}
+.confirmationCheckbox:checked { background: var(--ch-color-primary); border-color: var(--ch-color-primary); }
+.confirmationCheckbox:checked::after { content: "✓"; display: block; color: #fff; text-align: center; font-size: 14px; font-weight: 700; line-height: 16px; }
+.confirmationCheckbox:focus-visible { outline: 3px solid rgb(13 59 54 / 35%); outline-offset: 3px; }
+.primaryAction { width: 100%; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; background: var(--ch-color-primary); border: 0; border-radius: 12px; cursor: pointer; }
+.primaryAction:disabled { color: #fff; background: #9caaa6; opacity: 1; cursor: not-allowed; }
+.primaryAction:focus-visible { outline: 3px solid rgb(13 59 54 / 35%); outline-offset: 3px; }
 .secondaryAction { align-self: center; color: var(--ch-color-primary); font-size: 14px; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
 .sidebar { width: 260px; flex: 0 0 260px; display: flex; flex-direction: column; justify-content: space-between; padding: 40px 20px; direction: rtl; background: var(--ch-color-primary); }
 .sidebarTop { display: flex; flex-direction: column; gap: 32px; }

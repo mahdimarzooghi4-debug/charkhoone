@@ -445,6 +445,39 @@ require('assets.heroCheck' not in contribution_page and
         '.heroIcon img { width: 14px; height: 14px; display: block; }' in contribution_css,
         "contribution membership banner and timeline checks must use permanent local SVG")
 
+final_confirmation = read(USER_ROOT / "contracts/register/plans/final-confirmation/page.tsx")
+final_css = read(USER_ROOT / "contracts/register/plans/final-confirmation/page.module.css")
+final_consent = read(USER_ROOT / "contracts/register/plans/final-confirmation/FinalConfirmationConsent.tsx")
+require('const toPersianDigits = (value: string) =>' in final_confirmation and
+        'value.replace(/[0-9٠-٩]/g,' in final_confirmation and
+        '{toPersianDigits(value)}' in final_confirmation and
+        '{toPersianDigits("۵۰٬۰۰۰٬۰۰۰")}' in final_confirmation and
+        '{toPersianDigits("۱۲۳۴۵۶۷۸۹")}' in final_confirmation and
+        'toPersianDigits(step.number ?? "")' in final_confirmation,
+        "final-confirmation sample figures, reference and step numbers should be Persian digits")
+require('className={styles.successIcon}><img src="/brand/financing-review-check.svg"' in final_confirmation and
+        final_confirmation.count('src="/brand/financing-review-check.svg"') == 2 and
+        'figma.com/api/mcp/asset/' not in final_confirmation and
+        '.successTop { width: 100%; display: flex; align-items: center; gap: 16px; direction: ltr; }' in final_css and
+        '.successIcon { width: 48px; height: 48px; flex: 0 0 48px; display: inline-flex; align-items: center; justify-content: center; background: var(--ch-color-primary);' in final_css and
+        '.successIcon img { width: 14px; height: 14px; display: block; }' in final_css,
+        "final confirmation banner icon must be permanent, branded and on the left")
+require('<FinalConfirmationConsent />' in final_confirmation and
+        'styles.checkbox' not in final_confirmation and
+        final_consent.count('type="checkbox"') == 1 and
+        'useState(false)' in final_consent and
+        'checked={confirmed}' in final_consent and
+        'onChange={(event) => setConfirmed(event.target.checked)}' in final_consent and
+        'disabled={!confirmed}' in final_consent and
+        'router.push("/user/contracts/register/plans/waiting-owner")' in final_consent and
+        '.confirmationRow { width: 100%; display: grid; grid-template-columns: 20px minmax(0, 1fr);' in final_css and
+        'direction: rtl; cursor: pointer; }' in final_css and
+        '.confirmationCheckbox:checked::after { content: "✓";' in final_css,
+        "final confirmation must use one right-aligned interactive checkbox gating the existing sample route")
+require('پرداخت واقعی ثبت نشده' in final_confirmation and
+        'شناسهٔ نمونه:' in final_confirmation,
+        "final confirmation payment and reference should be identified as illustrative")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)
