@@ -168,7 +168,9 @@ require(bool(re.search(r"\.contractHeader,\s*\.contractBottom\s*\{[^}]*direction
 require(contracts_text.count('action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/final-confirmation"') == 1 and
         'nodeId: "149:223"' in contracts_text and
         'statusTone: "attention" as const' in contracts_text and
-        'contract.href ? <Link href={contract.href} className={styles.detailButton}>{contract.action}</Link>' in contracts_text and
+        'contract.href ? <Link href={contract.href} className={contract.statusTone === "attention" ? styles.reviewButton : styles.detailButton}>{contract.action}</Link>' in contracts_text and
+        '.reviewButton {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;' in contracts_css and
+        'text-decoration: none;' in contracts_css and
         'href: null' in contracts_text,
         "contracts review-and-confirm action must navigate to owner final-confirmation sample without changing other cards")
 
