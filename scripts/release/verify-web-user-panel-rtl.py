@@ -171,10 +171,12 @@ require(bool(re.search(r"\.contractHeader,\s*\.contractBottom\s*\{[^}]*direction
 require(contracts_text.count('action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/settlement-preference"') == 1 and
         'nodeId: "149:223"' in contracts_text and
         'statusTone: "attention" as const' in contracts_text and
-        'contract.href ? <Link href={contract.href} className={contract.statusTone === "attention" ? styles.reviewButton : styles.detailButton}>{contract.action}</Link>' in contracts_text and
+        '<Link href={contract.href} className={contract.statusTone === "attention" ? styles.reviewButton : styles.detailButton}>{contract.action}</Link>' in contracts_text and
         '.reviewButton {\n  display: inline-flex;\n  align-items: center;\n  justify-content: center;' in contracts_css and
         'text-decoration: none;' in contracts_css and
-        'href: null' in contracts_text,
+        'href: null' not in contracts_text and
+        '/user/contracts/demo/pounak' in contracts_text and
+        '/user/contracts/demo/jordan' in contracts_text,
         "contracts review-and-confirm action must navigate to owner final-confirmation sample without changing other cards")
 
 contracts_assets = {

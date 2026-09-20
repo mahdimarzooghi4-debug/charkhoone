@@ -11,3 +11,6 @@
 .secondary { color: var(--ch-color-primary); border: 1px solid var(--ch-color-primary); }
 .page a:focus-visible { outline: 3px solid rgb(13 59 54 / 30%); }
 @media (max-width: 920px) { .page { flex-direction: column-reverse; } .content { padding: 20px 16px; } }
+
+/* Shared panel audit: Persian sample content must be explicitly RTL. */
+.mainContent { direction: rtl; text-align: right; }
