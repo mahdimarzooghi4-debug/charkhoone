@@ -1,0 +1,7 @@
+.backdrop { position: fixed; inset: 0; z-index: 1000; background: rgb(0 0 0 / 45%); display: flex; align-items: center; justify-content: center; padding: 20px; }
+.dialog { width: min(480px, 100%); max-height: 80vh; overflow: auto; padding: 26px; display: flex; flex-direction: column; align-items: flex-start; gap: 16px; background: #fff; border-radius: 16px; box-shadow: 0 12px 36px rgb(0 0 0 / 15%); color: var(--ch-color-text); text-align: right; }
+.dialog h2, .dialog p { margin: 0; } .dialog h2 { font-size: 19px; } .dialog p { font-size: 14px; line-height: 1.9; }
+.badge { padding: 5px 10px; border-radius: 7px; color: var(--ch-color-primary); background: #e6f4e6; font-size: 12px; }
+.note { color: var(--ch-color-muted); }
+.close { align-self: stretch; min-height: 44px; border: 0; border-radius: 10px; color: white; background: var(--ch-color-primary); font: inherit; cursor: pointer; }
+.close:focus-visible { outline: 3px solid rgb(13 59 54 / 35%); outline-offset: 3px; }
