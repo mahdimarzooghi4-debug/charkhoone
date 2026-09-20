@@ -264,9 +264,10 @@ plans_page = read(USER_ROOT / "contracts/register/plans/page.tsx")
 plans_css = read(USER_ROOT / "contracts/register/plans/page.module.css")
 plans_confirmation = read(USER_ROOT / "contracts/register/plans/confirmation/page.tsx")
 summary_pairs = (
-    ('مبلغ موردنیاز:', '۴۵۰٬۰۰۰٬۰۰۰ تومان'),
+    ('تأمین مالی نمونه:', '۳۵۰٬۰۰۰٬۰۰۰ تومان'),
+    ('رهن کامل معادل:', '۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان'),
     ('اجاره ماهانه:', '۲۰٬۰۰۰٬۰۰۰ تومان'),
-    ('مبلغ رهن:', '۵۰۰٬۰۰۰٬۰۰۰ تومان'),
+    ('رهن نقدی قرارداد:', '۵۰۰٬۰۰۰٬۰۰۰ تومان'),
     ('قرارداد:', 'سعادت‌آباد'),
 )
 context_markup = plans_page.split('className={styles.contractContext}', 1)[1].split('</section>', 1)[0]
@@ -295,7 +296,7 @@ require('.headerRight h1, .headerRight p, .pageHeader h2, .pageHeader p { width:
         '.planTitle h3, .planTitle p { width: 100%; text-align: right; }' in plans_css and
         '.informationNote { width: 100%; display: grid; grid-template-columns: 20px minmax(0, 1fr);' in plans_css,
         "finance plans heading, plan titles and bottom warning must be right-aligned")
-require('نمونهٔ طراحی‌اند' in plans_page and
+require('رتبه نمونه C3' in plans_page and
         'background: var(--ch-color-primary); border-radius: 50%;' in plans_css,
         "finance plans selection must use brand green and identify fixture values as a preview")
 
@@ -409,11 +410,13 @@ require('const plan = (await searchParams).plan === "general" ? "general" : "sta
         'const planRows = plan === "general" ? generalPlanRows : staffPlanRows;' in approved_page and
         'const resultRows = plan === "general" ? generalResultRows : staffResultRows;' in not_approved_page and
         all(value in review_page and value in approved_page and value in not_approved_page
-            for value in ("۴۰۰٬۰۰۰٬۰۰۰ تومان", "طرح عمومی")) and
-        '۲۰٬۵۰۰٬۰۰۰ تومان' in review_page and
-        '۲۰٬۵۰۰٬۰۰۰ تومان' in approved_page and
-        '۱۰۰٬۰۰۰٬۰۰۰ تومان' in review_page and
-        '۱۰۰٬۰۰۰٬۰۰۰ تومان' in approved_page and
+            for value in ("۳۵۰٬۰۰۰٬۰۰۰ تومان", "طرح عمومی")) and
+        '۸۱۶٬۶۶۶٬۶۶۷ تومان' in review_page and
+        '۸۱۶٬۶۶۶٬۶۶۷ تومان' in approved_page and
+        '۶٬۷۰۸٬۳۳۳ تومان' in review_page and
+        '۶٬۷۰۸٬۳۳۳ تومان' in approved_page and
+        all(value not in (plans_page + plans_confirmation + review_page + approved_page + not_approved_page)
+            for value in ("۴۵۰٬۰۰۰٬۰۰۰ تومان", "۴۰۰٬۰۰۰٬۰۰۰ تومان", "۱۸٬۵۰۰٬۰۰۰ تومان", "۲۰٬۵۰۰٬۰۰۰ تومان", "۱۰۰٬۰۰۰٬۰۰۰ تومان")) and
         'نتیجه واقعی از بانک دریافت نشده است' in not_approved_page,
         "financing preview must preserve general/staff plan across consent, bank review and both results")
 require('disabled={!agreed}' in consent_code and
@@ -491,7 +494,7 @@ require('<h1 data-node-id="150:1494">تأیید نهایی قرارداد</h1><s
 require('const toPersianDigits = (value: string) =>' in final_confirmation and
         'value.replace(/[0-9٠-٩]/g,' in final_confirmation and
         '{renderPersianValue(value)}' in final_confirmation and
-        '{renderPersianValue("۵۰٬۰۰۰٬۰۰۰")}' in final_confirmation and
+        '{renderPersianValue("۸۱۶٬۶۶۶٬۶۶۷")}' in final_confirmation and
         '{renderPersianValue("۱۲۳۴۵۶۷۸۹")}' in final_confirmation and
         'renderPersianValue(step.number ?? "")' in final_confirmation,
         "final-confirmation sample figures, reference and step numbers should be Persian digits")
@@ -805,10 +808,10 @@ require('"use client";' in calculator_page and
         'const maxFinancing = Math.round(fullDepositEquivalent * MAX_FINANCING_PERCENT / 100);' in calculator_page and
         'const selectedFinancing = Math.round(fullDepositEquivalent * financingPercent / 100);' in calculator_page and
         'const contribution = fullDepositEquivalent - selectedFinancing;' in calculator_page and
-        '<div className={styles.contributionSummary} aria-label="آورده مستأجر از رهن معادل">' in calculator_page and
-        'آورده مستأجر از رهن معادل (نمونه)' in calculator_page and
+        '<div className={styles.contributionSummary} aria-label="آورده مستأجر از رهن کامل معادل">' in calculator_page and
+        'آورده مستأجر از رهن کامل معادل (نمونه)' in calculator_page and
         '<strong>{money(contribution)}</strong>' in calculator_page and
-        'مبلغ نقدی قطعی هنگام قرارداد نیست' in calculator_page and
+        'این مانده رهن کامل معادل سهمی است که مستأجر تأمین می‌کند' in calculator_page and
         '.contributionSummary > strong' in calculator_css and
         'رهن کامل معادل = رهن نقدی + (اجاره ماهانه ÷ ۰٫۰۳)' in calculator_page and
         'رهن کامل معادل قرارداد' in calculator_page and
