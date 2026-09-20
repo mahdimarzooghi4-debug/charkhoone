@@ -300,12 +300,13 @@ require('نمونهٔ طراحی‌اند' in plans_page and
 confirmation_css = read(USER_ROOT / "contracts/register/plans/confirmation/page.module.css")
 consent_code = read(USER_ROOT / "contracts/register/plans/confirmation/PlanConfirmationConsent.tsx")
 require('import { PlanConfirmationConsent } from "./PlanConfirmationConsent";' in plans_confirmation and
-        '<PlanConfirmationConsent />' in plans_confirmation and
+        '<PlanConfirmationConsent plan={isGeneral ? "general" : "staff"} />' in plans_confirmation and
         'type="checkbox"' in consent_code and
         'useState(false)' in consent_code and
         'onChange={(event) => setAgreed(event.target.checked)}' in consent_code and
         'disabled={!agreed}' in consent_code and
-        'router.push("/user/contracts/register/plans/review")' in consent_code,
+        'router.push(`/user/contracts/register/plans/review?plan=${plan}`)' in consent_code and
+        'plan }: { plan: "general" | "staff" }' in consent_code,
         "confirmation preview checkbox must toggle and block navigation until checked")
 require(consent_code.count('type="checkbox"') == 1 and
         'styles.checkbox' not in consent_code and
@@ -377,15 +378,17 @@ require('const isNationalId = label === "کد ملی مستأجر" || label === 
 approved_page = read(USER_ROOT / "contracts/register/plans/approved/page.tsx")
 approved_css = read(USER_ROOT / "contracts/register/plans/approved/page.module.css")
 membership_page = read(USER_ROOT / "contracts/register/plans/membership/page.tsx")
-require('<Link href="/user/contracts/register/plans/approved" className={styles.primaryAction}' in review_page and
-        'مشاهده نتیجهٔ نمونهٔ بررسی بانک' in review_page and
+require('href={`/user/contracts/register/plans/approved?plan=${plan}`}' in review_page and
+        'href={`/user/contracts/register/plans/not-approved?plan=${plan}`}' in review_page and
+        'پیش‌نمایش نتیجه: تأیید درخواست' in review_page and
+        'پیش‌نمایش نتیجه: رد درخواست' in review_page and
         '<Link href="/user/contracts/123456789012" className={styles.primaryAction}' not in review_page,
         "review primary action must lead to the sample bank decision, not ordinary contracts/payments")
 require('اعلام نتیجهٔ نمونهٔ بررسی بانک' in approved_page and
         'title: "بررسی بانک (نمونه)"' in approved_page and
         'title: "اعلام نتیجه (نمونه)"' in approved_page and
         'title: "خرید عضویت چارخونه"' in approved_page and
-        '<Link href="/user/contracts/register/plans/membership" className={styles.primaryAction}' in approved_page and
+        'href={`/user/contracts/register/plans/membership?plan=${plan}`}' in approved_page and
         'انتخاب و خرید عضویت (نمونه)' in approved_page and
         'data-name="Web App / Tenant Membership"' in membership_page,
         "review -> sample result -> membership selection must be an unbroken route")
@@ -396,6 +399,25 @@ require('نتیجهٔ واقعی از بانک دریافت نشده است.' in
         'figma.com/api/mcp/asset/' not in approved_page and
         '.heroIcon img { width: 14px; height: 14px; display: block; }' in approved_css,
         "bank result preview must avoid live bank/payment claims and temporary icon links")
+
+not_approved_page = read(USER_ROOT / "contracts/register/plans/not-approved/page.tsx")
+require('const plan = (await searchParams).plan === "general" ? "general" : "staff";' in review_page and
+        'const requestRows = plan === "general" ? generalRequestRows : staffRequestRows;' in review_page and
+        'const financeRows = plan === "general" ? generalFinanceRows : staffFinanceRows;' in approved_page and
+        'const planRows = plan === "general" ? generalPlanRows : staffPlanRows;' in approved_page and
+        'const resultRows = plan === "general" ? generalResultRows : staffResultRows;' in not_approved_page and
+        all(value in review_page and value in approved_page and value in not_approved_page
+            for value in ("۴۰۰٬۰۰۰٬۰۰۰ تومان", "طرح عمومی")) and
+        '۲۰٬۵۰۰٬۰۰۰ تومان' in review_page and
+        '۲۰٬۵۰۰٬۰۰۰ تومان' in approved_page and
+        '۱۰۰٬۰۰۰٬۰۰۰ تومان' in review_page and
+        '۱۰۰٬۰۰۰٬۰۰۰ تومان' in approved_page and
+        'نتیجه واقعی از بانک دریافت نشده است' in not_approved_page,
+        "financing preview must preserve general/staff plan across consent, bank review and both results")
+require('disabled={!agreed}' in consent_code and
+        'onChange={(event) => setAgreed(event.target.checked)}' in consent_code and
+        'href="/user/contracts"' in review_page,
+        "financing preview outcome links must not bypass the confirmation consent")
 
 membership_css = read(USER_ROOT / "contracts/register/plans/membership/page.module.css")
 require('.headerRight { min-width: 0; flex: 0 1 auto;' in membership_css and

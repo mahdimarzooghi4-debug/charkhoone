@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 
 /** Confirmation is a local preview only; this does not submit a financing request. */
-export function PlanConfirmationConsent() {
+export function PlanConfirmationConsent({ plan }: { plan: "general" | "staff" }) {
   const [agreed, setAgreed] = useState(false);
   const router = useRouter();
 
@@ -29,7 +29,7 @@ export function PlanConfirmationConsent() {
           className={styles.primaryAction}
           data-node-id="150:1089"
           disabled={!agreed}
-          onClick={() => router.push("/user/contracts/register/plans/review")}
+          onClick={() => router.push(`/user/contracts/register/plans/review?plan=${plan}`)}
         >
           ارسال درخواست تأمین مالی
         </button>

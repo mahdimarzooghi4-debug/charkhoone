@@ -9,17 +9,32 @@ const contractRows = [
   ["کد رهگیری", "۱۲۳۴۵۶۷۸۹۰۱۲"],
 ] as const;
 
-const financeRows = [
+const staffFinanceRows = [
   ["مبلغ رهن قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان", false],
   ["مبلغ تأمین مالی (نمونه)", "۴۵۰٬۰۰۰٬۰۰۰ تومان", true],
   ["آورده نقدی مستأجر", "۵۰٬۰۰۰٬۰۰۰ تومان", false],
 ] as const;
 
-const planRows = [
+const generalFinanceRows = [
+  ["مبلغ رهن قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["مبلغ تأمین مالی (نمونه)", "۴۰۰٬۰۰۰٬۰۰۰ تومان", true],
+  ["آورده نقدی مستأجر", "۱۰۰٬۰۰۰٬۰۰۰ تومان", false],
+] as const;
+
+const staffPlanRows = [
   ["طرح", "طرح ویژه کارکنان", false],
   ["بانک", "بانک نمونه", false],
   ["مبلغ تأمین مالی", "۴۵۰٬۰۰۰٬۰۰۰ تومان", false],
   ["پرداخت ماهانه تأمین مالی", "۱۸٬۵۰۰٬۰۰۰ تومان", true],
+  ["مدت بازپرداخت", "۱۲ ماه", false],
+  ["وضعیت طرح", "تأیید نمونه", true],
+] as const;
+
+const generalPlanRows = [
+  ["طرح", "طرح عمومی", false],
+  ["بانک", "بانک نمونه", false],
+  ["مبلغ تأمین مالی", "۴۰۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["پرداخت ماهانه تأمین مالی", "۲۰٬۵۰۰٬۰۰۰ تومان", true],
   ["مدت بازپرداخت", "۱۲ ماه", false],
   ["وضعیت طرح", "تأیید نمونه", true],
 ] as const;
@@ -45,7 +60,10 @@ const process: readonly ProcessStep[] = [
   { title: "فعال شدن قرارداد", note: "در انتظار", number: "۶" },
 ];
 
-export default function FinancingApprovedPage() {
+export default async function FinancingApprovedPage({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {
+  const plan = (await searchParams).plan === "general" ? "general" : "staff";
+  const financeRows = plan === "general" ? generalFinanceRows : staffFinanceRows;
+  const planRows = plan === "general" ? generalPlanRows : staffPlanRows;
   return (
     <main className={styles.page} data-node-id="912:106" data-name="Web App / Financing Approved / Membership Required">
       <section className={styles.mainContent} data-node-id="912:107">
@@ -84,7 +102,7 @@ export default function FinancingApprovedPage() {
 
             <section className={`${styles.card} ${styles.primaryCard}`} data-node-id="912:189">
               <div className={styles.primaryCopy}><span>عضویت چارخونه (نمونه)</span><strong data-node-id="912:192">مرحلهٔ بعد: خرید عضویت</strong><p data-node-id="912:193">ابتدا طرح عضویت را انتخاب کنید و سپس مراحل نمایشی پرداخت آورده را ببینید.</p></div>
-              <Link href="/user/contracts/register/plans/membership" className={styles.primaryAction} data-node-id="912:195">انتخاب و خرید عضویت (نمونه)</Link>
+              <Link href={`/user/contracts/register/plans/membership?plan=${plan}`} className={styles.primaryAction} data-node-id="912:195">انتخاب و خرید عضویت (نمونه)</Link>
             </section>
 
             <section className={styles.card} data-node-id="912:197"><h2>جزئیات مالی</h2><Rows rows={financeRows} /><div className={styles.formula}>رهن قرارداد = تأمین مالی + آورده شما</div></section>

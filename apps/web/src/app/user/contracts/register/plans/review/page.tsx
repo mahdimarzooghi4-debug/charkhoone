@@ -2,12 +2,21 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
-const requestRows = [
+const staffRequestRows = [
   ["طرح انتخاب‌شده", "طرح ویژه کارکنان", false],
   ["بانک", "بانک نمونه", false],
   ["مبلغ درخواست", "۴۵۰٬۰۰۰٬۰۰۰ تومان", true],
   ["آورده موردنیاز", "۵۰٬۰۰۰٬۰۰۰ تومان", false],
   ["پرداخت ماهانه تأمین مالی", "۱۸٬۵۰۰٬۰۰۰ تومان", true],
+  ["تاریخ نمونهٔ درخواست", "۱۰ آبان ۱۴۰۵", false],
+] as const;
+
+const generalRequestRows = [
+  ["طرح انتخاب‌شده", "طرح عمومی", false],
+  ["بانک", "بانک نمونه", false],
+  ["مبلغ درخواست", "۴۰۰٬۰۰۰٬۰۰۰ تومان", true],
+  ["آورده موردنیاز", "۱۰۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["پرداخت ماهانه تأمین مالی", "۲۰٬۵۰۰٬۰۰۰ تومان", true],
   ["تاریخ نمونهٔ درخواست", "۱۰ آبان ۱۴۰۵", false],
 ] as const;
 
@@ -34,7 +43,9 @@ function DataCard({ title, rows }: { title: string; rows: readonly (readonly [st
   );
 }
 
-export default function FinancingUnderReviewPage() {
+export default async function FinancingUnderReviewPage({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {
+  const plan = (await searchParams).plan === "general" ? "general" : "staff";
+  const requestRows = plan === "general" ? generalRequestRows : staffRequestRows;
   return (
     <main className={styles.page} data-node-id="150:1198" data-name="Web App / Financing Under Review">
       <section className={styles.mainContent} data-node-id="150:1199">
@@ -83,7 +94,8 @@ export default function FinancingUnderReviewPage() {
             <DataCard title="مشخصات قرارداد مرتبط" rows={contractRows} />
 
             <div className={styles.actions} data-node-id="150:1277">
-              <Link href="/user/contracts/register/plans/approved" className={styles.primaryAction} data-node-id="150:1278">مشاهده نتیجهٔ نمونهٔ بررسی بانک</Link>
+              <Link href={`/user/contracts/register/plans/approved?plan=${plan}`} className={styles.primaryAction} data-node-id="150:1278">پیش‌نمایش نتیجه: تأیید درخواست</Link>
+              <Link href={`/user/contracts/register/plans/not-approved?plan=${plan}`} className={styles.secondaryAction}>پیش‌نمایش نتیجه: رد درخواست</Link>
               <Link href="/user/contracts" className={styles.secondaryAction} data-node-id="150:1281">بازگشت به قراردادها</Link>
             </div>
           </div>

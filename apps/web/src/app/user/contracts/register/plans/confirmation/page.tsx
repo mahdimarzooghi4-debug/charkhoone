@@ -84,7 +84,7 @@ export default async function PlanConfirmationPage({
               <h2 data-node-id="150:1062">خلاصه درخواست</h2>
               <DataRows rows={summaryRows} />
               <div className={styles.divider} />
-              <PlanConfirmationConsent />
+              <PlanConfirmationConsent plan={isGeneral ? "general" : "staff"} />
             </section>
           </aside>
 
