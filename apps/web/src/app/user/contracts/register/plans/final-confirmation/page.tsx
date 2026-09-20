@@ -130,7 +130,10 @@ export default function FinalConfirmationPage() {
               <ol>
                 {previewNextSteps.map((text, index) => (
                   <li key={text}>
-                    <span className={styles.stepNumber} aria-hidden="true">{toPersianDigits(String(index + 1))}.</span>
+                    <span className={styles.stepNumber} aria-hidden="true">
+                      <bdi dir="ltr">{toPersianDigits(String(index + 1))}</bdi>
+                      <span className={styles.stepPeriod}>.</span>
+                    </span>
                     <span>{text}</span>
                   </li>
                 ))}

@@ -482,9 +482,11 @@ require('function renderPersianValue(value: string)' in final_confirmation and
         'dir="ltr"' in final_confirmation and
         '.persianNumber { direction: ltr; unicode-bidi: isolate;' in final_css and
         'const previewNextSteps = [' in final_confirmation and
-        '{toPersianDigits(String(index + 1))}.' in final_confirmation and
+        '<bdi dir="ltr">{toPersianDigits(String(index + 1))}</bdi>' in final_confirmation and
+        '<span className={styles.stepPeriod}>.</span>' in final_confirmation and
         '.nextSteps ol {' in final_css and 'list-style: none;' in final_css and
-        '.stepNumber {' in final_css,
+        '.stepNumber { display: inline-flex; flex-direction: row;' in final_css and
+        '.stepPeriod { direction: ltr; unicode-bidi: isolate; }' in final_css,
         "final confirmation must isolate Persian numeric runs and render Persian ordered-step digits explicitly")
 require(final_confirmation.count('className={styles.nationalId} dir="ltr"') == 2 and
         '{toPersianDigits("۰۰۱•••••۷۸۹")}' in final_confirmation and
