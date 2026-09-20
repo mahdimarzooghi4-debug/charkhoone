@@ -814,7 +814,7 @@ require('"use client";' in calculator_page and
         'metrics.map(([label, value, highlight])' not in calculator_page and
         '.calculationDetails > summary:focus-visible' in calculator_css and
         'const monthlyInterest = rateValid && bankAnnualRate !== null ? Math.round(selectedFinancing * bankAnnualRate / 100 / 12) : null;' in calculator_page and
-        'اصل وام جزو قسط ماهانه این برآورد نیست' in calculator_page and
+        'سود ماهانه بدون اصل وام محاسبه شده است' in calculator_page and
         'figma.com/api/mcp/asset/' not in calculator_page and
         'type="number"' not in calculator_page and
         'id="financing-percent"' not in calculator_page and
