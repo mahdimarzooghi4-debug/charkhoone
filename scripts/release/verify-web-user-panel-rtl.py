@@ -146,8 +146,11 @@ require("styles.remainingInfo" in home_text, "home remaining-uses layout hook mi
 require(bool(re.search(r"\.actionContent\s*\{[^}]*direction:\s*rtl\s*;", home_css)) and
         ".actionTitleRow {\n  /* Preserve badges left / title right inside the right-aligned content. */\n  direction: ltr;" in home_css,
         "home required-action card content must align right")
-require('<Link href="/user/contracts/123456789012/owner/final-confirmation" className={styles.actionButton}>بررسی قرارداد</Link>' in home_text,
-        "review contract CTA must open existing owner final-confirmation preview")
+require('<Link href="/user/contracts/123456789012/owner/settlement-preference" className={styles.actionButton}>بررسی قرارداد</Link>' in home_text and
+        '<strong>انتخاب روش دریافت و تأیید قرارداد</strong>' in home_text and
+        'className={styles.actionButton}>بررسی قرارداد</Link>' in home_text and
+        '<Link href="/user/contracts/123456789012/owner/final-confirmation" className={styles.actionButton}' not in home_text,
+        "home owner review CTA must open settlement selection before final confirmation")
 
 contracts_text = read(USER_ROOT / "contracts/page.tsx")
 contracts_css = read(USER_ROOT / "contracts/page.module.css")
@@ -532,6 +535,10 @@ require('function InfoIcon({ size = 20 }:' in owner_connected and
         '.connectedInfoHeader { justify-content: flex-start; gap: 8px; direction: rtl; text-align: right; }' in owner_flow_css and
         '.connectedInfoHeader svg { width: 20px; height: 20px;' in owner_flow_css,
         "owner-connected next step icon must render permanently on the right without changing other owner routes")
+require('<Link href="/user/contracts/123456789012/owner/settlement-preference" className={styles.primaryButton}>پیش‌نمایش مرحله بعد: انتخاب روش دریافت</Link>' in owner_connected and
+        'بدون بررسی واقعی وضعیت مستأجر' in owner_connected and
+        'در انتظار تکمیل فرایند مستأجر' in owner_connected,
+        "owner connected waiting fixture must provide clearly labeled demo-only navigation to receipt selection")
 require('<span className={styles.connectedNationalId}><span>کد ملی:</span><bdi dir="ltr" className={styles.connectedNationalIdValue}>۰۰۱•••••۷۸۹</bdi></span>' in owner_connected and
         '.connectedNationalId { display: inline-flex; align-items: baseline; gap: 6px; direction: rtl; text-align: right; }' in owner_flow_css and
         '.connectedNationalIdValue { direction: ltr; unicode-bidi: isolate; white-space: nowrap; text-align: left; }' in owner_flow_css and
