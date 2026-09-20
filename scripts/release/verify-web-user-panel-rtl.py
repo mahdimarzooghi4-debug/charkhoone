@@ -777,33 +777,31 @@ require('"use client";' in calculator_page and
         'useState(EXAMPLE_DEPOSIT)' in calculator_page and
         'useState(20_000_000)' in calculator_page and
         'type="range"' in calculator_page and
-        'type="number"' in calculator_page and
-        'onChange={(event) => setAmount(Number(event.target.value))}' in calculator_page and
-        'setAmount(clamp(Number(event.target.value), max))' in calculator_page and
-        'const MIN_FINANCING_PERCENT = 30;' in calculator_page and
-        'const MAX_FINANCING_PERCENT = 55;' in calculator_page and
-        'const minFinancing = Math.round(deposit * MIN_FINANCING_PERCENT / 100);' in calculator_page and
-        'const maxFinancing = Math.round(deposit * MAX_FINANCING_PERCENT / 100);' in calculator_page and
+        'type="text"' in calculator_page and
+        'inputMode="numeric"' in calculator_page and
+        'inputMode="decimal"' in calculator_page and
+        'digitsFa(String(amount))' in calculator_page and
+        'digitsFa(bankRateInput)' in calculator_page and
+        'parseMoneyInput(event.target.value, max)' in calculator_page and
+        'normalizeDigits(event.target.value)' in calculator_page and
+        'const DEMO_EXTERNAL_SUBGRADE = "C3";' in calculator_page and
+        'C1: 40, C2: 40, C3: 30' in calculator_page and
+        'const financingPercent = SAMPLE_FINANCING_PERCENT;' in calculator_page and
+        'const SAMPLE_BANK_ANNUAL_RATE = "23";' in calculator_page and
+        'useState(SAMPLE_BANK_ANNUAL_RATE)' in calculator_page and
+        'نتیجه استعلام واقعی نیست' in calculator_page and
         'const selectedFinancing = Math.round(deposit * financingPercent / 100);' in calculator_page and
         'const contribution = deposit - selectedFinancing;' in calculator_page and
         'const monthlyInterest = rateValid && bankAnnualRate !== null ? Math.round(selectedFinancing * bankAnnualRate / 100 / 12) : null;' in calculator_page and
-        'useState("")' in calculator_page and
-        'نرخ سود سالانه اسمی اعلام‌شده بانک' in calculator_page and
         'اصل وام جزو قسط ماهانه این برآورد نیست' in calculator_page and
-        'rent - monthlyInterest' in calculator_page and
-        'rentDifference > 0' in calculator_page and
-        'هیچ درخواست یا پرداختی ثبت نمی‌کند' in calculator_page and
-        'deposit * 0.7' not in calculator_page and
-        'deposit * 0.9' not in calculator_page and
-        '18_500_000 * deposit' not in calculator_page and
-        'money(rent)' in calculator_page and
         'figma.com/api/mcp/asset/' not in calculator_page and
-        'styles.gaugeTrack' in calculator_page and
+        'type="number"' not in calculator_page and
+        'id="financing-percent"' not in calculator_page and
+        'onClick={() => setFinancingPercent' not in calculator_page and
         '.rangeInput::-webkit-slider-thumb {' in calculator_css and
-        'نرخ و نحوه محاسبه باید توسط بانک تأیید شود' in calculator_page and
         'href="/user/contracts/register/plans"' in calculator_page and
         'href="/user/calculator"' in plans_page,
-        "calculator must be accessible from financing plans, interactive and clearly sample-only")
+        "calculator must use Persian editable digits and explicit mock external grade and bank rate without self-selected grade")
 
 
 if failures:

@@ -5,16 +5,38 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
-// Product model confirmed by the user: finance 30–55% of full refundable deposit.
-// Monthly tenant payment is interest ONLY, based on a bank-provided nominal annual
-// rate. No assumed bank rate, interest compounding or principal amortization.
+// Preview only: the real sub-grade must come from an external credit provider
+// through authenticated credit eligibility; an end user must not choose a grade.
+// C3 is a conspicuously labeled MOCK response only (C1/C2 = 40%; C3 = 30%).
 const EXAMPLE_DEPOSIT = 500_000_000;
 const MIN_FINANCING_PERCENT = 30;
 const MAX_FINANCING_PERCENT = 55;
 const MAX_DEPOSIT = 1_000_000_000;
 const MAX_RENT = 50_000_000;
+const SAMPLE_BANK_ANNUAL_RATE = "23";
+const DEMO_EXTERNAL_SUBGRADE = "C3";
+const FINANCING_BY_SUBGRADE: Readonly<Record<string, number>> = {
+  A1: 55, A2: 55, A3: 55,
+  B1: 45, B2: 45, B3: 45,
+  C1: 40, C2: 40, C3: 30,
+  D1: 35, D2: 35, D3: 35,
+  E1: 30, E2: 30, E3: 30,
+};
+const SAMPLE_FINANCING_PERCENT = FINANCING_BY_SUBGRADE[DEMO_EXTERNAL_SUBGRADE];
 const money = (value: number) => Math.round(value).toLocaleString("fa-IR") + " تومان";
+const digitsFa = (value: string) => value.replace(/[0-9]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
+const normalizeDigits = (value: string) => value
+  .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+  .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)))
+  .replace(/[٫]/g, ".")
+  .replace(/[٬,،\s]/g, "");
 const clamp = (value: number, max: number) => Math.min(max, Math.max(0, Number.isFinite(value) ? value : 0));
+const parseMoneyInput = (text: string, max: number): number | null => {
+  const normalized = normalizeDigits(text);
+  if (normalized === "") return 0;
+  if (!/^\d+$/.test(normalized)) return null;
+  return clamp(Number(normalized), max);
+};
 
 function AmountSlider({
   label, amount, setAmount, max, step, minLabel, maxLabel,
@@ -28,14 +50,14 @@ function AmountSlider({
         <label className={styles.sliderNumber}>
           <input
             className={styles.numberInput}
-            type="number"
+            type="text"
             inputMode="numeric"
-            min={0}
-            max={max}
-            step={step}
-            value={amount}
+            value={digitsFa(String(amount))}
             aria-label={label + " به تومان"}
-            onChange={(event) => setAmount(clamp(Number(event.target.value), max))}
+            onChange={(event) => {
+              const parsed = parseMoneyInput(event.target.value, max);
+              if (parsed !== null) setAmount(parsed);
+            }}
           />
           <span>تومان</span>
         </label>
@@ -60,8 +82,8 @@ function AmountSlider({
 export default function CalculatorPage() {
   const [deposit, setDeposit] = useState(EXAMPLE_DEPOSIT);
   const [rent, setRent] = useState(20_000_000);
-  const [financingPercent, setFinancingPercent] = useState(MAX_FINANCING_PERCENT);
-  const [bankRateInput, setBankRateInput] = useState("");
+  const financingPercent = SAMPLE_FINANCING_PERCENT;
+  const [bankRateInput, setBankRateInput] = useState(SAMPLE_BANK_ANNUAL_RATE);
   const bankAnnualRate = bankRateInput.trim() === "" ? null : Number(bankRateInput);
   const rateValid = bankAnnualRate !== null && Number.isFinite(bankAnnualRate) && bankAnnualRate >= 0 && bankAnnualRate <= 100;
   const minFinancing = Math.round(deposit * MIN_FINANCING_PERCENT / 100);
@@ -78,7 +100,7 @@ export default function CalculatorPage() {
   const metrics = [
     ["حداقل تأمین مالی (۳۰٪ رهن)", money(minFinancing), false],
     ["حداکثر تأمین مالی (۵۵٪ رهن)", money(maxFinancing), false],
-    ["مبلغ تأمین مالی انتخابی", money(selectedFinancing), false],
+    ["تأمین مالی براساس رتبه نمونه " + DEMO_EXTERNAL_SUBGRADE, money(selectedFinancing), false],
     ["آورده مستأجر (مانده رهن)", money(contribution), false],
     ["اجاره ماهانه قرارداد", money(rent), false],
     ["سود ماهانه وام (بدون اصل)", monthlyInterest === null ? "نیازمند نرخ اعلامی بانک" : money(monthlyInterest), true],
@@ -92,7 +114,7 @@ export default function CalculatorPage() {
 
         <div className={styles.columns} data-node-id="150:597">
           <section className={styles.resultsCard} data-node-id="150:598" aria-live="polite">
-            <div className={styles.cardHeader} data-node-id="150:599"><h2 data-node-id="150:600">برآورد شرایط تأمین مالی</h2><p data-node-id="150:601">۳۰٪ تا ۵۵٪ مبلغ رهن کامل؛ با انتخاب درصد تأمین مالی</p></div>
+            <div className={styles.cardHeader} data-node-id="150:599"><h2 data-node-id="150:600">برآورد شرایط تأمین مالی</h2><p data-node-id="150:601">نسبت تأمین مالی فقط براساس رتبه معتبر سامانه بیرونی تعیین می‌شود.</p></div>
             <div className={styles.gaugeArea} data-node-id="150:602">
               <div className={styles.gauge} data-node-id="150:603" role="img" aria-label={"مبلغ تأمین مالی انتخابی: " + money(selectedFinancing)}>
                 <div className={styles.gaugeTrack} />
@@ -119,44 +141,35 @@ export default function CalculatorPage() {
                     : "با این ورودی‌ها، سود ماهانه از اجاره کمتر نیست؛ شرایط را با بانک بررسی کنید."}
               </p>
             </section>
-            <p className={styles.disclaimer} data-node-id="150:643">تأمین مالی ۳۰ تا ۵۵ درصد رهن طبق مدل اعلام‌شده این محصول نمایش داده می‌شود. سود ماهانه تنها با نرخ سالانه اسمی واردشده توسط شما و فرض تقسیم سود سالانه ساده بر ۱۲ محاسبه می‌شود؛ اصل وام جزو قسط ماهانه این برآورد نیست و نحوه بازپرداخت اصل، نرخ قطعی و شرایط تأمین مالی باید از قرارداد و بانک مشخص شوند. کمتر بودن سود از اجاره به مبلغ و نرخ وابسته است و تضمین نمی‌شود. این صفحه پیش‌نمایش است و هیچ درخواست یا پرداختی ثبت نمی‌کند.</p>
+            <p className={styles.disclaimer} data-node-id="150:643">نسبت تأمین مالی واقعی فقط پس از دریافت معتبر رتبه از سامانه بیرونی تعیین می‌شود؛ C3 و نرخ ۲۳٪ این صفحه صرفاً مثال نمایشی هستند. سود ماهانه با فرض تقسیم نرخ سود سالانه اسمی بر ۱۲ محاسبه شده است؛ اصل وام جزو قسط ماهانه این برآورد نیست و نحوه بازپرداخت اصل، نرخ قطعی و شرایط تأمین مالی باید از قرارداد و بانک مشخص شوند. کمتر بودن سود از اجاره به مبلغ و نرخ وابسته است و تضمین نمی‌شود. این صفحه پیش‌نمایش است و هیچ درخواست یا پرداختی ثبت نمی‌کند.</p>
           </section>
 
           <section className={styles.inputsCard} data-node-id="150:644">
             <div className={styles.cardHeader} data-node-id="150:645"><h2 data-node-id="150:646">اطلاعات قرارداد</h2><p data-node-id="150:647">مبالغ تقریبی قرارداد موردنظر را وارد کنید.</p></div>
             <AmountSlider label="مبلغ رهن" amount={deposit} setAmount={setDeposit} minLabel="۰ میلیون تومان" maxLabel="۱ میلیارد تومان" max={MAX_DEPOSIT} step={1_000_000} />
             <AmountSlider label="اجاره ماهانه" amount={rent} setAmount={setRent} minLabel="بدون اجاره" maxLabel="۵۰ میلیون تومان" max={MAX_RENT} step={500_000} />
-            <div className={styles.financingChoice}>
-              <label htmlFor="financing-percent">درصد تأمین مالی از رهن کامل: <strong>{financingPercent.toLocaleString("fa-IR")}٪</strong></label>
-              <input
-                id="financing-percent"
-                type="range"
-                className={styles.rangeInput}
-                min={MIN_FINANCING_PERCENT}
-                max={MAX_FINANCING_PERCENT}
-                step={1}
-                value={financingPercent}
-                onChange={(event) => setFinancingPercent(Number(event.target.value))}
-                aria-label="درصد تأمین مالی از رهن کامل"
-              />
-              <div className={styles.sliderLabels}><span>۳۰٪ رهن کامل</span><span>۵۵٪ رهن کامل</span></div>
+            <div className={styles.financingChoice} aria-label="نتیجه نمونه اعتبارسنجی">
+              <strong>سناریوی نمونه اعتبارسنجی: رتبه {DEMO_EXTERNAL_SUBGRADE}</strong>
+              <p>درصد تأمین مالی این نمونه: {digitsFa(String(financingPercent))}٪ رهن کامل</p>
+              <small>رتبه واقعی مستأجر فقط از سامانه بیرونی استعلام می‌شود. این رتبه C3 نتیجه استعلام واقعی نیست و قابل انتخاب توسط کاربر نیست.</small>
+              <small>نسبت‌ها: A برابر ۵۵٪، B برابر ۴۵٪، C1 و C2 برابر ۴۰٪، C3 برابر ۳۰٪، D برابر ۳۵٪ و E برابر ۳۰٪.</small>
             </div>
             <label className={styles.bankRateField} htmlFor="bank-annual-rate">
-              <span>نرخ سود سالانه اسمی اعلام‌شده بانک (درصد)</span>
+              <span>نرخ سود سالانه اسمی بانک (نمونه: ۲۳٪)</span>
               <input
                 id="bank-annual-rate"
-                type="number"
+                type="text"
                 className={styles.numberInput}
                 inputMode="decimal"
-                min={0}
-                max={100}
-                step="0.1"
-                value={bankRateInput}
-                onChange={(event) => setBankRateInput(event.target.value)}
-                placeholder="نرخ را وارد کنید"
+                value={digitsFa(bankRateInput)}
+                onChange={(event) => {
+                  const normalized = normalizeDigits(event.target.value);
+                  if (/^\\d{0,3}(\\.\\d{0,2})?$/.test(normalized)) setBankRateInput(normalized);
+                }}
+                placeholder="۲۳"
                 aria-describedby="rate-guidance"
               />
-              <small id="rate-guidance">نرخ پیش‌فرض نداریم؛ این عدد باید مطابق اعلام بانک وارد شود. فقط سود ماهانه محاسبه می‌شود، نه اصل وام.</small>
+              <small id="rate-guidance">۲۳٪ صرفاً نرخ نمونه برای پیش‌نمایش است؛ نرخ واقعی باید از بانک دریافت و تأیید شود. پرداخت ماهانه فقط سود است، نه اصل وام.</small>
               {bankRateInput.trim() !== "" && !rateValid && <small className={styles.inputError} role="alert">نرخ باید عددی بین صفر تا صد درصد باشد.</small>}
             </label>
             <div className={styles.divider} />

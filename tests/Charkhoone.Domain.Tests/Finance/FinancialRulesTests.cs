@@ -32,13 +32,23 @@ public sealed class FinancialRulesTests
     [InlineData("A1", "0.55")]
     [InlineData("A3", "0.55")]
     [InlineData("B2", "0.45")]
-    [InlineData("C3", "0.40")]
+    [InlineData("C1", "0.40")]
+    [InlineData("C2", "0.40")]
+    [InlineData("C3", "0.30")]
     [InlineData("D1", "0.35")]
     [InlineData("E2", "0.30")]
     public void CreditGrade_UsesApprovedGroupRatio(string subGrade, string expectedRatio)
     {
         var ratio = decimal.Parse(expectedRatio, System.Globalization.CultureInfo.InvariantCulture);
         Assert.Equal(ratio, CreditGradePolicy.GetLoanRatio(subGrade));
+    }
+
+    [Fact]
+    public void C3_HasThirtyPercentFinancing_AndNeverFallsBackToCGroupFortyPercent()
+    {
+        Assert.Equal(0.30m, CreditGradePolicy.GetLoanRatio("C3"));
+        Assert.Equal(150_000_000m, CreditAllocationCalculator.CalculateMaximumLoan(500_000_000m, "C3"));
+        Assert.Equal(0.40m, CreditGradePolicy.GetLoanRatio("C2"));
     }
 
     [Fact]

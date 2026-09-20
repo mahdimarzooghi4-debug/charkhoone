@@ -113,3 +113,10 @@
 .bankRateField .numberInput { width: min(100%, 215px); }
 .bankRateField > .inputError { color: #b42318; }
 .comparisonNotice { width: 100%; margin: 0; font-size: 13px; line-height: 1.8; color: var(--ch-color-primary); }
+
+/* Persian-digit editable text, and non-editable externally sourced grade preview. */
+.numberInput { direction: rtl; text-align: right; font-variant-numeric: normal; }
+.financingChoice { padding: 14px; background: #eff8f5; border: 1px solid #dceee8; border-radius: 10px; }
+.financingChoice strong { color: var(--ch-color-primary); font-size: 15px; }
+.financingChoice p { margin: 0; font-size: 14px; }
+.financingChoice small { color: var(--ch-color-muted); font-size: 12px; line-height: 1.8; }
