@@ -1,28 +1,30 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
+import { demoFinance, demoFinanceNote } from "@/lib/demo-financing";
 
 const staffRequestRows = [
   ["طرح انتخاب‌شده", "طرح ویژه کارکنان", false],
   ["بانک", "بانک نمونه", false],
-  ["مبلغ درخواست", "۴۵۰٬۰۰۰٬۰۰۰ تومان", true],
-  ["آورده موردنیاز", "۵۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["پرداخت ماهانه تأمین مالی", "۱۸٬۵۰۰٬۰۰۰ تومان", true],
+  ["مبلغ درخواست", demoFinance.loanText, true],
+  ["آورده از رهن معادل (نمونه)", demoFinance.contributionText, false],
+  ["پرداختی ماهانه مستأجر (فقط سود)", demoFinance.monthlyText, true],
   ["تاریخ نمونهٔ درخواست", "۱۰ آبان ۱۴۰۵", false],
 ] as const;
 
 const generalRequestRows = [
   ["طرح انتخاب‌شده", "طرح عمومی", false],
   ["بانک", "بانک نمونه", false],
-  ["مبلغ درخواست", "۴۰۰٬۰۰۰٬۰۰۰ تومان", true],
-  ["آورده موردنیاز", "۱۰۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["پرداخت ماهانه تأمین مالی", "۲۰٬۵۰۰٬۰۰۰ تومان", true],
+  ["مبلغ درخواست", demoFinance.loanText, true],
+  ["آورده از رهن معادل (نمونه)", demoFinance.contributionText, false],
+  ["پرداختی ماهانه مستأجر (فقط سود)", demoFinance.monthlyText, true],
   ["تاریخ نمونهٔ درخواست", "۱۰ آبان ۱۴۰۵", false],
 ] as const;
 
 const contractRows = [
   ["موقعیت ملک", "سعادت‌آباد"],
-  ["مبلغ رهن قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
+  ["رهن نقدی قرارداد", demoFinance.cashDepositText],
+  ["رهن کامل معادل قرارداد", demoFinance.fullEquivalentText],
   ["اجاره ماهانه قرارداد", "۲۰٬۰۰۰٬۰۰۰ تومان"],
   ["کد رهگیری", "۱۲۳۴۵۶۷۸۹۰۱۲"],
 ] as const;
@@ -100,6 +102,7 @@ export default async function FinancingUnderReviewPage({ searchParams }: { searc
             </div>
           </div>
         </div>
+        <p role="note" style={{fontSize:12,lineHeight:2,color:"var(--ch-color-muted)"}}>{demoFinanceNote}</p>
       </section>
 
       <UserPanelSidebar nodeId="142:1738" />

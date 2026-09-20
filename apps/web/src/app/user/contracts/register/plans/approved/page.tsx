@@ -1,6 +1,7 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
+import { demoFinance, demoFinanceNote } from "@/lib/demo-financing";
 
 const contractRows = [
   ["ملک", "سعادت‌آباد"],
@@ -10,32 +11,34 @@ const contractRows = [
 ] as const;
 
 const staffFinanceRows = [
-  ["مبلغ رهن قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["مبلغ تأمین مالی (نمونه)", "۴۵۰٬۰۰۰٬۰۰۰ تومان", true],
-  ["آورده نقدی مستأجر", "۵۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["رهن نقدی قرارداد", demoFinance.cashDepositText, false],
+  ["رهن کامل معادل قرارداد", demoFinance.fullEquivalentText, false],
+  ["مبلغ تأمین مالی (نمونه)", demoFinance.loanText, true],
+  ["آورده از رهن معادل (نمونه)", demoFinance.contributionText, false],
 ] as const;
 
 const generalFinanceRows = [
-  ["مبلغ رهن قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["مبلغ تأمین مالی (نمونه)", "۴۰۰٬۰۰۰٬۰۰۰ تومان", true],
-  ["آورده نقدی مستأجر", "۱۰۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["رهن نقدی قرارداد", demoFinance.cashDepositText, false],
+  ["رهن کامل معادل قرارداد", demoFinance.fullEquivalentText, false],
+  ["مبلغ تأمین مالی (نمونه)", demoFinance.loanText, true],
+  ["آورده از رهن معادل (نمونه)", demoFinance.contributionText, false],
 ] as const;
 
 const staffPlanRows = [
   ["طرح", "طرح ویژه کارکنان", false],
   ["بانک", "بانک نمونه", false],
-  ["مبلغ تأمین مالی", "۴۵۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["پرداخت ماهانه تأمین مالی", "۱۸٬۵۰۰٬۰۰۰ تومان", true],
-  ["مدت بازپرداخت", "۱۲ ماه", false],
+  ["مبلغ تأمین مالی", demoFinance.loanText, false],
+  ["پرداختی ماهانه مستأجر (فقط سود)", demoFinance.monthlyText, true],
+  ["دوره نمونه قرارداد", "۱۲ ماه", false],
   ["وضعیت طرح", "تأیید نمونه", true],
 ] as const;
 
 const generalPlanRows = [
   ["طرح", "طرح عمومی", false],
   ["بانک", "بانک نمونه", false],
-  ["مبلغ تأمین مالی", "۴۰۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["پرداخت ماهانه تأمین مالی", "۲۰٬۵۰۰٬۰۰۰ تومان", true],
-  ["مدت بازپرداخت", "۱۲ ماه", false],
+  ["مبلغ تأمین مالی", demoFinance.loanText, false],
+  ["پرداختی ماهانه مستأجر (فقط سود)", demoFinance.monthlyText, true],
+  ["دوره نمونه قرارداد", "۱۲ ماه", false],
   ["وضعیت طرح", "تأیید نمونه", true],
 ] as const;
 
@@ -102,10 +105,10 @@ export default async function FinancingApprovedPage({ searchParams }: { searchPa
 
             <section className={`${styles.card} ${styles.primaryCard}`} data-node-id="912:189">
               <div className={styles.primaryCopy}><span>عضویت چارخونه (نمونه)</span><strong data-node-id="912:192">مرحلهٔ بعد: خرید عضویت</strong><p data-node-id="912:193">ابتدا طرح عضویت را انتخاب کنید و سپس مراحل نمایشی پرداخت آورده را ببینید.</p></div>
-              <Link href={`/user/contracts/register/plans/membership?plan=${plan}`} className={styles.primaryAction} data-node-id="912:195">انتخاب و خرید عضویت (نمونه)</Link>
+              <Link href={`/user/contracts/register/plans/membership?financing=${plan}`} className={styles.primaryAction} data-node-id="912:195">انتخاب و خرید عضویت (نمونه)</Link>
             </section>
 
-            <section className={styles.card} data-node-id="912:197"><h2>جزئیات مالی</h2><Rows rows={financeRows} /><div className={styles.formula}>رهن قرارداد = تأمین مالی + آورده شما</div></section>
+            <section className={styles.card} data-node-id="912:197"><h2>جزئیات مالی</h2><Rows rows={financeRows} /><div className={styles.formula}>رهن کامل معادل = وام نمونه + مانده رهن معادل؛ مانده الزاماً وجه نقد هنگام قرارداد نیست.</div></section>
 
             <section className={styles.card} data-node-id="912:212">
               <h2>جزئیات طرح تأییدشده</h2>
@@ -114,6 +117,7 @@ export default async function FinancingApprovedPage({ searchParams }: { searchPa
             </section>
           </div>
         </div>
+        <p role="note" style={{fontSize:12,lineHeight:2,color:"var(--ch-color-muted)"}}>{demoFinanceNote}</p>
       </section>
 
       <UserPanelSidebar nodeId="912:244" />

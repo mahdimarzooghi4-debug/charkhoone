@@ -1,17 +1,18 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
+import { demoFinance, demoFinanceNote } from "@/lib/demo-financing";
 
 const staffResultRows = [
   ["طرح انتخاب‌شده", "طرح ویژه کارکنان", "default"],
   ["بانک صادرکننده", "بانک نمونه", "default"],
-  ["مبلغ درخواست", "۴۵۰٬۰۰۰٬۰۰۰ تومان", "primary"],
+  ["مبلغ درخواست", demoFinance.loanText, "primary"],
 ] as const;
 
 const generalResultRows = [
   ["طرح انتخاب‌شده", "طرح عمومی", "default"],
   ["بانک صادرکننده", "بانک نمونه", "default"],
-  ["مبلغ درخواست", "۴۰۰٬۰۰۰٬۰۰۰ تومان", "primary"],
+  ["مبلغ درخواست", demoFinance.loanText, "primary"],
 ] as const;
 
 const contractRows = [
@@ -40,10 +41,11 @@ export default async function FinancingNotApprovedPage({ searchParams }: { searc
 
           <section className={styles.card} data-node-id="161:367"><h2 data-node-id="161:368">مشخصات قرارداد مرتبط</h2><Rows rows={contractRows} /></section>
 
-          <section className={styles.alternatives} data-node-id="161:384"><div><h2 data-node-id="161:386">طرح‌های دیگری برای شما قابل بررسی است</h2><p data-node-id="161:387">می‌توانید از میان طرح‌های واجد شرایط دیگر در سامانه چارخونه، گزینه دیگری را بررسی و انتخاب کنید.</p></div><Link href="/user/contracts/register/plans" className={styles.primaryAction} data-node-id="161:389">مشاهده سایر طرح‌ها</Link></section>
+          <section className={styles.alternatives} data-node-id="161:384"><div><h2 data-node-id="161:386">طرح‌های دیگری برای شما قابل بررسی است</h2><p data-node-id="161:387">می‌توانید از میان طرح‌های واجد شرایط دیگر در سامانه چارخونه، مسیر طرح نمونه دیگری را ببینید؛ هیچ بانکی طرحی را رد یا تأیید نکرده است.</p></div><Link href="/user/contracts/register/plans" className={styles.primaryAction} data-node-id="161:389">مشاهده سایر طرح‌ها</Link></section>
 
-          <div className={styles.footerActions} data-node-id="161:392"><p data-node-id="161:393">این درخواست و نتیجه بررسی آن در سوابق قرارداد شما باقی می‌ماند.</p><Link href="/user/contracts" data-node-id="161:394">بازگشت به قراردادها</Link></div>
+          <div className={styles.footerActions} data-node-id="161:392"><p data-node-id="161:393">این نتیجه فقط یک سناریوی نمایشی است و در سوابق واقعی حساب ذخیره نشده است.</p><Link href="/user/contracts" data-node-id="161:394">بازگشت به قراردادها</Link></div>
         </div></div>
+        <p role="note" style={{fontSize:12,lineHeight:2,color:"var(--ch-color-muted)"}}>{demoFinanceNote}</p>
       </section>
 
       <UserPanelSidebar nodeId="142:1598" />
