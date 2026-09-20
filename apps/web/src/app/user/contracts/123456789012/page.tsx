@@ -101,7 +101,9 @@ export default function ContractDetailPage() {
             <section className={styles.card} data-node-id="150:346" data-name="Contract Information Card">
               <h2 data-node-id="150:347">اطلاعات اصلی قرارداد</h2>
               <div className={styles.infoList}>
-                <InfoRow label="رهن نقدی قرارداد" value="۵۰۰٬۰۰۰٬۰۰۰ تومان" />\n                <InfoRow label="معادل رهن اجاره با ضریب ۳٪" value="۶۶۶٬۶۶۶٬۶۶۷ تومان" />\n                <InfoRow label="رهن کامل معادل" value="۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان" />
+                <InfoRow label="رهن نقدی قرارداد" value="۵۰۰٬۰۰۰٬۰۰۰ تومان" />
+                <InfoRow label="معادل رهن اجاره با ضریب ۳٪" value="۶۶۶٬۶۶۶٬۶۶۷ تومان" />
+                <InfoRow label="رهن کامل معادل" value="۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان" />
                 <InfoRow label="اجاره ماهانه قرارداد" value="۲۰٬۰۰۰٬۰۰۰ تومان" strong />
                 <InfoRow label="تاریخ شروع قرارداد" value="۱۵ مهر ۱۴۰۵" />
                 <InfoRow label="تاریخ پایان قرارداد" value="۱۵ مهر ۱۴۰۶" />
@@ -117,7 +119,7 @@ export default function ContractDetailPage() {
               <div className={styles.infoList}>
                 <InfoRow label="طرح انتخاب‌شده" value="طرح ویژه واجد شرایط" />
                 <InfoRow label="بانک صادرکننده" value="بانک نمونه — نتیجه واقعی متصل نیست" />
-                <InfoRow label="مبلغ تأمین‌شده توسط بانک" value="۳۸۱۶٬۶۶۶٬۶۶۷ تومان" />
+                <InfoRow label="مبلغ تأمین‌شده توسط بانک" value="۳۵۰٬۰۰۰٬۰۰۰ تومان" />
                 <InfoRow label="آورده مستأجر از رهن کامل معادل" value="۸۱۶٬۶۶۶٬۶۶۷ تومان" />
                 <InfoRow label="پرداختی ماهانه مستأجر (فقط سود وام)" value="۶٬۷۰۸٬۳۳۳ تومان" strong />
               </div>
