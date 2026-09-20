@@ -9,6 +9,21 @@ const toPersianDigits = (value: string) =>
     "۰۱۲۳۴۵۶۷۸۹"[digit.charCodeAt(0) >= 0x0660 ? digit.charCodeAt(0) - 0x0660 : Number(digit)],
   );
 
+// Keep numeral groups left-to-right without changing Persian labels or date word order.
+function renderPersianValue(value: string) {
+  return toPersianDigits(value)
+    .split(/([۰-۹][۰-۹٬،٫.,\/:-]*)/g)
+    .map((part, index) =>
+      /^[۰-۹]/.test(part) ? <bdi key={index} dir="ltr" className={styles.persianNumber}>{part}</bdi> : part,
+    );
+}
+
+const previewNextSteps = [
+  "درخواست تأیید نهایی برای مالک ارسال می‌شود.",
+  "پس از تکمیل تأیید نهایی، مبلغ تأمین مالی وارد مسیر مالی تعیین‌شده قرارداد می‌شود.",
+  "قرارداد در چارخونه فعال می‌شود.",
+] as const;
+
 const finalTerms = [
   ["مبلغ رهن", "۵۰۰٬۰۰۰٬۰۰۰ تومان", "default"],
   ["اجاره ماهانه قرارداد", "۲۰٬۰۰۰٬۰۰۰ تومان در ماه", "default"],
@@ -33,7 +48,7 @@ function Rows({ rows }: { rows: readonly (readonly [string, string, Tone?])[] })
     <div className={styles.rows}>
       {rows.map(([label, value, tone = "default"], index) => (
         <div key={label} className={`${styles.row} ${index === rows.length - 1 ? styles.lastRow : ""}`}>
-          <strong className={tone === "primary" ? styles.primaryValue : tone === "accent" ? styles.accentValue : ""}>{toPersianDigits(value)}</strong>
+          <strong className={tone === "primary" ? styles.primaryValue : tone === "accent" ? styles.accentValue : ""}>{renderPersianValue(value)}</strong>
           <span>{label}</span>
         </div>
       ))}
@@ -72,7 +87,7 @@ export default function FinalConfirmationPage() {
             <section className={styles.successCard} data-node-id="150:1500">
               <div className={styles.successTop} data-node-id="150:1501"><span className={styles.successIcon}><img src="/brand/financing-review-check.svg" alt="" width={14} height={14} /></span><div><h2 data-node-id="150:1506">پرداخت آورده در نمونه تکمیل شد</h2><p data-node-id="150:1507">این صفحه نمونهٔ طراحی است؛ پرداخت واقعی ثبت نشده و مرحلهٔ تأیید نهایی نیز نمایشی است.</p></div></div>
               <div className={styles.successDivider} />
-              <div className={styles.successAmount} data-node-id="150:1509"><div><strong data-node-id="150:1511">{toPersianDigits("۵۰٬۰۰۰٬۰۰۰")}</strong><span data-node-id="150:1512">تومان</span></div><p data-node-id="150:1513">شناسهٔ نمونه: {toPersianDigits("۱۲۳۴۵۶۷۸۹")}</p></div>
+              <div className={styles.successAmount} data-node-id="150:1509"><div><strong data-node-id="150:1511">{renderPersianValue("۵۰٬۰۰۰٬۰۰۰")}</strong><span data-node-id="150:1512">تومان</span></div><p data-node-id="150:1513">شناسهٔ نمونه: {renderPersianValue("۱۲۳۴۵۶۷۸۹")}</p></div>
             </section>
 
             <section className={styles.card} data-node-id="150:1514"><h2 data-node-id="150:1515">شرایط نهایی قرارداد</h2><Rows rows={finalTerms} /></section>
@@ -84,12 +99,12 @@ export default function FinalConfirmationPage() {
 
             <section className={styles.card} data-node-id="150:1568">
               <h2 data-node-id="150:1569">ملک و طرفین قرارداد</h2>
-              <div className={styles.propertyBlock} data-node-id="150:1570"><span data-node-id="150:1571">مشخصات ملک</span><strong data-node-id="150:1572">تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴، واحد ۳</strong></div>
+              <div className={styles.propertyBlock} data-node-id="150:1570"><span data-node-id="150:1571">مشخصات ملک</span><strong data-node-id="150:1572">{renderPersianValue("تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴، واحد ۳")}</strong></div>
               <div className={styles.divider} />
               <div className={styles.parties} data-node-id="150:1574">
-                <div className={styles.party}><span>مستأجر</span><div><strong data-node-id="150:1578">علی رضایی</strong><small className={styles.tenantBadge}>مستأجر</small></div><p data-node-id="150:1581">کد ملی: {toPersianDigits("۰۰۱•••••۷۸۹")}</p></div>
+                <div className={styles.party}><span>مستأجر</span><div><strong data-node-id="150:1578">علی رضایی</strong><small className={styles.tenantBadge}>مستأجر</small></div><p data-node-id="150:1581"><span>کد ملی:</span><bdi className={styles.nationalId} dir="ltr">{toPersianDigits("۰۰۱•••••۷۸۹")}</bdi></p></div>
                 <div className={styles.partyDivider} />
-                <div className={styles.party}><span>مالک</span><div><strong data-node-id="150:1586">محمد رضایی</strong><small className={styles.ownerBadge}>مالک</small></div><p data-node-id="150:1589">کد ملی: {toPersianDigits("۰۰۲•••••۴۵۶")}</p></div>
+                <div className={styles.party}><span>مالک</span><div><strong data-node-id="150:1586">محمد رضایی</strong><small className={styles.ownerBadge}>مالک</small></div><p data-node-id="150:1589"><span>کد ملی:</span><bdi className={styles.nationalId} dir="ltr">{toPersianDigits("۰۰۲•••••۴۵۶")}</bdi></p></div>
               </div>
             </section>
           </div>
@@ -101,7 +116,7 @@ export default function FinalConfirmationPage() {
                 {process.map((step, index) => (
                   <div className={styles.processItem} key={step.title}>
                     <div className={styles.processTrack}>
-                      <span className={`${styles.processDot} ${step.done ? styles.doneDot : ""} ${step.active ? styles.activeDot : ""} ${!step.done && !step.active ? styles.waitingDot : ""}`}>{step.done ? <img src="/brand/financing-review-check.svg" alt="" width={14} height={14} /> : toPersianDigits(step.number ?? "")}</span>
+                      <span className={`${styles.processDot} ${step.done ? styles.doneDot : ""} ${step.active ? styles.activeDot : ""} ${!step.done && !step.active ? styles.waitingDot : ""}`}>{step.done ? <img src="/brand/financing-review-check.svg" alt="" width={14} height={14} /> : renderPersianValue(step.number ?? "")}</span>
                       {index < process.length - 1 ? <span className={`${styles.processLine} ${index < 2 ? styles.doneLine : ""}`} /> : null}
                     </div>
                     <div className={`${styles.processCopy} ${step.active ? styles.activeCopy : ""} ${!step.done && !step.active ? styles.waitingCopy : ""}`}><strong>{step.title}</strong><span>{step.note}</span></div>
@@ -113,9 +128,12 @@ export default function FinalConfirmationPage() {
             <section className={styles.nextSteps} data-node-id="150:1635">
               <h2 data-node-id="150:1636">پس از تأیید شما چه می‌شود؟</h2>
               <ol>
-                <li>درخواست تأیید نهایی برای مالک ارسال می‌شود.</li>
-                <li>پس از تکمیل تأیید نهایی، مبلغ تأمین مالی وارد مسیر مالی تعیین‌شده قرارداد می‌شود.</li>
-                <li>قرارداد در چارخونه فعال می‌شود.</li>
+                {previewNextSteps.map((text, index) => (
+                  <li key={text}>
+                    <span className={styles.stepNumber} aria-hidden="true">{toPersianDigits(String(index + 1))}.</span>
+                    <span>{text}</span>
+                  </li>
+                ))}
               </ol>
             </section>
 

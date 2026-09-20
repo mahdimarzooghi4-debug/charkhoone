@@ -450,10 +450,10 @@ final_css = read(USER_ROOT / "contracts/register/plans/final-confirmation/page.m
 final_consent = read(USER_ROOT / "contracts/register/plans/final-confirmation/FinalConfirmationConsent.tsx")
 require('const toPersianDigits = (value: string) =>' in final_confirmation and
         'value.replace(/[0-9٠-٩]/g,' in final_confirmation and
-        '{toPersianDigits(value)}' in final_confirmation and
-        '{toPersianDigits("۵۰٬۰۰۰٬۰۰۰")}' in final_confirmation and
-        '{toPersianDigits("۱۲۳۴۵۶۷۸۹")}' in final_confirmation and
-        'toPersianDigits(step.number ?? "")' in final_confirmation,
+        '{renderPersianValue(value)}' in final_confirmation and
+        '{renderPersianValue("۵۰٬۰۰۰٬۰۰۰")}' in final_confirmation and
+        '{renderPersianValue("۱۲۳۴۵۶۷۸۹")}' in final_confirmation and
+        'renderPersianValue(step.number ?? "")' in final_confirmation,
         "final-confirmation sample figures, reference and step numbers should be Persian digits")
 require('className={styles.successIcon}><img src="/brand/financing-review-check.svg"' in final_confirmation and
         final_confirmation.count('src="/brand/financing-review-check.svg"') == 2 and
@@ -477,6 +477,21 @@ require('<FinalConfirmationConsent />' in final_confirmation and
 require('پرداخت واقعی ثبت نشده' in final_confirmation and
         'شناسهٔ نمونه:' in final_confirmation,
         "final confirmation payment and reference should be identified as illustrative")
+require('function renderPersianValue(value: string)' in final_confirmation and
+        'className={styles.persianNumber}' in final_confirmation and
+        'dir="ltr"' in final_confirmation and
+        '.persianNumber { direction: ltr; unicode-bidi: isolate;' in final_css and
+        'const previewNextSteps = [' in final_confirmation and
+        '{toPersianDigits(String(index + 1))}.' in final_confirmation and
+        '.nextSteps ol {' in final_css and 'list-style: none;' in final_css and
+        '.stepNumber {' in final_css,
+        "final confirmation must isolate Persian numeric runs and render Persian ordered-step digits explicitly")
+require(final_confirmation.count('className={styles.nationalId} dir="ltr"') == 2 and
+        '{toPersianDigits("۰۰۱•••••۷۸۹")}' in final_confirmation and
+        '{toPersianDigits("۰۰۲•••••۴۵۶")}' in final_confirmation and
+        '.nationalId { direction: ltr; unicode-bidi: isolate;' in final_css and
+        '.party p { display: flex; align-items: baseline; justify-content: flex-start; gap: 6px; direction: rtl;' in final_css,
+        "final confirmation must keep Persian national-ID labels RTL and masked digits in LTR order")
 
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
