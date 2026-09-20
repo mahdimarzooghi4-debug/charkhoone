@@ -606,6 +606,22 @@ require('className={styles.ownerFinalConsentRow}' in owner_final_consent and
 
 owner_settlement = read(USER_ROOT / "contracts/123456789012/owner/settlement-preference/page.tsx")
 owner_active = read(USER_ROOT / "contracts/123456789012/owner/page.tsx")
+owner_active_css = read(USER_ROOT / "contracts/123456789012/owner/page.module.css")
+receive_pay = read(USER_ROOT / "receive-pay/page.tsx")
+shared_sidebar = read(ROOT / "apps/web/src/components/user/UserPanelSidebar.tsx")
+shared_exit = read(ROOT / "apps/web/src/components/user/UserPanelExit.tsx")
+require('<section id="owner-property-info" className={styles.card} data-node-id="161:190">' in owner_active and
+        '<a href="#owner-property-info">‹ <span>مشاهده اطلاعات ملک</span></a>' in owner_active and
+        '<div>‹ <span>مشاهده اطلاعات ملک</span></div>' not in owner_active and
+        '.quickActions > a, .quickActions > div {' in owner_active_css and
+        owner_active.count('href="/user/receive-pay"') == 3 and
+        'export default function ReceivePayPage()' in receive_pay and
+        all('href="' + target + '"' in shared_sidebar for target in
+            ('/user/home', '/user/contracts', '/user/receive-pay', '/user/account')) and
+        'href="/login"' in shared_exit,
+        "owner active preview must have working property anchor, three receipt-history/payment links and shared sidebar destinations")
+
+
 require('action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/settlement-preference"' in contracts_text and
         'action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/final-confirmation"' not in contracts_text and
         'href="/user/contracts/123456789012/owner/settlement-preference"' in owner_final,
