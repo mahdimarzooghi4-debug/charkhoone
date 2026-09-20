@@ -2,6 +2,7 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 import { FinalConfirmationConsent } from "./FinalConfirmationConsent";
+import { demoFinance, demoFinanceNote } from "@/lib/demo-financing";
 
 // Normalize digits in sample data, including ASCII and Arabic-Indic fixtures.
 const toPersianDigits = (value: string) =>
@@ -32,14 +33,14 @@ const finalTerms = [
   ["مدت قرارداد", "۱۲ ماه", "default"],
 ] as const;
 
-const financingRows = [
-  ["طرح انتخاب‌شده", "طرح ویژه کارکنان", "default"],
+const financingRows = (plan: "general" | "staff") => ([
+  ["طرح انتخاب‌شده", plan === "general" ? "طرح عمومی" : "طرح ویژه کارکنان", "default"],
   ["بانک", "بانک نمونه", "default"],
-  ["مبلغ تأمین‌شده", "۴۵۰٬۰۰۰٬۰۰۰ تومان", "primary"],
-  ["آورده پرداخت‌شدۀ شما", "۵۰٬۰۰۰٬۰۰۰ تومان", "accent"],
-  ["پرداخت ماهانه تأمین مالی", "۱۸٬۵۰۰٬۰۰۰ تومان", "primary"],
-  ["مدت بازپرداخت", "۱۲ ماه", "default"],
-] as const;
+  ["مبلغ تأمین‌شده", demoFinance.loanText, "primary"],
+  ["مانده از رهن معادل (نمایشی، نه پرداخت قطعی)", demoFinance.contributionText, "accent"],
+  ["پرداختی ماهانه مستأجر (فقط سود)", demoFinance.monthlyText, "primary"],
+  ["دوره نمونه قرارداد", "۱۲ ماه", "default"],
+]) as const;
 
 type Tone = "default" | "primary" | "accent";
 
@@ -72,29 +73,30 @@ const process: readonly ProcessStep[] = [
   { title: "فعال شدن قرارداد", note: "در انتظار", number: "۵" },
 ] as const;
 
-export default function FinalConfirmationPage() {
+export default async function FinalConfirmationPage({ searchParams }: { searchParams: Promise<{plan?: string}> }) {
+  const plan = (await searchParams).plan === "general" ? "general" : "staff";
   return (
     <main className={styles.page} data-node-id="150:1489" data-name="Web App / Contribution Paid / Final Confirmation">
       <section className={styles.mainContent} data-node-id="150:1490">
         <header className={styles.pageHeader} data-node-id="150:1491">
           <p data-node-id="150:1492">قراردادها / تأیید نهایی</p>
           <div className={styles.titleRow} data-node-id="150:1493"><h1 data-node-id="150:1494">تأیید نهایی قرارداد</h1><span className={styles.paidBadge} data-node-id="150:1495">آورده پرداخت شده (نمونه)</span></div>
-          <p data-node-id="150:1497">در پیش‌نمایش طراحی، پرداخت آورده تکمیل شده است؛ پیش از ادامه، شرایط قرارداد را بررسی و تأیید کنید.</p>
+          <p data-node-id="150:1497">در پیش‌نمایش طراحی، مرحله آورده صرفاً نمایشی طی شده است؛ پیش از ادامه، شرایط نمونه را بررسی کنید.</p>
         </header>
 
         <div className={styles.columns} data-node-id="150:1498">
           <div className={styles.mainColumn} data-node-id="150:1499">
             <section className={styles.successCard} data-node-id="150:1500">
-              <div className={styles.successTop} data-node-id="150:1501"><span className={styles.successIcon}><img src="/brand/financing-review-check.svg" alt="" width={14} height={14} /></span><div><h2 data-node-id="150:1506">پرداخت آورده در نمونه تکمیل شد</h2><p data-node-id="150:1507">این صفحه نمونهٔ طراحی است؛ پرداخت واقعی ثبت نشده و مرحلهٔ تأیید نهایی نیز نمایشی است.</p></div></div>
+              <div className={styles.successTop} data-node-id="150:1501"><span className={styles.successIcon}><img src="/brand/financing-review-check.svg" alt="" width={14} height={14} /></span><div><h2 data-node-id="150:1506">مرحله آورده در پیش‌نمایش طی شد</h2><p data-node-id="150:1507">این صفحه نمونهٔ طراحی است؛ پرداخت واقعی ثبت نشده و مرحلهٔ تأیید نهایی نیز نمایشی است.</p></div></div>
               <div className={styles.successDivider} />
-              <div className={styles.successAmount} data-node-id="150:1509"><div><strong data-node-id="150:1511">{renderPersianValue("۵۰٬۰۰۰٬۰۰۰")}</strong><span data-node-id="150:1512">تومان</span></div><p data-node-id="150:1513">شناسهٔ نمونه: {renderPersianValue("۱۲۳۴۵۶۷۸۹")}</p></div>
+              <div className={styles.successAmount} data-node-id="150:1509"><div><strong data-node-id="150:1511">{demoFinance.contributionNumberText}</strong><span data-node-id="150:1512">تومان</span></div><p data-node-id="150:1513">شناسهٔ نمونه: {renderPersianValue("۱۲۳۴۵۶۷۸۹")}</p></div>
             </section>
 
             <section className={styles.card} data-node-id="150:1514"><h2 data-node-id="150:1515">شرایط نهایی قرارداد</h2><Rows rows={finalTerms} /></section>
 
             <section className={styles.card} data-node-id="150:1535">
               <div className={styles.cardTitleRow} data-node-id="150:1536"><h2 data-node-id="150:1537">تأمین مالی قرارداد</h2><span className={styles.approvedBadge} data-node-id="150:1538">تأیید شده</span></div>
-              <Rows rows={financingRows} />
+              <Rows rows={financingRows(plan)} />
             </section>
 
             <section className={styles.card} data-node-id="150:1568">
@@ -146,6 +148,7 @@ export default function FinalConfirmationPage() {
             </div>
           </aside>
         </div>
+        <p role="note" style={{fontSize:12,lineHeight:2,color:"var(--ch-color-muted)"}}>{demoFinanceNote}</p>
       </section>
 
       <UserPanelSidebar nodeId="142:1668" />

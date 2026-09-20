@@ -1,6 +1,7 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
+import { demoFinance, demoFinanceNote } from "@/lib/demo-financing";
 
 const contractRows = [
   ["ملک", "سعادت‌آباد"],
@@ -10,19 +11,20 @@ const contractRows = [
 ] as const;
 
 const financeRows = [
-  ["مبلغ رهن قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان", "default"],
-  ["مبلغ تأمین‌شده توسط بانک", "۴۵۰٬۰۰۰٬۰۰۰ تومان", "primary"],
-  ["آورده شما", "۵۰٬۰۰۰٬۰۰۰ تومان", "accent"],
+  ["رهن نقدی قرارداد", demoFinance.cashDepositText, "default"],
+  ["رهن کامل معادل قرارداد", demoFinance.fullEquivalentText, "default"],
+  ["مبلغ تأمین‌شده توسط بانک", demoFinance.loanText, "primary"],
+  ["آورده از رهن معادل (نمونه)", demoFinance.contributionText, "accent"],
 ] as const;
 
-const planRows = [
-  ["طرح", "طرح ویژه کارکنان", "default"],
+const getPlanRows = (plan: "general" | "staff") => ([
+  ["طرح", plan === "general" ? "طرح عمومی" : "طرح ویژه کارکنان", "default"],
   ["بانک", "بانک نمونه", "default"],
-  ["مبلغ تأمین مالی", "۴۵۰٬۰۰۰٬۰۰۰ تومان", "default"],
-  ["پرداخت ماهانه تأمین مالی", "۱۸٬۵۰۰٬۰۰۰ تومان", "primary"],
-  ["مدت بازپرداخت", "۱۲ ماه", "default"],
-  ["وضعیت طرح", "تأیید بانک", "primary"],
-] as const;
+  ["مبلغ تأمین مالی", demoFinance.loanText, "default"],
+  ["پرداختی ماهانه مستأجر (فقط سود)", demoFinance.monthlyText, "primary"],
+  ["دوره نمونه قرارداد", "۱۲ ماه", "default"],
+  ["وضعیت طرح", "تأیید نمایشی", "primary"],
+]) as const;
 
 type Tone = "default" | "primary" | "accent";
 
@@ -55,7 +57,8 @@ const process: readonly ProcessStep[] = [
   { title: "فعال شدن قرارداد", note: "در انتظار", number: "۵" },
 ];
 
-export default function ContributionPage() {
+export default async function ContributionPage({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {
+  const plan = (await searchParams).plan === "general" ? "general" : "staff";
   return (
     <main className={styles.page} data-node-id="150:1317" data-name="Web App / Financing Approved / Contribution Required">
       <section className={styles.mainContent} data-node-id="150:1318">
@@ -93,19 +96,20 @@ export default function ContributionPage() {
             </section>
 
             <section className={`${styles.card} ${styles.primaryCard}`} data-node-id="150:1397">
-              <div className={styles.primaryCopy}><span data-node-id="150:1399">آورده موردنیاز شما</span><strong data-node-id="150:1400">۵۰٬۰۰۰٬۰۰۰ تومان</strong><p data-node-id="150:1401">پس از پرداخت آورده، فرایند تأیید نهایی قرارداد ادامه پیدا می‌کند.</p></div>
-              <Link href="/user/contracts/register/plans/final-confirmation" className={styles.primaryAction} data-node-id="150:1403">پرداخت آورده</Link>
+              <div className={styles.primaryCopy}><span data-node-id="150:1399">مانده رهن معادل مستأجر (نمونه)</span><strong data-node-id="150:1400">۵۰٬۰۰۰٬۰۰۰ تومان</strong><p data-node-id="150:1401">این مبلغ ماندهٔ رهن معادل است؛ مبلغ نقدی قطعی در زمان عقد قرارداد نیست. ادامه فقط پیش‌نمایش است.</p></div>
+              <Link href={`/user/contracts/register/plans/final-confirmation?plan=${plan}`} className={styles.primaryAction} data-node-id="150:1403">پیش‌نمایش پرداخت آورده</Link>
             </section>
 
-            <section className={styles.card} data-node-id="150:1405"><h2 data-node-id="150:1406">جزئیات مالی</h2><Rows rows={financeRows} /><div className={styles.formula} data-node-id="150:1418">رهن قرارداد = تأمین مالی + آورده شما</div></section>
+            <section className={styles.card} data-node-id="150:1405"><h2 data-node-id="150:1406">جزئیات مالی</h2><Rows rows={financeRows} /><div className={styles.formula} data-node-id="150:1418">رهن کامل معادل = وام نمونه + مانده رهن معادل؛ آورده نقدی قطعی نیست.</div></section>
 
             <section className={styles.card} data-node-id="150:1420">
               <h2 data-node-id="150:1421">جزئیات طرح تأییدشده</h2>
-              <Rows rows={planRows} />
-              <div className={styles.rentNotice} data-node-id="150:1447"><div><strong data-node-id="150:1449">۲۰٬۰۰۰٬۰۰۰ تومان در ماه</strong><span data-node-id="150:1450">اجاره ماهانه قرارداد</span></div><p data-node-id="150:1451">تذکر: اجاره ماهانه قرارداد اطلاعاتی است و ارتباطی به پرداخت ماهانه تأمین مالی ندارد.</p></div>
+              <Rows rows={getPlanRows(plan)} />
+              <div className={styles.rentNotice} data-node-id="150:1447"><div><strong data-node-id="150:1449">۲۰٬۰۰۰٬۰۰۰ تومان در ماه</strong><span data-node-id="150:1450">اجاره ماهانه قرارداد</span></div><p data-node-id="150:1451">پرداخت ماهانه نمونه فقط سود وام است و اصل وام در آن محاسبه نشده است.</p></div>
             </section>
           </div>
         </div>
+        <p role="note" style={{fontSize:12,lineHeight:2,color:"var(--ch-color-muted)"}}>{demoFinanceNote}</p>
       </section>
 
       <UserPanelSidebar nodeId="142:1703" />

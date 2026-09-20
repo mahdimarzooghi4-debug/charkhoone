@@ -11,10 +11,11 @@ const membershipChoices = {
 export default async function MembershipPaymentPreviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string }>;
+  searchParams: Promise<{ plan?: string; financing?: string }>;
 }) {
   // Display the selected fixture only; this is not a payment result from a provider.
-  const { plan } = await searchParams;
+  const { plan, financing } = await searchParams;
+  const financingPlan = financing === "general" ? "general" : "staff";
   const chosenId = plan === "twice" || plan === "twice-high" ? plan : "once";
   const choice = membershipChoices[chosenId];
   const rows = [
@@ -31,7 +32,7 @@ export default async function MembershipPaymentPreviewPage({
     <main className={styles.page} data-node-id="175:754" data-name="Web App / Payment Return / Membership Success">
       <section className={styles.mainContent} data-node-id="175:755">
         <header className={styles.headerBlock} data-node-id="175:756">
-          <Link href="/user/contracts/register/plans/membership" className={styles.backLink} data-node-id="175:757">بازگشت به انتخاب عضویت <span>›</span></Link>
+          <Link href={`/user/contracts/register/plans/membership?financing=${financingPlan}`} className={styles.backLink} data-node-id="175:757">بازگشت به انتخاب عضویت <span>›</span></Link>
           <div className={styles.headerRight} data-node-id="175:761"><div className={styles.breadcrumb}><span>عضویت چارخونه</span><span>/</span><strong>نتیجه نمونه</strong></div><h1 data-node-id="175:766">نتیجهٔ نمونهٔ عضویت</h1><p data-node-id="175:767">پیش‌نمایش طرح انتخاب‌شده، بدون پرداخت واقعی</p></div>
         </header>
 
@@ -52,7 +53,7 @@ export default async function MembershipPaymentPreviewPage({
             <div className={styles.membershipContext} data-node-id="175:819"><Link href="/user/account" className={styles.membershipLink} data-node-id="175:820">مشاهده جزئیات عضویت</Link><div><span className={styles.tenantBadge}>مستأجر</span><strong data-node-id="175:824">سهمیه انتخابی: {choice.uses}</strong></div></div>
           </section>
 
-          <div className={styles.actions} data-node-id="175:825"><Link href="/user/contracts/123456789012" className={styles.secondaryAction} data-node-id="175:826">بازگشت به قرارداد</Link><Link href="/user/contracts/register/plans/contribution" className={styles.primaryAction} data-node-id="175:828">ادامه به مرحلهٔ آورده (نمونه)</Link></div>
+          <div className={styles.actions} data-node-id="175:825"><Link href="/user/contracts/123456789012" className={styles.secondaryAction} data-node-id="175:826">بازگشت به قرارداد</Link><Link href={`/user/contracts/register/plans/contribution?plan=${financingPlan}`} className={styles.primaryAction} data-node-id="175:828">ادامه به مرحلهٔ آورده (نمونه)</Link></div>
         </div>
       </section>
 
