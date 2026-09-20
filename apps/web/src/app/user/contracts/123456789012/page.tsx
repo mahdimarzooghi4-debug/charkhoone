@@ -87,12 +87,12 @@ export default function ContractDetailPage() {
               </div>
               <div className={styles.paymentSummary} data-node-id="150:336">
                 <div className={styles.amount} data-node-id="150:337">
-                  <strong data-node-id="150:338">۱۸٬۵۰۰٬۰۰۰</strong>
+                  <strong data-node-id="150:338">۶٬۷۰۸٬۳۳۳</strong>
                   <span data-node-id="150:339">تومان</span>
                 </div>
                 <div className={styles.paymentMeta} data-node-id="150:340">
                   <strong data-node-id="150:341">سررسید: ۱۵ آبان ۱۴۰۵</strong>
-                  <span data-node-id="150:342">بابت قسط ماهانه تأمین مالی</span>
+                  <span data-node-id="150:342">بابت سود ماهانه نمونه وام؛ اصل وام جداگانه تسویه می‌شود</span>
                 </div>
               </div>
               <Link href="/user/receive-pay" className={styles.primaryAction} data-node-id="150:344">مشاهده در دریافت و پرداخت</Link>
@@ -101,11 +101,11 @@ export default function ContractDetailPage() {
             <section className={styles.card} data-node-id="150:346" data-name="Contract Information Card">
               <h2 data-node-id="150:347">اطلاعات اصلی قرارداد</h2>
               <div className={styles.infoList}>
-                <InfoRow label="مبلغ رهن (قرض‌الحسنه)" value="۵۰۰٬۰۰۰٬۰۰۰ تومان" />
+                <InfoRow label="رهن نقدی قرارداد" value="۵۰۰٬۰۰۰٬۰۰۰ تومان" />\n                <InfoRow label="معادل رهن اجاره با ضریب ۳٪" value="۶۶۶٬۶۶۶٬۶۶۷ تومان" />\n                <InfoRow label="رهن کامل معادل" value="۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان" />
                 <InfoRow label="اجاره ماهانه قرارداد" value="۲۰٬۰۰۰٬۰۰۰ تومان" strong />
                 <InfoRow label="تاریخ شروع قرارداد" value="۱۵ مهر ۱۴۰۵" />
                 <InfoRow label="تاریخ پایان قرارداد" value="۱۵ مهر ۱۴۰۶" />
-                <InfoRow label="مدت زمان قرارداد" value="۱۲ ماه" />
+                <InfoRow label="مدت زمان قرارداد" value="طبق قرارداد بانک" />
               </div>
             </section>
 
@@ -116,12 +116,12 @@ export default function ContractDetailPage() {
               </div>
               <div className={styles.infoList}>
                 <InfoRow label="طرح انتخاب‌شده" value="طرح ویژه واجد شرایط" />
-                <InfoRow label="بانک صادرکننده" value="بانک نمونه" />
-                <InfoRow label="مبلغ تأمین‌شده توسط بانک" value="۴۵۰٬۰۰۰٬۰۰۰ تومان" />
-                <InfoRow label="آورده نقدی مستأجر" value="۵۰٬۰۰۰٬۰۰۰ تومان" />
-                <InfoRow label="پرداخت ماهانه تأمین مالی" value="۱۸٬۵۰۰٬۰۰۰ تومان" strong />
+                <InfoRow label="بانک صادرکننده" value="بانک نمونه — نتیجه واقعی متصل نیست" />
+                <InfoRow label="مبلغ تأمین‌شده توسط بانک" value="۳۸۱۶٬۶۶۶٬۶۶۷ تومان" />
+                <InfoRow label="آورده مستأجر از رهن کامل معادل" value="۸۱۶٬۶۶۶٬۶۶۷ تومان" />
+                <InfoRow label="پرداختی ماهانه مستأجر (فقط سود وام)" value="۶٬۷۰۸٬۳۳۳ تومان" strong />
               </div>
-              <p className={styles.infoNotice} data-node-id="150:385">ℹ️ شرایط این طرح برای این قرارداد نهایی شده است و غیرقابل ویرایش می‌باشد.</p>
+              <p className={styles.infoNotice} data-node-id="150:385">ℹ️ این اعداد پیش‌نمایش‌اند: رتبه C3 و نرخ اسمی سالانه ۲۳٪ نمونه هستند؛ پرداخت ماهانه فقط سود وام است و اصل وام را شامل نمی‌شود.</p>
             </section>
           </div>
         </div>
