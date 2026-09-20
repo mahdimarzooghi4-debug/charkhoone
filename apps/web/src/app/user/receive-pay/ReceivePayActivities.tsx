@@ -48,22 +48,22 @@ export function ReceivePayActivities({ method }: { method?: "fund" | "monthly" }
       <section className={styles.tableWrap} data-node-id="150:472">
         <div className={styles.tableScroller}>
           <div className={[styles.tableRow, styles.tableHeader].join(" ")}>
-            <span>عملیات</span><span>وضعیت</span><span>تاریخ</span><span>مبلغ</span>
-            <span>شرح</span><span>قرارداد</span><span>نوع</span>
+            <span>نوع</span><span>قرارداد</span><span>شرح</span><span>مبلغ</span>
+            <span>تاریخ</span><span>وضعیت</span><span>عملیات</span>
           </div>
           {visible.length === 0 ?
             <p className={styles.emptyState} role="status">در این پیش‌نمایش، موردی با فیلترهای انتخاب‌شده وجود ندارد.</p> :
             visible.map(item =>
               <div className={styles.tableRow} data-node-id={item.nodeId} key={item.nodeId}>
+                <span className={[styles.badge, styles["badge_" + item.kindTone]].join(" ")}>{item.kind}</span>
+                <span className={styles.contractCell}><strong>{item.contract}</strong><small>{item.role}</small></span>
+                <span>{item.description}</span>
+                <strong>{item.amount}</strong>
+                <span className={styles.muted}>{item.date}</span>
+                <span className={[styles.badge, styles["badge_" + item.statusTone]].join(" ")}>{item.status}</span>
                 <span className={styles.actionCell}>
                   <Link href={method && item.href.startsWith("/user/receive-pay/") ? item.href + "&method=" + method : item.href} className={item.primaryAction ? styles.primaryButton : styles.linkButton}>{item.action}</Link>
                 </span>
-                <span className={[styles.badge, styles["badge_" + item.statusTone]].join(" ")}>{item.status}</span>
-                <span className={styles.muted}>{item.date}</span>
-                <strong>{item.amount}</strong>
-                <span>{item.description}</span>
-                <span className={styles.contractCell}><strong>{item.contract}</strong><small>{item.role}</small></span>
-                <span className={[styles.badge, styles["badge_" + item.kindTone]].join(" ")}>{item.kind}</span>
               </div>
             )}
         </div>

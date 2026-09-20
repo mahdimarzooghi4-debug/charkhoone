@@ -45,7 +45,7 @@ export default function OwnerContractTerminatedPage() {
 
             <section className={styles.card} data-node-id="173:306"><h2 data-node-id="173:307">خلاصه مشخصات قرارداد منقضی</h2><div className={styles.divider} /><div className={styles.rowList}>{contractRows.map(([label, value, tone]) => <div className={styles.row} key={label}><strong className={tone === "danger" ? styles.dangerText : ""}>{value}</strong><span>{label}</span></div>)}</div></section>
 
-            <div className={styles.actions} data-node-id="173:328"><Link href="/user/receive-pay" className={styles.primaryAction} data-node-id="173:329">مشاهده جزئیات تسویه مالی</Link><span className={styles.secondaryAction} data-node-id="173:331">مشاهده اسناد قرارداد</span></div>
+            <div className={styles.actions} data-node-id="173:328"><Link href="/user/receive-pay?scenario=termination" className={styles.primaryAction} data-node-id="173:329">مشاهده جزئیات تسویه مالی</Link><span className={styles.secondaryAction} data-node-id="173:331">مشاهده اسناد قرارداد</span></div>
           </div>
         </div>
       </section>

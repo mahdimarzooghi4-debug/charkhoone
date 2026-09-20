@@ -45,7 +45,7 @@ export default function TerminatedTenantContractPage() {
 
             <section className={styles.card} data-node-id="171:457"><h2 data-node-id="171:458">خلاصه مشخصات قرارداد منقضی</h2><div className={styles.divider} /><Rows rows={contract} /></section>
 
-            <div className={styles.actions} data-node-id="171:473"><Link href="/user/receive-pay" className={styles.secondaryAction} data-node-id="171:477">مشاهده دریافت و پرداخت</Link></div>
+            <div className={styles.actions} data-node-id="171:473"><Link href="/user/receive-pay?scenario=termination" className={styles.secondaryAction} data-node-id="171:477">مشاهده دریافت و پرداخت</Link></div>
           </div>
         </div>
       </section>

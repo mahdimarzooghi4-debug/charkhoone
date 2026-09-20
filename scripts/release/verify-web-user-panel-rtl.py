@@ -674,7 +674,10 @@ require('"/user/receive-pay/result?transaction=overdue"' in receive_pay_fixtures
         '"/user/receive-pay/receipt?transaction=owner-ponak"' in receive_pay_fixtures and
         'href: "/user/contracts"' in receive_pay_fixtures and
         'button type="button" className={styles.terminatedAction}' not in receive_pay and
-        'href="/user/contracts/123456789012/terminated"' in receive_pay,
+        'href="/user/contracts/123456789012/terminated"' in receive_pay and
+        'showTerminationScenario && <section className={styles.terminationCard}' in receive_pay and
+        'const showTerminationScenario = params.scenario === "termination";' in receive_pay and
+        '<section className={styles.terminationCard}' not in receive_pay.replace('showTerminationScenario && <section className={styles.terminationCard}', ''),
         "each sample transaction row and termination scenario must have a working destination")
 require('previews[selected]' in payment_result and
         'const backHref = "/user/receive-pay" + (method ? "?method=" + method : "");' in payment_result and
@@ -706,6 +709,29 @@ require('const fund = method === "fund";' in receive_pay and
         'سناریوی نمونه فسخ' in receive_pay,
         "payment screen must retain owner method context and disclose separate sample termination")
 
+
+
+# The generic receive/pay table must keep one RTL column order for headers
+# and data cells, while termination warning is only on explicitly requested scenario.
+tenant_terminated = read(USER_ROOT / "contracts/123456789012/terminated/page.tsx")
+owner_terminated = read(USER_ROOT / "contracts/123456789012/owner/terminated/page.tsx")
+require('<span>نوع</span><span>قرارداد</span><span>شرح</span><span>مبلغ</span>' in receive_pay_controls and
+        '<span>تاریخ</span><span>وضعیت</span><span>عملیات</span>' in receive_pay_controls and
+        receive_pay_controls.index('<span>نوع</span><span>قرارداد</span>') <
+        receive_pay_controls.index('>{item.kind}</span>') <
+        receive_pay_controls.index('>{item.contract}</strong>') <
+        receive_pay_controls.index('>{item.description}</span>') <
+        receive_pay_controls.index('>{item.amount}</strong>') <
+        receive_pay_controls.index('>{item.date}</span>') <
+        receive_pay_controls.index('>{item.status}</span>') <
+        receive_pay_controls.index('>{item.action}</Link>') and
+        'direction: rtl;' in receive_pay_css.split('.tableRow {', 1)[1].split('}', 1)[0] and
+        'grid-template-columns: minmax(88px, 0.7fr)' in receive_pay_css and
+        '.tableRow > .badge { justify-self: start; }' in receive_pay_css and
+        '.contractCell { align-items: flex-start; gap: 2px; }' in receive_pay_css and
+        'href="/user/receive-pay?scenario=termination"' in tenant_terminated and
+        'href="/user/receive-pay?scenario=termination"' in owner_terminated,
+        "receive/pay headers and rows must have matching RTL columns and scenario must be opt-in")
 
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
