@@ -115,9 +115,10 @@ export default function EligibleFinancingPlansPage() {
         </section>
 
         <section className={styles.contractContext} data-node-id="150:917">
-          <div><span>مبلغ موردنیاز:</span><strong>۳۵۰٬۰۰۰٬۰۰۰ تومان</strong></div>
+          <div><span>تأمین مالی نمونه:</span><strong>۳۵۰٬۰۰۰٬۰۰۰ تومان</strong></div>
+          <div><span>رهن کامل معادل:</span><strong>۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان</strong></div>
           <div><span>اجاره ماهانه:</span><strong className={styles.contextRegular}>۲۰٬۰۰۰٬۰۰۰ تومان</strong></div>
-          <div><span>مبلغ رهن:</span><strong className={styles.contextRegular}>۵۰۰٬۰۰۰٬۰۰۰ تومان</strong></div>
+          <div><span>رهن نقدی قرارداد:</span><strong className={styles.contextRegular}>۵۰۰٬۰۰۰٬۰۰۰ تومان</strong></div>
           <div><span>قرارداد:</span><strong>سعادت‌آباد</strong></div>
         </section>
 
@@ -134,7 +135,7 @@ export default function EligibleFinancingPlansPage() {
 
         <div className={styles.informationNote} data-node-id="150:999">
           <span className={styles.noticeIcon} aria-hidden="true">ⓘ</span>
-          <p data-node-id="150:1000">مبالغ و طرح‌ها نمونهٔ طراحی‌اند؛ انتخاب طرح به‌معنای ثبت درخواست یا تأیید واقعی بانک نیست.</p>
+          <p data-node-id="150:1000">اعداد این مسیر با ماشین‌حساب یکسان‌اند: رتبه نمونه C3 با تأمین مالی ۳۰٪ و نرخ اسمی سالانه نمونه ۲۳٪. انتخاب طرح به‌معنای ثبت درخواست یا تأیید واقعی بانک نیست.</p>
         </div>
       </section>
 
