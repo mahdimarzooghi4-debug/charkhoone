@@ -100,7 +100,7 @@ export default function PropertiesPage() {
             address="تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴، واحد ۳"
             postalCode="۱۹۹۸۷۶۵۴۳۲"
             contractStatus="قرارداد فعال تا ۱۵ مهر ۱۴۰۶"
-            footerText="پرداخت بعدی: ۱۸٬۵۰۰٬۰۰۰ تومان"
+            footerText="پرداخت بعدی: ۶٬۷۰۸٬۳۳۳ تومان"
             action="مشاهده قرارداد"
             href="/user/contracts/123456789012"
           />
