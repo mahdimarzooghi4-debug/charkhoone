@@ -145,3 +145,7 @@ The user still saw confusing digit order at the bottom of `/user/contracts/regis
 ## Final-confirmation numbered steps — dot must visually follow the digit
 
 The owner requested the punctuation **after** each Persian step numeral in the «پس از تأیید شما چه می‌شود؟» panel. Render the numeral and period as separate inline-flex children in an LTR-isolated 20px marker; do not rely on the bidi engine to position a trailing period embedded in mixed RTL text. Keep the step descriptions RTL, all amounts and masked IDs unchanged. Regressions assert this exact DOM/CSS structure. PR #120 remains Draft/unmerged until visual approval and latest-HEAD CI success.
+
+## Step-marker period placement corrected for visual RTL reading
+
+The prior attempt explicitly made the marker row LTR, which renders `۱.` with the period on the **right** of the digit in the owner's screenshot. The owner clarified it still looked wrong. Keep the number and period as separate children, but render the marker row as `inline-flex; direction: rtl; flex-direction: row`, yielding the number at the right and the period immediately at its **left**, i.e. after the number in RTL reading order. Keep the `<bdi dir="ltr">` around the digit to isolate its glyph without changing surrounding Persian text. CSS-only change to final-confirmation; no other pages, routes or local files should change. Keep #120 Draft until screenshot approval and CI.

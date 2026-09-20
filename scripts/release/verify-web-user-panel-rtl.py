@@ -486,6 +486,8 @@ require('function renderPersianValue(value: string)' in final_confirmation and
         '<span className={styles.stepPeriod}>.</span>' in final_confirmation and
         '.nextSteps ol {' in final_css and 'list-style: none;' in final_css and
         '.stepNumber { display: inline-flex; flex-direction: row;' in final_css and
+        'justify-content: flex-start; color: var(--ch-color-primary);' in final_css and
+        'direction: rtl; unicode-bidi: isolate; text-align: right; }' in final_css and
         '.stepPeriod { direction: ltr; unicode-bidi: isolate; }' in final_css,
         "final confirmation must isolate Persian numeric runs and render Persian ordered-step digits explicitly")
 require(final_confirmation.count('className={styles.nationalId} dir="ltr"') == 2 and
