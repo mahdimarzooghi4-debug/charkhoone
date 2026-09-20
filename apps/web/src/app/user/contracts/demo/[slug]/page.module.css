@@ -1,0 +1,13 @@
+.page { min-height: 100svh; display: flex; background: var(--ch-color-page); }
+.content { min-width: 0; flex: 1; padding: 32px; display: flex; flex-direction: column; gap: 24px; text-align: right; }
+.content h1 { margin: 0 0 8px; font-size: 24px; color: var(--ch-color-text); }
+.content header p, .card p { color: var(--ch-color-muted); line-height: 1.9; font-size: 13px; }
+.card { max-width: 700px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+.card h2 { margin: 0; } .card dl { margin: 0; }
+.card dl div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--ch-color-border); flex-wrap: wrap; }
+.card dt { color: var(--ch-color-muted); } .card dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.primary, .secondary { display: inline-flex; padding: 12px 18px; border-radius: 10px; text-decoration: none; justify-content: center; }
+.primary { background: var(--ch-color-primary); color: #fff; }
+.secondary { color: var(--ch-color-primary); border: 1px solid var(--ch-color-primary); }
+.page a:focus-visible { outline: 3px solid rgb(13 59 54 / 30%); }
+@media (max-width: 920px) { .page { flex-direction: column-reverse; } .content { padding: 20px 16px; } }
