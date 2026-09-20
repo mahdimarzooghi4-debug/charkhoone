@@ -780,10 +780,22 @@ require('"use client";' in calculator_page and
         'type="number"' in calculator_page and
         'onChange={(event) => setAmount(Number(event.target.value))}' in calculator_page and
         'setAmount(clamp(Number(event.target.value), max))' in calculator_page and
-        'const minFinancing = Math.round(deposit * 0.7);' in calculator_page and
-        'const maxFinancing = Math.round(deposit * 0.9);' in calculator_page and
-        'const contribution = deposit - maxFinancing;' in calculator_page and
-        'const monthly = Math.round((18_500_000 * deposit) / EXAMPLE_DEPOSIT);' in calculator_page and
+        'const MIN_FINANCING_PERCENT = 30;' in calculator_page and
+        'const MAX_FINANCING_PERCENT = 55;' in calculator_page and
+        'const minFinancing = Math.round(deposit * MIN_FINANCING_PERCENT / 100);' in calculator_page and
+        'const maxFinancing = Math.round(deposit * MAX_FINANCING_PERCENT / 100);' in calculator_page and
+        'const selectedFinancing = Math.round(deposit * financingPercent / 100);' in calculator_page and
+        'const contribution = deposit - selectedFinancing;' in calculator_page and
+        'const monthlyInterest = rateValid ? Math.round(selectedFinancing * bankAnnualRate / 100 / 12) : null;' in calculator_page and
+        'useState("")' in calculator_page and
+        'نرخ سود سالانه اسمی اعلام‌شده بانک' in calculator_page and
+        'اصل وام جزو قسط ماهانه این برآورد نیست' in calculator_page and
+        'rent - monthlyInterest' in calculator_page and
+        'rentDifference > 0' in calculator_page and
+        'هیچ درخواست یا پرداختی ثبت نمی‌کند' in calculator_page and
+        'deposit * 0.7' not in calculator_page and
+        'deposit * 0.9' not in calculator_page and
+        '18_500_000 * deposit' not in calculator_page and
         'money(rent)' in calculator_page and
         'figma.com/api/mcp/asset/' not in calculator_page and
         'styles.gaugeTrack' in calculator_page and
