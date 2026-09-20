@@ -15,7 +15,10 @@
 .intro h2 { color: var(--ch-color-text); font-size: 18px; font-weight: 700; }
 .intro p { color: var(--ch-color-muted); font-size: 13px; }
 .planStack { width: 100%; display: flex; flex-direction: column; gap: 12px; }
-.planCard { width: 100%; display: flex; flex-direction: column; gap: 16px; padding: 24px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 16px; }
+.planCard { position: relative; width: 100%; display: flex; flex-direction: column; gap: 16px; padding: 24px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 16px; cursor: pointer; direction: rtl; text-align: right; }
+.planCard:hover { border-color: var(--ch-color-primary); }
+.planCard:focus-within { outline: 3px solid rgb(13 59 54 / 35%); outline-offset: 3px; }
+.planInput { position: absolute; width: 1px; height: 1px; min-width: 1px; min-height: 1px; margin: 0; padding: 0; opacity: 0; overflow: hidden; clip-path: inset(50%); }
 .planSelected { background: #f0f7f6; border: 2px solid var(--ch-color-primary); }
 .planTop { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
 .radioActive, .radio { width: 20px; height: 20px; flex: 0 0 20px; display: inline-flex; align-items: center; justify-content: center; border: 2px solid var(--ch-color-muted); border-radius: 50%; background: #fff; }

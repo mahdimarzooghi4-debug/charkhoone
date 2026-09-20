@@ -398,6 +398,39 @@ require('assets.radioActive' not in membership_page and
         'background: var(--ch-color-primary);' in membership_css,
         "membership selected radio must remain visible as a local brand-green CSS circle")
 
+membership_result = read(USER_ROOT / "contracts/register/plans/membership/result/page.tsx")
+membership_result_css = read(USER_ROOT / "contracts/register/plans/membership/result/page.module.css")
+require('"use client";' in membership_page and
+        'useState<MembershipPlanId>("once")' in membership_page and
+        'type="radio" name="membership-plan"' in membership_page and
+        'checked={selected}' in membership_page and
+        'onChange={onSelect}' in membership_page and
+        'onSelect={() => setSelectedPlan(plan.id)}' in membership_page and
+        'selected={selectedPlan === plan.id}' in membership_page and
+        "id: \"once\"" in membership_page and
+        "id: \"twice\"" in membership_page and
+        'id: "twice-high"' in membership_page and
+        '.planCard:focus-within {' in membership_css and
+        '.planInput {' in membership_css,
+        "all three membership plan cards must be single-choice, interactive and keyboard accessible")
+require('membership/result?plan=${selectedPlan}' in membership_page and
+        'پرداخت (نمونه)' in membership_page and
+        'searchParams: Promise<{ plan?: string }>' in membership_result and
+        'const choice = membershipChoices[chosenId];' in membership_result and
+        'plan === "twice" || plan === "twice-high"' in membership_result and
+        '["مبلغ نمونه", choice.amount, true]' in membership_result and
+        '["سقف تأمین مالی", choice.cap, false]' in membership_result and
+        'سهمیه انتخابی: {choice.uses}' in membership_result,
+        "membership preview route must show the actually selected plan and price")
+require('هیچ پرداخت یا فعال‌سازی واقعی عضویت انجام نشده است.' in membership_result and
+        'حق عضویت با موفقیت پرداخت شد' not in membership_result and
+        'assets.check' not in membership_result and
+        'src="/brand/financing-review-check.svg"' in membership_result and
+        '.previewNote {' in membership_result_css and
+        '.checkCircle img { width: 14px; height: 14px; display: block; }' in membership_result_css and
+        'href="/user/contracts/register/plans/contribution"' in membership_page,
+        "membership buttons must keep the existing illustrative contribution route without claiming a real payment")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)
