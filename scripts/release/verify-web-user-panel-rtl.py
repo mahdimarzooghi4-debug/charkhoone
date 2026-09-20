@@ -165,6 +165,13 @@ require("<UserPanelSidebar" in contracts_text and "alertBadge" not in sidebar_co
 require(bool(re.search(r"\.contractHeader,\s*\.contractBottom\s*\{[^}]*direction:\s*rtl\s*;", contracts_css)),
         "contracts card layout must align to right")
 
+require(contracts_text.count('action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/final-confirmation"') == 1 and
+        'nodeId: "149:223"' in contracts_text and
+        'statusTone: "attention" as const' in contracts_text and
+        'contract.href ? <Link href={contract.href} className={styles.detailButton}>{contract.action}</Link>' in contracts_text and
+        'href: null' in contracts_text,
+        "contracts review-and-confirm action must navigate to owner final-confirmation sample without changing other cards")
+
 contracts_assets = {
     "logo": "dashboard-logo.png",
     "home": "dashboard-nav-home.svg",
