@@ -76,7 +76,7 @@ function AmountSlider({
                 }
                 input.setSelectionRange(cursor, cursor);
               });
-            }
+            }}
           />
           <span>تومان</span>
         </label>
