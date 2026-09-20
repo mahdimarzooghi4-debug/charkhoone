@@ -151,17 +151,17 @@ export default function CalculatorPage() {
             </div>
             <div className={styles.divider} />
             <section className={styles.comparison} data-node-id="150:632">
-              <h3 data-node-id="150:633">مقایسه سود وام با اجاره ماهانه</h3>
+              <h3 data-node-id="150:633">مقایسه پرداختی ماهانه مستأجر با اجاره</h3>
               <div className={styles.comparisonRows}>
                 <div className={styles.generalRow}><strong>{money(rent)}</strong><span>اجاره ماهانه قرارداد:</span></div>
-                <div className={styles.userRow}><strong>{monthlyInterest === null ? "نرخ بانک وارد نشده" : money(monthlyInterest)}</strong><span>فقط سود ماهانه وام:</span></div>
+                <div className={styles.userRow}><strong>{monthlyInterest === null ? "نرخ بانک وارد نشده" : money(monthlyInterest)}</strong><span>پرداختی ماهانه مستأجر:</span></div>
               </div>
               <p className={styles.comparisonNotice} role="status" data-node-id="150:641">
                 {rentDifference === null
                   ? "نرخ سود سالانه اسمی اعلامی بانک را وارد کنید تا امکان مقایسه فراهم شود."
                   : belowRent
-                    ? "در این برآورد، سود ماهانه " + money(rentDifference) + " کمتر از اجاره است."
-                    : "با این ورودی‌ها، سود ماهانه از اجاره کمتر نیست؛ شرایط را با بانک بررسی کنید."}
+                    ? "در این برآورد، پرداختی ماهانه مستأجر " + money(rentDifference) + " کمتر از اجاره است."
+                    : "با این ورودی‌ها، پرداختی ماهانه مستأجر از اجاره کمتر نیست؛ شرایط را با بانک بررسی کنید."}
               </p>
             </section>
             <details className={styles.calculationDetails} data-node-id="150:613">
@@ -210,7 +210,7 @@ export default function CalculatorPage() {
               {bankRateInput.trim() !== "" && !rateValid && <small className={styles.inputError} role="alert">نرخ باید عددی بین صفر تا صد درصد باشد.</small>}
             </label>
             <div className={styles.divider} />
-            <section className={styles.estimate} data-node-id="150:671"><span data-node-id="150:672">پرداخت ماهانه مستأجر: فقط سود وام</span><strong data-node-id="150:673">{monthlyInterest === null ? "نرخ سود بانک را وارد کنید" : money(monthlyInterest)}</strong><small data-node-id="150:674">اصل وام در این پرداخت ماهانه محاسبه نشده است؛ نرخ و نحوه محاسبه باید توسط بانک تأیید شود.</small></section>
+            <section className={styles.estimate} data-node-id="150:671"><span data-node-id="150:672">پرداختی ماهانه مستأجر</span><strong data-node-id="150:673">{monthlyInterest === null ? "نرخ سود بانک را وارد کنید" : money(monthlyInterest)}</strong><small data-node-id="150:674">اصل وام در این پرداخت ماهانه محاسبه نشده است؛ نرخ و نحوه محاسبه باید توسط بانک تأیید شود.</small></section>
             <Link href="/user/contracts/register/plans" className={styles.planLink}>مشاهده طرح‌های تأمین مالی (نمونه)</Link>
           </section>
         </div>
