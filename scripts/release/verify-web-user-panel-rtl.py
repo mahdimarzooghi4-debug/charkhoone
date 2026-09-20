@@ -685,7 +685,7 @@ require('previews[selected]' in payment_result and
         'هیچ تراکنش بانکی انجام نشده است' in payment_result and
         'preview.amount' in payment_result and
         'preview.date' in payment_result and
-        'receiptKey((await searchParams).transaction)' in payment_receipt and
+        'receiptKey(params.transaction)' in payment_receipt and
         'previews[key]' in payment_receipt and
         'preview.role === "مالک" ? "/user/contracts" : "/user/contracts/123456789012"' in payment_receipt and
         'هیچ تراکنش بانکی واقعی ثبت نشده است' in payment_receipt,
