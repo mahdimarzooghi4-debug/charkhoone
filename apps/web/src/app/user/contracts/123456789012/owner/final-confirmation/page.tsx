@@ -1,6 +1,7 @@
 import Link from "next/link";
 import styles from "../flow.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
+import { OwnerFinalConfirmationConsent } from "./OwnerFinalConfirmationConsent";
 
 const assets = {
   logo: "https://www.figma.com/api/mcp/asset/c1f87bf2-bba6-4548-843c-29b65eb29063.png",
@@ -45,7 +46,7 @@ export default function OwnerFinalConfirmationPage() {
 
             <section className={styles.infoCard} data-node-id="150:1883"><h3 data-node-id="150:1884">پس از تأیید شما</h3><div className={styles.stepsList}><p>۱. تأیید نهایی طرفین تکمیل می‌شود.</p><p>۲. مبلغ تأمین مالی وارد مسیر مالی قرارداد می‌شود.</p><p>۳. قرارداد در چارخونه فعال می‌شود.</p><p>۴. دریافتی‌های شما براساس روش انتخاب‌شده مدیریت می‌شوند.</p></div></section>
 
-            <section className={`${styles.card} ${styles.actionBlock}`} data-node-id="150:1894"><div className={styles.checkboxRow} data-node-id="150:1895"><span className={styles.checkbox}>✓</span><p data-node-id="150:1896">اطلاعات قرارداد و روش دریافت انتخاب‌شده را بررسی کرده‌ام و تأیید نهایی آن را می‌پذیرم.</p></div><Link href="/user/contracts/123456789012/owner" className={styles.primaryButton} data-node-id="150:1899">تأیید نهایی قرارداد</Link></section>
+            <section className={`${styles.card} ${styles.actionBlock}`} data-node-id="150:1894"><OwnerFinalConfirmationConsent /></section>
           </aside>
 
           <div className={styles.mainColumn} data-node-id="150:1902">

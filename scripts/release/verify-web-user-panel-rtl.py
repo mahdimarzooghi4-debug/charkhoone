@@ -565,7 +565,7 @@ require(owner_final.count('className={styles.ownerFinalIdValue}>') == 3 and
         owner_final.count('dir="ltr" className={styles.ownerFinalIdValue}') == 3 and
         '.ownerFinalRtl .ownerFinalNationalId {' in owner_flow_css and
         '.ownerFinalRtl .ownerFinalIdValue { direction: ltr; unicode-bidi: isolate; white-space: nowrap; text-align: left; }' in owner_flow_css and
-        'href="/user/contracts/123456789012/owner"' in owner_final and
+        '<OwnerFinalConfirmationConsent />' in owner_final and
         'href="/user/contracts/123456789012/owner/settlement-preference"' in owner_final,
         "owner final confirmation IDs must be LTR, keeping preview links unchanged")
 require('.ownerFinalRtl .checkboxRow { direction: rtl; justify-content: flex-start; text-align: right; }' in owner_flow_css and
@@ -573,6 +573,28 @@ require('.ownerFinalRtl .checkboxRow { direction: rtl; justify-content: flex-sta
         '.ownerFinalRtl .party, .ownerFinalRtl .partyTop { direction: rtl; text-align: right; }' in owner_flow_css and
         '<UserPanelSidebar nodeId="142:1528" />' in owner_final,
         "owner final confirmation consent and party rows RTL without changing the sidebar")
+
+owner_final_consent = read(USER_ROOT / "contracts/123456789012/owner/final-confirmation/OwnerFinalConfirmationConsent.tsx")
+require('import { OwnerFinalConfirmationConsent } from "./OwnerFinalConfirmationConsent";' in owner_final and
+        owner_final.count('<OwnerFinalConfirmationConsent />') == 1 and
+        'className={styles.checkbox}>✓' not in owner_final and
+        owner_final_consent.startswith('"use client";') and
+        owner_final_consent.count('type="checkbox"') == 1 and
+        'useState(false)' in owner_final_consent and
+        'checked={accepted}' in owner_final_consent and
+        'onChange={(event) => setAccepted(event.target.checked)}' in owner_final_consent and
+        'disabled={!accepted}' in owner_final_consent and
+        'router.push("/user/contracts/123456789012/owner")' in owner_final_consent,
+        "owner final contract confirmation must use one interactive unchecked-by-default consent gating demo navigation")
+require('className={styles.ownerFinalConsentRow}' in owner_final_consent and
+        'className={styles.ownerFinalConsentCheckbox}' in owner_final_consent and
+        '.ownerFinalRtl .ownerFinalConsentRow {' in owner_flow_css and
+        'grid-template-columns: 20px minmax(0, 1fr);' in owner_flow_css and
+        '.ownerFinalRtl .ownerFinalConsentCheckbox:checked {' in owner_flow_css and
+        '.ownerFinalRtl .ownerFinalConsentCheckbox:checked::after {' in owner_flow_css and
+        '.ownerFinalRtl .primaryButton:disabled {' in owner_flow_css and
+        '.ownerFinalRtl .primaryButton:focus-visible {' in owner_flow_css,
+        "owner final consent checkbox and disabled button must be styled RTL and brand green only for this route")
 
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))

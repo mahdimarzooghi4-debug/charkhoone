@@ -222,3 +222,68 @@
 .ownerFinalRtl .party, .ownerFinalRtl .partyTop { direction: rtl; text-align: right; }
 .ownerFinalRtl .party { align-items: flex-start; }
 .ownerFinalRtl .partyTop { justify-content: flex-start; }
+
+
+/* Owner final-confirmation only: one native, interactive RTL consent checkbox. */
+.ownerFinalRtl .ownerFinalConsentRow {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  direction: rtl;
+  text-align: right;
+  cursor: pointer;
+}
+.ownerFinalRtl .ownerFinalConsentText {
+  min-width: 0;
+  direction: rtl;
+  text-align: right;
+  color: var(--ch-color-text);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.ownerFinalRtl .ownerFinalConsentCheckbox {
+  position: static;
+  display: block;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  max-width: 20px;
+  max-height: 20px;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 2px 0 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 2px solid var(--ch-color-muted);
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+}
+.ownerFinalRtl .ownerFinalConsentCheckbox:checked {
+  background: var(--ch-color-primary);
+  border-color: var(--ch-color-primary);
+}
+.ownerFinalRtl .ownerFinalConsentCheckbox:checked::after {
+  content: "✓";
+  display: block;
+  color: #fff;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 16px;
+}
+.ownerFinalRtl .ownerFinalConsentCheckbox:focus-visible,
+.ownerFinalRtl .primaryButton:focus-visible {
+  outline: 3px solid rgb(13 59 54 / 35%);
+  outline-offset: 3px;
+}
+.ownerFinalRtl .primaryButton { width: 100%; cursor: pointer; font-family: inherit; }
+.ownerFinalRtl .primaryButton:disabled {
+  background: #9caaa6;
+  color: #fff;
+  opacity: 1;
+  cursor: not-allowed;
+}
