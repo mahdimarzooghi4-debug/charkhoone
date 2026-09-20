@@ -105,7 +105,7 @@ export default function ContractDetailPage() {
                 <InfoRow label="اجاره ماهانه قرارداد" value="۲۰٬۰۰۰٬۰۰۰ تومان" strong />
                 <InfoRow label="تاریخ شروع قرارداد" value="۱۵ مهر ۱۴۰۵" />
                 <InfoRow label="تاریخ پایان قرارداد" value="۱۵ مهر ۱۴۰۶" />
-                <InfoRow label="مدت زمان قرارداد" value="طبق قرارداد بانک" />
+                <InfoRow label="مدت زمان قرارداد" value="۱۲ ماه" />
               </div>
             </section>
 
