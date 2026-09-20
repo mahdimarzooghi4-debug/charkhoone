@@ -5,8 +5,8 @@ import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 const settlementRows = [
   ["وضعیت قرارداد", "فسخ شده", "danger"],
   ["وضعیت تسویه مالی", "محاسبه تعهدات مستأجر", "normal"],
-  ["کل مبالغ معوق مستأجر", "۵۵٬۵۰۰٬۰۰۰ تومان", "normal"],
-  ["مبلغ ناخالص قابل تسویه", "۴۵٬۰۰۰٬۰۰۰ تومان", "green"],
+  ["سه پرداخت سود معوق مستأجر (نمونه)", "۲۰٬۱۲۴٬۹۹۹ تومان", "normal"],
+  ["مبلغ ناخالص قابل تسویه", "در انتظار محاسبه", "normal"],
   ["تاریخ برآوردی واریز تسویه", "پس از تکمیل نهایی محاسبات", "normal"],
 ] as const;
 
@@ -25,13 +25,13 @@ export default function OwnerContractTerminatedPage() {
       <section className={styles.mainContent} data-node-id="173:220">
         <header className={styles.pageHeader} data-node-id="173:221">
           <div className={styles.breadcrumb} data-node-id="173:222"><span>قراردادها</span><span>/</span><span>وضعیت قرارداد</span></div>
-          <div className={styles.titleBlock} data-node-id="173:226"><div className={styles.badges}><span className={styles.badgeTerminated}>فسخ شده</span><span className={styles.badgeWarning}>مالک</span></div><div className={styles.titleCopy}><h1 data-node-id="173:233">قرارداد فسخ شده است</h1><p data-node-id="173:234">به‌دلیل سه قسط معوق مستأجر، قرارداد مطابق فرایند تعیین‌شده فسخ شده است.</p></div></div>
+          <div className={styles.titleBlock} data-node-id="173:226"><div className={styles.badges}><span className={styles.badgeTerminated}>فسخ شده</span><span className={styles.badgeWarning}>مالک</span></div><div className={styles.titleCopy}><h1 data-node-id="173:233">قرارداد فسخ شده است</h1><p data-node-id="173:234">در سناریوی نمایشی، سه پرداخت سود معوق ثبت شده است؛ فسخ واقعی ثبت یا اجرا نشده است.</p></div></div>
         </header>
 
         <section className={`${styles.hero} ${styles.dangerHero}`} data-node-id="173:235">
           <div className={styles.heroTop}><span className={styles.dangerBadge}>فسخ خودکار</span><span className={styles.alertIcon}>!</span></div>
           <h2 data-node-id="173:241">قرارداد به‌علت عدم پرداخت اقساط فسخ گردید</h2>
-          <p data-node-id="173:242">به‌دلیل ثبت سه قسط معوق توسط مستأجر، قرارداد فسخ شده است. تسویه مبالغ مربوط به این قرارداد از محل آورده مستأجر و طبق فرایند مالی سیستم انجام می‌شود. جزئیات و مانده قابل پرداخت به‌زودی به حساب شما واریز خواهد شد.</p>
+          <p data-node-id="173:242">به‌دلیل ثبت سه قسط معوق توسط مستأجر، قرارداد فسخ شده است. تسویه مبالغ مربوط به این قرارداد از محل آورده مستأجر و طبق فرایند مالی سیستم انجام می‌شود. مبلغ قابل تسویه پس از تعیین اصل وام و تعهدات قانونی محاسبه می‌شود؛ هیچ واریز واقعی در این نمونه انجام نمی‌شود.</p>
           <span className={styles.dangerPill} data-node-id="173:245">۳ قسط پرداخت‌نشده مستأجر</span>
         </section>
 
@@ -41,11 +41,11 @@ export default function OwnerContractTerminatedPage() {
           </aside>
 
           <div className={styles.mainColumn} data-node-id="173:280">
-            <section className={styles.card} data-node-id="173:281"><div className={styles.cardHeader}><span className={styles.badgeWaiting}>در حال انجام</span><h2 data-node-id="173:285">خلاصه وضعیت تسویه مالی مالک</h2></div><div className={styles.divider} /><div className={styles.rowList}>{settlementRows.map(([label, value, tone]) => <div className={styles.row} key={label}><strong className={tone === "danger" ? styles.dangerText : tone === "green" ? styles.moneyGreen : ""}>{value}</strong><span>{label}</span></div>)}</div><div className={styles.divider} /><div className={styles.infoBoxMuted} data-node-id="173:304">فرایند تسویه مالی چارخونه به‌طور ایمن از محل سپرده و آورده اولیه قانونی مستأجر انجام می‌شود. کارمزد خدمات چارخونه (۰٫۵٪) از مبلغ ناخالص دریافتی کسر می‌گردد.</div></section>
+            <section className={styles.card} data-node-id="173:281"><div className={styles.cardHeader}><span className={styles.badgeWaiting}>در حال انجام</span><h2 data-node-id="173:285">خلاصه وضعیت تسویه مالی مالک</h2></div><div className={styles.divider} /><div className={styles.rowList}>{settlementRows.map(([label, value, tone]) => <div className={styles.row} key={label}><strong className={tone === "danger" ? styles.dangerText : tone === "green" ? styles.moneyGreen : ""}>{value}</strong><span>{label}</span></div>)}</div><div className={styles.divider} /><div className={styles.infoBoxMuted} data-node-id="173:304">نمایش این فرایند صرفاً نمونه است؛ کسر از آورده، میزان قابل تسویه و کارمزد آن به محاسبه نهایی و قراردادهای واقعی وابسته‌اند.</div></section>
 
             <section className={styles.card} data-node-id="173:306"><h2 data-node-id="173:307">خلاصه مشخصات قرارداد منقضی</h2><div className={styles.divider} /><div className={styles.rowList}>{contractRows.map(([label, value, tone]) => <div className={styles.row} key={label}><strong className={tone === "danger" ? styles.dangerText : ""}>{value}</strong><span>{label}</span></div>)}</div></section>
 
-            <div className={styles.actions} data-node-id="173:328"><Link href="/user/receive-pay?scenario=termination" className={styles.primaryAction} data-node-id="173:329">مشاهده جزئیات تسویه مالی</Link><span className={styles.secondaryAction} data-node-id="173:331">مشاهده اسناد قرارداد</span></div>
+            <div className={styles.actions} data-node-id="173:328"><Link href="/user/receive-pay?scenario=termination" className={styles.primaryAction} data-node-id="173:329">مشاهده جزئیات تسویه مالی</Link><span className={styles.infoBoxMuted} data-node-id="173:331">اسناد این قرارداد در پیش‌نمایش بارگذاری نشده‌اند.</span></div>
           </div>
         </div>
       </section>
