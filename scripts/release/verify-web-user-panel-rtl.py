@@ -543,6 +543,37 @@ require('const toPersianDigits = (value: number) =>' in owner_connected and
         '>{index + 1}</span><div className={styles.timelineCopy}>' not in owner_connected,
         "owner-connected five process step numbers must display Persian digits")
 
+owner_final = read(USER_ROOT / "contracts/123456789012/owner/final-confirmation/page.tsx")
+owner_flow_css = read(USER_ROOT / "contracts/123456789012/owner/flow.module.css")
+require('className={`${styles.page} ${styles.ownerFinalRtl}`}' in owner_final and
+        '<div className={styles.titleCopy}><h1 data-node-id="150:1845">تأیید نهایی قرارداد</h1>' in owner_final and
+        '.ownerFinalRtl .titleBlock { direction: rtl; justify-content: flex-start;' in owner_flow_css and
+        '.ownerFinalRtl .titleCopy h1, .ownerFinalRtl .titleCopy p { width: 100%; text-align: right; }' in owner_flow_css,
+        "owner final confirmation heading and badges must be RTL with heading first")
+require('<h2 data-node-id="150:1931">وضعیت مستأجر</h2><div className={styles.badges}>' in owner_final and
+        '<h2 data-node-id="150:1940">تأمین مالی قرارداد</h2><span className={styles.badgeSuccess}>' in owner_final and
+        '.ownerFinalRtl .cardHeader, .ownerFinalRtl .selectedPayoutHeader {' in owner_flow_css and
+        '.ownerFinalRtl .summaryGrid { direction: rtl; }' in owner_flow_css and
+        '.ownerFinalRtl .row { direction: rtl; }' in owner_flow_css,
+        "owner final confirmation cards and label-value rows must be right aligned")
+require(owner_final.count('<div className={styles.processCompactRow}><div className={styles.processContent}>') == 5 and
+        '<div className={styles.processContent}><span className={styles.processCheck}>✓</span><strong>تأیید بانک</strong></div>' in owner_final and
+        '.ownerFinalRtl .processCompactRow { direction: rtl; text-align: right; }' in owner_flow_css and
+        '.ownerFinalRtl .processContent { min-width: 0; direction: rtl; text-align: right; }' in owner_flow_css,
+        "owner final confirmation process icon and stage labels must start at the right")
+require(owner_final.count('className={styles.ownerFinalIdValue}>') == 3 and
+        owner_final.count('dir="ltr" className={styles.ownerFinalIdValue}') == 3 and
+        '.ownerFinalRtl .ownerFinalNationalId {' in owner_flow_css and
+        '.ownerFinalRtl .ownerFinalIdValue { direction: ltr; unicode-bidi: isolate; white-space: nowrap; text-align: left; }' in owner_flow_css and
+        'href="/user/contracts/123456789012/owner"' in owner_final and
+        'href="/user/contracts/123456789012/owner/settlement-preference"' in owner_final,
+        "owner final confirmation IDs must be LTR, keeping preview links unchanged")
+require('.ownerFinalRtl .checkboxRow { direction: rtl; justify-content: flex-start; text-align: right; }' in owner_flow_css and
+        '.ownerFinalRtl .partyGrid { direction: rtl; }' in owner_flow_css and
+        '.ownerFinalRtl .party, .ownerFinalRtl .partyTop { direction: rtl; text-align: right; }' in owner_flow_css and
+        '<UserPanelSidebar nodeId="142:1528" />' in owner_final,
+        "owner final confirmation consent and party rows RTL without changing the sidebar")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)

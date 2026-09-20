@@ -175,3 +175,50 @@
 .connectedInfoHeader svg { width: 20px; height: 20px; flex: 0 0 20px; display: block; color: var(--ch-color-primary); }
 .connectedNationalId { display: inline-flex; align-items: baseline; gap: 6px; direction: rtl; text-align: right; }
 .connectedNationalIdValue { direction: ltr; unicode-bidi: isolate; white-space: nowrap; text-align: left; }
+
+
+/* Owner final-confirmation only. Leave the shared owner flow and right sidebar intact. */
+.ownerFinalRtl .pageHeader { direction: rtl; text-align: right; }
+.ownerFinalRtl .titleBlock { direction: rtl; justify-content: flex-start; align-items: center; flex-direction: row; flex-wrap: wrap; gap: 12px; }
+.ownerFinalRtl .titleCopy { min-width: 0; align-items: stretch; direction: rtl; text-align: right; }
+.ownerFinalRtl .titleCopy h1, .ownerFinalRtl .titleCopy p { width: 100%; text-align: right; }
+.ownerFinalRtl .badges { direction: rtl; flex-wrap: wrap; justify-content: flex-start; }
+.ownerFinalRtl .card, .ownerFinalRtl .infoCard { direction: rtl; text-align: right; }
+.ownerFinalRtl .cardHeader, .ownerFinalRtl .selectedPayoutHeader {
+  direction: rtl;
+  justify-content: space-between;
+  text-align: right;
+}
+.ownerFinalRtl .cardHeader h2 { min-width: 0; text-align: right; }
+.ownerFinalRtl .summaryGrid { direction: rtl; }
+.ownerFinalRtl .summaryGrid > div, .ownerFinalRtl .propertyInfo > div {
+  direction: rtl;
+  align-items: flex-start;
+  text-align: right;
+}
+.ownerFinalRtl .summaryGrid > div > strong, .ownerFinalRtl .summaryGrid > div > span,
+.ownerFinalRtl .propertyInfo > div > strong, .ownerFinalRtl .propertyInfo > div > span { width: 100%; text-align: right; }
+.ownerFinalRtl .processCompactRow { direction: rtl; text-align: right; }
+.ownerFinalRtl .processContent { min-width: 0; direction: rtl; text-align: right; }
+.ownerFinalRtl .processContent strong { text-align: right; }
+.ownerFinalRtl .processCompactRow > span { flex: 0 0 auto; text-align: left; }
+.ownerFinalRtl .infoCard h3, .ownerFinalRtl .stepsList p { width: 100%; direction: rtl; text-align: right; }
+.ownerFinalRtl .checkboxRow { direction: rtl; justify-content: flex-start; text-align: right; }
+.ownerFinalRtl .checkboxRow p { min-width: 0; flex: 1 1 auto; direction: rtl; text-align: right; }
+.ownerFinalRtl .inlineDetails { direction: rtl; text-align: right; }
+.ownerFinalRtl .inlineDetails strong { text-align: right; }
+.ownerFinalRtl .ownerFinalNationalId {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  direction: rtl;
+  text-align: right;
+}
+.ownerFinalRtl .ownerFinalIdValue { direction: ltr; unicode-bidi: isolate; white-space: nowrap; text-align: left; }
+.ownerFinalRtl .row { direction: rtl; }
+.ownerFinalRtl .row span { text-align: right; }
+.ownerFinalRtl .row strong { text-align: left; }
+.ownerFinalRtl .partyGrid { direction: rtl; }
+.ownerFinalRtl .party, .ownerFinalRtl .partyTop { direction: rtl; text-align: right; }
+.ownerFinalRtl .party { align-items: flex-start; }
+.ownerFinalRtl .partyTop { justify-content: flex-start; }
