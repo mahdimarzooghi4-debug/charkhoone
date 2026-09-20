@@ -616,7 +616,7 @@ require('<section id="owner-property-info" className={styles.card} data-node-id=
         '.quickActions > a, .quickActions > div {' in owner_active_css and
         owner_active.count('href={`/user/receive-pay?method=${fund ? "fund" : "monthly"}`}') == 3 and
         'export default async function ReceivePayPage(' in receive_pay and
-        '<ReceivePayActivities />' in receive_pay and
+        '<ReceivePayActivities method={method === "fund" || method === "monthly" ? method : undefined} />' in receive_pay and
         all('href: "' + target + '"' in shared_sidebar for target in
             ('/user/home', '/user/contracts', '/user/receive-pay', '/user/account')) and
         'href={href}' in shared_sidebar and
@@ -664,7 +664,7 @@ require('aria-label="فیلتر وضعیت تراکنش"' in receive_pay_control
         'onClick={() => setKind(value)}' in receive_pay_controls and
         'aria-pressed={kind === value}' in receive_pay_controls and
         'visible.length === 0' in receive_pay_controls and
-        'href={item.href}' in receive_pay_controls and
+        'item.href + "&method=" + method' in receive_pay_controls and
         'className={styles.emptyState}' in receive_pay_controls and
         '.emptyState {' in receive_pay_css,
         "receive/pay kind/status filters and empty state must respond to user input")
@@ -677,6 +677,9 @@ require('"/user/receive-pay/result?transaction=overdue"' in receive_pay_fixtures
         'href="/user/contracts/123456789012/terminated"' in receive_pay,
         "each sample transaction row and termination scenario must have a working destination")
 require('previews[selected]' in payment_result and
+        'const backHref = "/user/receive-pay" + (method ? "?method=" + method : "");' in payment_result and
+        '"&method=" + method' in payment_result and
+        'const backHref = "/user/receive-pay" + (method ? "?method=" + method : "");' in payment_receipt and
         'transaction === "overdue" ? "overdue" : "due"' in payment_result and
         '"/user/receive-pay/receipt?transaction=" + selected' in payment_result and
         'هیچ تراکنش بانکی انجام نشده است' in payment_result and

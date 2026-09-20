@@ -5,8 +5,11 @@ import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 import { previews, receiptKey } from "../demo-transactions";
 import { ReceiptActions } from "./ReceiptActions";
 
-export default async function ReceiptPage({ searchParams }: { searchParams: Promise<{ transaction?: string }> }) {
-  const key = receiptKey((await searchParams).transaction);
+export default async function ReceiptPage({ searchParams }: { searchParams: Promise<{ transaction?: string; method?: string }> }) {
+  const params = await searchParams;
+  const key = receiptKey(params.transaction);
+  const method = params.method === "fund" || params.method === "monthly" ? params.method : undefined;
+  const backHref = "/user/receive-pay" + (method ? "?method=" + method : "");
   const preview = previews[key];
   const details = [
     ["مبلغ", preview.amount, true],
@@ -21,7 +24,7 @@ export default async function ReceiptPage({ searchParams }: { searchParams: Prom
     <main className={styles.page} data-node-id="173:542" data-name="Web App / Receipt">
       <section className={styles.mainContent} data-node-id="173:543">
         <header className={styles.headerBlock} data-node-id="173:544">
-          <Link href="/user/receive-pay" className={styles.backLink} data-node-id="173:545">بازگشت به دریافت و پرداخت <span aria-hidden="true">›</span></Link>
+          <Link href={backHref} className={styles.backLink} data-node-id="173:545">بازگشت به دریافت و پرداخت <span aria-hidden="true">›</span></Link>
           <div className={styles.headerRight} data-node-id="173:549">
             <div className={styles.breadcrumb} data-node-id="173:550"><span className={styles.current}>رسید</span><span>/</span><span>دریافت و پرداخت</span></div>
             <h1 data-node-id="173:554">رسید تراکنش</h1>

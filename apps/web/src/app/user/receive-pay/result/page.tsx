@@ -4,8 +4,11 @@ import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 import { previews } from "../demo-transactions";
 
-export default async function PaymentResultPage({ searchParams }: { searchParams: Promise<{ transaction?: string }> }) {
-  const selected = (await searchParams).transaction === "overdue" ? "overdue" : "due";
+export default async function PaymentResultPage({ searchParams }: { searchParams: Promise<{ transaction?: string; method?: string }> }) {
+  const params = await searchParams;
+  const selected = params.transaction === "overdue" ? "overdue" : "due";
+  const method = params.method === "fund" || params.method === "monthly" ? params.method : undefined;
+  const backHref = "/user/receive-pay" + (method ? "?method=" + method : "");
   const preview = previews[selected];
   const details = [
     ["مبلغ", preview.amount, true],
@@ -20,7 +23,7 @@ export default async function PaymentResultPage({ searchParams }: { searchParams
     <main className={styles.page} data-node-id="173:639" data-name="Web App / Payment Return">
       <section className={styles.mainContent} data-node-id="173:640">
         <header className={styles.headerBlock} data-node-id="173:641">
-          <Link href="/user/receive-pay" className={styles.backLink} data-node-id="173:642">بازگشت به دریافت و پرداخت <span aria-hidden="true">›</span></Link>
+          <Link href={backHref} className={styles.backLink} data-node-id="173:642">بازگشت به دریافت و پرداخت <span aria-hidden="true">›</span></Link>
           <div className={styles.headerRight} data-node-id="173:646">
             <div className={styles.breadcrumb} data-node-id="173:647"><span className={styles.current}>نتیجه پرداخت</span><span>/</span><span>دریافت و پرداخت</span></div>
             <h1 data-node-id="173:651">نتیجه پرداخت</h1>
@@ -57,8 +60,8 @@ export default async function PaymentResultPage({ searchParams }: { searchParams
           </article>
 
           <div className={styles.actions} data-node-id="173:709">
-            <Link href="/user/receive-pay" className={styles.secondaryAction} data-node-id="173:710">بازگشت به دریافت و پرداخت</Link>
-            <Link href={"/user/receive-pay/receipt?transaction=" + selected} className={styles.primaryAction} data-node-id="173:712">مشاهده رسید نمونه</Link>
+            <Link href={backHref} className={styles.secondaryAction} data-node-id="173:710">بازگشت به دریافت و پرداخت</Link>
+            <Link href={"/user/receive-pay/receipt?transaction=" + selected + (method ? "&method=" + method : "")} className={styles.primaryAction} data-node-id="173:712">مشاهده رسید نمونه</Link>
           </div>
         </section>
       </section>

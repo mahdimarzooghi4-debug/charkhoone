@@ -8,7 +8,7 @@ import { activities } from "./demo-transactions";
 type KindFilter = "all" | "receipt" | "payment";
 type StatusFilter = "all" | "overdue" | "waiting" | "future" | "success";
 
-export function ReceivePayActivities() {
+export function ReceivePayActivities({ method }: { method?: "fund" | "monthly" }) {
   const [kind, setKind] = useState<KindFilter>("all");
   const [status, setStatus] = useState<StatusFilter>("all");
   const visible = activities.filter(item =>
@@ -56,7 +56,7 @@ export function ReceivePayActivities() {
             visible.map(item =>
               <div className={styles.tableRow} data-node-id={item.nodeId} key={item.nodeId}>
                 <span className={styles.actionCell}>
-                  <Link href={item.href} className={item.primaryAction ? styles.primaryButton : styles.linkButton}>{item.action}</Link>
+                  <Link href={method && item.href.startsWith("/user/receive-pay/") ? item.href + "&method=" + method : item.href} className={item.primaryAction ? styles.primaryButton : styles.linkButton}>{item.action}</Link>
                 </span>
                 <span className={[styles.badge, styles["badge_" + item.statusTone]].join(" ")}>{item.status}</span>
                 <span className={styles.muted}>{item.date}</span>
