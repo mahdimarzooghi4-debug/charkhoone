@@ -164,7 +164,7 @@ export default function CalculatorPage() {
                 value={digitsFa(bankRateInput)}
                 onChange={(event) => {
                   const normalized = normalizeDigits(event.target.value);
-                  if (/^\\d{0,3}(\\.\\d{0,2})?$/.test(normalized)) setBankRateInput(normalized);
+                  if (/^\d{0,3}(\.\d{0,2})?$/.test(normalized)) setBankRateInput(normalized);
                 }}
                 placeholder="۲۳"
                 aria-describedby="rate-guidance"
