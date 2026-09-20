@@ -31,6 +31,21 @@ public sealed class FinancialRulesTests
     }
 
     [Fact]
+    public void FiveHundredMillionTomanCashAndTwentyMillionTomanRent_ApplyGradeAfterConversion()
+    {
+        // Toman screenshot: 500m cash + (20m rent / 0.03) ~= 1.166666667bn.
+        // Backend is authoritative in whole rial; the screenshot rounds to toman.
+        const decimal cashDepositRial = 5_000_000_000m;
+        const decimal monthlyRentRial = 200_000_000m;
+
+        var fullDepositRial = FullDepositCalculator.Calculate(cashDepositRial, monthlyRentRial);
+
+        Assert.Equal(11_666_666_666m, fullDepositRial);
+        Assert.Equal(3_499_999_999m,
+            CreditAllocationCalculator.CalculateMaximumLoan(fullDepositRial, "C3"));
+    }
+
+    [Fact]
     public void NineMillionTomanMonthlyRent_EqualsThreeHundredMillionTomanFullDeposit()
     {
         const decimal monthlyRentRial = 90_000_000m;

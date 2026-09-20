@@ -776,13 +776,18 @@ calculator_css = read(USER_ROOT / "calculator/page.module.css")
 require('"use client";' in calculator_page and
         'useState(EXAMPLE_DEPOSIT)' in calculator_page and
         'useState(EXAMPLE_RENT)' in calculator_page and
-        'const EXAMPLE_RENT = 18_000_000;' in calculator_page and
+        'const EXAMPLE_RENT = 20_000_000;' in calculator_page and
         'const MONTHLY_RENT_TO_FULL_DEPOSIT_RATIO = 0.03;' in calculator_page and
         'type="range"' in calculator_page and
         'type="text"' in calculator_page and
         'inputMode="numeric"' in calculator_page and
         'inputMode="decimal"' in calculator_page and
-        'digitsFa(String(amount))' in calculator_page and
+        'formatMoneyInput(amount)' in calculator_page and
+        'const formatMoneyInput = (value: number) => Math.round(value).toLocaleString("fa-IR");' in calculator_page and
+        'digitsBeforeCaret' in calculator_page and
+        'input.setSelectionRange(cursor, cursor)' in calculator_page and
+        '<div className={styles.sliderLabels}><span>{maxLabel}</span><span>{minLabel}</span></div>' in calculator_page and
+        '.sliderLabels { direction: ltr; }' in calculator_css and
         'digitsFa(bankRateInput)' in calculator_page and
         'parseMoneyInput(event.target.value, max)' in calculator_page and
         'normalizeDigits(event.target.value)' in calculator_page and

@@ -120,3 +120,8 @@
 .financingChoice strong { color: var(--ch-color-primary); font-size: 15px; }
 .financingChoice p { margin: 0; font-size: 14px; }
 .financingChoice small { color: var(--ch-color-muted); font-size: 12px; line-height: 1.8; }
+
+/* Place maximum at the left and minimum at the right under both RTL sliders. */
+.sliderLabels { direction: ltr; }
+.sliderLabels > span { direction: rtl; unicode-bidi: isolate; }
+.numberInput { font-variant-numeric: normal; }

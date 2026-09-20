@@ -10,7 +10,7 @@ import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 // A real tenant's grade and bank decision must come from trusted services.
 // C3 is a conspicuously labeled MOCK response only (C1/C2 = 40%; C3 = 30%).
 const EXAMPLE_DEPOSIT = 500_000_000;
-const EXAMPLE_RENT = 18_000_000;
+const EXAMPLE_RENT = 20_000_000;
 const MONTHLY_RENT_TO_FULL_DEPOSIT_RATIO = 0.03;
 const MIN_FINANCING_PERCENT = 30;
 const MAX_FINANCING_PERCENT = 55;
@@ -27,6 +27,7 @@ const FINANCING_BY_SUBGRADE: Readonly<Record<string, number>> = {
 };
 const SAMPLE_FINANCING_PERCENT = FINANCING_BY_SUBGRADE[DEMO_EXTERNAL_SUBGRADE];
 const money = (value: number) => Math.round(value).toLocaleString("fa-IR") + " تومان";
+const formatMoneyInput = (value: number) => Math.round(value).toLocaleString("fa-IR");
 const digitsFa = (value: string) => value.replace(/[0-9]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
 const normalizeDigits = (value: string) => value
   .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
@@ -55,12 +56,27 @@ function AmountSlider({
             className={styles.numberInput}
             type="text"
             inputMode="numeric"
-            value={digitsFa(String(amount))}
+            value={formatMoneyInput(amount)}
             aria-label={label + " به تومان"}
             onChange={(event) => {
-              const parsed = parseMoneyInput(event.target.value, max);
-              if (parsed !== null) setAmount(parsed);
-            }}
+              const input = event.currentTarget;
+              const digitsBeforeCaret = (input.value.slice(0, input.selectionStart ?? 0).match(/[0-9۰-۹٠-٩]/g) ?? []).length;
+              const parsed = parseMoneyInput(input.value, max);
+              if (parsed === null) return;
+              setAmount(parsed);
+              // Preserve the digit position when grouping separators are inserted.
+              requestAnimationFrame(() => {
+                if (!input.isConnected || document.activeElement !== input) return;
+                const formatted = input.value;
+                let digitCount = 0;
+                let cursor = 0;
+                while (cursor < formatted.length && digitCount < digitsBeforeCaret) {
+                  if (/[0-9۰-۹٠-٩]/.test(formatted[cursor])) digitCount += 1;
+                  cursor += 1;
+                }
+                input.setSelectionRange(cursor, cursor);
+              });
+            }
           />
           <span>تومان</span>
         </label>
@@ -77,7 +93,7 @@ function AmountSlider({
         onChange={(event) => setAmount(Number(event.target.value))}
         style={{ background: "linear-gradient(to left, var(--ch-color-primary) " + (amount / max) * 100 + "%, var(--ch-color-border) " + (amount / max) * 100 + "%)" }}
       />
-      <div className={styles.sliderLabels}><span>{minLabel}</span><span>{maxLabel}</span></div>
+      <div className={styles.sliderLabels}><span>{maxLabel}</span><span>{minLabel}</span></div>
     </div>
   );
 }
@@ -89,8 +105,9 @@ export default function CalculatorPage() {
   const [bankRateInput, setBankRateInput] = useState(SAMPLE_BANK_ANNUAL_RATE);
   const bankAnnualRate = bankRateInput.trim() === "" ? null : Number(bankRateInput);
   const rateValid = bankAnnualRate !== null && Number.isFinite(bankAnnualRate) && bankAnnualRate >= 0 && bankAnnualRate <= 100;
-  // 18m monthly rent -> 600m full-deposit equivalent; add cash deposit
-  // before applying the trusted grade ratio, mirroring FullDepositCalculator.
+  // Convert monthly rent to the equivalent full deposit before applying grade.
+  // E.g. 500m cash + 20m rent / 0.03 = 1,166,666,667 toman equivalent.
+  // For accounting the backend uses whole rials and floors only at boundaries.
   const rentEquivalentDeposit = Math.round(rent / MONTHLY_RENT_TO_FULL_DEPOSIT_RATIO);
   const fullDepositEquivalent = deposit + rentEquivalentDeposit;
   const minFinancing = Math.round(fullDepositEquivalent * MIN_FINANCING_PERCENT / 100);
