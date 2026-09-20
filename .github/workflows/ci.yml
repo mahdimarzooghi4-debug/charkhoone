@@ -195,6 +195,8 @@ jobs:
           node-version: 22.13.1
       - name: Verify consistent web user-panel RTL and preview exit
         run: python3 ../../scripts/release/verify-web-user-panel-rtl.py
+      - name: Verify user-panel financing matches calculator C3 mock
+        run: python3 ../../scripts/release/verify-web-user-finance-preview.py
       - name: Install from lockfile
         run: npm ci --no-audit --no-fund
       - name: Typecheck
