@@ -71,7 +71,7 @@ export default function ContractDetailPage() {
                 <Badge tone="active">فعال</Badge>
                 <h2 data-node-id="150:322">وضعیت قرارداد</h2>
               </div>
-              <p className={styles.statusCopy} data-node-id="150:323">فرایند تأمین مالی تکمیل شده و قرارداد در چارخونه فعال است.</p>
+              <p className={styles.statusCopy} data-node-id="150:323">سناریوی نمایشی تأمین مالی و فعال‌شدن قرارداد در چارخونه را مشاهده می‌کنید؛ تأیید واقعی بانک انجام نشده است.</p>
               <div className={styles.infoList}>
                 <InfoRow label="فعال از" value="۱۵ مهر ۱۴۰۵" />
               </div>
@@ -117,7 +117,7 @@ export default function ContractDetailPage() {
                 <h2 data-node-id="150:368">تأمین مالی قرارداد (طرح فعال)</h2>
               </div>
               <div className={styles.infoList}>
-                <InfoRow label="طرح انتخاب‌شده" value="طرح ویژه واجد شرایط" />
+                <InfoRow label="طرح انتخاب‌شده" value="سناریوی C3 (نمونه)" />
                 <InfoRow label="بانک صادرکننده" value="بانک نمونه — نتیجه واقعی متصل نیست" />
                 <InfoRow label="مبلغ تأمین‌شده توسط بانک" value="۳۵۰٬۰۰۰٬۰۰۰ تومان" />
                 <InfoRow label="آورده مستأجر از رهن کامل معادل" value="۸۱۶٬۶۶۶٬۶۶۷ تومان" />
