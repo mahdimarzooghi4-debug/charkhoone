@@ -581,6 +581,16 @@ require('.ownerFinalRtl .checkboxRow { direction: rtl; justify-content: flex-sta
         '<UserPanelSidebar nodeId="142:1528" />' in owner_final,
         "owner final confirmation consent and party rows RTL without changing the sidebar")
 
+require(owner_final.count('<span className={`${styles.processIcon} ${styles.processIconCurrent}`} aria-hidden="true"><svg') == 1 and
+        owner_final.count('<span className={`${styles.processIcon} ${styles.processIconWaiting}`} aria-hidden="true"><svg') == 1 and
+        'assets.current' not in owner_final and
+        'assets.waiting' not in owner_final and
+        'www.figma.com/api/mcp/asset/' not in owner_final and
+        '.ownerFinalRtl .processIconCurrent {' in owner_flow_css and
+        '.ownerFinalRtl .processIconWaiting {' in owner_flow_css and
+        '.ownerFinalRtl .processIcon svg {' in owner_flow_css,
+        "owner final process action and waiting icons must be built-in SVGs and not broken external Figma images")
+
 owner_final_consent = read(USER_ROOT / "contracts/123456789012/owner/final-confirmation/OwnerFinalConfirmationConsent.tsx")
 require('import { OwnerFinalConfirmationConsent } from "./OwnerFinalConfirmationConsent";' in owner_final and
         owner_final.count('<OwnerFinalConfirmationConsent method={method} />') == 1 and

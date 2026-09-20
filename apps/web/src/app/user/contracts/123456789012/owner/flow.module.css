@@ -116,6 +116,11 @@
 .processContent strong { color: var(--ch-color-text); font-size: 14px; font-weight: 500; }
 .processContent .current { color: var(--ch-color-primary); font-weight: 700; }
 .processIcon, .processIcon img { width: 24px; height: 24px; display: block; }
+/* Owner final-confirmation: bundled vector state markers, no expiring Figma URLs. */
+.ownerFinalRtl .processIcon { flex: 0 0 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
+.ownerFinalRtl .processIcon svg { display: block; width: 20px; height: 20px; }
+.ownerFinalRtl .processIconCurrent { color: var(--ch-color-accent); background: #fff3e0; }
+.ownerFinalRtl .processIconWaiting { color: #89959f; background: var(--ch-color-page); }
 .processCheck { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; color: var(--ch-color-primary); font-size: 12px; font-weight: 700; background: #e6f4e6; border-radius: 12px; }
 .stepsList { display: flex; flex-direction: column; gap: 10px; }
 .stepsList p { margin: 0; color: var(--ch-color-text); font-size: 13px; text-align: right; }

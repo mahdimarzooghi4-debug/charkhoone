@@ -207,3 +207,7 @@ Owner screenshot of the generic `/user/receive-pay` screen showed a large unrela
 ## Receive/pay screenshot follow-up — badges and actions still visually shifted
 
 Screenshot after the first RTL order fix confirms pink termination scenario is absent, but reveals narrow status/type badges and links being positioned at the edge of their grid tracks, while headings use full-width grid cells; contract copy also crowds the description. Wrap kind and status badges in full-width RTL flex grid cells, align the action cell to its heading, and give all seven direct grid cells 100% width and wrapping. This is a layout-only follow-up; preserve filters, transaction fixtures and all links. Owner review and CI on latest HEAD still required.
+
+## Owner final-confirmation broken progress icons (browser screenshot)
+
+Owner screenshot at `/user/contracts/123456789012/owner/final-confirmation?method=monthly` showed two broken images in the left-hand «وضعیت فرایند» card for «تأیید نهایی شما» and «فعال شدن قرارداد». Replace **only** these two external Figma MCP asset `<img>` references with inline 24px, accessible decorative SVG indicators (orange action and gray waiting). Three completed green checkmarks, RTL order, tenant/owner labels, interactive consent checkbox, selected method and navigation remain unchanged. Guard forbids reintroducing expiring external image links on this page. No actual contract authorization or payment is performed.

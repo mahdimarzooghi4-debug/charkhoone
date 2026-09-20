@@ -3,17 +3,6 @@ import styles from "../flow.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 import { OwnerFinalConfirmationConsent } from "./OwnerFinalConfirmationConsent";
 
-const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/c1f87bf2-bba6-4548-843c-29b65eb29063.png",
-  avatar: "https://www.figma.com/api/mcp/asset/bfe209c9-041e-4e08-9374-98838d067797.png",
-  current: "https://www.figma.com/api/mcp/asset/8146a09c-56da-4cbd-b80c-94b8d1f5a9c6.svg",
-  waiting: "https://www.figma.com/api/mcp/asset/06014be6-42d5-474b-bde0-0449847f71cb.svg",
-  home: "https://www.figma.com/api/mcp/asset/ddba9bea-561a-4927-b111-334fe444d727.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/5c4e003e-e0a9-4cb4-8fb4-f399c42abc4a.svg",
-  payments: "https://www.figma.com/api/mcp/asset/d60f3d84-6049-4928-a099-fa3832a23820.svg",
-  account: "https://www.figma.com/api/mcp/asset/e3cc315e-cb49-4a61-b521-5559d870076f.svg",
-} as const;
-
 const conditions = [
   ["مبلغ رهن", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
   ["اجاره ماهانه قرارداد", "۲۰٬۰۰۰٬۰۰۰ تومان"],
@@ -48,8 +37,8 @@ export default async function OwnerFinalConfirmationPage({
                 <div className={styles.processCompactRow}><div className={styles.processContent}><span className={styles.processCheck}>✓</span><strong>تأیید بانک</strong></div><span className={styles.done}>تکمیل شده</span></div>
                 <div className={styles.processCompactRow}><div className={styles.processContent}><span className={styles.processCheck}>✓</span><strong>پرداخت آورده مستأجر</strong></div><span className={styles.done}>تکمیل شده</span></div>
                 <div className={styles.processCompactRow}><div className={styles.processContent}><span className={styles.processCheck}>✓</span><strong>تأیید نهایی مستأجر</strong></div><span className={styles.done}>تکمیل شده</span></div>
-                <div className={styles.processCompactRow}><div className={styles.processContent}><span className={styles.processIcon}><img src={assets.current} alt="" width={24} height={24} /></span><strong className={styles.current}>تأیید نهایی شما</strong></div><span className={styles.active}>نیاز به اقدام</span></div>
-                <div className={styles.processCompactRow}><div className={styles.processContent}><span className={styles.processIcon}><img src={assets.waiting} alt="" width={24} height={24} /></span><strong>فعال شدن قرارداد</strong></div><span>در انتظار</span></div>
+                <div className={styles.processCompactRow}><div className={styles.processContent}><span className={`${styles.processIcon} ${styles.processIconCurrent}`} aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v6" /><path d="M12 17h.01" /></svg></span><strong className={styles.current}>تأیید نهایی شما</strong></div><span className={styles.active}>نیاز به اقدام</span></div>
+                <div className={styles.processCompactRow}><div className={styles.processContent}><span className={`${styles.processIcon} ${styles.processIconWaiting}`} aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg></span><strong>فعال شدن قرارداد</strong></div><span>در انتظار</span></div>
               </div>
             </section>
 
