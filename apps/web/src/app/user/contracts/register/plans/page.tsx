@@ -26,7 +26,7 @@ const plans: readonly Plan[] = [
       { label: "عمومی", tone: "public" },
     ],
     rows: [
-      ["مبلغ تأمین مالی", "۳۸۱۶٬۶۶۶٬۶۶۷ تومان"],
+      ["مبلغ تأمین مالی", "۳۵۰٬۰۰۰٬۰۰۰ تومان"],
       ["آورده مستأجر از رهن کامل معادل", "۸۱۶٬۶۶۶٬۶۶۷ تومان"],
       ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان"],
       ["نحوه تسویه اصل وام", "طبق قرارداد بانک"],
@@ -42,7 +42,7 @@ const plans: readonly Plan[] = [
       { label: "ویژه", tone: "special" },
     ],
     rows: [
-      ["مبلغ تأمین مالی", "۳۸۱۶٬۶۶۶٬۶۶۷ تومان"],
+      ["مبلغ تأمین مالی", "۳۵۰٬۰۰۰٬۰۰۰ تومان"],
       ["آورده مستأجر از رهن کامل معادل", "۸۱۶٬۶۶۶٬۶۶۷ تومان", true],
       ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان", true],
       ["نحوه تسویه اصل وام", "طبق قرارداد بانک"],
@@ -115,7 +115,7 @@ export default function EligibleFinancingPlansPage() {
         </section>
 
         <section className={styles.contractContext} data-node-id="150:917">
-          <div><span>مبلغ موردنیاز:</span><strong>۳۸۱۶٬۶۶۶٬۶۶۷ تومان</strong></div>
+          <div><span>مبلغ موردنیاز:</span><strong>۳۵۰٬۰۰۰٬۰۰۰ تومان</strong></div>
           <div><span>اجاره ماهانه:</span><strong className={styles.contextRegular}>۲۰٬۰۰۰٬۰۰۰ تومان</strong></div>
           <div><span>مبلغ رهن:</span><strong className={styles.contextRegular}>۵۰۰٬۰۰۰٬۰۰۰ تومان</strong></div>
           <div><span>قرارداد:</span><strong>سعادت‌آباد</strong></div>
