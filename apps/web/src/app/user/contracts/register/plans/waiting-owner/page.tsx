@@ -70,13 +70,13 @@ export default function WaitingOwnerPage() {
 
             <section className={styles.card} data-node-id="171:298"><h2 data-node-id="171:299">خلاصه قرارداد</h2><div className={styles.divider} /><div className={styles.summaryGrid} data-node-id="171:301">{summary.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div></section>
 
-            <section className={styles.nextStep} data-node-id="171:323"><div className={styles.nextStepHeader} data-node-id="171:324"><h2 data-node-id="171:325">مرحله بعد</h2><img src={assets.info} alt="" width={20} height={20} /></div><p data-node-id="171:328">مالک باید اطلاعات قرارداد و روش دریافت خود را بررسی و تأیید کند.<br />پس از تکمیل تأیید مالک، قرارداد وارد مرحله فعال‌سازی می‌شود.</p></section>
+            <section className={styles.nextStep} data-node-id="171:323"><div className={styles.nextStepHeader} data-node-id="171:324"><img src={assets.info} alt="" width={20} height={20} /><h2 data-node-id="171:325">مرحله بعد</h2></div><p data-node-id="171:328">مالک باید اطلاعات قرارداد و روش دریافت خود را بررسی و تأیید کند.<br />پس از تکمیل تأیید مالک، قرارداد وارد مرحله فعال‌سازی می‌شود.</p></section>
           </div>
         </div>
 
         <footer className={styles.bottomActions} data-node-id="171:329">
           <div className={styles.actions} data-node-id="171:330"><Link href="/user/contracts" className={styles.outlineAction} data-node-id="171:331">بازگشت به قراردادها</Link><Link href="/user/contracts/123456789012" className={styles.primaryAction} data-node-id="171:336">مشاهده قرارداد</Link></div>
-          <div className={styles.notice} data-node-id="171:339"><span data-node-id="171:340">در حال حاضر اقدامی از طرف شما لازم نیست.</span><img src={assets.alert} alt="" width={16} height={16} /></div>
+          <div className={styles.notice} data-node-id="171:339"><img src={assets.alert} alt="" width={16} height={16} /><span data-node-id="171:340">در حال حاضر اقدامی از طرف شما لازم نیست.</span></div>
         </footer>
       </section>
 

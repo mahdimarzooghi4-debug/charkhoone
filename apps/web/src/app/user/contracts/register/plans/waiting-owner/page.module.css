@@ -47,8 +47,8 @@
 .summaryGrid > div { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: right; }
 .summaryGrid span { color: var(--ch-color-muted); font-size: 13px; }
 .summaryGrid strong { color: var(--ch-color-text); font-size: 15px; font-weight: 600; }
-.nextStep { width: 100%; display: flex; flex-direction: column; gap: 12px; padding: 20px; background: #f0f7f6; border: 1px solid #c2e2df; border-radius: 16px; }
-.nextStepHeader { width: 100%; display: flex; align-items: center; justify-content: space-between; direction: rtl; }
+.nextStep { width: 100%; display: flex; flex-direction: column; gap: 12px; padding: 20px; background: #f0f7f6; border: 1px solid #c2e2df; border-radius: 16px; direction: rtl; text-align: right; }
+.nextStepHeader { width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 8px; direction: rtl; text-align: right; }
 .nextStep h2 { color: var(--ch-color-primary); font-size: 15px; font-weight: 700; }
 .nextStepHeader img { width: 20px; height: 20px; display: block; }
 .nextStep p { color: var(--ch-color-text); font-size: 13px; line-height: 22px; text-align: right; }
@@ -57,7 +57,7 @@
 .primaryAction, .outlineAction { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 0 24px; font-size: 14px; font-weight: 500; text-decoration: none; border-radius: 12px; }
 .primaryAction { color: #fff; background: var(--ch-color-primary); }
 .outlineAction { color: var(--ch-color-primary); background: #fff; border: 1.5px solid var(--ch-color-primary); }
-.notice { display: flex; align-items: center; gap: 8px; color: var(--ch-color-muted); font-size: 14px; direction: rtl; }
+.notice { display: flex; align-items: center; justify-content: flex-start; gap: 8px; color: var(--ch-color-muted); font-size: 14px; direction: rtl; text-align: right; }
 .notice img { width: 16px; height: 16px; display: block; }
 .sidebar { width: 260px; flex: 0 0 260px; display: flex; flex-direction: column; justify-content: space-between; padding: 40px 20px; direction: rtl; background: var(--ch-color-primary); }
 .sidebarTop { display: flex; flex-direction: column; gap: 32px; }

@@ -501,6 +501,18 @@ require(final_confirmation.count('className={styles.nationalId} dir="ltr"') == 2
         '.party p { display: flex; align-items: baseline; justify-content: flex-start; gap: 6px; direction: rtl;' in final_css,
         "final confirmation must keep Persian national-ID labels RTL and masked digits in LTR order")
 
+waiting_owner = read(USER_ROOT / "contracts/register/plans/waiting-owner/page.tsx")
+waiting_owner_css = read(USER_ROOT / "contracts/register/plans/waiting-owner/page.module.css")
+require('<div className={styles.nextStepHeader} data-node-id="171:324"><img src={assets.info} alt="" width={20} height={20} /><h2 data-node-id="171:325">مرحله بعد</h2></div>' in waiting_owner and
+        '.nextStep { width: 100%; display: flex; flex-direction: column; gap: 12px; padding: 20px; background: #f0f7f6; border: 1px solid #c2e2df; border-radius: 16px; direction: rtl; text-align: right; }' in waiting_owner_css and
+        '.nextStepHeader { width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 8px; direction: rtl; text-align: right; }' in waiting_owner_css,
+        "waiting-owner next-step box icon and heading must align together at its right edge")
+require('<div className={styles.notice} data-node-id="171:339"><img src={assets.alert} alt="" width={16} height={16} /><span data-node-id="171:340">در حال حاضر اقدامی از طرف شما لازم نیست.</span></div>' in waiting_owner and
+        '.notice { display: flex; align-items: center; justify-content: flex-start; gap: 8px; color: var(--ch-color-muted); font-size: 14px; direction: rtl; text-align: right; }' in waiting_owner_css and
+        '.bottomActions { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-top: 24px; border-top: 1px solid var(--ch-color-border); direction: ltr; }' in waiting_owner_css and
+        '.completedList > div { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }' in waiting_owner_css,
+        "waiting-owner footer notice must align icon and text right; buttons and green badges must stay unchanged")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)

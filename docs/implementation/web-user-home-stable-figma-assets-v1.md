@@ -153,3 +153,7 @@ The prior attempt explicitly made the marker row LTR, which renders `۱.` with t
 ## Final confirmation header — title at right, badge afterward in RTL order
 
 The user asked «تأیید نهایی قرارداد» to precede the «آورده پرداخت شده (نمونه)» badge. Put the h1 before the badge in DOM order and explicitly set the title row and page header to RTL, aligned to the right, so the heading appears on the right and badge immediately to its left. Do not alter the independently revised step punctuation, checkbox, IDs, financial preview copy, sidebar or navigation. Keep PR #120 Draft/unmerged pending final visual approval and latest HEAD CI.
+
+## Waiting-owner clarified screenshot — right-align next-step and notice only
+
+Owner explicitly identified the two intended targets as the «مرحله بعد» banner and «در حال حاضر اقدامی از طرف شما لازم نیست» footer notice, not the bottom navigation buttons or green completion badges. Keep the existing full-width next-step box and footer positions but place each text/icon pair in right-to-left reading order at its right edge (icon first, text second; heading and paragraph RTL). The two footer buttons remain left-aligned as before, all completion badges unchanged, and the same preview routes and sidebar stay intact. PR #120 remains Draft/unmerged until visual approval and final-HEAD CI checks.
