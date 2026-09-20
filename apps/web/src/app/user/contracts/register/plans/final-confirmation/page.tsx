@@ -78,7 +78,7 @@ export default function FinalConfirmationPage() {
       <section className={styles.mainContent} data-node-id="150:1490">
         <header className={styles.pageHeader} data-node-id="150:1491">
           <p data-node-id="150:1492">قراردادها / تأیید نهایی</p>
-          <div className={styles.titleRow} data-node-id="150:1493"><span className={styles.paidBadge} data-node-id="150:1495">آورده پرداخت شده (نمونه)</span><h1 data-node-id="150:1494">تأیید نهایی قرارداد</h1></div>
+          <div className={styles.titleRow} data-node-id="150:1493"><h1 data-node-id="150:1494">تأیید نهایی قرارداد</h1><span className={styles.paidBadge} data-node-id="150:1495">آورده پرداخت شده (نمونه)</span></div>
           <p data-node-id="150:1497">در پیش‌نمایش طراحی، پرداخت آورده تکمیل شده است؛ پیش از ادامه، شرایط قرارداد را بررسی و تأیید کنید.</p>
         </header>
 

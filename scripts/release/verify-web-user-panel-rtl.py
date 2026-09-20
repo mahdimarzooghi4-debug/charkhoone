@@ -448,6 +448,10 @@ require('assets.heroCheck' not in contribution_page and
 final_confirmation = read(USER_ROOT / "contracts/register/plans/final-confirmation/page.tsx")
 final_css = read(USER_ROOT / "contracts/register/plans/final-confirmation/page.module.css")
 final_consent = read(USER_ROOT / "contracts/register/plans/final-confirmation/FinalConfirmationConsent.tsx")
+require('<h1 data-node-id="150:1494">تأیید نهایی قرارداد</h1><span className={styles.paidBadge} data-node-id="150:1495">آورده پرداخت شده (نمونه)</span>' in final_confirmation and
+        '.titleRow { width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 12px; direction: rtl; text-align: right; }' in final_css and
+        '.pageHeader { width: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 8px; direction: rtl; text-align: right; }' in final_css,
+        "final-confirmation heading must appear to the right of the status badge with header RTL")
 require('const toPersianDigits = (value: string) =>' in final_confirmation and
         'value.replace(/[0-9٠-٩]/g,' in final_confirmation and
         '{renderPersianValue(value)}' in final_confirmation and

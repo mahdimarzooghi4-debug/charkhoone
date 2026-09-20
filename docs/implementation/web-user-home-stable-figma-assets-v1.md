@@ -149,3 +149,7 @@ The owner requested the punctuation **after** each Persian step numeral in the �
 ## Step-marker period placement corrected for visual RTL reading
 
 The prior attempt explicitly made the marker row LTR, which renders `۱.` with the period on the **right** of the digit in the owner's screenshot. The owner clarified it still looked wrong. Keep the number and period as separate children, but render the marker row as `inline-flex; direction: rtl; flex-direction: row`, yielding the number at the right and the period immediately at its **left**, i.e. after the number in RTL reading order. Keep the `<bdi dir="ltr">` around the digit to isolate its glyph without changing surrounding Persian text. CSS-only change to final-confirmation; no other pages, routes or local files should change. Keep #120 Draft until screenshot approval and CI.
+
+## Final confirmation header — title at right, badge afterward in RTL order
+
+The user asked «تأیید نهایی قرارداد» to precede the «آورده پرداخت شده (نمونه)» badge. Put the h1 before the badge in DOM order and explicitly set the title row and page header to RTL, aligned to the right, so the heading appears on the right and badge immediately to its left. Do not alter the independently revised step punctuation, checkbox, IDs, financial preview copy, sidebar or navigation. Keep PR #120 Draft/unmerged pending final visual approval and latest HEAD CI.
