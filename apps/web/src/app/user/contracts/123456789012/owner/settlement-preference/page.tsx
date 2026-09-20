@@ -35,7 +35,7 @@ export default function OwnerSettlementPreferencePage() {
               <h2 data-node-id="150:1702">خلاصه انتخاب</h2><div className={styles.divider} />
               <div className={styles.summaryRows} data-node-id="150:1704"><div className={styles.summaryRow}><strong>سعادت‌آباد</strong><span>قرارداد</span></div><div className={styles.summaryRow}><strong>مالک</strong><span>نقش شما</span></div><div className={styles.summaryRow}><strong>۲۰٬۰۰۰٬۰۰۰ تومان</strong><span>مبلغ ناخالص دریافتی</span></div><div className={styles.summaryRow}><strong className={styles.accent}>{isMonthly ? "دریافت ماهانه" : "تجمیع دریافتی در صندوق"}</strong><span>روش دریافت انتخاب‌شده</span></div></div>
               <div className={styles.divider} />
-              <div className={styles.actionBlock} data-node-id="150:1718"><Link href={`/user/contracts/123456789012/owner/final-confirmation?method=${method}`} className={styles.primaryButton} data-node-id="150:1719">انتخاب و ادامه</Link><Link href="/user/contracts/123456789012/owner" className={styles.linkButton} data-node-id="150:1722">مشاهده قرارداد</Link></div>
+              <div className={styles.actionBlock} data-node-id="150:1718"><Link href={`/user/contracts/123456789012/owner/final-confirmation?method=${method}`} className={styles.primaryButton} data-node-id="150:1719">انتخاب و ادامه</Link><Link href={`/user/contracts/123456789012/owner?method=${method}`} className={styles.linkButton} data-node-id="150:1722">مشاهده قرارداد</Link></div>
             </section>
           </aside>
 

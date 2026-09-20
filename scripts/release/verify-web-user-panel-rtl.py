@@ -610,6 +610,7 @@ require(owner_settlement.startswith('"use client";') and
         'aria-pressed={isMonthly}' in owner_settlement and
         'aria-pressed={!isMonthly}' in owner_settlement and
         'final-confirmation?method=${method}' in owner_settlement and
+        'owner?method=${method}' in owner_settlement and
         '{isMonthly ? "دریافت ماهانه" : "تجمیع دریافتی در صندوق"}' in owner_settlement and
         '.ownerSettlementChoice .optionCard {' in owner_flow_css and
         '.ownerSettlementChoice .optionCard:focus-visible {' in owner_flow_css,
