@@ -5,8 +5,8 @@ import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 const assets = {
   logo: "https://www.figma.com/api/mcp/asset/6c0f11d8-2c30-413c-aa93-7baa459997c4.png",
   avatar: "https://www.figma.com/api/mcp/asset/5343cc6b-94fc-4729-9566-d28a0ac8b1f5.png",
-  info: "https://www.figma.com/api/mcp/asset/b77da5f5-be72-418e-89b8-e074ba0371f1.svg",
-  alert: "https://www.figma.com/api/mcp/asset/ea8b25cb-8c66-40e2-bb29-0b86ee7e6335.svg",
+  info: "/brand/financing-review-clock.svg",
+  alert: "/brand/financing-review-active.svg",
   home: "https://www.figma.com/api/mcp/asset/dab1667e-cef3-48fd-9fca-4c66f2351509.svg",
   contracts: "https://www.figma.com/api/mcp/asset/d1fe5cdb-d683-4a90-9586-d17cb5823aa6.svg",
   payments: "https://www.figma.com/api/mcp/asset/72c66b90-36ba-4cba-97c6-1ec846e438ba.svg",
@@ -24,10 +24,11 @@ const process = [
 const tenantSteps = ["تأیید بانک", "پرداخت آورده", "تأیید نهایی شما"] as const;
 const summary = [
   ["ملک", "سعادت‌آباد"],
-  ["مبلغ رهن", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
+  ["رهن نقدی قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
+  ["رهن کامل معادل", "۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان"],
   ["اجاره ماهانه قرارداد", "۲۰٬۰۰۰٬۰۰۰ تومان"],
-  ["مبلغ تأمین مالی", "۴۵۰٬۰۰۰٬۰۰۰ تومان"],
-  ["آورده پرداخت‌‌شده", "۵۰٬۰۰۰٬۰۰۰ تومان"],
+  ["تأمین مالی بانک (نمونه C3)", "۳۵۰٬۰۰۰٬۰۰۰ تومان"],
+  ["آورده مستأجر از رهن کامل معادل (نمونه)", "۸۱۶٬۶۶۶٬۶۶۷ تومان"],
   ["تاریخ شروع", "۱۵ مهر ۱۴۰۵"],
   ["تاریخ پایان", "۱۵ مهر ۱۴۰۶"],
 ] as const;
