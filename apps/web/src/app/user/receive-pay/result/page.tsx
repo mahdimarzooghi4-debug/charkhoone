@@ -2,27 +2,20 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
-const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/ae2b7aef-201c-4c82-bd2b-3effdd275a91.png",
-  avatar: "https://www.figma.com/api/mcp/asset/b1b9b5f1-5e0d-4161-927a-285325b0c1c8.png",
-  check: "https://www.figma.com/api/mcp/asset/bd0dcfef-ff40-4251-8416-1052d4889107.svg",
-  home: "https://www.figma.com/api/mcp/asset/53fb9812-b27e-4e4e-8a06-9272820d4a7b.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/aca1c790-b6dd-4e84-9ff9-7ad5861be19a.svg",
-  payments: "https://www.figma.com/api/mcp/asset/a39a39e8-d0d6-485e-817e-de2ec79553d9.svg",
-  account: "https://www.figma.com/api/mcp/asset/0b1a2f2f-2322-4f42-8c16-2fe2a4d38e7a.svg",
-} as const;
+import { previews } from "../demo-transactions";
 
-const details = [
-  ["مبلغ", "۱۸٬۵۰۰٬۰۰۰ تومان", true],
-  ["بابت", "قسط ماهانه تأمین مالی", false],
-  ["تاریخ", "۱۵ آبان ۱۴۰۵", false],
-  ["ساعت", "۱۴:۳۵", false],
-  ["شماره پیگیری", "۱۲۳۴۵۶۷۸۹", false],
-  ["قرارداد", "سعادت‌آباد", false],
-  ["شماره قسط", "۲ از ۱۲", false],
-] as const;
-
-export default function PaymentResultPage() {
+export default async function PaymentResultPage({ searchParams }: { searchParams: Promise<{ transaction?: string }> }) {
+  const selected = (await searchParams).transaction === "overdue" ? "overdue" : "due";
+  const preview = previews[selected];
+  const details = [
+    ["مبلغ", preview.amount, true],
+    ["بابت", preview.description, false],
+    ["تاریخ", preview.date, false],
+    ["ساعت (نمونه)", preview.time, false],
+    ["شماره پیگیری", preview.reference, false],
+    ["قرارداد", preview.contract, false],
+    ["شماره قسط", preview.installment ?? "—", false],
+  ] as const;
   return (
     <main className={styles.page} data-node-id="173:639" data-name="Web App / Payment Return">
       <section className={styles.mainContent} data-node-id="173:640">
@@ -31,7 +24,7 @@ export default function PaymentResultPage() {
           <div className={styles.headerRight} data-node-id="173:646">
             <div className={styles.breadcrumb} data-node-id="173:647"><span className={styles.current}>نتیجه پرداخت</span><span>/</span><span>دریافت و پرداخت</span></div>
             <h1 data-node-id="173:651">نتیجه پرداخت</h1>
-            <p data-node-id="173:652">وضعیت تراکنش شما در سامانه چارخونه</p>
+            <p data-node-id="173:652">نتیجه نمایشی پرداخت؛ هیچ تراکنش بانکی انجام نشده است</p>
           </div>
         </header>
 
@@ -40,10 +33,10 @@ export default function PaymentResultPage() {
             <div className={styles.brandBlock} data-node-id="173:655"><strong data-node-id="173:656">چارخونه</strong><div className={styles.divider} /></div>
 
             <div className={styles.statusSection} data-node-id="173:658">
-              <span className={styles.checkCircle} data-node-id="173:659"><img src={assets.check} alt="" width={24} height={24} /></span>
-              <h2 data-node-id="173:662">پرداخت با موفقیت انجام شد</h2>
-              <strong className={styles.amount} data-node-id="173:663">۱۸٬۵۰۰٬۰۰۰ تومان</strong>
-              <span className={styles.successBadge} data-node-id="173:665">موفق</span>
+              <span className={styles.checkCircle} data-node-id="173:659"><span aria-hidden="true">✓</span></span>
+              <h2 data-node-id="173:662">نمونه نتیجه پرداخت موفق</h2>
+              <strong className={styles.amount} data-node-id="173:663">{preview.amount}</strong>
+              <span className={styles.successBadge} data-node-id="173:665">موفق (نمونه)</span>
             </div>
 
             <div className={styles.divider} />
@@ -65,7 +58,7 @@ export default function PaymentResultPage() {
 
           <div className={styles.actions} data-node-id="173:709">
             <Link href="/user/receive-pay" className={styles.secondaryAction} data-node-id="173:710">بازگشت به دریافت و پرداخت</Link>
-            <Link href="/user/receive-pay/receipt" className={styles.primaryAction} data-node-id="173:712">مشاهده رسید</Link>
+            <Link href={"/user/receive-pay/receipt?transaction=" + selected} className={styles.primaryAction} data-node-id="173:712">مشاهده رسید نمونه</Link>
           </div>
         </section>
       </section>

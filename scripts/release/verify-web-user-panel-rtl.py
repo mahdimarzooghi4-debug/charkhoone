@@ -614,8 +614,9 @@ require('<section id="owner-property-info" className={styles.card} data-node-id=
         '<a href="#owner-property-info">‹ <span>مشاهده اطلاعات ملک</span></a>' in owner_active and
         '<div>‹ <span>مشاهده اطلاعات ملک</span></div>' not in owner_active and
         '.quickActions > a, .quickActions > div {' in owner_active_css and
-        owner_active.count('href="/user/receive-pay"') == 3 and
-        'export default function ReceivePayPage()' in receive_pay and
+        owner_active.count('href={`/user/receive-pay?method=${fund ? "fund" : "monthly"}`}') == 3 and
+        'export default async function ReceivePayPage(' in receive_pay and
+        '<ReceivePayActivities />' in receive_pay and
         all('href: "' + target + '"' in shared_sidebar for target in
             ('/user/home', '/user/contracts', '/user/receive-pay', '/user/account')) and
         'href={href}' in shared_sidebar and
@@ -648,6 +649,60 @@ require('searchParams: Promise<{ method?: string }>' in owner_final and
         'const fund = (await searchParams).method === "fund";' in owner_active and
         '{fund ? "تجمیع دریافتی در صندوق" : "دریافت ماهانه"}' in owner_active,
         "owner selected receipt method must survive confirmation and appear consistently on active demo contract")
+
+
+# The receive/pay screen is preview-only. Its controls must be operable and
+# its simulated receipts must follow the clicked row rather than a fixed fixture.
+receive_pay_controls = read(USER_ROOT / "receive-pay/ReceivePayActivities.tsx")
+receive_pay_fixtures = read(USER_ROOT / "receive-pay/demo-transactions.ts")
+receive_pay_css = read(USER_ROOT / "receive-pay/page.module.css")
+payment_result = read(USER_ROOT / "receive-pay/result/page.tsx")
+payment_receipt = read(USER_ROOT / "receive-pay/receipt/page.tsx")
+payment_receipt_actions = read(USER_ROOT / "receive-pay/receipt/ReceiptActions.tsx")
+require('aria-label="فیلتر وضعیت تراکنش"' in receive_pay_controls and
+        'onChange={event => setStatus(event.target.value as StatusFilter)}' in receive_pay_controls and
+        'onClick={() => setKind(value)}' in receive_pay_controls and
+        'aria-pressed={kind === value}' in receive_pay_controls and
+        'visible.length === 0' in receive_pay_controls and
+        'href={item.href}' in receive_pay_controls and
+        'className={styles.emptyState}' in receive_pay_controls and
+        '.emptyState {' in receive_pay_css,
+        "receive/pay kind/status filters and empty state must respond to user input")
+require('"/user/receive-pay/result?transaction=overdue"' in receive_pay_fixtures and
+        '"/user/receive-pay/result?transaction=due"' in receive_pay_fixtures and
+        '"/user/receive-pay/receipt?transaction=paid-mehr"' in receive_pay_fixtures and
+        '"/user/receive-pay/receipt?transaction=owner-ponak"' in receive_pay_fixtures and
+        'href: "/user/contracts"' in receive_pay_fixtures and
+        'button type="button" className={styles.terminatedAction}' not in receive_pay and
+        'href="/user/contracts/123456789012/terminated"' in receive_pay,
+        "each sample transaction row and termination scenario must have a working destination")
+require('previews[selected]' in payment_result and
+        'transaction === "overdue" ? "overdue" : "due"' in payment_result and
+        '"/user/receive-pay/receipt?transaction=" + selected' in payment_result and
+        'هیچ تراکنش بانکی انجام نشده است' in payment_result and
+        'preview.amount' in payment_result and
+        'preview.date' in payment_result and
+        'receiptKey((await searchParams).transaction)' in payment_receipt and
+        'previews[key]' in payment_receipt and
+        'preview.role === "مالک" ? "/user/contracts" : "/user/contracts/123456789012"' in payment_receipt and
+        'هیچ تراکنش بانکی واقعی ثبت نشده است' in payment_receipt,
+        "sample result and receipt must match clicked transaction without claiming real payment")
+require(payment_receipt_actions.startswith('"use client";') and
+        'onClick={() => window.print()}' in payment_receipt_actions and
+        'onClick={saveImage}' in payment_receipt_actions and
+        'canvas.toBlob(' in payment_receipt_actions and
+        'image/png' in payment_receipt_actions and
+        'onClick={share}' in payment_receipt_actions and
+        'navigator.share' in payment_receipt_actions and
+        'navigator.clipboard' in payment_receipt_actions and
+        'role="status" aria-live="polite"' in payment_receipt_actions,
+        "receipt print, PNG save and share/copy fallback must perform real browser actions")
+require('const fund = method === "fund";' in receive_pay and
+        'پیش‌نمایش مالک سعادت‌آباد' in receive_pay and
+        'method === "monthly" || fund' in receive_pay and
+        'سناریوی نمونه فسخ' in receive_pay,
+        "payment screen must retain owner method context and disclose separate sample termination")
+
 
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
