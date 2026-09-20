@@ -5,10 +5,13 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
-// Preview only: the real sub-grade must come from an external credit provider
-// through authenticated credit eligibility; an end user must not choose a grade.
+// Preview only: use the backend's contractual 3% rent-to-full-deposit
+// equivalence BEFORE applying the external credit sub-grade percentage.
+// A real tenant's grade and bank decision must come from trusted services.
 // C3 is a conspicuously labeled MOCK response only (C1/C2 = 40%; C3 = 30%).
 const EXAMPLE_DEPOSIT = 500_000_000;
+const EXAMPLE_RENT = 18_000_000;
+const MONTHLY_RENT_TO_FULL_DEPOSIT_RATIO = 0.03;
 const MIN_FINANCING_PERCENT = 30;
 const MAX_FINANCING_PERCENT = 55;
 const MAX_DEPOSIT = 1_000_000_000;
@@ -81,15 +84,19 @@ function AmountSlider({
 
 export default function CalculatorPage() {
   const [deposit, setDeposit] = useState(EXAMPLE_DEPOSIT);
-  const [rent, setRent] = useState(20_000_000);
+  const [rent, setRent] = useState(EXAMPLE_RENT);
   const financingPercent = SAMPLE_FINANCING_PERCENT;
   const [bankRateInput, setBankRateInput] = useState(SAMPLE_BANK_ANNUAL_RATE);
   const bankAnnualRate = bankRateInput.trim() === "" ? null : Number(bankRateInput);
   const rateValid = bankAnnualRate !== null && Number.isFinite(bankAnnualRate) && bankAnnualRate >= 0 && bankAnnualRate <= 100;
-  const minFinancing = Math.round(deposit * MIN_FINANCING_PERCENT / 100);
-  const maxFinancing = Math.round(deposit * MAX_FINANCING_PERCENT / 100);
-  const selectedFinancing = Math.round(deposit * financingPercent / 100);
-  const contribution = deposit - selectedFinancing;
+  // 18m monthly rent -> 600m full-deposit equivalent; add cash deposit
+  // before applying the trusted grade ratio, mirroring FullDepositCalculator.
+  const rentEquivalentDeposit = Math.round(rent / MONTHLY_RENT_TO_FULL_DEPOSIT_RATIO);
+  const fullDepositEquivalent = deposit + rentEquivalentDeposit;
+  const minFinancing = Math.round(fullDepositEquivalent * MIN_FINANCING_PERCENT / 100);
+  const maxFinancing = Math.round(fullDepositEquivalent * MAX_FINANCING_PERCENT / 100);
+  const selectedFinancing = Math.round(fullDepositEquivalent * financingPercent / 100);
+  const contribution = fullDepositEquivalent - selectedFinancing;
   // Annual nominal simple interest divided into 12 monthly payments. The
   // bank must confirm its quote and calculation convention; do not add principal.
   const monthlyInterest = rateValid && bankAnnualRate !== null ? Math.round(selectedFinancing * bankAnnualRate / 100 / 12) : null;
@@ -98,10 +105,13 @@ export default function CalculatorPage() {
   const financingMillion = Math.round(selectedFinancing / 1_000_000).toLocaleString("fa-IR");
   const gaugeFill = financingPercent;
   const metrics = [
-    ["حداقل تأمین مالی (۳۰٪ رهن)", money(minFinancing), false],
-    ["حداکثر تأمین مالی (۵۵٪ رهن)", money(maxFinancing), false],
-    ["تأمین مالی براساس رتبه نمونه " + DEMO_EXTERNAL_SUBGRADE, money(selectedFinancing), false],
-    ["آورده مستأجر (مانده رهن)", money(contribution), false],
+    ["رهن نقدی قرارداد", money(deposit), false],
+    ["معادل رهنِ اجاره ماهانه (نرخ تبدیل ۳٪)", money(rentEquivalentDeposit), false],
+    ["رهن کامل معادل قرارداد", money(fullDepositEquivalent), true],
+    ["حداقل تأمین مالی (۳۰٪ رهن معادل)", money(minFinancing), false],
+    ["حداکثر تأمین مالی (۵۵٪ رهن معادل)", money(maxFinancing), false],
+    ["تأمین مالی براساس رتبه نمونه " + DEMO_EXTERNAL_SUBGRADE, money(selectedFinancing), true],
+    ["مانده رهن معادل پس از تأمین مالی", money(contribution), false],
     ["اجاره ماهانه قرارداد", money(rent), false],
     ["سود ماهانه وام (بدون اصل)", monthlyInterest === null ? "نیازمند نرخ اعلامی بانک" : money(monthlyInterest), true],
   ] as const;
@@ -114,14 +124,14 @@ export default function CalculatorPage() {
 
         <div className={styles.columns} data-node-id="150:597">
           <section className={styles.resultsCard} data-node-id="150:598" aria-live="polite">
-            <div className={styles.cardHeader} data-node-id="150:599"><h2 data-node-id="150:600">برآورد شرایط تأمین مالی</h2><p data-node-id="150:601">نسبت تأمین مالی فقط براساس رتبه معتبر سامانه بیرونی تعیین می‌شود.</p></div>
+            <div className={styles.cardHeader} data-node-id="150:599"><h2 data-node-id="150:600">برآورد شرایط تأمین مالی</h2><p data-node-id="150:601">ابتدا اجاره با نسبت ۳٪ به رهن تبدیل و با رهن نقدی جمع می‌شود؛ سپس نسبت رتبه اعتباری اعمال می‌شود.</p></div>
             <div className={styles.gaugeArea} data-node-id="150:602">
               <div className={styles.gauge} data-node-id="150:603" role="img" aria-label={"مبلغ تأمین مالی انتخابی: " + money(selectedFinancing)}>
                 <div className={styles.gaugeTrack} />
                 <div className={styles.gaugeFill} style={{ clipPath: "inset(0 " + (100 - gaugeFill) + "% 0 0)" }} />
                 <div className={styles.gaugeText}><strong data-node-id="150:607">{financingMillion} میلیون</strong><span data-node-id="150:608">تومان</span></div>
               </div>
-              <div className={styles.gaugeLimits} data-node-id="150:609"><span>{money(maxFinancing)} (۵۵٪ رهن)</span><span>{money(minFinancing)} (۳۰٪ رهن)</span></div>
+              <div className={styles.gaugeLimits} data-node-id="150:609"><span>{money(maxFinancing)} (۵۵٪ رهن معادل)</span><span>{money(minFinancing)} (۳۰٪ رهن معادل)</span></div>
             </div>
             <div className={styles.divider} />
             <div className={styles.metricsGrid} data-node-id="150:613">
@@ -141,7 +151,7 @@ export default function CalculatorPage() {
                     : "با این ورودی‌ها، سود ماهانه از اجاره کمتر نیست؛ شرایط را با بانک بررسی کنید."}
               </p>
             </section>
-            <p className={styles.disclaimer} data-node-id="150:643">نسبت تأمین مالی واقعی فقط پس از دریافت معتبر رتبه از سامانه بیرونی تعیین می‌شود؛ C3 و نرخ ۲۳٪ این صفحه صرفاً مثال نمایشی هستند. سود ماهانه با فرض تقسیم نرخ سود سالانه اسمی بر ۱۲ محاسبه شده است؛ اصل وام جزو قسط ماهانه این برآورد نیست و نحوه بازپرداخت اصل، نرخ قطعی و شرایط تأمین مالی باید از قرارداد و بانک مشخص شوند. کمتر بودن سود از اجاره به مبلغ و نرخ وابسته است و تضمین نمی‌شود. این صفحه پیش‌نمایش است و هیچ درخواست یا پرداختی ثبت نمی‌کند.</p>
+            <p className={styles.disclaimer} data-node-id="150:643">برای محاسبه سقف وام، ابتدا معادل رهن اجاره ماهانه با نسبت ۳٪ محاسبه و به مبلغ رهن نقدی اضافه می‌شود؛ نسبت رتبه اعتباری بر حاصل جمع اعمال می‌شود، نه فقط رهن نقدی. «مانده رهن معادل» لزوماً مبلغ نقدی قابل مطالبه در زمان قرارداد نیست. نسبت تأمین مالی واقعی فقط پس از دریافت معتبر رتبه از سامانه بیرونی تعیین می‌شود؛ C3 و نرخ ۲۳٪ این صفحه صرفاً مثال نمایشی هستند. سود ماهانه با فرض تقسیم نرخ سود سالانه اسمی بر ۱۲ محاسبه شده است؛ اصل وام جزو قسط ماهانه این برآورد نیست و نحوه بازپرداخت اصل، نرخ قطعی و شرایط تأمین مالی باید از قرارداد و بانک مشخص شوند. کمتر بودن سود از اجاره به مبلغ و نرخ وابسته است و تضمین نمی‌شود. این صفحه پیش‌نمایش است و هیچ درخواست یا پرداختی ثبت نمی‌کند.</p>
           </section>
 
           <section className={styles.inputsCard} data-node-id="150:644">
@@ -150,8 +160,9 @@ export default function CalculatorPage() {
             <AmountSlider label="اجاره ماهانه" amount={rent} setAmount={setRent} minLabel="بدون اجاره" maxLabel="۵۰ میلیون تومان" max={MAX_RENT} step={500_000} />
             <div className={styles.financingChoice} aria-label="نتیجه نمونه اعتبارسنجی">
               <strong>سناریوی نمونه اعتبارسنجی: رتبه {DEMO_EXTERNAL_SUBGRADE}</strong>
-              <p>درصد تأمین مالی این نمونه: {digitsFa(String(financingPercent))}٪ رهن کامل</p>
+              <p>درصد تأمین مالی این نمونه: {digitsFa(String(financingPercent))}٪ رهن کامل معادل قرارداد</p>
               <small>رتبه واقعی مستأجر فقط از سامانه بیرونی استعلام می‌شود. این رتبه C3 نتیجه استعلام واقعی نیست و قابل انتخاب توسط کاربر نیست.</small>
+              <small>رهن کامل معادل = رهن نقدی + (اجاره ماهانه ÷ ۰٫۰۳)</small>
               <small>نسبت‌ها: A برابر ۵۵٪، B برابر ۴۵٪، C1 و C2 برابر ۴۰٪، C3 برابر ۳۰٪، D برابر ۳۵٪ و E برابر ۳۰٪.</small>
             </div>
             <label className={styles.bankRateField} htmlFor="bank-annual-rate">

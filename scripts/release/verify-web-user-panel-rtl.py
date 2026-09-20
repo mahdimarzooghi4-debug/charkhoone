@@ -775,7 +775,9 @@ calculator_page = read(USER_ROOT / "calculator/page.tsx")
 calculator_css = read(USER_ROOT / "calculator/page.module.css")
 require('"use client";' in calculator_page and
         'useState(EXAMPLE_DEPOSIT)' in calculator_page and
-        'useState(20_000_000)' in calculator_page and
+        'useState(EXAMPLE_RENT)' in calculator_page and
+        'const EXAMPLE_RENT = 18_000_000;' in calculator_page and
+        'const MONTHLY_RENT_TO_FULL_DEPOSIT_RATIO = 0.03;' in calculator_page and
         'type="range"' in calculator_page and
         'type="text"' in calculator_page and
         'inputMode="numeric"' in calculator_page and
@@ -790,8 +792,15 @@ require('"use client";' in calculator_page and
         'const SAMPLE_BANK_ANNUAL_RATE = "23";' in calculator_page and
         'useState(SAMPLE_BANK_ANNUAL_RATE)' in calculator_page and
         'نتیجه استعلام واقعی نیست' in calculator_page and
-        'const selectedFinancing = Math.round(deposit * financingPercent / 100);' in calculator_page and
-        'const contribution = deposit - selectedFinancing;' in calculator_page and
+        'const rentEquivalentDeposit = Math.round(rent / MONTHLY_RENT_TO_FULL_DEPOSIT_RATIO);' in calculator_page and
+        'const fullDepositEquivalent = deposit + rentEquivalentDeposit;' in calculator_page and
+        'const minFinancing = Math.round(fullDepositEquivalent * MIN_FINANCING_PERCENT / 100);' in calculator_page and
+        'const maxFinancing = Math.round(fullDepositEquivalent * MAX_FINANCING_PERCENT / 100);' in calculator_page and
+        'const selectedFinancing = Math.round(fullDepositEquivalent * financingPercent / 100);' in calculator_page and
+        'const contribution = fullDepositEquivalent - selectedFinancing;' in calculator_page and
+        'رهن کامل معادل = رهن نقدی + (اجاره ماهانه ÷ ۰٫۰۳)' in calculator_page and
+        'رهن کامل معادل قرارداد' in calculator_page and
+        'آورده مستأجر (مانده رهن)' not in calculator_page and
         'const monthlyInterest = rateValid && bankAnnualRate !== null ? Math.round(selectedFinancing * bankAnnualRate / 100 / 12) : null;' in calculator_page and
         'اصل وام جزو قسط ماهانه این برآورد نیست' in calculator_page and
         'figma.com/api/mcp/asset/' not in calculator_page and

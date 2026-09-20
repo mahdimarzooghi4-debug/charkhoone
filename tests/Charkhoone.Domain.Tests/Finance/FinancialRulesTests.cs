@@ -17,6 +17,20 @@ public sealed class FinancialRulesTests
     }
 
     [Fact]
+    public void FiveHundredMillionTomanDeposit_PlusEighteenMillionTomanRent_EqualsOnePointOneBillionTomanEquivalent()
+    {
+        // Authoritative backend stores whole Iranian rials, not toman.
+        const decimal cashDepositRial = 5_000_000_000m;
+        const decimal monthlyRentRial = 180_000_000m;
+
+        var fullDeposit = FullDepositCalculator.Calculate(cashDepositRial, monthlyRentRial);
+
+        Assert.Equal(11_000_000_000m, fullDeposit);
+        Assert.Equal(3_300_000_000m, CreditAllocationCalculator.CalculateMaximumLoan(fullDeposit, "C3"));
+        Assert.Equal(6_050_000_000m, CreditAllocationCalculator.CalculateMaximumLoan(fullDeposit, "A1"));
+    }
+
+    [Fact]
     public void NineMillionTomanMonthlyRent_EqualsThreeHundredMillionTomanFullDeposit()
     {
         const decimal monthlyRentRial = 90_000_000m;
