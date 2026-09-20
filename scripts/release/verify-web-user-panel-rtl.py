@@ -789,7 +789,7 @@ require('"use client";' in calculator_page and
         '<div className={styles.sliderLabels}><span>{maxLabel}</span><span>{minLabel}</span></div>' in calculator_page and
         '.sliderLabels { direction: ltr; }' in calculator_css and
         'digitsFa(bankRateInput)' in calculator_page and
-        'parseMoneyInput(event.target.value, max)' in calculator_page and
+        'parseMoneyInput(input.value, max)' in calculator_page and
         'normalizeDigits(event.target.value)' in calculator_page and
         'const DEMO_EXTERNAL_SUBGRADE = "C3";' in calculator_page and
         'C1: 40, C2: 40, C3: 30' in calculator_page and
