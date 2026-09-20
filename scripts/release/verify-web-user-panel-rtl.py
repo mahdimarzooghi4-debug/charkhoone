@@ -803,6 +803,11 @@ require('"use client";' in calculator_page and
         'const maxFinancing = Math.round(fullDepositEquivalent * MAX_FINANCING_PERCENT / 100);' in calculator_page and
         'const selectedFinancing = Math.round(fullDepositEquivalent * financingPercent / 100);' in calculator_page and
         'const contribution = fullDepositEquivalent - selectedFinancing;' in calculator_page and
+        '<div className={styles.contributionSummary} aria-label="آورده مستأجر از رهن معادل">' in calculator_page and
+        'آورده مستأجر از رهن معادل (نمونه)' in calculator_page and
+        '<strong>{money(contribution)}</strong>' in calculator_page and
+        'مبلغ نقدی قطعی هنگام قرارداد نیست' in calculator_page and
+        '.contributionSummary > strong' in calculator_css and
         'رهن کامل معادل = رهن نقدی + (اجاره ماهانه ÷ ۰٫۰۳)' in calculator_page and
         'رهن کامل معادل قرارداد' in calculator_page and
         'آورده مستأجر (مانده رهن)' not in calculator_page and

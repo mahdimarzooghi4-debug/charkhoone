@@ -243,3 +243,7 @@ The user noted that nine simultaneous result tiles made the calculator confusing
 ## Calculator copy — monthly payment label
 
 Based on owner's review of the simplified calculator, all prominent user-facing comparison and payment labels now say «پرداختی ماهانه مستأجر» (tenant's monthly payment) rather than «سود ماهانه وام». The supporting calculation disclaimer explicitly continues to state that the illustrative monthly payment is interest only, excludes principal, and uses a sample 23% bank rate; no number, math, visual layout, mock grade or external integration changed. Keep PR #120 Draft/unmerged pending final-head CI and owner visual sign-off.
+
+## Visible tenant contribution without restoring result tiles
+
+The owner accepted the simplified result card but could not see «آورده مستأجر» because it existed only in collapsed calculation details. Show the calculated remaining full-deposit-equivalent contribution immediately **below the loan gauge as one unboxed line** with a clear label and footnote that it is not necessarily cash due at signing. Retain it in expanded details, explicitly identified as the same illustrative equivalent contribution, not a second payment. For 500m cash + 20m rent, mock C3 loan 350m from 1,166,666,667 toman equivalent, this remainder is 816,666,667 toman of *equivalent value*, not a verified upfront cash requirement. No backend, interest or bank/provider behavior changed. PR Draft/unmerged pending CI and owner visual review.

@@ -129,7 +129,7 @@ export default function CalculatorPage() {
     ["حداقل تأمین مالی (۳۰٪ رهن معادل)", money(minFinancing)],
     ["حداکثر تأمین مالی (۵۵٪ رهن معادل)", money(maxFinancing)],
     ["مبلغ تأمین مالی براساس رتبه نمونه " + DEMO_EXTERNAL_SUBGRADE, money(selectedFinancing)],
-    ["مانده رهن معادل پس از تأمین مالی", money(contribution)],
+    ["آورده مستأجر از رهن معادل (نمونه)", money(contribution)],
   ] as const;
 
   return (
@@ -148,6 +148,11 @@ export default function CalculatorPage() {
                 <div className={styles.gaugeText}><strong data-node-id="150:607">{financingMillion} میلیون</strong><span data-node-id="150:608">تومان تأمین مالی (نمونه)</span></div>
               </div>
               <div className={styles.gaugeLimits} data-node-id="150:609"><span>{money(maxFinancing)} (۵۵٪ رهن معادل)</span><span>{money(minFinancing)} (۳۰٪ رهن معادل)</span></div>
+            </div>
+            <div className={styles.contributionSummary} aria-label="آورده مستأجر از رهن معادل">
+              <span>آورده مستأجر از رهن معادل (نمونه)</span>
+              <strong>{money(contribution)}</strong>
+              <small>مانده رهن معادل پس از کسر وام است؛ مبلغ نقدی قطعی هنگام قرارداد نیست.</small>
             </div>
             <div className={styles.divider} />
             <section className={styles.comparison} data-node-id="150:632">
