@@ -121,16 +121,15 @@ export default function CalculatorPage() {
   const belowRent = rentDifference !== null && rentDifference > 0;
   const financingMillion = Math.round(selectedFinancing / 1_000_000).toLocaleString("fa-IR");
   const gaugeFill = financingPercent;
-  const metrics = [
-    ["رهن نقدی قرارداد", money(deposit), false],
-    ["معادل رهنِ اجاره ماهانه (نرخ تبدیل ۳٪)", money(rentEquivalentDeposit), false],
-    ["رهن کامل معادل قرارداد", money(fullDepositEquivalent), true],
-    ["حداقل تأمین مالی (۳۰٪ رهن معادل)", money(minFinancing), false],
-    ["حداکثر تأمین مالی (۵۵٪ رهن معادل)", money(maxFinancing), false],
-    ["تأمین مالی براساس رتبه نمونه " + DEMO_EXTERNAL_SUBGRADE, money(selectedFinancing), true],
-    ["مانده رهن معادل پس از تأمین مالی", money(contribution), false],
-    ["اجاره ماهانه قرارداد", money(rent), false],
-    ["سود ماهانه وام (بدون اصل)", monthlyInterest === null ? "نیازمند نرخ اعلامی بانک" : money(monthlyInterest), true],
+  const calculationDetails = [
+    ["رهن نقدی قرارداد", money(deposit)],
+    ["اجاره ماهانه قرارداد", money(rent)],
+    ["معادل رهنِ اجاره ماهانه (نسبت ۳٪)", money(rentEquivalentDeposit)],
+    ["رهن کامل معادل قرارداد", money(fullDepositEquivalent)],
+    ["حداقل تأمین مالی (۳۰٪ رهن معادل)", money(minFinancing)],
+    ["حداکثر تأمین مالی (۵۵٪ رهن معادل)", money(maxFinancing)],
+    ["مبلغ تأمین مالی براساس رتبه نمونه " + DEMO_EXTERNAL_SUBGRADE, money(selectedFinancing)],
+    ["مانده رهن معادل پس از تأمین مالی", money(contribution)],
   ] as const;
 
   return (
@@ -146,14 +145,11 @@ export default function CalculatorPage() {
               <div className={styles.gauge} data-node-id="150:603" role="img" aria-label={"مبلغ تأمین مالی انتخابی: " + money(selectedFinancing)}>
                 <div className={styles.gaugeTrack} />
                 <div className={styles.gaugeFill} style={{ clipPath: "inset(0 " + (100 - gaugeFill) + "% 0 0)" }} />
-                <div className={styles.gaugeText}><strong data-node-id="150:607">{financingMillion} میلیون</strong><span data-node-id="150:608">تومان</span></div>
+                <div className={styles.gaugeText}><strong data-node-id="150:607">{financingMillion} میلیون</strong><span data-node-id="150:608">تومان تأمین مالی (نمونه)</span></div>
               </div>
               <div className={styles.gaugeLimits} data-node-id="150:609"><span>{money(maxFinancing)} (۵۵٪ رهن معادل)</span><span>{money(minFinancing)} (۳۰٪ رهن معادل)</span></div>
             </div>
             <div className={styles.divider} />
-            <div className={styles.metricsGrid} data-node-id="150:613">
-              {metrics.map(([label, value, highlight]) => <article key={label} className={[styles.metric, highlight ? styles.metricHighlight : ""].join(" ")}><span>{label}</span><strong>{value}</strong></article>)}
-            </div>
             <section className={styles.comparison} data-node-id="150:632">
               <h3 data-node-id="150:633">مقایسه سود وام با اجاره ماهانه</h3>
               <div className={styles.comparisonRows}>
@@ -168,7 +164,21 @@ export default function CalculatorPage() {
                     : "با این ورودی‌ها، سود ماهانه از اجاره کمتر نیست؛ شرایط را با بانک بررسی کنید."}
               </p>
             </section>
-            <p className={styles.disclaimer} data-node-id="150:643">برای محاسبه سقف وام، ابتدا معادل رهن اجاره ماهانه با نسبت ۳٪ محاسبه و به مبلغ رهن نقدی اضافه می‌شود؛ نسبت رتبه اعتباری بر حاصل جمع اعمال می‌شود، نه فقط رهن نقدی. «مانده رهن معادل» لزوماً مبلغ نقدی قابل مطالبه در زمان قرارداد نیست. نسبت تأمین مالی واقعی فقط پس از دریافت معتبر رتبه از سامانه بیرونی تعیین می‌شود؛ C3 و نرخ ۲۳٪ این صفحه صرفاً مثال نمایشی هستند. سود ماهانه با فرض تقسیم نرخ سود سالانه اسمی بر ۱۲ محاسبه شده است؛ اصل وام جزو قسط ماهانه این برآورد نیست و نحوه بازپرداخت اصل، نرخ قطعی و شرایط تأمین مالی باید از قرارداد و بانک مشخص شوند. کمتر بودن سود از اجاره به مبلغ و نرخ وابسته است و تضمین نمی‌شود. این صفحه پیش‌نمایش است و هیچ درخواست یا پرداختی ثبت نمی‌کند.</p>
+            <details className={styles.calculationDetails} data-node-id="150:613">
+              <summary>جزئیات محاسبه وام و تبدیل اجاره به رهن</summary>
+              <dl className={styles.calculationRows}>
+                {calculationDetails.map(([label, value]) => (
+                  <div className={styles.calculationRow} key={label}>
+                    <dt>{label}</dt>
+                    <dd>{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p className={styles.calculationExplanation}>
+                رهن کامل معادل = رهن نقدی + (اجاره ماهانه ÷ ۰٫۰۳). درصد تأمین مالی براساس رتبه اعتباری روی کل رهن معادل اعمال می‌شود. مانده رهن معادل الزاماً مبلغ نقدی قابل پرداخت در ابتدای قرارداد نیست.
+              </p>
+            </details>
+            <p className={styles.disclaimer} data-node-id="150:643">C3 و نرخ ۲۳٪ صرفاً نمونه‌اند؛ رتبه واقعی و نرخ قطعی از سامانه بیرونی و بانک دریافت می‌شوند. سود ماهانه بدون اصل وام محاسبه شده است؛ شرایط بازپرداخت اصل باید در قرارداد بانک تعیین شود. هیچ درخواست یا پرداختی ثبت نمی‌شود.</p>
           </section>
 
           <section className={styles.inputsCard} data-node-id="150:644">
@@ -179,8 +189,7 @@ export default function CalculatorPage() {
               <strong>سناریوی نمونه اعتبارسنجی: رتبه {DEMO_EXTERNAL_SUBGRADE}</strong>
               <p>درصد تأمین مالی این نمونه: {digitsFa(String(financingPercent))}٪ رهن کامل معادل قرارداد</p>
               <small>رتبه واقعی مستأجر فقط از سامانه بیرونی استعلام می‌شود. این رتبه C3 نتیجه استعلام واقعی نیست و قابل انتخاب توسط کاربر نیست.</small>
-              <small>رهن کامل معادل = رهن نقدی + (اجاره ماهانه ÷ ۰٫۰۳)</small>
-              <small>نسبت‌ها: A برابر ۵۵٪، B برابر ۴۵٪، C1 و C2 برابر ۴۰٪، C3 برابر ۳۰٪، D برابر ۳۵٪ و E برابر ۳۰٪.</small>
+              <small>جزئیات نسبت‌ها و تبدیل اجاره به رهن را در «جزئیات محاسبه وام» ببینید.</small>
             </div>
             <label className={styles.bankRateField} htmlFor="bank-annual-rate">
               <span>نرخ سود سالانه اسمی بانک (نمونه: ۲۳٪)</span>

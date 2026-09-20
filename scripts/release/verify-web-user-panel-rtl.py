@@ -806,6 +806,13 @@ require('"use client";' in calculator_page and
         'رهن کامل معادل = رهن نقدی + (اجاره ماهانه ÷ ۰٫۰۳)' in calculator_page and
         'رهن کامل معادل قرارداد' in calculator_page and
         'آورده مستأجر (مانده رهن)' not in calculator_page and
+        'const calculationDetails = [' in calculator_page and
+        '<details className={styles.calculationDetails} data-node-id="150:613">' in calculator_page and
+        'جزئیات محاسبه وام و تبدیل اجاره به رهن' in calculator_page and
+        'calculationDetails.map(([label, value])' in calculator_page and
+        '<div className={styles.metricsGrid}' not in calculator_page and
+        'metrics.map(([label, value, highlight])' not in calculator_page and
+        '.calculationDetails > summary:focus-visible' in calculator_css and
         'const monthlyInterest = rateValid && bankAnnualRate !== null ? Math.round(selectedFinancing * bankAnnualRate / 100 / 12) : null;' in calculator_page and
         'اصل وام جزو قسط ماهانه این برآورد نیست' in calculator_page and
         'figma.com/api/mcp/asset/' not in calculator_page and

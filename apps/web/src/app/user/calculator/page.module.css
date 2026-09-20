@@ -125,3 +125,14 @@
 .sliderLabels { direction: ltr; }
 .sliderLabels > span { direction: rtl; unicode-bidi: isolate; }
 .numberInput { font-variant-numeric: normal; }
+
+/* Progressive disclosure: show loan + rent comparison first; keep all arithmetic
+   accessible in a single native keyboard-operable details control. */
+.calculationDetails { width: 100%; border: 1px solid var(--ch-color-border); border-radius: 10px; direction: rtl; background: #fff; }
+.calculationDetails > summary { padding: 13px 15px; font-size: 13px; font-weight: 600; color: var(--ch-color-primary); text-align: right; cursor: pointer; }
+.calculationDetails > summary:focus-visible { outline: 3px solid rgb(13 59 54 / 25%); outline-offset: 2px; }
+.calculationRows { display: flex; flex-direction: column; gap: 0; padding: 0 15px; margin: 0; }
+.calculationRow { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 14px; padding: 10px 0; border-top: 1px solid var(--ch-color-border); flex-wrap: wrap; }
+.calculationRow dt { font-size: 12px; color: var(--ch-color-muted); }
+.calculationRow dd { margin: 0; color: var(--ch-color-text); font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.calculationExplanation { margin: 0; padding: 12px 15px 16px; color: var(--ch-color-muted); font-size: 12px; line-height: 1.9; }
