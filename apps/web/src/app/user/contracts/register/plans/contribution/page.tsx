@@ -16,12 +16,12 @@ const financeRows = [
 ] as const;
 
 const planRows = [
-  ["طرح", "طرح ویژه کارکنان", "default"],
+  ["سناریوی تأمین مالی", "رتبه C3 (نمونه)", "default"],
   ["بانک", "بانک نمونه", "default"],
   ["مبلغ تأمین مالی", "۳۵۰٬۰۰۰٬۰۰۰ تومان", "default"],
   ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان", "primary"],
   ["نحوه تسویه اصل وام", "طبق قرارداد بانک", "default"],
-  ["وضعیت طرح", "تأیید بانک", "primary"],
+  ["وضعیت طرح", "تأیید نمایشی بانک", "primary"],
 ] as const;
 
 type Tone = "default" | "primary" | "accent";
@@ -62,7 +62,7 @@ export default function ContributionPage() {
         <header className={styles.pageHeader} data-node-id="150:1319">
           <p data-node-id="150:1320">قراردادها / وضعیت تأمین مالی</p>
           <div className={styles.titleRow} data-node-id="150:1321"><h1 data-node-id="150:1324">پرداخت آورده</h1><span className={styles.approvedBadge}>تأیید شده</span></div>
-          <p data-node-id="150:1325">عضویت چارخونه فعال است. برای ادامه، آورده مستأجر از رهن کامل معادل را پرداخت کنید.</p>
+          <p data-node-id="150:1325">این مسیر پیش‌نمایش پرداخت آورده است. نتیجه واقعی بانک و تراکنش مالی دریافت یا ثبت نمی‌شود.</p>
         </header>
 
         <div className={styles.columns} data-node-id="150:1326">
@@ -94,7 +94,7 @@ export default function ContributionPage() {
 
             <section className={`${styles.card} ${styles.primaryCard}`} data-node-id="150:1397">
               <div className={styles.primaryCopy}><span data-node-id="150:1399">آورده مستأجر از رهن کامل معادل</span><strong data-node-id="150:1400">۸۱۶٬۶۶۶٬۶۶۷ تومان</strong><p data-node-id="150:1401">پس از پرداخت آورده، فرایند تأیید نهایی قرارداد ادامه پیدا می‌کند.</p></div>
-              <Link href="/user/contracts/register/plans/final-confirmation" className={styles.primaryAction} data-node-id="150:1403">پرداخت آورده</Link>
+              <Link href="/user/contracts/register/plans/final-confirmation" className={styles.primaryAction} data-node-id="150:1403">پیش‌نمایش پرداخت آورده</Link>
             </section>
 
             <section className={styles.card} data-node-id="150:1405"><h2 data-node-id="150:1406">جزئیات مالی</h2><Rows rows={financeRows} /><div className={styles.formula} data-node-id="150:1418">رهن کامل معادل = تأمین مالی بانک + آورده مستأجر</div></section>
