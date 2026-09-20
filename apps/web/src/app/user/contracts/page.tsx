@@ -15,7 +15,7 @@ function Badge({ children, tone }: { children: React.ReactNode; tone: Tone }) {
 const contracts = [
   { nodeId: "149:195", address: "تهران، سعادت‌آباد", role: "مستأجر", roleTone: "tenant" as const, status: "فعال", statusTone: "active" as const, detail: "پرداخت بعدی: ۱۸٬۵۰۰٬۰۰۰ تومان — ۱۵ آبان ۱۴۰۵", period: "۱۵ مهر ۱۴۰۵ تا ۱۵ مهر ۱۴۰۶", action: "مشاهده قرارداد", href: "/user/contracts/123456789012" },
   { nodeId: "149:209", address: "تهران، پونک", role: "مالک", roleTone: "owner" as const, status: "فعال", statusTone: "active" as const, detail: "دریافتی بعدی: ۱۴٬۹۲۵٬۰۰۰ تومان — ۱ آذر ۱۴۰۵", period: "۱ آبان ۱۴۰۵ تا ۱ آبان ۱۴۰۶", action: "مشاهده قرارداد", href: null },
-  { nodeId: "149:223", address: "تهران، ونک", role: "مالک", roleTone: "owner" as const, status: "نیاز به اقدام", statusTone: "attention" as const, detail: "در انتظار تأیید نهایی شما", period: "۲۰ مهر ۱۴۰۵ تا ۲۰ مهر ۱۴۰۶", action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/final-confirmation" },
+  { nodeId: "149:223", address: "تهران، ونک", role: "مالک", roleTone: "owner" as const, status: "نیاز به اقدام", statusTone: "attention" as const, detail: "در انتظار تأیید نهایی شما", period: "۲۰ مهر ۱۴۰۵ تا ۲۰ مهر ۱۴۰۶", action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/settlement-preference" },
   { nodeId: "149:238", address: "تهران، جردن", role: "مستأجر", roleTone: "tenant" as const, status: "پایان‌یافته", statusTone: "ended" as const, detail: "قرارداد به پایان رسیده است", period: "۱ فروردین ۱۴۰۴ تا ۱ فروردین ۱۴۰۵", action: "مشاهده قرارداد", href: null },
 ];
 

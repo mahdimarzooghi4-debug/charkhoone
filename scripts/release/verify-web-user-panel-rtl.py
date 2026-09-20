@@ -165,7 +165,7 @@ require("<UserPanelSidebar" in contracts_text and "alertBadge" not in sidebar_co
 require(bool(re.search(r"\.contractHeader,\s*\.contractBottom\s*\{[^}]*direction:\s*rtl\s*;", contracts_css)),
         "contracts card layout must align to right")
 
-require(contracts_text.count('action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/final-confirmation"') == 1 and
+require(contracts_text.count('action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/settlement-preference"') == 1 and
         'nodeId: "149:223"' in contracts_text and
         'statusTone: "attention" as const' in contracts_text and
         'contract.href ? <Link href={contract.href} className={contract.statusTone === "attention" ? styles.reviewButton : styles.detailButton}>{contract.action}</Link>' in contracts_text and
@@ -565,7 +565,7 @@ require(owner_final.count('className={styles.ownerFinalIdValue}>') == 3 and
         owner_final.count('dir="ltr" className={styles.ownerFinalIdValue}') == 3 and
         '.ownerFinalRtl .ownerFinalNationalId {' in owner_flow_css and
         '.ownerFinalRtl .ownerFinalIdValue { direction: ltr; unicode-bidi: isolate; white-space: nowrap; text-align: left; }' in owner_flow_css and
-        '<OwnerFinalConfirmationConsent />' in owner_final and
+        '<OwnerFinalConfirmationConsent method={method} />' in owner_final and
         'href="/user/contracts/123456789012/owner/settlement-preference"' in owner_final,
         "owner final confirmation IDs must be LTR, keeping preview links unchanged")
 require('.ownerFinalRtl .checkboxRow { direction: rtl; justify-content: flex-start; text-align: right; }' in owner_flow_css and
@@ -576,7 +576,7 @@ require('.ownerFinalRtl .checkboxRow { direction: rtl; justify-content: flex-sta
 
 owner_final_consent = read(USER_ROOT / "contracts/123456789012/owner/final-confirmation/OwnerFinalConfirmationConsent.tsx")
 require('import { OwnerFinalConfirmationConsent } from "./OwnerFinalConfirmationConsent";' in owner_final and
-        owner_final.count('<OwnerFinalConfirmationConsent />') == 1 and
+        owner_final.count('<OwnerFinalConfirmationConsent method={method} />') == 1 and
         'className={styles.checkbox}>✓' not in owner_final and
         owner_final_consent.startswith('"use client";') and
         owner_final_consent.count('type="checkbox"') == 1 and
@@ -584,7 +584,8 @@ require('import { OwnerFinalConfirmationConsent } from "./OwnerFinalConfirmation
         'checked={accepted}' in owner_final_consent and
         'onChange={(event) => setAccepted(event.target.checked)}' in owner_final_consent and
         'disabled={!accepted}' in owner_final_consent and
-        'router.push("/user/contracts/123456789012/owner")' in owner_final_consent,
+        'router.push(`/user/contracts/123456789012/owner?method=${method}`)' in owner_final_consent and
+        'method }: { method: "monthly" | "fund" }' in owner_final_consent,
         "owner final contract confirmation must use one interactive unchecked-by-default consent gating demo navigation")
 require('className={styles.ownerFinalConsentRow}' in owner_final_consent and
         'className={styles.ownerFinalConsentCheckbox}' in owner_final_consent and
@@ -595,6 +596,33 @@ require('className={styles.ownerFinalConsentRow}' in owner_final_consent and
         '.ownerFinalRtl .primaryButton:disabled {' in owner_flow_css and
         '.ownerFinalRtl .primaryButton:focus-visible {' in owner_flow_css,
         "owner final consent checkbox and disabled button must be styled RTL and brand green only for this route")
+
+owner_settlement = read(USER_ROOT / "contracts/123456789012/owner/settlement-preference/page.tsx")
+owner_active = read(USER_ROOT / "contracts/123456789012/owner/page.tsx")
+require('action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/settlement-preference"' in contracts_text and
+        'action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/final-confirmation"' not in contracts_text and
+        'href="/user/contracts/123456789012/owner/settlement-preference"' in owner_final,
+        "owner review CTA must visit receipt model selection before final confirmation")
+require(owner_settlement.startswith('"use client";') and
+        'const [method, setMethod] = useState<ReceiptMethod>("monthly");' in owner_settlement and
+        'onClick={() => setMethod("monthly")}' in owner_settlement and
+        'onClick={() => setMethod("fund")}' in owner_settlement and
+        'aria-pressed={isMonthly}' in owner_settlement and
+        'aria-pressed={!isMonthly}' in owner_settlement and
+        'final-confirmation?method=${method}' in owner_settlement and
+        '{isMonthly ? "دریافت ماهانه" : "تجمیع دریافتی در صندوق"}' in owner_settlement and
+        '.ownerSettlementChoice .optionCard {' in owner_flow_css and
+        '.ownerSettlementChoice .optionCard:focus-visible {' in owner_flow_css,
+        "owner receipt options must both be selectable with visible selected state and forward chosen model")
+require('searchParams: Promise<{ method?: string }>' in owner_final and
+        'const method = (await searchParams).method === "monthly" ? "monthly" : "fund";' in owner_final and
+        '<OwnerFinalConfirmationConsent method={method} />' in owner_final and
+        '{isMonthly ? "دریافت ماهانه" : "تجمیع دریافتی در صندوق"}' in owner_final and
+        '{!isMonthly && <div className={styles.row}>' in owner_final and
+        'router.push(`/user/contracts/123456789012/owner?method=${method}`)' in owner_final_consent and
+        'const fund = (await searchParams).method === "fund";' in owner_active and
+        '{fund ? "تجمیع دریافتی در صندوق" : "دریافت ماهانه"}' in owner_active,
+        "owner selected receipt method must survive confirmation and appear consistently on active demo contract")
 
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))

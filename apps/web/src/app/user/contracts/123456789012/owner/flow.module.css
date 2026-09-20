@@ -287,3 +287,33 @@
   opacity: 1;
   cursor: not-allowed;
 }
+
+/* Owner settlement preview: two accessible, independently selectable receipt models. */
+.ownerSettlementChoice .optionCard {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: right;
+  direction: rtl;
+  cursor: pointer;
+}
+.ownerSettlementChoice .optionCard:focus-visible {
+  outline: 3px solid rgb(13 59 54 / 35%);
+  outline-offset: 3px;
+}
+.ownerSettlementChoice .optionHeader { direction: rtl; }
+.ownerSettlementChoice .selectionCheck,
+.ownerSettlementChoice .selectionUnselected {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.ownerSettlementChoice .selectionUnselected {
+  border: 2px solid #89959f;
+  background: #fff;
+}
+.ownerSettlementChoice .optionSelected .optionTitle strong { color: var(--ch-color-primary); }

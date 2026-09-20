@@ -5,7 +5,7 @@ import { useState } from "react";
 import styles from "../flow.module.css";
 
 /** Local demo navigation only; this does not submit or approve a real contract. */
-export function OwnerFinalConfirmationConsent() {
+export function OwnerFinalConfirmationConsent({ method }: { method: "monthly" | "fund" }) {
   const router = useRouter();
   const [accepted, setAccepted] = useState(false);
 
@@ -27,7 +27,7 @@ export function OwnerFinalConfirmationConsent() {
         className={styles.primaryButton}
         data-node-id="150:1899"
         disabled={!accepted}
-        onClick={() => router.push("/user/contracts/123456789012/owner")}
+        onClick={() => router.push(`/user/contracts/123456789012/owner?method=${method}`)}
       >
         تأیید نهایی قرارداد
       </button>
