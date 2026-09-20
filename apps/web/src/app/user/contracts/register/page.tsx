@@ -1,6 +1,7 @@
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
+import { TrackingCodePreviewForm } from "./TrackingCodePreviewForm";
 
 // Match the permanent same-origin Figma sidebar assets used on home and contracts.
 export default function RegisterTrackingCodePage() {
@@ -18,10 +19,10 @@ export default function RegisterTrackingCodePage() {
           <aside className={styles.infoPanel} data-node-id="150:720"><h2 data-node-id="150:721">کد رهگیری را از کجا پیدا کنم؟</h2><div className={styles.divider} /><p data-node-id="150:723">پس از ثبت نهایی قرارداد در سامانه خودنویس، کد رهگیری برای قرارداد صادر می‌شود. این کد معمولاً یک شماره ۱۲ رقمی است.</p><p data-node-id="150:724">اطلاعات قرارداد پس از استعلام به‌صورت خواندنی نمایش داده می‌شود و نیازی به ورود دستی اطلاعات ملک و طرفین نیست.</p></aside>
 
           <section className={styles.primaryCard} data-node-id="150:725">
-            <div className={styles.cardHeader} data-node-id="150:726"><h2 data-node-id="150:727">کد رهگیری قرارداد</h2><p data-node-id="150:728">برای دریافت اطلاعات رسمی قرارداد، کد رهگیری خودنویس را وارد کنید.</p></div>
+            <div className={styles.cardHeader} data-node-id="150:726"><h2 data-node-id="150:727">کد رهگیری قرارداد</h2><p data-node-id="150:728">در این پیش‌نمایش فقط کد نمونه پشتیبانی می‌شود؛ استعلام رسمی خودنویس انجام نمی‌شود.</p></div>
             <div className={styles.divider} />
-            <div className={styles.formFixture} data-node-id="150:730" aria-label="محل ورود کد رهگیری مطابق طرح فیگما" />
-            <div className={styles.actions} data-node-id="150:731"><Link href="/user/contracts/register/result" className={styles.primaryAction} data-node-id="150:732">استعلام قرارداد</Link><Link href="/user/contracts" className={styles.backLink} data-node-id="150:735">بازگشت به قراردادها</Link></div>
+            <TrackingCodePreviewForm />
+            <div className={styles.actions} data-node-id="150:731"><Link href="/user/contracts" className={styles.backLink} data-node-id="150:735">بازگشت به قراردادها</Link></div>
           </section>
         </div>
       </section>
