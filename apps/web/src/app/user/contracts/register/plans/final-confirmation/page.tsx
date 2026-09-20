@@ -88,7 +88,7 @@ export default function FinalConfirmationPage() {
             <section className={styles.successCard} data-node-id="150:1500">
               <div className={styles.successTop} data-node-id="150:1501"><span className={styles.successIcon}><img src="/brand/financing-review-check.svg" alt="" width={14} height={14} /></span><div><h2 data-node-id="150:1506">پرداخت آورده در نمونه تکمیل شد</h2><p data-node-id="150:1507">این صفحه نمونهٔ طراحی است؛ پرداخت واقعی ثبت نشده و مرحلهٔ تأیید نهایی نیز نمایشی است.</p></div></div>
               <div className={styles.successDivider} />
-              <div className={styles.successAmount} data-node-id="150:1509"><div><strong data-node-id="150:1511">{renderPersianValue("۵۰٬۰۰۰٬۰۰۰")}</strong><span data-node-id="150:1512">تومان</span></div><p data-node-id="150:1513">شناسهٔ نمونه: {renderPersianValue("۱۲۳۴۵۶۷۸۹")}</p></div>
+              <div className={styles.successAmount} data-node-id="150:1509"><div><strong data-node-id="150:1511">{renderPersianValue("۸۱۶٬۶۶۶٬۶۶۷")}</strong><span data-node-id="150:1512">تومان</span></div><p data-node-id="150:1513">شناسهٔ نمونه: {renderPersianValue("۱۲۳۴۵۶۷۸۹")}</p></div>
             </section>
 
             <section className={styles.card} data-node-id="150:1514"><h2 data-node-id="150:1515">شرایط نهایی قرارداد</h2><Rows rows={finalTerms} /></section>
