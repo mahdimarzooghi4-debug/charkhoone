@@ -2,7 +2,8 @@
 .mainContent { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 24px; padding: 32px; direction: rtl; }
 .headerBar { width: 100%; display: flex; align-items: center; justify-content: space-between; direction: ltr; }
 .backButton { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center; color: var(--ch-color-text); font-size: 18px; font-weight: 700; text-decoration: none; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 12px; }
-.headerRight { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: right; }
+.headerRight { min-width: 0; flex: 0 1 auto; display: flex; flex-direction: column; align-items: stretch; gap: 4px; direction: rtl; text-align: right; }
+.headerRight h1, .headerRight p { width: 100%; text-align: right; direction: rtl; }
 .headerRight h1, .headerRight p, .breadcrumb, .intro h2, .intro p, .planCard h3, .contextCard h2, .warningCard p { margin: 0; }
 .headerRight h1 { color: var(--ch-color-text); font-size: 24px; font-weight: 700; }
 .headerRight p { color: var(--ch-color-muted); font-size: 14px; }
@@ -17,8 +18,9 @@
 .planCard { width: 100%; display: flex; flex-direction: column; gap: 16px; padding: 24px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 16px; }
 .planSelected { background: #f0f7f6; border: 2px solid var(--ch-color-primary); }
 .planTop { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
-.radioImage { width: 20px; height: 20px; display: block; flex: 0 0 20px; }
-.radio { width: 20px; height: 20px; flex: 0 0 20px; border: 2px solid var(--ch-color-muted); border-radius: 10px; }
+.radioActive, .radio { width: 20px; height: 20px; flex: 0 0 20px; display: inline-flex; align-items: center; justify-content: center; border: 2px solid var(--ch-color-muted); border-radius: 50%; background: #fff; }
+.radioActive { border-color: var(--ch-color-primary); }
+.radioActive::after { content: ""; display: block; width: 10px; height: 10px; border-radius: 50%; background: var(--ch-color-primary); }
 .planTitle { min-width: 0; display: flex; align-items: center; gap: 8px; direction: ltr; }
 .planTitle h3 { color: var(--ch-color-text); font-size: 18px; font-weight: 700; direction: rtl; }
 .recommended { padding: 6px 12px; color: var(--ch-color-accent); font-size: 12px; font-weight: 600; background: #fff3e0; border-radius: 8px; white-space: nowrap; }

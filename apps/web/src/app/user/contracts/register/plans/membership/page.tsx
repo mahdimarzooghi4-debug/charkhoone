@@ -2,16 +2,6 @@ import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
-const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/003481ed-108f-4438-aa43-58a132c51250.png",
-  avatar: "https://www.figma.com/api/mcp/asset/52ceaba1-6a5d-4033-866d-2afba2c905f3.png",
-  radioActive: "https://www.figma.com/api/mcp/asset/2f5533a4-2416-4173-9e2a-b8974c18eef9.svg",
-  home: "https://www.figma.com/api/mcp/asset/3f99aff8-bb4d-4988-a36d-ae1fa04e3dc0.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/ab743ae2-de30-4418-b875-7d34e9a7c9be.svg",
-  payments: "https://www.figma.com/api/mcp/asset/212df005-f825-443c-8859-179b146f3721.svg",
-  account: "https://www.figma.com/api/mcp/asset/57cbc0bc-9172-486b-8851-7f1f91195da4.svg",
-} as const;
-
 type MembershipPlan = {
   uses: string;
   cap: string;
@@ -30,7 +20,7 @@ function PlanCard({ plan }: { plan: (typeof membershipPlans)[number] }) {
   return (
     <article className={`${styles.planCard} ${plan.selected ? styles.planSelected : ""}`}>
       <div className={styles.planTop}>
-        {plan.selected ? <img className={styles.radioImage} src={assets.radioActive} alt="" width={20} height={20} /> : <span className={styles.radio} />}
+        {plan.selected ? <span className={styles.radioActive} aria-hidden="true" /> : <span className={styles.radio} aria-hidden="true" />}
         <div className={styles.planTitle}>{plan.recommended ? <span className={styles.recommended}>مناسب برای این قرارداد</span> : null}<h3>{plan.uses}</h3></div>
       </div>
       <div className={styles.divider} />

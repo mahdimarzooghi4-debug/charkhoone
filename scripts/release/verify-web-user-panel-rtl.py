@@ -385,6 +385,19 @@ require('نتیجهٔ واقعی از بانک دریافت نشده است.' in
         '.heroIcon img { width: 14px; height: 14px; display: block; }' in approved_css,
         "bank result preview must avoid live bank/payment claims and temporary icon links")
 
+membership_css = read(USER_ROOT / "contracts/register/plans/membership/page.module.css")
+require('.headerRight { min-width: 0; flex: 0 1 auto;' in membership_css and
+        '.headerRight h1, .headerRight p { width: 100%; text-align: right; direction: rtl; }' in membership_css and
+        'className={styles.headerRight}' in membership_page,
+        "membership heading and greeting must occupy the right edge away from the top-left back arrow")
+require('assets.radioActive' not in membership_page and
+        'figma.com/api/mcp/asset/' not in membership_page and
+        'className={styles.radioActive} aria-hidden="true"' in membership_page and
+        'className={styles.radio} aria-hidden="true"' in membership_page and
+        '.radioActive::after { content: "";' in membership_css and
+        'background: var(--ch-color-primary);' in membership_css,
+        "membership selected radio must remain visible as a local brand-green CSS circle")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)
