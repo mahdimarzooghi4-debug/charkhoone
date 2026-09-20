@@ -5,19 +5,20 @@ import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 const staffResultRows = [
   ["طرح انتخاب‌شده", "طرح ویژه کارکنان", "default"],
   ["بانک صادرکننده", "بانک نمونه", "default"],
-  ["مبلغ درخواست", "۴۵۰٬۰۰۰٬۰۰۰ تومان", "primary"],
+  ["مبلغ درخواست", "۳۵۰٬۰۰۰٬۰۰۰ تومان", "primary"],
 ] as const;
 
 const generalResultRows = [
   ["طرح انتخاب‌شده", "طرح عمومی", "default"],
   ["بانک صادرکننده", "بانک نمونه", "default"],
-  ["مبلغ درخواست", "۴۰۰٬۰۰۰٬۰۰۰ تومان", "primary"],
+  ["مبلغ درخواست", "۳۵۰٬۰۰۰٬۰۰۰ تومان", "primary"],
 ] as const;
 
 const contractRows = [
   ["موقعیت ملک", "سعادت‌آباد"],
-  ["مبلغ رهن قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
+  ["رهن نقدی قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
   ["اجاره ماهانه قرارداد", "۲۰٬۰۰۰٬۰۰۰ تومان"],
+  ["رهن کامل معادل", "۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان"],
   ["کد رهگیری", "۱۲۳۴۵۶۷۸۹۰۱۲"],
 ] as const;
 
@@ -42,7 +43,7 @@ export default async function FinancingNotApprovedPage({ searchParams }: { searc
 
           <section className={styles.alternatives} data-node-id="161:384"><div><h2 data-node-id="161:386">طرح‌های دیگری برای شما قابل بررسی است</h2><p data-node-id="161:387">می‌توانید از میان طرح‌های واجد شرایط دیگر در سامانه چارخونه، گزینه دیگری را بررسی و انتخاب کنید.</p></div><Link href="/user/contracts/register/plans" className={styles.primaryAction} data-node-id="161:389">مشاهده سایر طرح‌ها</Link></section>
 
-          <div className={styles.footerActions} data-node-id="161:392"><p data-node-id="161:393">این درخواست و نتیجه بررسی آن در سوابق قرارداد شما باقی می‌ماند.</p><Link href="/user/contracts" data-node-id="161:394">بازگشت به قراردادها</Link></div>
+          <div className={styles.footerActions} data-node-id="161:392"><p data-node-id="161:393">این نتیجه فقط سناریوی نمایشی است و در سابقه واقعی بانکی یا قراردادی ثبت نمی‌شود.</p><Link href="/user/contracts" data-node-id="161:394">بازگشت به قراردادها</Link></div>
         </div></div>
       </section>
 
