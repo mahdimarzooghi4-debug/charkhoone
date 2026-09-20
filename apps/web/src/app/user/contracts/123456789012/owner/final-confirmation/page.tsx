@@ -4,7 +4,7 @@ import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 import { OwnerFinalConfirmationConsent } from "./OwnerFinalConfirmationConsent";
 
 const conditions = [
-  ["مبلغ رهن", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
+  ["رهن کامل معادل", "۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان"],
   ["اجاره ماهانه قرارداد", "۲۰٬۰۰۰٬۰۰۰ تومان"],
   ["تاریخ شروع", "۱۵ مهر ۱۴۰۵"],
   ["تاریخ پایان", "۱۵ مهر ۱۴۰۶"],
@@ -52,7 +52,7 @@ export default async function OwnerFinalConfirmationPage({
 
             <section className={styles.card} data-node-id="150:1922"><div className={styles.cardHeader}><h2 data-node-id="150:1931">وضعیت مستأجر</h2><div className={styles.badges}><span className={styles.badgeSuccess}>تأیید نهایی</span><span className={styles.badgeSuccess}>آورده پرداخت شده</span><span className={styles.badgeSuccess}>تأیید شده</span></div></div><div className={styles.divider} /><div className={styles.inlineDetails}><strong>مستأجر: علی رضایی</strong><span className={styles.ownerFinalNationalId}><span>کد ملی:</span><bdi dir="ltr" className={styles.ownerFinalIdValue}>۰۰۱•••••۷۸۹</bdi></span></div></section>
 
-            <section className={styles.card} data-node-id="150:1936"><div className={styles.cardHeader}><h2 data-node-id="150:1940">تأمین مالی قرارداد</h2><span className={styles.badgeSuccess}>تأیید شده</span></div><div className={styles.divider} /><div className={`${styles.summaryGrid} ${styles.two}`}><div><strong>بانک نمونه</strong><span>بانک ارائه دهنده</span></div><div><strong>۴۵۰٬۰۰۰٬۰۰۰ تومان</strong><span>مبلغ تأمین‌شده</span></div></div><div className={styles.notice} data-node-id="150:1949">پس از تکمیل تأیید نهایی، مبلغ تأمین مالی وارد مسیر مالی تعیین‌شده این قرارداد می‌شود.</div></section>
+            <section className={styles.card} data-node-id="150:1936"><div className={styles.cardHeader}><h2 data-node-id="150:1940">تأمین مالی قرارداد</h2><span className={styles.badgeSuccess}>تأیید شده</span></div><div className={styles.divider} /><div className={`${styles.summaryGrid} ${styles.two}`}><div><strong>بانک نمونه</strong><span>بانک ارائه دهنده</span></div><div><strong>۳۵۰٬۰۰۰٬۰۰۰ تومان</strong><span>مبلغ تأمین‌شده</span></div></div><div className={styles.notice} data-node-id="150:1949">پس از تکمیل تأیید نهایی، مبلغ تأمین مالی وارد مسیر مالی تعیین‌شده این قرارداد می‌شود.</div></section>
 
             <section className={`${styles.card} ${styles.selectedPayout}`} data-node-id="150:1952"><div className={styles.selectedPayoutHeader}><strong data-node-id="150:1956">روش دریافت انتخاب‌شده: {isMonthly ? "دریافت ماهانه" : "تجمیع دریافتی در صندوق"}</strong><Link href="/user/contracts/123456789012/owner/settlement-preference" data-node-id="150:1953">تغییر روش دریافت</Link></div><p data-node-id="150:1959">{isMonthly ? "مبلغ خالص این قرارداد طبق برنامهٔ ماهانه در پیش‌نمایش تسویه می‌شود." : "مبالغ خالص قابل تجمیع این قرارداد براساس شرایط انتخاب‌شده در صندوق تجمیع می‌شوند."}</p><div className={styles.divider} /><div className={styles.rowList}><div className={styles.row}><span>مبلغ ناخالص دریافتی:</span><strong>۲۰٬۰۰۰٬۰۰۰ تومان</strong></div><div className={styles.row}><span>کارمزد خدمات چارخونه - ۰٫۵٪:</span><strong>−۱۰۰٬۰۰۰ تومان</strong></div><div className={styles.row}><span>{isMonthly ? "مبلغ خالص قابل تسویه:" : "مبلغ خالص قابل تجمیع:"}</span><strong className={styles.moneyGreen}>۱۹٬۹۰۰٬۰۰۰ تومان</strong></div>{!isMonthly && <div className={styles.row}><span>بازده</span><strong>براساس شرایط صندوق</strong></div>}</div></section>
 
