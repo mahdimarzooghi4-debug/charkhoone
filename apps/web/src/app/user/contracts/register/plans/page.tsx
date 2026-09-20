@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
+import { demoFinance, demoFinanceNote } from "@/lib/demo-financing";
 
 type PlanId = "general" | "staff";
 
@@ -22,32 +23,32 @@ const plans: readonly Plan[] = [
     title: "طرح عمومی",
     bank: "بانک نمونه",
     badges: [
-      { label: "واجد شرایط", tone: "eligible" },
+      { label: "سناریوی نمونه", tone: "eligible" },
       { label: "عمومی", tone: "public" },
     ],
     rows: [
-      ["مبلغ تأمین مالی", "۴۰۰٬۰۰۰٬۰۰۰ تومان"],
-      ["آورده موردنیاز", "۱۰۰٬۰۰۰٬۰۰۰ تومان"],
-      ["پرداخت ماهانه تأمین مالی", "۲۰٬۵۰۰٬۰۰۰ تومان"],
-      ["مدت بازپرداخت", "۱۲ ماه"],
+      ["مبلغ تأمین مالی", demoFinance.loanText],
+      ["آورده از رهن معادل (نمونه)", demoFinance.contributionText],
+      ["پرداختی ماهانه مستأجر (فقط سود)", demoFinance.monthlyText],
+      ["دوره نمونه قرارداد", "۱۲ ماه"],
     ],
-    note: "برای کاربران واجد شرایط عمومی",
+    note: "نمونه طراحی طرح عمومی؛ شرایط نهایی فقط از بانک دریافت می‌شود.",
   },
   {
     id: "staff",
     title: "طرح ویژه کارکنان",
     bank: "بانک نمونه",
     badges: [
-      { label: "واجد شرایط", tone: "eligible" },
+      { label: "سناریوی نمونه", tone: "eligible" },
       { label: "ویژه", tone: "special" },
     ],
     rows: [
-      ["مبلغ تأمین مالی", "۴۵۰٬۰۰۰٬۰۰۰ تومان"],
-      ["آورده موردنیاز", "۵۰٬۰۰۰٬۰۰۰ تومان", true],
-      ["پرداخت ماهانه تأمین مالی", "۱۸٬۵۰۰٬۰۰۰ تومان", true],
-      ["مدت بازپرداخت", "۱۲ ماه"],
+      ["مبلغ تأمین مالی", demoFinance.loanText],
+      ["آورده از رهن معادل (نمونه)", demoFinance.contributionText, true],
+      ["پرداختی ماهانه مستأجر (فقط سود)", demoFinance.monthlyText, true],
+      ["دوره نمونه قرارداد", "۱۲ ماه"],
     ],
-    note: "شرایط بهتر نسبت به طرح عمومی",
+    note: "نمونه طراحی طرح کارکنان؛ امتیاز ویژه یا نرخ متفاوت هنوز تأیید نشده است.",
   },
 ] as const;
 
@@ -111,11 +112,11 @@ export default function EligibleFinancingPlansPage() {
         <section className={styles.pageHeader} data-node-id="150:913">
           <p data-node-id="150:914">قراردادها / انتخاب طرح تأمین مالی</p>
           <h2 data-node-id="150:915">طرح‌های قابل استفاده برای شما</h2>
-          <p data-node-id="150:916">براساس شرایط شما و این قرارداد، طرح‌های زیر قابل انتخاب هستند.</p>
+          <p data-node-id="150:916">این دو کارت مسیرهای نمونه‌اند؛ بدون بانک و استعلام واقعی واجد شرایط بودن یا تفاوت نرخ مشخص نیست.</p>
         </section>
 
         <section className={styles.contractContext} data-node-id="150:917">
-          <div><span>مبلغ موردنیاز:</span><strong>۴۵۰٬۰۰۰٬۰۰۰ تومان</strong></div>
+          <div><span>مبلغ موردنیاز:</span><strong>{demoFinance.loanText}</strong></div>
           <div><span>اجاره ماهانه:</span><strong className={styles.contextRegular}>۲۰٬۰۰۰٬۰۰۰ تومان</strong></div>
           <div><span>مبلغ رهن:</span><strong className={styles.contextRegular}>۵۰۰٬۰۰۰٬۰۰۰ تومان</strong></div>
           <div><span>قرارداد:</span><strong>سعادت‌آباد</strong></div>
@@ -134,7 +135,7 @@ export default function EligibleFinancingPlansPage() {
 
         <div className={styles.informationNote} data-node-id="150:999">
           <span className={styles.noticeIcon} aria-hidden="true">ⓘ</span>
-          <p data-node-id="150:1000">مبالغ و طرح‌ها نمونهٔ طراحی‌اند؛ انتخاب طرح به‌معنای ثبت درخواست یا تأیید واقعی بانک نیست.</p>
+          <p data-node-id="150:1000">{demoFinanceNote}</p>
         </div>
       </section>
 
