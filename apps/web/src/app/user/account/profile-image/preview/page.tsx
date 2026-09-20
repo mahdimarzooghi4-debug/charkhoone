@@ -12,7 +12,7 @@ const assets = {
   account: "https://www.figma.com/api/mcp/asset/2239c558-3868-4c26-ad4d-a9c715f52019.svg",
 } as const;
 
-const selectedPhoto = "https://www.figma.com/api/mcp/asset/0bbbe8f3-470e-440a-a8b7-909d0668260d.png";
+const selectedPhoto = "/brand/dashboard-avatar.png";
 
 export default function ProfileImagePreviewPage() {
   return (
@@ -24,7 +24,7 @@ export default function ProfileImagePreviewPage() {
         </header>
 
         <div className={styles.modalBody} data-node-id="175:664">
-          <p data-node-id="175:665">تصویر انتخاب‌شده را بررسی کنید.</p>
+          <p data-node-id="175:665">این تصویر نمونه طراحی است و از دستگاه شما بارگذاری نشده است.</p>
           <div className={styles.avatarPreview} data-node-id="175:666">
             <span className={styles.photoFrame} data-node-id="175:667"><img src={selectedPhoto} alt="پیش‌نمایش تصویر پروفایل" width={130} height={130} /></span>
             <span className={styles.previewCaption} data-node-id="175:669">پیش‌نمایش تصویر جدید</span>
@@ -34,7 +34,7 @@ export default function ProfileImagePreviewPage() {
         <div className={styles.divider} />
 
         <div className={styles.actions} data-node-id="175:671">
-          <Link href="/user/account" className={styles.primaryAction} data-node-id="175:672">تأیید تصویر</Link>
+          <Link href="/user/account" className={styles.primaryAction} data-node-id="175:672">بازگشت به حساب (بدون ذخیره)</Link>
           <Link href="/user/account/profile-image" className={styles.outlineAction} data-node-id="175:674">انتخاب تصویر دیگر</Link>
           <Link href="/user/account" className={styles.cancelAction} data-node-id="175:676">انصراف</Link>
         </div>

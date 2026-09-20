@@ -42,7 +42,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 4px;
   text-align: right;
 }
@@ -186,7 +186,7 @@
 .alertBadge { min-width: 20px; display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; color: #fff; font-size: 11px; font-weight: 600; background: var(--ch-color-accent); border-radius: 99px; }
 .profile { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid rgb(255 255 255 / 13%); }
 .avatar { width: 40px; height: 40px; display: block; object-fit: cover; border-radius: 20px; }
-.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: right; }
 .profileText strong { color: #fff; font-size: 14px; font-weight: 600; }
 .profileText span { color: var(--ch-color-muted); font-size: 11px; }
 
@@ -211,3 +211,14 @@
   .actions { width: 100%; flex-direction: column-reverse; }
   .primaryAction, .secondaryAction { width: 100%; }
 }
+
+/* Shared web-panel RTL alignment. Preserve outer LTR so the sidebar is
+   on the right; Persian content and nav labels read right-to-left. */
+.mainContent { direction: rtl; text-align: right; }
+.sidebar { direction: rtl; text-align: right; }
+.navItem { direction: ltr; text-align: right; }
+.navItem > span { direction: rtl; text-align: right; }
+.navItem img { flex: 0 0 20px; }
+.logoWrap { justify-content: flex-start; }
+
+.checkCircle > span { color: var(--ch-color-primary); font-size: 26px; font-weight: 700; }

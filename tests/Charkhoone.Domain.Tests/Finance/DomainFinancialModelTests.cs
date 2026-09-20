@@ -67,7 +67,7 @@ public sealed class DomainFinancialModelTests
                 ["B3"] = 0.45m,
                 ["C1"] = 0.40m,
                 ["C2"] = 0.40m,
-                ["C3"] = 0.40m,
+                ["C3"] = 0.30m,
                 ["D1"] = 0.35m,
                 ["D2"] = 0.35m,
                 ["D3"] = 0.35m,
@@ -77,6 +77,7 @@ public sealed class DomainFinancialModelTests
             });
 
         Assert.Equal(0.55m, policy.GetLoanRatio("A3"));
+        Assert.Equal(0.30m, policy.GetLoanRatio("C3"));
         Assert.Throws<ArgumentOutOfRangeException>(() => policy.GetLoanRatio("F1"));
     }
 

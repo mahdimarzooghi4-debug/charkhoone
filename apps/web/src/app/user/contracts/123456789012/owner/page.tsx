@@ -1,14 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
-
-const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/c6431f38-d3e5-4db4-a39f-f2255de54657.png",
-  avatar: "https://www.figma.com/api/mcp/asset/32d5d732-5a9b-42c9-b977-520e3e0ec119.png",
-  home: "https://www.figma.com/api/mcp/asset/f1d1e130-0a88-4bae-bb8b-ab21bc29a7b2.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/b283e2da-784d-4e10-bab7-648689b5bc7c.svg",
-  payments: "https://www.figma.com/api/mcp/asset/765a0d5a-2c19-4d01-bfb4-2be89db369bb.svg",
-  account: "https://www.figma.com/api/mcp/asset/08bcfd11-e3e6-4364-a997-53815684d597.svg",
-} as const;
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 const conditions = [
   ["مبلغ رهن", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
@@ -18,7 +10,13 @@ const conditions = [
   ["مدت قرارداد", "۱۲ ماه"],
 ] as const;
 
-export default function OwnerContractActivePage() {
+export default async function OwnerContractActivePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ method?: string }>;
+}) {
+  const fund = (await searchParams).method === "fund";
+
   return (
     <main className={styles.page} data-node-id="161:163" data-name="Web App / Contract Active">
       <section className={styles.mainContent} data-node-id="161:164">
@@ -31,19 +29,19 @@ export default function OwnerContractActivePage() {
           <aside className={styles.secondaryColumn} data-node-id="161:180">
             <section className={styles.card} data-node-id="161:181"><div className={styles.cardHeader}><span className={styles.mutedBadge}>مستأجر</span><h2 data-node-id="161:185">مستأجر</h2></div><div className={styles.divider} /><div className={styles.inlineDetails} data-node-id="161:187"><span data-node-id="161:188">کد ملی: ۰۰۱•••••۷۸۹</span><strong data-node-id="161:189">علی رضایی</strong></div></section>
 
-            <section className={styles.card} data-node-id="161:190"><h2 data-node-id="161:191">اطلاعات ملک</h2><div className={styles.divider} /><div className={styles.propertyInfo}><div><span data-node-id="161:195">آدرس ملک</span><strong data-node-id="161:196">تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴، واحد ۳</strong></div><div><span data-node-id="161:198">کدپستی</span><strong data-node-id="161:199">۱۹۹۸۷۶۵۴۳۲</strong></div></div></section>
+            <section id="owner-property-info" className={styles.card} data-node-id="161:190"><h2 data-node-id="161:191">اطلاعات ملک</h2><div className={styles.divider} /><div className={styles.propertyInfo}><div><span data-node-id="161:195">آدرس ملک</span><strong data-node-id="161:196">تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴، واحد ۳</strong></div><div><span data-node-id="161:198">کدپستی</span><strong data-node-id="161:199">۱۹۹۸۷۶۵۴۳۲</strong></div></div></section>
 
-            <section className={styles.card} data-node-id="161:200"><h2 data-node-id="161:201">وضعیت تسویه</h2><div className={styles.divider} /><div className={styles.settlementRows}><div><strong>انجام شده</strong><span>آخرین تسویه</span></div><div><strong>۱۵ مهر ۱۴۰۵</strong><span>تاریخ آخرین تسویه</span></div><div><strong className={styles.accent}>۱۵ آبان ۱۴۰۵</strong><span>تسویه بعدی</span></div></div><div className={styles.divider} /><Link href="/user/receive-pay" className={styles.smallButton} data-node-id="161:215">مشاهده سوابق</Link></section>
+            <section className={styles.card} data-node-id="161:200"><h2 data-node-id="161:201">وضعیت تسویه</h2><div className={styles.divider} /><div className={styles.settlementRows}><div><strong>انجام شده</strong><span>آخرین تسویه</span></div><div><strong>۱۵ مهر ۱۴۰۵</strong><span>تاریخ آخرین تسویه</span></div><div><strong className={styles.accent}>۱۵ آبان ۱۴۰۵</strong><span>{fund ? "تجمیع بعدی (نمونه)" : "تسویه بعدی"}</span></div></div><div className={styles.divider} /><Link href={`/user/receive-pay?method=${fund ? "fund" : "monthly"}`} className={styles.smallButton} data-node-id="161:215">مشاهده سوابق</Link></section>
 
-            <section className={styles.card} data-node-id="161:217"><h2 data-node-id="161:218">دسترسی سریع</h2><div className={styles.divider} /><div className={styles.quickActions}><Link href="/user/receive-pay">‹ <span>مشاهده دریافت و پرداخت</span></Link><div>‹ <span>مشاهده اطلاعات ملک</span></div></div></section>
+            <section className={styles.card} data-node-id="161:217"><h2 data-node-id="161:218">دسترسی سریع</h2><div className={styles.divider} /><div className={styles.quickActions}><Link href={`/user/receive-pay?method=${fund ? "fund" : "monthly"}`}>‹ <span>مشاهده دریافت و پرداخت</span></Link><a href="#owner-property-info">‹ <span>مشاهده اطلاعات ملک</span></a></div></section>
           </aside>
 
           <div className={styles.primaryColumn} data-node-id="161:227">
             <section className={styles.activeStatus} data-node-id="161:228"><div className={styles.activeTop}><span className={styles.currentBadge}>قرارداد جاری</span><h2 data-node-id="161:233">قرارداد فعال است</h2></div><div className={styles.divider} /><p data-node-id="161:235">فرایند تأیید و تأمین مالی تکمیل شده و قرارداد در چارخونه فعال است.</p><strong data-node-id="161:236">فعال از ۱۵ مهر ۱۴۰۵</strong></section>
 
-            <section className={styles.card} data-node-id="161:237"><div className={styles.cardHeader}><span className={styles.waitBadge}>در انتظار تسویه</span><h2 data-node-id="161:241">دریافتی بعدی</h2></div><div className={styles.divider} /><div className={styles.nextSettlement} data-node-id="161:243"><div><span data-node-id="161:245">تاریخ سررسید</span><strong data-node-id="161:246">۱۵ آبان ۱۴۰۵</strong></div><div><span data-node-id="161:248">مبلغ خالص قابل تسویه</span><strong className={styles.bigAmount} data-node-id="161:249">۱۹٬۹۰۰٬۰۰۰ تومان</strong></div></div><p className={styles.infoBox} data-node-id="161:251">مبلغ خالص قابل تسویه براساس شرایط این قرارداد محاسبه و تسویه سیستمی می‌شود. کارمزد خدمات چارخونه (۰٫۵٪) از مبلغ ناخالص دریافتی کسر می‌گردد.</p><Link href="/user/receive-pay" className={styles.smallButton} data-node-id="161:253">مشاهده در دریافت و پرداخت</Link></section>
+            <section className={styles.card} data-node-id="161:237"><div className={styles.cardHeader}><span className={styles.waitBadge}>در انتظار تسویه</span><h2 data-node-id="161:241">{fund ? "تجمیع بعدی" : "دریافتی بعدی"}</h2></div><div className={styles.divider} /><div className={styles.nextSettlement} data-node-id="161:243"><div><span data-node-id="161:245">تاریخ سررسید</span><strong data-node-id="161:246">۱۵ آبان ۱۴۰۵</strong></div><div><span data-node-id="161:248">{fund ? "مبلغ خالص قابل تجمیع" : "مبلغ خالص قابل تسویه"}</span><strong className={styles.bigAmount} data-node-id="161:249">۱۹٬۹۰۰٬۰۰۰ تومان</strong></div></div><p className={styles.infoBox} data-node-id="161:251">{fund ? "این صفحه نمونه است؛ مبلغ خالص مطابق مدل انتخاب‌شده در صندوق تجمیع می‌شود و تسویهٔ بانکی واقعی انجام نشده است." : "مبلغ خالص قابل تسویه براساس شرایط این قرارداد محاسبه و تسویهٔ نمونه نمایش داده می‌شود؛ کارمزد خدمات چارخونه (۰٫۵٪) از مبلغ ناخالص دریافتی کسر می‌گردد."}</p><Link href={`/user/receive-pay?method=${fund ? "fund" : "monthly"}`} className={styles.smallButton} data-node-id="161:253">مشاهده در دریافت و پرداخت</Link></section>
 
-            <section className={styles.card} data-node-id="161:255"><h2 data-node-id="161:256">روش دریافت</h2><div className={styles.divider} /><div className={styles.payoutMethod} data-node-id="161:258"><span className={styles.systemBadge}>تسویه سیستمی</span><div><strong data-node-id="161:262">دریافت ماهانه</strong><p data-node-id="161:263">دریافتی‌های این قرارداد طبق برنامه تسویه می‌شوند.</p></div></div></section>
+            <section className={styles.card} data-node-id="161:255"><h2 data-node-id="161:256">روش دریافت</h2><div className={styles.divider} /><div className={styles.payoutMethod} data-node-id="161:258"><span className={styles.systemBadge}>تسویه سیستمی</span><div><strong data-node-id="161:262">{fund ? "تجمیع دریافتی در صندوق" : "دریافت ماهانه"}</strong><p data-node-id="161:263">{fund ? "در این پیش‌نمایش، دریافتی‌های واجد شرایط طبق روش انتخاب‌شده در صندوق تجمیع می‌شوند." : "دریافتی‌های این قرارداد طبق برنامه تسویه می‌شوند."}</p></div></div></section>
 
             <section className={styles.card} data-node-id="161:264"><h2 data-node-id="161:265">شرایط قرارداد</h2><div className={styles.divider} /><div className={styles.grid} data-node-id="161:267">{conditions.map(([label, value]) => <div key={label}><strong>{value}</strong><span>{label}</span></div>)}</div></section>
 
@@ -52,7 +50,7 @@ export default function OwnerContractActivePage() {
         </div>
       </section>
 
-      <aside className={styles.sidebar} data-node-id="142:1563"><div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav}><Link href="/user/home" className={styles.navItem}><span className={styles.navSpacer} /><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`}><span className={styles.alertBadge}>۱</span><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem}><span className={styles.navSpacer} /><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><div className={styles.profile}><img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} /><div className={styles.profileText}><strong>علی رضایی</strong><span>۰۹۱۲•••••۶۷</span></div></div></aside>
+      <UserPanelSidebar nodeId="142:1563" />
     </main>
   );
 }

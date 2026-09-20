@@ -1,16 +1,20 @@
 import Link from "next/link";
 import styles from "../flow.module.css";
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
-const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/6e9cc480-58ea-4d4c-bd5f-e77e7e312f70.png",
-  avatar: "https://www.figma.com/api/mcp/asset/5e03f6a1-ab23-4396-a35b-0cf5b348912b.png",
-  info: "https://www.figma.com/api/mcp/asset/9989b23d-e371-42df-86af-3ba9a86e660f.svg",
-  alert: "https://www.figma.com/api/mcp/asset/067c8dc9-20fc-4306-90be-cc8b99f9a52e.svg",
-  home: "https://www.figma.com/api/mcp/asset/1f2bcdd5-bad4-4bbc-ac91-a2b42f2af678.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/26c54e65-5436-4993-b61e-9fc1dfbd2ce3.svg",
-  payments: "https://www.figma.com/api/mcp/asset/b4398658-0002-4317-8433-e12457b2def1.svg",
-  account: "https://www.figma.com/api/mcp/asset/f908a23c-0a6a-461f-8bc1-d463e0916724.svg",
-} as const;
+/** Inline information icon, independent of expiring Figma URLs. */
+function InfoIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg aria-hidden="true" focusable="false" width={size} height={size} viewBox="0 0 20 20"
+      fill="none" stroke="currentColor" strokeWidth="1.7">
+      <circle cx="10" cy="10" r="8" />
+      <path d="M10 9v5M10 6.5h.01" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+const toPersianDigits = (value: number) =>
+  String(value).replace(/[0-9]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
 
 const process = [
   ["اتصال قرارداد", "تکمیل شده", "done"],
@@ -47,22 +51,22 @@ export default function OwnerContractConnectedPage() {
             <section className={styles.card} data-node-id="170:314">
               <h2 data-node-id="170:315">وضعیت فرایند</h2><div className={styles.divider} />
               <div className={styles.timeline} data-node-id="170:317">
-                {process.map(([title, subtitle, state], index) => <div key={title} className={styles.timelineRow}><span className={`${styles.stepDot} ${state === "done" ? styles.stepDone : state === "active" ? styles.stepActive : ""}`}>{index + 1}</span><div className={styles.timelineCopy}><strong className={state === "active" ? styles.activeText : ""}>{title}</strong><small>{subtitle}</small></div></div>)}
+                {process.map(([title, subtitle, state], index) => <div key={title} className={styles.timelineRow}><span className={`${styles.stepDot} ${state === "done" ? styles.stepDone : state === "active" ? styles.stepActive : ""}`}>{toPersianDigits(index + 1)}</span><div className={styles.timelineCopy}><strong className={state === "active" ? styles.activeText : ""}>{title}</strong><small>{subtitle}</small></div></div>)}
               </div>
             </section>
           </aside>
 
           <div className={styles.mainColumn} data-node-id="170:348">
             <section className={styles.card} data-node-id="170:349"><h2 data-node-id="170:350">خلاصه قرارداد</h2><div className={styles.divider} /><div className={styles.summaryGrid}><div><strong>۵۰۰٬۰۰۰٬۰۰۰ تومان</strong><span>مبلغ رهن</span></div><div><strong>۲۰٬۰۰۰٬۰۰۰ تومان</strong><span>اجاره ماهانه قرارداد</span></div><div><strong>۱۵ مهر ۱۴۰۵</strong><span>تاریخ شروع</span></div><div><strong>۱۵ مهر ۱۴۰۶</strong><span>تاریخ پایان</span></div><div><strong>۱۲۳۴۵۶۷۸۹۰۱۲</strong><span>کد رهگیری</span></div></div></section>
-            <section className={styles.card} data-node-id="170:368"><div className={styles.cardHeader}><span className={styles.badgeWarning}>در حال تکمیل فرایند تأمین مالی</span><h2 data-node-id="170:373">مستأجر</h2></div><div className={styles.divider} /><div className={styles.inlineDetails}><span>کد ملی: ۰۰۱•••••۷۸۹</span><strong>علی رضایی</strong></div></section>
-            <section className={styles.infoCard} data-node-id="170:378"><div className={styles.infoHeader}><h3 data-node-id="170:380">مرحله بعد</h3><img src={assets.info} alt="" width={20} height={20} /></div><p data-node-id="170:382">پس از تکمیل فرایند تأمین مالی و تأییدهای لازم از سمت مستأجر، برای انتخاب روش دریافت و تأیید نهایی قرارداد به شما اطلاع داده می‌شود.</p></section>
+            <section className={styles.card} data-node-id="170:368"><div className={styles.cardHeader}><span className={styles.badgeWarning}>در حال تکمیل فرایند تأمین مالی</span><h2 data-node-id="170:373">مستأجر</h2></div><div className={styles.divider} /><div className={styles.inlineDetails}><span className={styles.connectedNationalId}><span>کد ملی:</span><bdi dir="ltr" className={styles.connectedNationalIdValue}>۰۰۱•••••۷۸۹</bdi></span><strong>علی رضایی</strong></div></section>
+            <section className={styles.infoCard} data-node-id="170:378"><div className={`${styles.infoHeader} ${styles.connectedInfoHeader}`}><InfoIcon /><h3 data-node-id="170:380">مرحله بعد</h3></div><p data-node-id="170:382">پس از تکمیل فرایند تأمین مالی و تأییدهای لازم از سمت مستأجر، برای انتخاب روش دریافت و تأیید نهایی قرارداد به شما اطلاع داده می‌شود.</p><p>برای مشاهده ادامه مسیر در نسخه نمایشی (بدون بررسی واقعی وضعیت مستأجر)، از دکمه زیر استفاده کنید.</p><Link href="/user/contracts/123456789012/owner/settlement-preference" className={styles.primaryButton}>پیش‌نمایش مرحله بعد: انتخاب روش دریافت</Link></section>
           </div>
         </div>
 
-        <footer className={styles.bottomBar} data-node-id="170:383"><Link href="/user/contracts" className={styles.outlineButton} data-node-id="170:384">بازگشت به قراردادها</Link><div className={styles.bottomNote}><span>در حال حاضر اقدامی از طرف شما لازم نیست.</span><img src={assets.alert} alt="" width={16} height={16} /></div></footer>
+        <footer className={styles.bottomBar} data-node-id="170:383"><Link href="/user/contracts" className={styles.outlineButton} data-node-id="170:384">بازگشت به قراردادها</Link><div className={styles.bottomNote}><InfoIcon size={16} /><span>در حال حاضر اقدامی از طرف شما لازم نیست.</span></div></footer>
       </section>
 
-      <aside className={styles.sidebar} data-node-id="142:1633"><div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav}><Link href="/user/home" className={styles.navItem}><span className={styles.navSpacer} /><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`}><span className={styles.alertBadge}>۱</span><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem}><span className={styles.navSpacer} /><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div><div className={styles.profile}><img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} /><div className={styles.profileText}><strong>علی رضایی</strong><span>۰۹۱۲•••••۶۷</span></div></div></aside>
+      <UserPanelSidebar nodeId="142:1633" />
     </main>
   );
 }

@@ -1,6 +1,6 @@
 .page { min-height: 100svh; display: flex; align-items: stretch; direction: ltr; background: var(--ch-color-page); }
 .mainContent { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 24px; padding: 32px; direction: rtl; }
-.header, .pageHeader, .cardHeader { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.header, .pageHeader, .cardHeader { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: right; }
 .header h1, .header p, .pageHeader h2, .pageHeader p, .cardHeader h2, .cardHeader p, .comparison h3, .disclaimer { margin: 0; }
 .header h1 { color: var(--ch-color-text); font-size: 24px; font-weight: 700; }
 .header p { color: var(--ch-color-muted); font-size: 14px; }
@@ -24,12 +24,12 @@
 .gaugeLimits span { direction: rtl; }
 .divider { width: 100%; height: 1px; background: var(--ch-color-border); }
 .metricsGrid { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-.metric { min-width: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; padding: 12px; border: 1px solid var(--ch-color-border); border-radius: 12px; text-align: right; }
+.metric { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px; border: 1px solid var(--ch-color-border); border-radius: 12px; text-align: right; }
 .metric span { color: var(--ch-color-muted); font-size: 12px; }
 .metric strong { color: var(--ch-color-text); font-size: 16px; font-weight: 700; }
 .metricHighlight { background: #e1fbf2; }
 .metricHighlight strong { color: var(--ch-color-primary); }
-.comparison { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; padding: 16px; background: var(--ch-color-page); border-radius: 12px; }
+.comparison { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 16px; background: var(--ch-color-page); border-radius: 12px; }
 .comparison h3 { color: var(--ch-color-text); font-size: 14px; font-weight: 600; }
 .comparisonRows { width: 100%; display: flex; flex-direction: column; gap: 8px; }
 .generalRow, .userRow { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
@@ -42,7 +42,7 @@
 .userRow span { font-size: 13px; font-weight: 600; }
 .savingBadge { padding: 4px 10px; color: #065f46; font-size: 12px; font-weight: 600; background: #d1fae5; border-radius: 6px; }
 .disclaimer { width: 100%; color: var(--ch-color-muted); font-size: 11px; line-height: 18px; text-align: right; }
-.sliderWidget { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+.sliderWidget { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
 .sliderHeader { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
 .sliderHeader strong { color: var(--ch-color-primary); font-size: 18px; font-weight: 700; direction: rtl; }
 .sliderHeader span { color: var(--ch-color-text); font-size: 14px; font-weight: 500; direction: rtl; }
@@ -50,7 +50,7 @@
 .sliderGraphic img { width: 100%; height: 28px; display: block; object-fit: fill; }
 .sliderLabels { width: 100%; display: flex; align-items: center; justify-content: space-between; color: var(--ch-color-muted); font-size: 11px; direction: ltr; }
 .sliderLabels span { direction: rtl; }
-.estimate { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; padding: 16px; color: var(--ch-color-primary); background: #e6f4e6; border-radius: 12px; text-align: right; }
+.estimate { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 16px; color: var(--ch-color-primary); background: #e6f4e6; border-radius: 12px; text-align: right; }
 .estimate > span { font-size: 13px; }
 .estimate strong { font-size: 28px; font-weight: 700; }
 .estimate small { color: var(--ch-color-muted); font-size: 11px; }
@@ -67,10 +67,78 @@
 .alertBadge { min-width: 20px; display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; color: #fff; font-size: 11px; font-weight: 600; background: var(--ch-color-accent); border-radius: 99px; }
 .profile { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid rgb(255 255 255 / 13%); }
 .avatar { width: 40px; height: 40px; display: block; object-fit: cover; border-radius: 20px; }
-.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: right; }
 .profileText strong { color: #fff; font-size: 14px; font-weight: 600; }
 .profileText span { color: var(--ch-color-muted); font-size: 11px; }
 .page a:focus-visible { outline: 3px solid rgb(255 138 0 / 30%); outline-offset: 3px; }
 @media (max-width: 1160px) { .resultsCard { width: 420px; flex-basis: 420px; } }
 @media (max-width: 980px) { .page { flex-direction: column-reverse; } .sidebar { width: 100%; flex-basis: auto; padding: 16px 20px; } .sidebarTop { gap: 16px; } .logoWrap, .profile { display: none; } .nav { flex-direction: row; overflow-x: auto; } .navItem { width: auto; flex: 0 0 auto; } .mainContent { padding: 24px; } .columns { flex-direction: column; } .resultsCard, .inputsCard { width: 100%; flex-basis: auto; } }
 @media (max-width: 640px) { .mainContent { padding: 20px 16px; gap: 20px; } .resultsCard, .inputsCard { padding: 20px 16px; } .metricsGrid { grid-template-columns: 1fr; } .gaugeLimits, .sliderHeader, .sliderLabels, .generalRow, .userRow { gap: 8px; } .estimate strong { font-size: 24px; } }
+
+/* Shared web-panel visual review: keep the outer main/aside LTR to anchor
+   the 260px sidebar on the RIGHT; align contents and icons independently. */
+.mainContent { direction: rtl; text-align: right; }
+.sidebar { direction: rtl; text-align: right; }
+.navItem { direction: ltr; text-align: right; }
+.navItem > span { direction: rtl; text-align: right; }
+.navItem img { flex: 0 0 20px; }
+.logoWrap { justify-content: flex-start; }
+
+/* Usable native controls replace decorative, expiring Figma slider/gauge image URLs. */
+.header, .pageHeader, .cardHeader, .metric, .comparison, .sliderWidget, .estimate { align-items: stretch; text-align: right; }
+.inputsCard { align-items: stretch; }
+.gaugeTrack, .gaugeFill { position: absolute; bottom: 0; left: 10px; width: 220px; height: 110px; border: 17px solid var(--ch-color-border); border-bottom: 0; border-radius: 220px 220px 0 0; box-sizing: border-box; }
+.gaugeFill { border-color: var(--ch-color-primary); }
+.gaugeText { top: 64px; }
+.sliderNumber { display: inline-flex; align-items: center; gap: 6px; direction: ltr; color: var(--ch-color-primary); font-weight: 700; }
+.sliderNumber span { white-space: nowrap; direction: rtl; }
+.numberInput { min-width: 0; width: 145px; padding: 7px 8px; border: 1px solid var(--ch-color-border); border-radius: 8px; color: var(--ch-color-primary); font: inherit; text-align: left; direction: ltr; }
+.numberInput:focus-visible, .rangeInput:focus-visible { outline: 3px solid rgb(13 59 54 / 25%); outline-offset: 3px; }
+.rangeInput { display: block; width: 100%; height: 8px; margin: 10px 0; border-radius: 999px; appearance: none; -webkit-appearance: none; cursor: pointer; accent-color: var(--ch-color-primary); }
+.rangeInput::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; background: var(--ch-color-primary); border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px var(--ch-color-primary); }
+.rangeInput::-moz-range-thumb { width: 14px; height: 14px; background: var(--ch-color-primary); border: 3px solid #fff; border-radius: 50%; }
+.sliderHeader { flex-wrap: wrap; }
+.metric strong { overflow-wrap: anywhere; }
+.gaugeLimits { gap: 8px; }
+.planLink { width: 100%; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 8px 16px; border-radius: 10px; color: #fff; background: var(--ch-color-primary); text-decoration: none; text-align: center; }
+.planLink:focus-visible { outline: 3px solid rgb(13 59 54 / 25%); outline-offset: 3px; }
+
+/* Financing model correction: user-confirmed 30–55% deposit and interest-only monthly preview. */
+.financingChoice { width: 100%; display: flex; flex-direction: column; gap: 10px; direction: rtl; text-align: right; }
+.financingChoice > label { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.financingChoice > label strong { color: var(--ch-color-primary); }
+.bankRateField { width: 100%; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; direction: rtl; text-align: right; }
+.bankRateField > span { font-size: 14px; font-weight: 600; }
+.bankRateField > small { color: var(--ch-color-muted); font-size: 12px; line-height: 1.8; }
+.bankRateField .numberInput { width: min(100%, 215px); }
+.bankRateField > .inputError { color: #b42318; }
+.comparisonNotice { width: 100%; margin: 0; font-size: 13px; line-height: 1.8; color: var(--ch-color-primary); }
+
+/* Persian-digit editable text, and non-editable externally sourced grade preview. */
+.numberInput { direction: rtl; text-align: right; font-variant-numeric: normal; }
+.financingChoice { padding: 14px; background: #eff8f5; border: 1px solid #dceee8; border-radius: 10px; }
+.financingChoice strong { color: var(--ch-color-primary); font-size: 15px; }
+.financingChoice p { margin: 0; font-size: 14px; }
+.financingChoice small { color: var(--ch-color-muted); font-size: 12px; line-height: 1.8; }
+
+/* Place maximum at the left and minimum at the right under both RTL sliders. */
+.sliderLabels { direction: ltr; }
+.sliderLabels > span { direction: rtl; unicode-bidi: isolate; }
+.numberInput { font-variant-numeric: normal; }
+
+/* Progressive disclosure: show loan + rent comparison first; keep all arithmetic
+   accessible in a single native keyboard-operable details control. */
+.calculationDetails { width: 100%; border: 1px solid var(--ch-color-border); border-radius: 10px; direction: rtl; background: #fff; }
+.calculationDetails > summary { padding: 13px 15px; font-size: 13px; font-weight: 600; color: var(--ch-color-primary); text-align: right; cursor: pointer; }
+.calculationDetails > summary:focus-visible { outline: 3px solid rgb(13 59 54 / 25%); outline-offset: 2px; }
+.calculationRows { display: flex; flex-direction: column; gap: 0; padding: 0 15px; margin: 0; }
+.calculationRow { display: flex; align-items: baseline; justify-content: space-between; gap: 8px 14px; padding: 10px 0; border-top: 1px solid var(--ch-color-border); flex-wrap: wrap; }
+.calculationRow dt { font-size: 12px; color: var(--ch-color-muted); }
+.calculationRow dd { margin: 0; color: var(--ch-color-text); font-size: 13px; font-weight: 600; overflow-wrap: anywhere; }
+.calculationExplanation { margin: 0; padding: 12px 15px 16px; color: var(--ch-color-muted); font-size: 12px; line-height: 1.9; }
+
+/* Keep the tenant's equivalent contribution visible without reviving the nine-card grid. */
+.contributionSummary { width: 100%; display: flex; flex-direction: column; gap: 5px; padding: 2px 0; text-align: right; direction: rtl; }
+.contributionSummary > span { color: var(--ch-color-text); font-size: 13px; font-weight: 600; }
+.contributionSummary > strong { color: var(--ch-color-primary); font-size: clamp(18px, 2vw, 23px); font-weight: 700; overflow-wrap: anywhere; }
+.contributionSummary > small { color: var(--ch-color-muted); font-size: 11px; line-height: 1.9; }

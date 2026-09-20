@@ -1,16 +1,6 @@
 import Link from "next/link";
 import styles from "./page.module.css";
-
-const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/5228d559-3175-4b6a-a5f9-df8da84fa34e.png",
-  avatar: "https://www.figma.com/api/mcp/asset/acd896df-b09d-41eb-8fe0-e8571381b99e.png",
-  check: "https://www.figma.com/api/mcp/asset/b22e095c-f90b-435a-aabd-c429200c061d.svg",
-  heroCheck: "https://www.figma.com/api/mcp/asset/ba22c48c-f861-4c30-9275-cce8d31565d2.svg",
-  home: "https://www.figma.com/api/mcp/asset/d3260446-6efb-428b-a417-b01748db19ee.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/d4a32dd9-54da-4b85-89a7-0fbc4dfb56ed.svg",
-  payments: "https://www.figma.com/api/mcp/asset/d59a9295-c8e9-40c0-9bb4-0438fcd6a455.svg",
-  account: "https://www.figma.com/api/mcp/asset/3ebbb592-4989-4fff-bd4b-226694a87386.svg",
-} as const;
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 const contractRows = [
   ["ملک", "سعادت‌آباد"],
@@ -71,7 +61,7 @@ export default function ContributionPage() {
       <section className={styles.mainContent} data-node-id="150:1318">
         <header className={styles.pageHeader} data-node-id="150:1319">
           <p data-node-id="150:1320">قراردادها / وضعیت تأمین مالی</p>
-          <div className={styles.titleRow} data-node-id="150:1321"><span className={styles.approvedBadge}>تأیید شده</span><h1 data-node-id="150:1324">پرداخت آورده</h1></div>
+          <div className={styles.titleRow} data-node-id="150:1321"><h1 data-node-id="150:1324">پرداخت آورده</h1><span className={styles.approvedBadge}>تأیید شده</span></div>
           <p data-node-id="150:1325">عضویت چارخونه فعال است. برای ادامه، آورده موردنیاز را پرداخت کنید.</p>
         </header>
 
@@ -84,7 +74,7 @@ export default function ContributionPage() {
                   <div className={styles.processItem} key={step.title}>
                     <div className={`${styles.processCopy} ${step.active ? styles.activeCopy : ""} ${!step.done && !step.active ? styles.waitingCopy : ""}`}><strong>{step.title}</strong><span>{step.note}</span></div>
                     <div className={styles.processTrack}>
-                      <span className={`${styles.processDot} ${step.done ? styles.doneDot : ""} ${step.active ? styles.activeDot : ""} ${!step.done && !step.active ? styles.waitingDot : ""}`}>{step.done ? <img src={assets.check} alt="" width={14} height={14} /> : step.number}</span>
+                      <span className={`${styles.processDot} ${step.done ? styles.doneDot : ""} ${step.active ? styles.activeDot : ""} ${!step.done && !step.active ? styles.waitingDot : ""}`}>{step.done ? <img src="/brand/financing-review-check.svg" alt="" width={14} height={14} /> : step.number}</span>
                       {index < process.length - 1 ? <span className={`${styles.processLine} ${index < 2 ? styles.doneLine : ""}`} /> : null}
                     </div>
                   </div>
@@ -98,7 +88,7 @@ export default function ContributionPage() {
 
           <div className={styles.detailColumn} data-node-id="150:1389">
             <section className={styles.heroCard} data-node-id="150:1390">
-              <span className={styles.heroIcon}><img src={assets.heroCheck} alt="" width={24} height={24} /></span>
+              <span className={styles.heroIcon}><img src="/brand/financing-review-check.svg" alt="" width={14} height={14} /></span>
               <div><h2 data-node-id="150:1395">عضویت چارخونه فعال است</h2><p data-node-id="150:1396">برای تکمیل این مرحله، پرداخت آورده شما الزامی است.</p></div>
             </section>
 
@@ -118,10 +108,7 @@ export default function ContributionPage() {
         </div>
       </section>
 
-      <aside className={styles.sidebar} data-node-id="142:1703">
-        <div className={styles.sidebarTop}><div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div><nav className={styles.nav}><Link href="/user/home" className={styles.navItem}><span className={styles.navSpacer} /><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link><Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`}><span className={styles.alertBadge}>۱</span><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link><Link href="/user/receive-pay" className={styles.navItem}><span className={styles.navSpacer} /><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link><Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link></nav></div>
-        <div className={styles.profile}><img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} /><div className={styles.profileText}><strong>علی رضایی</strong><span>۰۹۱۲•••••۶۷</span></div></div>
-      </aside>
+      <UserPanelSidebar nodeId="142:1703" />
     </main>
   );
 }

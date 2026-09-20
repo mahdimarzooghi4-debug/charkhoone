@@ -13,7 +13,7 @@ public static class CreditGradePolicy
             ["B3"] = 0.45m,
             ["C1"] = 0.40m,
             ["C2"] = 0.40m,
-            ["C3"] = 0.40m,
+            ["C3"] = 0.30m,
             ["D1"] = 0.35m,
             ["D2"] = 0.35m,
             ["D3"] = 0.35m,

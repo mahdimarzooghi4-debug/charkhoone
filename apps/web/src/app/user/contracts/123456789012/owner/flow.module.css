@@ -11,7 +11,7 @@
 .badgeTerminated { padding: 6px 12px; color: #8c4d4d; font-size: 12px; font-weight: 600; background: #faf2f2; border-radius: 8px; }
 .badgeSuccess { padding: 6px 12px; color: var(--ch-color-primary); font-size: 12px; font-weight: 500; background: #e6f4e6; border-radius: 8px; }
 .badgeWaiting { padding: 4px 10px; color: var(--ch-color-accent); font-size: 11px; font-weight: 600; background: #fff3e0; border-radius: 6px; }
-.titleCopy { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; direction: rtl; text-align: right; }
+.titleCopy { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; direction: rtl; text-align: right; }
 .titleCopy h1, .titleCopy p, .card h2, .hero h2, .hero p, .infoCard h3, .infoCard p { margin: 0; }
 .titleCopy h1 { color: var(--ch-color-text); font-size: 24px; font-weight: 700; }
 .titleCopy p { color: var(--ch-color-muted); font-size: 14px; }
@@ -38,12 +38,12 @@
 .cardHeader { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
 .cardHeader h2 { width: auto; direction: rtl; }
 .propertyInfo { display: flex; flex-direction: column; gap: 12px; }
-.propertyInfo > div { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.propertyInfo > div { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: right; }
 .propertyInfo span, .label { color: var(--ch-color-muted); font-size: 13px; }
 .propertyInfo strong, .value { color: var(--ch-color-text); font-size: 14px; font-weight: 600; }
 .timeline { width: 100%; display: flex; flex-direction: column; gap: 16px; }
 .timelineRow { width: 100%; display: flex; align-items: center; gap: 12px; direction: rtl; }
-.timelineCopy { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.timelineCopy { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: right; }
 .timelineCopy strong { color: var(--ch-color-text); font-size: 14px; font-weight: 600; }
 .timelineCopy small { color: var(--ch-color-muted); font-size: 11px; }
 .timelineCopy .activeText { color: var(--ch-color-accent); }
@@ -55,7 +55,7 @@
 .timelineStatus.active { color: var(--ch-color-accent); }
 .summaryGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .summaryGrid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.summaryGrid > div { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; text-align: right; }
+.summaryGrid > div { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; text-align: right; }
 .summaryGrid strong { color: var(--ch-color-text); font-size: 15px; font-weight: 600; }
 .summaryGrid span { color: var(--ch-color-muted); font-size: 13px; }
 .inlineDetails { display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
@@ -116,6 +116,11 @@
 .processContent strong { color: var(--ch-color-text); font-size: 14px; font-weight: 500; }
 .processContent .current { color: var(--ch-color-primary); font-weight: 700; }
 .processIcon, .processIcon img { width: 24px; height: 24px; display: block; }
+/* Owner final-confirmation: bundled vector state markers, no expiring Figma URLs. */
+.ownerFinalRtl .processIcon { flex: 0 0 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
+.ownerFinalRtl .processIcon svg { display: block; width: 20px; height: 20px; }
+.ownerFinalRtl .processIconCurrent { color: var(--ch-color-accent); background: #fff3e0; }
+.ownerFinalRtl .processIconWaiting { color: #89959f; background: var(--ch-color-page); }
 .processCheck { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; color: var(--ch-color-primary); font-size: 12px; font-weight: 700; background: #e6f4e6; border-radius: 12px; }
 .stepsList { display: flex; flex-direction: column; gap: 10px; }
 .stepsList p { margin: 0; color: var(--ch-color-text); font-size: 13px; text-align: right; }
@@ -125,7 +130,7 @@
 .selectedPayoutHeader strong { color: var(--ch-color-primary); font-size: 16px; text-align: right; direction: rtl; }
 .notice { padding: 16px; color: var(--ch-color-primary); font-size: 13px; line-height: 1.8; text-align: right; background: #f0f7f6; border-radius: 12px; }
 .partyGrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; }
-.party { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.party { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .partyTop { display: flex; align-items: center; gap: 8px; }
 .party strong { color: var(--ch-color-text); font-size: 15px; }
 .party small { color: var(--ch-color-muted); font-size: 13px; }
@@ -153,10 +158,167 @@
 .alertBadge { min-width: 20px; display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; color: #fff; font-size: 11px; font-weight: 600; background: var(--ch-color-accent); border-radius: 99px; }
 .profile { display: flex; align-items: center; gap: 12px; padding-top: 16px; border-top: 1px solid rgb(255 255 255 / 13%); }
 .avatar { width: 40px; height: 40px; display: block; object-fit: cover; border-radius: 20px; }
-.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: right; }
 .profileText strong { color: #fff; font-size: 14px; font-weight: 600; }
 .profileText span { color: var(--ch-color-muted); font-size: 11px; }
 .page a:focus-visible { outline: 3px solid rgb(255 138 0 / 30%); outline-offset: 3px; }
 @media (max-width: 1120px) { .sideColumn { width: 340px; flex-basis: 340px; } .summaryGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 920px) { .page { flex-direction: column-reverse; } .sidebar { width: 100%; flex-basis: auto; padding: 16px 20px; } .sidebarTop { gap: 16px; } .logoWrap, .profile { display: none; } .nav { flex-direction: row; overflow-x: auto; } .navItem { width: auto; flex: 0 0 auto; } .mainContent { padding: 24px; } .columns { flex-direction: column; } .sideColumn, .mainColumn { width: 100%; flex-basis: auto; } }
 @media (max-width: 640px) { .mainContent { padding: 20px 16px; } .titleBlock { align-items: flex-start; flex-direction: column-reverse; direction: rtl; } .summaryGrid, .summaryGrid.two, .partyGrid { grid-template-columns: 1fr; } .bottomBar, .actions { align-items: stretch; flex-direction: column; } .outlineButton, .primaryButton, .secondaryAction, .primaryAction { width: 100%; } .tableRow { min-width: 560px; } .compareTable { overflow-x: auto; } }
+
+/* Shared web-panel visual review: keep the outer main/aside LTR to anchor
+   the 260px sidebar on the RIGHT; align contents and icons independently. */
+.mainContent { direction: rtl; text-align: right; }
+.sidebar { direction: rtl; text-align: right; }
+.navItem { direction: ltr; text-align: right; }
+.navItem > span { direction: rtl; text-align: right; }
+.navItem img { flex: 0 0 20px; }
+.logoWrap { justify-content: flex-start; }
+
+/* Owner-connected route only: stable icon at right; masked national ID LTR. */
+.connectedInfoHeader { justify-content: flex-start; gap: 8px; direction: rtl; text-align: right; }
+.connectedInfoHeader svg { width: 20px; height: 20px; flex: 0 0 20px; display: block; color: var(--ch-color-primary); }
+.connectedNationalId { display: inline-flex; align-items: baseline; gap: 6px; direction: rtl; text-align: right; }
+.connectedNationalIdValue { direction: ltr; unicode-bidi: isolate; white-space: nowrap; text-align: left; }
+
+
+/* Owner final-confirmation only. Leave the shared owner flow and right sidebar intact. */
+.ownerFinalRtl .pageHeader { direction: rtl; text-align: right; }
+.ownerFinalRtl .titleBlock { direction: rtl; justify-content: flex-start; align-items: center; flex-direction: row; flex-wrap: wrap; gap: 12px; }
+.ownerFinalRtl .titleCopy { min-width: 0; align-items: stretch; direction: rtl; text-align: right; }
+.ownerFinalRtl .titleCopy h1, .ownerFinalRtl .titleCopy p { width: 100%; text-align: right; }
+.ownerFinalRtl .badges { direction: rtl; flex-wrap: wrap; justify-content: flex-start; }
+.ownerFinalRtl .card, .ownerFinalRtl .infoCard { direction: rtl; text-align: right; }
+.ownerFinalRtl .cardHeader, .ownerFinalRtl .selectedPayoutHeader {
+  direction: rtl;
+  justify-content: space-between;
+  text-align: right;
+}
+.ownerFinalRtl .cardHeader h2 { min-width: 0; text-align: right; }
+.ownerFinalRtl .summaryGrid { direction: rtl; }
+.ownerFinalRtl .summaryGrid > div, .ownerFinalRtl .propertyInfo > div {
+  direction: rtl;
+  align-items: flex-start;
+  text-align: right;
+}
+.ownerFinalRtl .summaryGrid > div > strong, .ownerFinalRtl .summaryGrid > div > span,
+.ownerFinalRtl .propertyInfo > div > strong, .ownerFinalRtl .propertyInfo > div > span { width: 100%; text-align: right; }
+.ownerFinalRtl .processCompactRow { direction: rtl; text-align: right; }
+.ownerFinalRtl .processContent { min-width: 0; direction: rtl; text-align: right; }
+.ownerFinalRtl .processContent strong { text-align: right; }
+.ownerFinalRtl .processCompactRow > span { flex: 0 0 auto; text-align: left; }
+.ownerFinalRtl .infoCard h3, .ownerFinalRtl .stepsList p { width: 100%; direction: rtl; text-align: right; }
+.ownerFinalRtl .checkboxRow { direction: rtl; justify-content: flex-start; text-align: right; }
+.ownerFinalRtl .checkboxRow p { min-width: 0; flex: 1 1 auto; direction: rtl; text-align: right; }
+.ownerFinalRtl .inlineDetails { direction: rtl; text-align: right; }
+.ownerFinalRtl .inlineDetails strong { text-align: right; }
+.ownerFinalRtl .ownerFinalNationalId {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  direction: rtl;
+  text-align: right;
+}
+.ownerFinalRtl .ownerFinalIdValue { direction: ltr; unicode-bidi: isolate; white-space: nowrap; text-align: left; }
+.ownerFinalRtl .row { direction: rtl; }
+.ownerFinalRtl .row span { text-align: right; }
+.ownerFinalRtl .row strong { text-align: left; }
+.ownerFinalRtl .partyGrid { direction: rtl; }
+.ownerFinalRtl .party, .ownerFinalRtl .partyTop { direction: rtl; text-align: right; }
+.ownerFinalRtl .party { align-items: flex-start; }
+.ownerFinalRtl .partyTop { justify-content: flex-start; }
+
+
+/* Owner final-confirmation only: one native, interactive RTL consent checkbox. */
+.ownerFinalRtl .ownerFinalConsentRow {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  direction: rtl;
+  text-align: right;
+  cursor: pointer;
+}
+.ownerFinalRtl .ownerFinalConsentText {
+  min-width: 0;
+  direction: rtl;
+  text-align: right;
+  color: var(--ch-color-text);
+  font-size: 13px;
+  line-height: 1.8;
+}
+.ownerFinalRtl .ownerFinalConsentCheckbox {
+  position: static;
+  display: block;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  max-width: 20px;
+  max-height: 20px;
+  box-sizing: border-box;
+  padding: 0;
+  margin: 2px 0 0;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 2px solid var(--ch-color-muted);
+  border-radius: 5px;
+  background: #fff;
+  cursor: pointer;
+}
+.ownerFinalRtl .ownerFinalConsentCheckbox:checked {
+  background: var(--ch-color-primary);
+  border-color: var(--ch-color-primary);
+}
+.ownerFinalRtl .ownerFinalConsentCheckbox:checked::after {
+  content: "✓";
+  display: block;
+  color: #fff;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 16px;
+}
+.ownerFinalRtl .ownerFinalConsentCheckbox:focus-visible,
+.ownerFinalRtl .primaryButton:focus-visible {
+  outline: 3px solid rgb(13 59 54 / 35%);
+  outline-offset: 3px;
+}
+.ownerFinalRtl .primaryButton { width: 100%; cursor: pointer; font-family: inherit; }
+.ownerFinalRtl .primaryButton:disabled {
+  background: #9caaa6;
+  color: #fff;
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+/* Owner settlement preview: two accessible, independently selectable receipt models. */
+.ownerSettlementChoice .optionCard {
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  text-align: right;
+  direction: rtl;
+  cursor: pointer;
+}
+.ownerSettlementChoice .optionCard:focus-visible {
+  outline: 3px solid rgb(13 59 54 / 35%);
+  outline-offset: 3px;
+}
+.ownerSettlementChoice .optionHeader { direction: rtl; }
+.ownerSettlementChoice .selectionCheck,
+.ownerSettlementChoice .selectionUnselected {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.ownerSettlementChoice .selectionUnselected {
+  border: 2px solid #89959f;
+  background: #fff;
+}
+.ownerSettlementChoice .optionSelected .optionTitle strong { color: var(--ch-color-primary); }

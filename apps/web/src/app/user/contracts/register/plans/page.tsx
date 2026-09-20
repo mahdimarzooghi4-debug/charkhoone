@@ -1,29 +1,24 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
-const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/1def9067-ca4e-4713-a5b6-0db9ead957ef.png",
-  avatar: "https://www.figma.com/api/mcp/asset/3662feca-4510-4db8-83f5-f1098d4f503e.png",
-  check: "https://www.figma.com/api/mcp/asset/a4883803-b125-4a49-b77e-f0079b0fd35a.svg",
-  sparkles: "https://www.figma.com/api/mcp/asset/2e9b573c-f10c-4ea0-b550-6cec0cddf9f5.svg",
-  info: "https://www.figma.com/api/mcp/asset/d6f80679-e1a8-4c38-ae41-94fc3f16da55.svg",
-  home: "https://www.figma.com/api/mcp/asset/16a57e68-3a0c-47a4-857d-b31ba311eff0.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/3b9f73ae-1bc5-4199-92e1-849ffde6e48e.svg",
-  payments: "https://www.figma.com/api/mcp/asset/65177fbd-fd24-4b41-b919-2ba5ce9f08b0.svg",
-  account: "https://www.figma.com/api/mcp/asset/93c159cd-87cd-472d-9394-6e4cd537e73b.svg",
-} as const;
+type PlanId = "general" | "staff";
 
 type Plan = {
+  id: PlanId;
   title: string;
   bank: string;
   badges: readonly { label: string; tone: "eligible" | "public" | "special" }[];
   rows: readonly (readonly [string, string, boolean?])[];
   note: string;
-  selected?: boolean;
 };
 
 const plans: readonly Plan[] = [
   {
+    id: "general",
     title: "طرح عمومی",
     bank: "بانک نمونه",
     badges: [
@@ -39,6 +34,7 @@ const plans: readonly Plan[] = [
     note: "برای کاربران واجد شرایط عمومی",
   },
   {
+    id: "staff",
     title: "طرح ویژه کارکنان",
     bank: "بانک نمونه",
     badges: [
@@ -52,20 +48,19 @@ const plans: readonly Plan[] = [
       ["مدت بازپرداخت", "۱۲ ماه"],
     ],
     note: "شرایط بهتر نسبت به طرح عمومی",
-    selected: true,
   },
 ] as const;
 
-function PlanCard({ plan }: { plan: Plan }) {
+function PlanCard({ plan, selected, onSelect }: { plan: Plan; selected: boolean; onSelect: () => void }) {
   return (
-    <article className={`${styles.planCard} ${plan.selected ? styles.planCardSelected : ""}`}>
+    <label className={`${styles.planCard} ${selected ? styles.planCardSelected : ""}`}>
+      <input className={styles.planRadio} type="radio" name="financing-plan" value={plan.id}
+        checked={selected} onChange={onSelect} aria-label={`انتخاب ${plan.title}`} />
       <div className={styles.cardHeader}>
-        {plan.selected ? (
-          <span className={styles.selectedMark} aria-label="طرح انتخاب‌شده">
-            <img src={assets.check} alt="" width={14} height={14} />
-          </span>
+        {selected ? (
+          <span className={styles.selectedMark} aria-hidden="true">✓</span>
         ) : (
-          <div className={styles.selectionSpacer} aria-hidden="true" />
+          <span className={styles.selectionSpacer} aria-hidden="true" />
         )}
         <div className={styles.titleGroup}>
           <div className={styles.badges}>
@@ -93,19 +88,15 @@ function PlanCard({ plan }: { plan: Plan }) {
       </div>
       <div className={styles.divider} />
 
-      {plan.selected ? (
-        <div className={styles.specialNote}>
-          <span>{plan.note}</span>
-          <img src={assets.sparkles} alt="" width={16} height={16} />
-        </div>
-      ) : (
-        <p className={styles.generalNote}>{plan.note}</p>
-      )}
-    </article>
+      <p className={selected ? styles.specialNote : styles.generalNote}>{plan.note}</p>
+    </label>
   );
 }
 
 export default function EligibleFinancingPlansPage() {
+  // Client-only illustrative plan choice; no bank request is submitted.
+  const [selectedPlan, setSelectedPlan] = useState<PlanId>("staff");
+
   return (
     <main className={styles.page} data-node-id="150:904" data-name="Web App / Eligible Financing Plans">
       <section className={styles.mainContent} data-node-id="150:905">
@@ -124,42 +115,30 @@ export default function EligibleFinancingPlansPage() {
         </section>
 
         <section className={styles.contractContext} data-node-id="150:917">
-          <div><strong>۴۵۰٬۰۰۰٬۰۰۰ تومان</strong><span>مبلغ موردنیاز:</span></div>
-          <div><strong className={styles.contextRegular}>۲۰٬۰۰۰٬۰۰۰ تومان</strong><span>اجاره ماهانه:</span></div>
-          <div><strong className={styles.contextRegular}>۵۰۰٬۰۰۰٬۰۰۰ تومان</strong><span>مبلغ رهن:</span></div>
-          <div><strong>سعادت‌آباد</strong><span>قرارداد:</span></div>
+          <div><span>مبلغ موردنیاز:</span><strong>۴۵۰٬۰۰۰٬۰۰۰ تومان</strong></div>
+          <div><span>اجاره ماهانه:</span><strong className={styles.contextRegular}>۲۰٬۰۰۰٬۰۰۰ تومان</strong></div>
+          <div><span>مبلغ رهن:</span><strong className={styles.contextRegular}>۵۰۰٬۰۰۰٬۰۰۰ تومان</strong></div>
+          <div><span>قرارداد:</span><strong>سعادت‌آباد</strong></div>
         </section>
 
         <section className={styles.planRow} data-node-id="150:930">
-          {plans.map((plan) => <PlanCard key={plan.title} plan={plan} />)}
+          {plans.map((plan) => <PlanCard key={plan.id} plan={plan}
+            selected={selectedPlan === plan.id} onSelect={() => setSelectedPlan(plan.id)} />)}
         </section>
 
         <section className={styles.actions} data-node-id="150:995">
-          <Link href="/user/contracts/register/plans/confirmation" className={styles.primaryAction} data-node-id="150:996">انتخاب طرح و ادامه</Link>
+          <Link href={`/user/contracts/register/plans/confirmation?plan=${selectedPlan}`} className={styles.primaryAction} data-node-id="150:996">انتخاب طرح و ادامه</Link>
           <Link href="/user/contracts/register/result" className={styles.secondaryAction} data-node-id="150:998">بازگشت به اطلاعات قرارداد</Link>
+          <Link href="/user/calculator" className={styles.secondaryAction}>ماشین‌حساب (پیش‌نمایش)</Link>
         </section>
 
         <div className={styles.informationNote} data-node-id="150:999">
-          <p data-node-id="150:1000">شرایط نمایش‌داده‌شده براساس اطلاعات فعلی شما و قرارداد محاسبه شده‌اند. شرایط نهایی پس از ثبت درخواست و بررسی بانک مشخص می‌شود.</p>
-          <img src={assets.info} alt="" width={20} height={20} />
+          <span className={styles.noticeIcon} aria-hidden="true">ⓘ</span>
+          <p data-node-id="150:1000">مبالغ و طرح‌ها نمونهٔ طراحی‌اند؛ انتخاب طرح به‌معنای ثبت درخواست یا تأیید واقعی بانک نیست.</p>
         </div>
       </section>
 
-      <aside className={styles.sidebar} data-node-id="142:1808">
-        <div className={styles.sidebarTop}>
-          <div className={styles.logoWrap}><img src={assets.logo} alt="چارخونه" width={127} height={55} /></div>
-          <nav className={styles.nav} aria-label="ناوبری حساب کاربری">
-            <Link href="/user/home" className={styles.navItem}><span className={styles.navSpacer} /><span>خانه</span><img src={assets.home} alt="" width={20} height={20} /></Link>
-            <Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`}><span className={styles.alertBadge}>۱</span><span>قراردادها</span><img src={assets.contracts} alt="" width={20} height={20} /></Link>
-            <Link href="/user/receive-pay" className={styles.navItem}><span className={styles.navSpacer} /><span>دریافت و پرداخت</span><img src={assets.payments} alt="" width={20} height={20} /></Link>
-            <Link href="/user/account" className={styles.navItem}><span className={styles.navSpacer} /><span>حساب من</span><img src={assets.account} alt="" width={20} height={20} /></Link>
-          </nav>
-        </div>
-        <div className={styles.profile}>
-          <img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} />
-          <div className={styles.profileText}><strong>علی رضایی</strong><span>۰۹۱۲•••••۶۷</span></div>
-        </div>
-      </aside>
+      <UserPanelSidebar nodeId="142:1808" />
     </main>
   );
 }

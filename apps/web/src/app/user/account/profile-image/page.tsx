@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { AccountModalScaffold } from "@/components/account/AccountModalScaffold";
 import styles from "./page.module.css";
+import { PreviewAction } from "@/components/user/PreviewAction";
 
 const assets = {
   logo: "https://www.figma.com/api/mcp/asset/6736d0ce-6971-4b94-9276-f83c4a84ae34.png",
@@ -22,7 +23,7 @@ export default function ProfileImagePage() {
         </header>
 
         <div className={styles.modalBody} data-node-id="175:545">
-          <p data-node-id="175:546">تصویر پروفایل خود را مدیریت کنید.</p>
+          <p data-node-id="175:546">تصویرها نمونه طراحی‌اند؛ بارگذاری، ثبت یا حذف واقعی انجام نمی‌شود.</p>
           <div className={styles.avatarPreview} data-node-id="175:547">
             <span className={styles.currentAvatar} data-node-id="175:548">ع ر</span>
             <span className={styles.previewCaption} data-node-id="175:550">تصویر فعلی</span>
@@ -38,8 +39,8 @@ export default function ProfileImagePage() {
         </div>
 
         <div className={styles.actions} data-node-id="175:557">
-          <Link href="/user/account/profile-image/preview" className={styles.primaryAction} data-node-id="175:558">انتخاب تصویر جدید</Link>
-          <button type="button" className={styles.destructiveAction} data-node-id="175:560">حذف تصویر فعلی</button>
+          <Link href="/user/account/profile-image/preview" className={styles.primaryAction} data-node-id="175:558">نمایش تصویر نمونه</Link>
+          <PreviewAction label="حذف تصویر فعلی" title="حذف تصویر پروفایل" message="در این پیش‌نمایش تصویری در حساب واقعی ذخیره نشده که حذف شود؛ تصویر فعلی فقط نمونه طراحی است." className={styles.destructiveAction} />
           <Link href="/user/account" className={styles.cancelAction} data-node-id="175:562">انصراف</Link>
         </div>
       </section>

@@ -46,13 +46,12 @@
   background: #fff;
   border: 1px solid var(--ch-color-border);
   border-radius: 12px;
-  transform: rotate(180deg);
 }
 
 .headerRight {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 4px;
   direction: rtl;
   text-align: right;
@@ -91,17 +90,17 @@
 .infoRow { width: 100%; min-height: 45px; justify-content: space-between; gap: 20px; padding: 12px 0; direction: ltr; border-bottom: 1px solid var(--ch-color-border); }
 .infoValue, .infoRow strong { min-width: 0; color: var(--ch-color-text); font-size: 14px; font-weight: 500; direction: rtl; text-align: left; }
 .infoRow strong { color: var(--ch-color-primary); font-weight: 700; }
+.nationalId { direction: ltr; unicode-bidi: isolate; text-align: left; }
 .infoLabel { flex: 0 0 auto; color: var(--ch-color-muted); font-size: 14px; direction: rtl; text-align: right; }
 .statusCopy { width: 100%; color: var(--ch-color-text); font-size: 13px; line-height: 22px; text-align: right; }
 
-.ghostAction, .primaryAction { font-family: inherit; cursor: pointer; }
-.ghostAction { width: 100%; padding: 12px; color: var(--ch-color-primary); font-size: 14px; font-weight: 600; text-align: center; background: transparent; border: 0; }
+.primaryAction { font-family: inherit; cursor: pointer; }
 .nextPaymentCard { border-color: var(--ch-color-accent); box-shadow: 0 4px 6px rgb(255 138 0 / 5%); }
 .paymentSummary { width: 100%; justify-content: space-between; gap: 24px; padding: 8px 0; direction: ltr; }
 .amount { display: flex; align-items: baseline; gap: 8px; color: var(--ch-color-accent); direction: rtl; }
 .amount strong { font-size: 28px; font-weight: 700; }
 .amount span { font-size: 14px; font-weight: 600; }
-.paymentMeta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; direction: rtl; text-align: right; }
+.paymentMeta { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; direction: rtl; text-align: right; }
 .paymentMeta strong { color: var(--ch-color-text); font-size: 14px; font-weight: 600; }
 .paymentMeta span { color: var(--ch-color-muted); font-size: 12px; }
 .primaryAction { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; color: #fff; font-size: 13px; font-weight: 600; background: var(--ch-color-primary); border: 0; border-radius: 10px; }
@@ -120,7 +119,7 @@
 .alertBadge { min-width: 20px; display: inline-flex; align-items: center; justify-content: center; padding: 2px 8px; color: #fff; font-size: 11px; font-weight: 600; background: var(--ch-color-accent); border-radius: 99px; }
 .profile { gap: 12px; padding-top: 16px; border-top: 1px solid rgb(255 255 255 / 13%); }
 .avatar { width: 40px; height: 40px; display: block; object-fit: cover; border-radius: 20px; }
-.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; text-align: right; }
+.profileText { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: right; }
 .profileText strong { color: #fff; font-size: 14px; font-weight: 600; }
 .profileText span { color: var(--ch-color-muted); font-size: 11px; }
 
@@ -149,3 +148,12 @@
   .infoValue, .infoRow strong { text-align: right; }
   .primaryAction { width: 100%; }
 }
+
+/* Shared web-panel visual review: keep the outer main/aside LTR to anchor
+   the 260px sidebar on the RIGHT; align contents and icons independently. */
+.mainContent { direction: rtl; text-align: right; }
+.sidebar { direction: rtl; text-align: right; }
+.navItem { direction: ltr; text-align: right; }
+.navItem > span { direction: rtl; text-align: right; }
+.navItem img { flex: 0 0 20px; }
+.logoWrap { justify-content: flex-start; }

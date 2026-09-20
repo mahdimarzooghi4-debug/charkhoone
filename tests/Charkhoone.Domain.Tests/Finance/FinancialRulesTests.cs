@@ -17,6 +17,35 @@ public sealed class FinancialRulesTests
     }
 
     [Fact]
+    public void FiveHundredMillionTomanDeposit_PlusEighteenMillionTomanRent_EqualsOnePointOneBillionTomanEquivalent()
+    {
+        // Authoritative backend stores whole Iranian rials, not toman.
+        const decimal cashDepositRial = 5_000_000_000m;
+        const decimal monthlyRentRial = 180_000_000m;
+
+        var fullDeposit = FullDepositCalculator.Calculate(cashDepositRial, monthlyRentRial);
+
+        Assert.Equal(11_000_000_000m, fullDeposit);
+        Assert.Equal(3_300_000_000m, CreditAllocationCalculator.CalculateMaximumLoan(fullDeposit, "C3"));
+        Assert.Equal(6_050_000_000m, CreditAllocationCalculator.CalculateMaximumLoan(fullDeposit, "A1"));
+    }
+
+    [Fact]
+    public void FiveHundredMillionTomanCashAndTwentyMillionTomanRent_ApplyGradeAfterConversion()
+    {
+        // Toman screenshot: 500m cash + (20m rent / 0.03) ~= 1.166666667bn.
+        // Backend is authoritative in whole rial; the screenshot rounds to toman.
+        const decimal cashDepositRial = 5_000_000_000m;
+        const decimal monthlyRentRial = 200_000_000m;
+
+        var fullDepositRial = FullDepositCalculator.Calculate(cashDepositRial, monthlyRentRial);
+
+        Assert.Equal(11_666_666_666m, fullDepositRial);
+        Assert.Equal(3_499_999_999m,
+            CreditAllocationCalculator.CalculateMaximumLoan(fullDepositRial, "C3"));
+    }
+
+    [Fact]
     public void NineMillionTomanMonthlyRent_EqualsThreeHundredMillionTomanFullDeposit()
     {
         const decimal monthlyRentRial = 90_000_000m;
@@ -32,13 +61,23 @@ public sealed class FinancialRulesTests
     [InlineData("A1", "0.55")]
     [InlineData("A3", "0.55")]
     [InlineData("B2", "0.45")]
-    [InlineData("C3", "0.40")]
+    [InlineData("C1", "0.40")]
+    [InlineData("C2", "0.40")]
+    [InlineData("C3", "0.30")]
     [InlineData("D1", "0.35")]
     [InlineData("E2", "0.30")]
     public void CreditGrade_UsesApprovedGroupRatio(string subGrade, string expectedRatio)
     {
         var ratio = decimal.Parse(expectedRatio, System.Globalization.CultureInfo.InvariantCulture);
         Assert.Equal(ratio, CreditGradePolicy.GetLoanRatio(subGrade));
+    }
+
+    [Fact]
+    public void C3_HasThirtyPercentFinancing_AndNeverFallsBackToCGroupFortyPercent()
+    {
+        Assert.Equal(0.30m, CreditGradePolicy.GetLoanRatio("C3"));
+        Assert.Equal(150_000_000m, CreditAllocationCalculator.CalculateMaximumLoan(500_000_000m, "C3"));
+        Assert.Equal(0.40m, CreditGradePolicy.GetLoanRatio("C2"));
     }
 
     [Fact]

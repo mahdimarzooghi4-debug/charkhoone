@@ -1,23 +1,26 @@
 import Link from "next/link";
 import styles from "./page.module.css";
-
-const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/96ed86fe-5191-4a83-8d51-d95c0d671f00.png",
-  avatar: "https://www.figma.com/api/mcp/asset/f7349e61-0366-4205-80b3-0a29b548df88.png",
-  home: "https://www.figma.com/api/mcp/asset/146236d1-22de-4e35-a00b-980eff2e9bb8.svg",
-  contracts: "https://www.figma.com/api/mcp/asset/3a58968b-1d6e-405b-874d-559eea20d780.svg",
-  payments: "https://www.figma.com/api/mcp/asset/8570ca34-52e8-4bf3-8e8b-2d5021bfd946.svg",
-  account: "https://www.figma.com/api/mcp/asset/a18d1f39-f749-4a66-9fb9-c827571dfcc9.svg",
-} as const;
+import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 
 function Badge({ children, tone = "active" }: { children: React.ReactNode; tone?: "active" | "tenant" | "waiting" }) {
   return <span className={`${styles.badge} ${styles[`badge_${tone}`]}`}>{children}</span>;
 }
 
 function InfoRow({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
+  const isNationalId = label === "کد ملی مستأجر" || label === "کد ملی مالک";
+
   return (
     <div className={styles.infoRow}>
-      {strong ? <strong>{value}</strong> : <span className={styles.infoValue}>{value}</span>}
+      {strong ? (
+        <strong>{value}</strong>
+      ) : (
+        <span
+          className={`${styles.infoValue} ${isNationalId ? styles.nationalId : ""}`}
+          dir={isNationalId ? "ltr" : undefined}
+        >
+          {value}
+        </span>
+      )}
       <span className={styles.infoLabel}>{label}</span>
     </div>
   );
@@ -74,7 +77,6 @@ export default function ContractDetailPage() {
               </div>
             </section>
 
-            <button type="button" className={styles.ghostAction} data-node-id="150:328">مشاهده اطلاعات کامل ملک ‹</button>
           </aside>
 
           <div className={styles.primaryColumn} data-node-id="150:330" data-name="Main Column">
@@ -125,43 +127,7 @@ export default function ContractDetailPage() {
         </div>
       </section>
 
-      <aside className={styles.sidebar} data-node-id="142:1948" data-name="Right Sidebar">
-        <div className={styles.sidebarTop} data-node-id="142:1949" data-name="Brand Block">
-          <div className={styles.logoWrap} data-node-id="142:1950">
-            <img src={assets.logo} alt="چارخونه" width={127} height={55} />
-          </div>
-          <nav className={styles.nav} data-node-id="142:1951" aria-label="ناوبری حساب کاربری">
-            <Link href="/user/home" className={styles.navItem} data-node-id="142:1952">
-              <span className={styles.navSpacer} />
-              <span>خانه</span>
-              <img src={assets.home} alt="" width={20} height={20} />
-            </Link>
-            <Link href="/user/contracts" className={`${styles.navItem} ${styles.navActive}`} data-node-id="142:1958">
-              <span className={styles.alertBadge}>۱</span>
-              <span>قراردادها</span>
-              <img src={assets.contracts} alt="" width={20} height={20} />
-            </Link>
-            <Link href="/user/receive-pay" className={styles.navItem} data-node-id="142:1965">
-              <span className={styles.navSpacer} />
-              <span>دریافت و پرداخت</span>
-              <img src={assets.payments} alt="" width={20} height={20} />
-            </Link>
-            <div className={styles.navItem} data-node-id="142:1971">
-              <span className={styles.navSpacer} />
-              <span>حساب من</span>
-              <img src={assets.account} alt="" width={20} height={20} />
-            </div>
-          </nav>
-        </div>
-
-        <div className={styles.profile} data-node-id="142:1977" data-name="User Profile Block">
-          <img className={styles.avatar} src={assets.avatar} alt="" width={40} height={40} />
-          <div className={styles.profileText} data-node-id="142:1979">
-            <strong data-node-id="142:1980">علی رضایی</strong>
-            <span data-node-id="142:1981">۰۹۱۲•••••۶۷</span>
-          </div>
-        </div>
-      </aside>
+      <UserPanelSidebar nodeId="142:1948" name="Right Sidebar" />
     </main>
   );
 }
