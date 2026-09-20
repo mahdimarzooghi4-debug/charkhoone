@@ -431,6 +431,20 @@ require('هیچ پرداخت یا فعال‌سازی واقعی عضویت ان
         'href="/user/contracts/register/plans/contribution"' in membership_page,
         "membership buttons must keep the existing illustrative contribution route without claiming a real payment")
 
+contribution_page = read(USER_ROOT / "contracts/register/plans/contribution/page.tsx")
+contribution_css = read(USER_ROOT / "contracts/register/plans/contribution/page.module.css")
+require('<h1 data-node-id="150:1324">پرداخت آورده</h1><span className={styles.approvedBadge}>تأیید شده</span>' in contribution_page and
+        '.titleRow { width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 12px; direction: rtl; text-align: right; }' in contribution_css and
+        '.pageHeader { width: 100%; display: flex; flex-direction: column; align-items: stretch; gap: 8px; direction: rtl; text-align: right; }' in contribution_css,
+        "contribution heading must precede status badge at the right of the RTL header")
+require('assets.heroCheck' not in contribution_page and
+        'assets.check' not in contribution_page and
+        'figma.com/api/mcp/asset/' not in contribution_page and
+        contribution_page.count('src="/brand/financing-review-check.svg"') == 2 and
+        '.heroIcon { width: 48px; height: 48px; flex: 0 0 48px; display: inline-flex; align-items: center; justify-content: center; background: var(--ch-color-primary);' in contribution_css and
+        '.heroIcon img { width: 14px; height: 14px; display: block; }' in contribution_css,
+        "contribution membership banner and timeline checks must use permanent local SVG")
+
 if failures:
     print("\n".join("ERROR: " + issue for issue in failures))
     raise SystemExit(1)
