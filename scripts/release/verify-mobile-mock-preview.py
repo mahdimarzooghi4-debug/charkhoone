@@ -93,7 +93,7 @@ require('["قراردادها", "contracts",' in screen, "bottom navigation must
 require('["دریافت و پرداخت", "payments",' in screen, "bottom navigation must open Figma Payments / Overview")
 require('["حساب من", "profile",' in screen, "bottom navigation must open Figma Account / Profile")
 require('["خانه", "home",' in screen, "bottom navigation must open Figma Tenant Home")
-require('to="contract-tracking"' in screen and 'to="contract-lookup"' in screen and 'to="financing-plans"' in screen, "calculator result must pass through the two Figma contract screens")
+require('to="contract-tracking"' in screen and 'router.push("/preview/contract-lookup")' in screen and 'to="financing-plans"' in screen, "calculator result must pass through the two Figma contract screens")
 require('router.push("/preview/contract-lookup")' in screen, "MOCK inquiry must navigate on explicit user action")
 require('href="/preview/calculator"' in screen, "home orange CTA must open Figma 65:55")
 require('href="/preview/calculator-result"' in calculator, "Figma 65:55 CTA must open Figma 71:43")
