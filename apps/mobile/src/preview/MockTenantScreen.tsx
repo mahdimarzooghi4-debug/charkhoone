@@ -416,18 +416,40 @@ export function MockTenantScreen({ screen }: Props) {
 <Button label="بازگشت به خانه" to="home" tone="outline" />
     </>; break;
     case "profile": body = <>
-      <ScreenTitle title="حساب من" />
-      <View style={styles.card}><Text style={styles.cardTitle}>کاربر پیش‌نمایش مستأجر</Text><Text style={styles.body}>اطلاعات این حساب، هویت یا شماره موبایل واقعی نیست.</Text></View>
-      <View style={styles.card}><Text style={styles.cardTitle}>اطلاعات حساب نمونه</Text><Row label="نقش" value="مستأجر • MOCK" /><Row label="وضعیت عضویت نمایشی" value={membership} /><Row label="طرح تأمین مالی نمایشی" value={financingPlan} /></View>
-      <View style={styles.card}><Text style={styles.cardTitle}>عضویت چارخونه</Text><Row label="سقف تأمین مالی سناریوی C3" value={mockFinancialModel.financing} /><Text style={styles.note}>هیچ عضویت، شماره شبا یا اطلاعات هویتی واقعی بارگذاری نشده است.</Text></View>
-      <Button label="مشاهده عضویت نمونه" to="membership" />
-      <Button label="بازگشت به خانه" to="home" tone="outline" />
+      <Text style={styles.dashboardTitle}>حساب من</Text>
+<View style={styles.profileTop}><View style={styles.avatar}><Text style={styles.avatarText}>ع ر</Text></View><Text style={styles.profileName}>کاربر پیش‌نمایش</Text><Text style={styles.profileCaption}>حساب آزمایشی چارخونه • اطلاعات واقعی بارگذاری نشده</Text></View>
+<View style={styles.card}><Text style={styles.profileSectionTitle}>اطلاعات حساب</Text><Row label="نام و نام خانوادگی" value="کاربر نمونه" /><Row label="کد ملی" value="••••••••••" /><Text style={styles.note}>مشخصات صرفاً نمونه‌اند؛ اطلاعات هویتی استعلام نشده است.</Text></View>
+<View style={styles.card}><Text style={styles.profileSectionTitle}>عضویت چارخونه</Text><Row label="وضعیت" value="انتخاب نمایشی" /><Row label="طرح نمونه" value={membership} /><Row label="مبلغ تأمین مالی C3" value={mockFinancialModel.financing} /><Button label="مشاهده عضویت" to="membership" tone="outline" /></View>
+<View style={styles.card}><Row label="شماره موبایل" value="وارد نشده" /><Row label="شماره شبا" value="ثبت نشده" /><Text style={styles.note}>شماره واقعی و اطلاعات بانکی در پیش‌نمایش جمع‌آوری نمی‌شود.</Text></View>
+<View style={styles.card}><Text style={styles.profileSectionTitle}>اعلان‌ها</Text><Text style={styles.body}>اعلان‌های مهم قرارداد و پرداخت در نسخه عملیاتی نمایش داده می‌شوند.</Text><Text style={styles.note}>این نسخه اعلان واقعی ارسال نمی‌کند.</Text></View>
+<View style={styles.card}><Text style={styles.profileSectionTitle}>قوانین و شرایط استفاده</Text><Text style={styles.body}>حریم خصوصی</Text><Text style={styles.note}>گزینه‌های قانونی در این پیش‌نمایش صفحه عملیاتی ندارند.</Text></View>
+<Text style={styles.profileFooter}>خروج از حساب در نسخه نمایشی غیرفعال است</Text>
     </>; break;
     case "contracts": body = <>
-      <ScreenTitle title="قراردادهای من" />
-      <Text style={styles.figmaHeading}>قراردادهای ثبت‌شده شما در چارخونه (MOCK)</Text>
-      <View style={styles.card}><Text style={styles.cardTitle}>قرارداد نمونه مستأجر</Text><Row label="وضعیت" value="نمونه نمایشی • ثبت نشده" /><Row label="مبلغ رهن" value={mockFinancialModel.cashDeposit} /><Row label="اجاره ماهانه" value={mockFinancialModel.monthlyRent} /><Row label="تأمین مالی سناریوی C3" value={mockFinancialModel.financing} /><Button label="مشاهده قرارداد نمونه" to="contract-detail" /></View>
-      <View style={styles.card}><Text style={styles.cardTitle}>ثبت قرارداد جدید</Text><Text style={styles.body}>برای پیمودن نمونه مسیر خودنویس، از کد رهگیری نمایشی استفاده کنید.</Text><Button label="ثبت کد رهگیری نمونه" to="contract-tracking" tone="outline" /></View>
+      <Text style={styles.dashboardTitle}>قراردادهای من</Text>
+<Text style={styles.figmaIntro}>قراردادهای ثبت‌شده شما در چارخونه (همگی دادهٔ نمونه)</Text>
+<Button label="ثبت قرارداد جدید" to="contract-tracking" tone="light" />
+<View style={styles.contractOverviewCard}>
+  <View style={styles.contractHeader}><View style={styles.contractBadge}><Text style={styles.contractBadgeText}>نمونه فعال</Text></View><Text style={styles.contractHeaderText}>مستأجر</Text></View>
+  <Text style={styles.contractAddress}>تهران، سعادت‌آباد</Text>
+  <Row label="کد رهگیری نمونه" value="۱۲۳۴۵۶۷۸۹۰۱۲" />
+  <Row label="مدت قرارداد نمونه" value="۱۵ مهر ۱۴۰۵ تا ۱۵ مهر ۱۴۰۶" />
+  <Row label="اجاره ماهانه" value={mockFinancialModel.monthlyRent} />
+  <Row label="پرداخت تأمین مالی (فقط سود)" value={mockFinancialModel.monthlyInterest} />
+  <Button label="مشاهده قرارداد مستأجر نمونه" to="contract-detail" tone="outline" />
+</View>
+<View style={styles.contractOverviewCard}>
+  <View style={styles.contractHeader}><View style={styles.contractBadge}><Text style={styles.contractBadgeText}>نمونه مالک</Text></View><Text style={styles.contractHeaderText}>مالک</Text></View>
+  <Text style={styles.contractAddress}>تهران، پونک</Text>
+  <Text style={styles.note}>سناریوی مستقل مالک: اجاره و دریافتی مالک با سود بانکی مستأجر یکسان نیستند.</Text>
+  <Pressable accessibilityRole="button" accessibilityLabel="مشاهده قرارداد نمونه مالک" style={[styles.button, styles.outline]} onPress={() => { setContractRole("Owner"); router.push("/preview/owner-contract"); }}><Text style={styles.buttonText}>مشاهده قرارداد نمونه مالک</Text></Pressable>
+</View>
+<View style={styles.contractOverviewCard}>
+  <View style={styles.contractHeader}><View style={styles.contractBadgePending}><Text style={styles.contractBadgePendingText}>در حال بررسی MOCK</Text></View><Text style={styles.contractHeaderText}>درخواست تأمین مالی</Text></View>
+  <Text style={styles.contractAddress}>تهران، زعفرانیه</Text>
+  <View style={styles.planHighlight}><Text style={styles.planHighlightText}>درخواست صرفاً برای نمایش وضعیت در این سناریو وجود دارد.</Text></View>
+  <Button label="مشاهده وضعیت نمونه" to="review" tone="outline" />
+</View>
     </>; break;
     case "contract-active": body = <>
       <ScreenTitle title="قرارداد فعال نمونه" back="contracts" />
@@ -445,15 +467,25 @@ export function MockTenantScreen({ screen }: Props) {
     </>; break;
     case "payments": body = <>
       <ScreenTitle title="دریافت و پرداخت" />
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>پرداخت بعدی • MOCK</Text>
-        <Row label="پرداخت ماهانه تأمین مالی (فقط سود)" value={mockFinancialModel.monthlyInterest} />
-        <Row label="اجاره ماهانه قرارداد؛ مستقل" value={mockFinancialModel.monthlyRent} />
-        <Text style={styles.note}>هیچ سررسید، وصول، وضعیت بدهی یا پرداخت واقعی ثبت نشده است.</Text>
-        <Button label="نمایش وضعیت انتظار پرداخت نمونه" to="payment-pending" />
-      </View>
-      <View style={styles.card}><Text style={styles.cardTitle}>وضعیت پرداخت‌های قرارداد</Text><Text style={styles.body}>در مسیر MOCK، سابقه پرداخت واقعی وجود ندارد. برای مشاهده قالب رسید می‌توانی رسید نمایشی را باز کنی.</Text><Button label="مشاهده رسید نمونه" to="receipt" tone="outline" /></View>
-      <View style={styles.card}><Text style={styles.cardTitle}>حالت‌های نمایشی پرداخت</Text><Button label="خطای پرداخت نمونه" to="payment-failed" tone="danger" /><Button label="فسخ نمونه" to="payment-terminated" tone="outline" /></View>
+<View style={styles.card}>
+  <View style={styles.contractHeader}><View style={styles.contractBadgePending}><Text style={styles.contractBadgePendingText}>در انتظار پرداخت • MOCK</Text></View><Text style={styles.cardTitle}>پرداخت بعدی</Text></View>
+  <Text style={styles.accentedAmount}>{mockFinancialModel.monthlyInterest}</Text>
+  <Text style={styles.note}>پرداخت ماهانه تأمین مالی؛ فقط سود با نرخ اسمی نمونه {mockFinancialModel.annualRate}</Text>
+  <Text style={styles.note}>سررسید واقعی تعیین نشده؛ اصل وام تابع قرارداد بانک است.</Text>
+  <Button label="نمایش وضعیت پرداخت نمونه" to="payment-pending" tone="light" />
+</View>
+<View style={styles.card}><Row label="اجاره ماهانه قرارداد (مستقل)" value={mockFinancialModel.monthlyRent} /></View>
+<View style={styles.card}>
+  <Text style={styles.cardTitle}>وضعیت پرداخت‌های قرارداد</Text>
+  <Text style={styles.body}>۰ پرداخت واقعی ثبت شده</Text>
+  <View style={styles.paymentTrack}><View style={styles.paymentTrackFill} /></View>
+  <Text style={styles.note}>در فیگما نمودار نمونه ۲ از ۱۲ وجود دارد؛ این نسخه بدون قرارداد واقعی، آن را به‌عنوان بدهی یا سابقه واقعی نمایش نمی‌دهد.</Text>
+</View>
+<Text style={styles.figmaHeading}>پرداخت‌های پیش رو (فقط نمونه)</Text>
+<View style={styles.card}><Row label="۱۵ آبان ۱۴۰۵" value="موعد نمایشی" /><Row label="۱۵ آذر ۱۴۰۵" value="موعد نمایشی" /><Row label="۱۵ دی ۱۴۰۵" value="موعد نمایشی" /><Text style={styles.note}>زمان‌بندی واقعی فقط با قرارداد نهایی مشخص می‌شود.</Text></View>
+<Text style={styles.figmaHeading}>سوابق پرداخت</Text>
+<View style={styles.card}><Text style={styles.body}>هنوز پرداختی ثبت نشده است.</Text><Button label="قالب رسید نمونه" to="receipt" tone="outline" /></View>
+<View style={styles.card}><Text style={styles.cardTitle}>آزمایش وضعیت‌های نمایشی</Text><Button label="خطای پرداخت" to="payment-failed" tone="outline" /><Button label="فسخ نمونه" to="payment-terminated" tone="outline" /></View>
     </>; break;
     case "receipt": body = <>
       <ScreenTitle title="رسید پرداخت" back="payments" />
@@ -512,6 +544,24 @@ const styles = StyleSheet.create({
   roleNotice: { padding: 12, backgroundColor: colors.successSoft, borderRadius: 8, alignItems: "flex-end" },
   roleNoticeText: { color: colors.primary, fontFamily: fonts.regular, fontSize: 11, lineHeight: 18, ...text },
   roleContinue: { backgroundColor: colors.page, minHeight: 48 },
+  dashboardTitle: { color: colors.page, fontFamily: fonts.bold, fontSize: 24, ...text },
+  profileTop: { alignItems: "center", gap: 9, paddingTop: 8, paddingBottom: 12 },
+  avatar: { width: 72, height: 72, backgroundColor: colors.border, borderRadius: 36, alignItems: "center", justifyContent: "center" },
+  avatarText: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 24 },
+  profileName: { color: colors.page, fontFamily: fonts.semibold, fontSize: 18, ...text },
+  profileCaption: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, textAlign: "center", writingDirection: "rtl" },
+  profileSectionTitle: { color: colors.muted, fontFamily: fonts.semibold, fontSize: 13, ...text },
+  profileFooter: { textAlign: "center", color: "#FF8383", fontFamily: fonts.semibold, fontSize: 13 },
+  contractOverviewCard: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 16, gap: 12 },
+  contractHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 8 },
+  contractHeaderText: { color: colors.text, fontFamily: fonts.semibold, fontSize: 13, ...text },
+  contractBadge: { backgroundColor: colors.successSoft, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
+  contractBadgeText: { color: colors.primary, fontFamily: fonts.medium, fontSize: 11 },
+  contractBadgePending: { backgroundColor: "#FFF3E0", borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 },
+  contractBadgePendingText: { color: colors.accent, fontFamily: fonts.medium, fontSize: 11 },
+  contractAddress: { color: colors.text, fontFamily: fonts.semibold, fontSize: 16, ...text },
+  paymentTrack: { height: 8, borderRadius: 4, backgroundColor: colors.border, overflow: "hidden" },
+  paymentTrackFill: { height: 8, width: "0%", backgroundColor: colors.primary },
   statusHero: { paddingHorizontal: 12, paddingTop: 16, paddingBottom: 12, alignItems: "center", gap: 10 },
   statusCircle: { width: 56, height: 56, backgroundColor: colors.accent, borderRadius: 28, alignItems: "center", justifyContent: "center" },
   statusBadge: { paddingHorizontal: 12, paddingVertical: 6, backgroundColor: colors.page, borderRadius: 8 },
