@@ -5,7 +5,7 @@ import { colors, fonts, radii } from "@/theme";
 import { FigmaSvg } from "@/components/FigmaSvg";
 import { BrandLogo } from "@/components/BrandLogo";
 import { figmaAssets } from "@/figmaAssets";
-import { mockDisclaimer, type MockFinancingPlan, type MockMembership } from "./mockTenantData";
+import { mockDisclaimer, parseMockAmount, type MockFinancingPlan, type MockMembership } from "./mockTenantData";
 import { useMockPreview } from "./MockPreviewProvider";
 
 type Props = { screen: string };
@@ -54,6 +54,7 @@ export function MockTenantScreen({ screen }: Props) {
   const { financingPlan, membership, setFinancingPlan, setMembership, financialModel: mockFinancialModel } = useMockPreview();
   const [trackingCode, setTrackingCode] = useState("۱۲۳۴۵۶۷۸۹۰۱۲");
   const [trackingError, setTrackingError] = useState(false);
+  const router = useRouter();
   const financeRows = [
   ["ودیعهٔ نقدی", mockFinancialModel.cashDeposit],
   ["اجارهٔ ماهانه", mockFinancialModel.monthlyRent],
@@ -69,7 +70,64 @@ export function MockTenantScreen({ screen }: Props) {
   let body: ReactNode;
   switch (screen) {
     case "calculator": body = <><ScreenTitle title="ماشین‌حساب مستأجر" /><View style={styles.card}><Text style={styles.cardTitle}>مدل نمونه C3</Text><Text style={styles.body}>ضریب تبدیل اجاره به رهن: {mockFinancialModel.conversionRate}</Text>{financeRows.slice(0, 3).map(([label, value]) => <Row key={label} label={label} value={value} />)}<Text style={styles.note}>این محاسبه صندوق ۳٪ یا دریافتی مالک ۳٫۵٪ را نمایش نمی‌دهد.</Text></View><Button label="مشاهدهٔ نتیجهٔ نمونه" to="calculator-result" /></>; break;
-    case "calculator-result": body = <><ScreenTitle title="نتیجهٔ ماشین‌حساب" back="calculator" /><View style={styles.card}>{financeRows.map(([label, value]) => <Row key={label} label={label} value={value} />)}<Row label="نرخ اسمی سالانهٔ نمونهٔ بانک" value={mockFinancialModel.annualRate} /><Row label="پرداخت ماهانهٔ مستأجر (فقط سود)" value={mockFinancialModel.monthlyInterest} /><Text style={styles.note}>بازپرداخت اصل وام مطابق قرارداد نهایی بانک خواهد بود.</Text></View><Button label="انتخاب طرح تأمین مالی" to="financing-plans" /></>; break;
+    case "calculator-result": body = <>
+      <ScreenTitle title="نتیجه محاسبه" back="calculator" />
+      <Text style={styles.figmaHeading}>محدوده قابل تأمین</Text>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>برآورد C3 — تأمین مالی نمونه</Text>
+        <Row label="مبلغ قابل تأمین (۳۰٪)" value={mockFinancialModel.financing} />
+        <Row label="آورده موردنیاز شما" value={mockFinancialModel.contribution} />
+        <Row label="معادل ودیعه کامل" value={mockFinancialModel.fullDeposit} />
+        <Row label="اجاره ماهانه قرارداد" value={mockFinancialModel.monthlyRent} />
+        <Row label="پرداخت ماهانه تأمین مالی (فقط سود)" value={mockFinancialModel.monthlyInterest} />
+        <Row label="نرخ اسمی سالانه نمونه" value={mockFinancialModel.annualRate} />
+        <Text style={styles.note}>طبق مدل تأییدشده C3؛ این رقم صرفاً برآورد است و تأیید یا تخصیص بانک نیست. بازپرداخت اصل، مطابق قرارداد بانک خواهد بود.</Text>
+      </View>
+      <View style={styles.softCard}>
+        <Text style={styles.cardTitle}>مرحله بعد: قرارداد خودنویس</Text>
+        <Text style={styles.body}>برای ورود به مسیر نمونه انتخاب طرح، کد رهگیری نمونه قرارداد را وارد کنید. هیچ استعلام واقعی انجام نمی‌شود.</Text>
+      </View>
+      <Button label="ثبت کد رهگیری قرارداد" to="contract-tracking" />
+      <Button label="محاسبه مجدد" to="calculator" tone="outline" />
+    </>; break;
+    case "contract-tracking": body = <>
+      <ScreenTitle title="ثبت قرارداد" back="calculator-result" />
+      <Text style={styles.figmaHeading}>کد رهگیری قرارداد را وارد کنید</Text>
+      <Text style={styles.figmaIntro}>کد رهگیری ثبت‌شده در سامانه خودنویس در این پیش‌نمایش فقط به‌صورت نمونه استفاده می‌شود؛ استعلام واقعی انجام نمی‌شود.</Text>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>کد رهگیری خودنویس (نمونه)</Text>
+        <TextInput accessibilityLabel="کد رهگیری نمونه" keyboardType="number-pad" value={trackingCode} onChangeText={value => { setTrackingCode(value); setTrackingError(false); }} style={styles.trackInput} />
+        <Text style={styles.note}>کد نمایشی ۱۲ رقمی از پیش وارد شده است. ورود کد شما باعث ارسال به هیچ سامانه‌ای نمی‌شود.</Text>
+        {trackingError && <Text style={styles.errorText}>برای ادامه، یک کد نمونه ۱۲ رقمی وارد کنید.</Text>}
+      </View>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>پس از استعلام چه اتفاقی می‌افتد؟ (صرفاً توضیح فرایند آینده)</Text>
+        <Text style={styles.body}>۱. دریافت اطلاعات قرارداد از خودنویس؛ ۲. تطبیق هویت طرفین؛ ۳. انتخاب نقش در قرارداد. این مراحل هنوز در MOCK به سرویس واقعی متصل نیستند.</Text>
+      </View>
+      <Pressable accessibilityRole="button" accessibilityLabel="نمایش نتیجه نمایشی قرارداد" style={styles.button} onPress={() => {
+        if (String(parseMockAmount(trackingCode)).length !== 12) setTrackingError(true);
+        else router.push("/preview/contract-lookup");
+      }}><Text style={styles.buttonText}>نمایش نتیجه نمونه استعلام قرارداد</Text></Pressable>
+      <Button label="بازگشت به نتیجه محاسبه" to="calculator-result" tone="outline" />
+    </>; break;
+    case "contract-lookup": body = <>
+      <ScreenTitle title="اطلاعات قرارداد نمونه" back="contract-tracking" />
+      <Text style={styles.figmaHeading}>نقش خود را در این قرارداد انتخاب کنید</Text>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>طرفین قرارداد MOCK</Text>
+        <Row label="مستأجر (نقش پیش‌نمایش)" value="کاربر نمونه" />
+        <Row label="مالک" value="مالک نمونه" />
+        <Text style={styles.note}>این داده‌ها از سامانه خودنویس خوانده نشده‌اند. مسیر MOCK فعلاً برای نقش مستأجر است.</Text>
+      </View>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>مشخصات کلی قرارداد نمونه</Text>
+        <Row label="کد رهگیری" value="۱۲۳۴۵۶۷۸۹۰۱۲ (MOCK)" />
+        <Row label="مبلغ رهن" value={mockFinancialModel.cashDeposit} />
+        <Row label="اجاره ماهانه" value={mockFinancialModel.monthlyRent} />
+      </View>
+      <Button label="تأیید نقش مستأجر و ادامه" to="financing-plans" />
+      <Button label="اصلاح کد رهگیری" to="contract-tracking" tone="outline" />
+    </>; break;
     case "financing-plans": body = <><ScreenTitle title="طرح‌های تأمین مالی" back="calculator-result" /><View style={styles.card}><Text style={styles.cardTitle}>انتخاب طرح MOCK</Text>{planChoice("عمومی")}{planChoice("ویژهٔ نمونه")}<Text style={styles.note}>انتخاب طرح صرفاً در این پیش‌نمایش حفظ می‌شود و به نوع عضویت وابسته نیست.</Text></View><Button label="تأیید طرح و ادامه" to="plan-confirmation" /></>; break;
     case "plan-confirmation": body = <><ScreenTitle title="تأیید طرح تأمین مالی" back="financing-plans" /><View style={styles.card}><Row label="طرح انتخاب‌شده" value={financingPlan} /><Row label="تأمین مالی نمونه" value={mockFinancialModel.financing} /><Row label="آوردهٔ نمونه" value={mockFinancialModel.contribution} /><Text style={styles.note}>{mockDisclaimer}</Text></View><Button label="ارسال نمونه برای بررسی" to="review" /></>; break;
     case "review": body = <><ScreenTitle title="بررسی درخواست" back="plan-confirmation" /><View style={styles.card}><Text style={styles.cardTitle}>در انتظار بررسی نمونه</Text><Text style={styles.body}>طرح {financingPlan} در سناریوی MOCK در حال بررسی نمایش داده می‌شود.</Text></View><Button label="نمایش تأیید نمونه" to="approved" /><Button label="نمایش رد نمونه" to="rejected" tone="danger" /></>; break;
