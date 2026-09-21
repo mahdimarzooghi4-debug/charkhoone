@@ -1,9 +1,9 @@
 import { useState, type ReactNode } from "react";
 import { useRouter } from "expo-router";
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View, type TextProps } from "react-native";
 import { BrandLogo } from "@/components/BrandLogo";
 import { FigmaSvg } from "@/components/FigmaSvg";
-import { OwnerBadge, OwnerCard, OwnerRow } from "@/components/OwnerUi";
+import { OwnerBadge, OwnerCard, OwnerRow as BaseOwnerRow } from "@/components/OwnerUi";
 import { ownerAssets } from "@/ownerAssets";
 import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts } from "@/theme";
@@ -19,6 +19,26 @@ const property = "تهران، سعادت‌آباد، خیابان نمونه،
 const disclaimer = "پیش‌نمایش MOCK مالک؛ هیچ قرارداد، استعلام خودنویس، تأمین مالی بانک، صندوق، تسویه یا تراکنش واقعی ایجاد نمی‌شود.";
 const toman = (value: number) => `${formatMockNumber(value)} تومان`;
 
+// Local MOCK presentation only: route IDs, API payloads and numeric calculations
+// stay untouched. Visual text uses Persian numerals, including mixed C3 labels.
+export function localizeOwnerDigits(value: string): string {
+  return value.replace(/[0-9٠-٩]/g, digit => {
+    const code = digit.charCodeAt(0);
+    return String.fromCharCode(1776 + (code >= 1632 ? code - 1632 : code - 48));
+  });
+}
+
+function OwnerText({ children, style, ...props }: TextProps) {
+  const localized = typeof children === "string" ? localizeOwnerDigits(children)
+    : typeof children === "number" ? formatMockNumber(children) : children;
+  return <Text {...props} style={[styles.ownerText, style]}>{localized}</Text>;
+}
+
+function OwnerRow({ label, value }: { label: string; value: string }) {
+  return <BaseOwnerRow label={localizeOwnerDigits(label)} value={localizeOwnerDigits(value)}
+    labelStyle={styles.rowLabel} valueStyle={styles.rowValue} />;
+}
+
 function OwnerHeader({ title, back = "contract-lookup" }: { title: string; back?: string }) {
   const router = useRouter();
   return <View style={styles.header}>
@@ -27,7 +47,7 @@ function OwnerHeader({ title, back = "contract-lookup" }: { title: string; back?
       <Pressable accessibilityRole="button" accessibilityLabel="بازگشت" onPress={() => router.push(`/preview/${back}`)} style={styles.back}>
         <View pointerEvents="none"><FigmaSvg uri={figmaAssets.back} width={24} height={40} /></View>
       </Pressable>
-      <Text style={styles.appBarTitle}>{title}</Text>
+      <OwnerText style={styles.appBarTitle}>{title}</OwnerText>
     </View>
   </View>;
 }
@@ -39,7 +59,7 @@ function OwnerAction({ label, to, outline = false, disabled = false }: {
   return <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ disabled }}
     disabled={disabled} onPress={() => router.push(`/preview/${to}`)}
     style={[styles.action, outline && styles.outline, disabled && styles.disabled]}>
-    <Text style={[styles.actionLabel, outline && styles.outlineLabel]}>{label}</Text>
+    <OwnerText style={[styles.actionLabel, outline && styles.outlineLabel]}>{label}</OwnerText>
   </Pressable>;
 }
 
@@ -51,8 +71,8 @@ function OwnerHero({ badge, title, body, warn = false }: {
       <View pointerEvents="none"><FigmaSvg uri={ownerAssets.contractCheck} width={24} height={24} /></View>
     </View>
     <OwnerBadge tone={warn ? "warning" : "success"} size="hero">{badge}</OwnerBadge>
-    <Text style={styles.heroTitle}>{title}</Text>
-    <Text style={styles.heroDescription}>{body}</Text>
+    <OwnerText style={styles.heroTitle}>{title}</OwnerText>
+    <OwnerText style={styles.heroDescription}>{body}</OwnerText>
   </View>;
 }
 
@@ -68,29 +88,32 @@ function ContractRows({ deposit, rent }: { deposit: string; rent: string }) {
 
 function PropertyCard() {
   return <OwnerCard title="ملک قرارداد">
-    <Text style={styles.body}>{property}</Text>
+    <OwnerText style={styles.body}>{property}</OwnerText>
     <OwnerRow label="کدپستی نمونه" value="۱۹۹۸۷۶۵۴۳۲" />
   </OwnerCard>;
 }
 
 function OwnerNotice({ children }: { children: string }) {
-  return <View style={styles.notice}><Text style={styles.noticeText}>{children}</Text></View>;
+  return <View style={styles.notice}><OwnerText style={styles.noticeText}>{children}</OwnerText></View>;
 }
 
-function OwnerFooterNav({ active }: { active: "home" | "payments" }) {
+type OwnerNavTab = "home" | "payments" | "contracts" | "profile";
+
+function OwnerFooterNav({ active }: { active: OwnerNavTab }) {
   const router = useRouter();
+  // Figma visual order: Account, Contracts, Receive & Pay, Home.
   const links = [
-    ["حساب من", "owner-account", ownerAssets.navUser],
-    ["قراردادها", "owner-connected", ownerAssets.navFileText],
-    ["دریافت و پرداخت", "owner-receive-pay", ownerAssets.navCreditCardActive],
-    ["خانه", "owner-active", ownerAssets.navHome],
+    { tab: "profile", label: "حساب من", route: "owner-account", inactive: figmaAssets.user, activeIcon: figmaAssets.profileUser },
+    { tab: "contracts", label: "قراردادها", route: "owner-connected", inactive: figmaAssets.fileText, activeIcon: figmaAssets.contractsFileText },
+    { tab: "payments", label: "دریافت و پرداخت", route: "owner-receive-pay", inactive: figmaAssets.creditCard, activeIcon: figmaAssets.paymentsCreditCard },
+    { tab: "home", label: "خانه", route: "owner-active", inactive: figmaAssets.home, activeIcon: figmaAssets.homeActive },
   ] as const;
-  return <View style={styles.nav}>{links.map(([label, route, icon]) => {
-    const selected = (active === "home" && route === "owner-active") || (active === "payments" && route === "owner-receive-pay");
-    return <Pressable key={route} accessibilityRole="button" accessibilityLabel={label}
+  return <View style={styles.nav}>{links.map(({ tab, label, route, inactive, activeIcon }) => {
+    const selected = active === tab;
+    return <Pressable key={tab} accessibilityRole="button" accessibilityLabel={label}
       accessibilityState={{ selected }} onPress={() => router.push(`/preview/${route}`)} style={styles.navItem}>
-      <View pointerEvents="none"><FigmaSvg uri={icon} width={24} height={24} /></View>
-      <Text style={[styles.navLabel, selected && styles.navSelected]}>{label}</Text>
+      <View pointerEvents="none"><FigmaSvg uri={selected ? activeIcon : inactive} width={24} height={24} /></View>
+      <OwnerText style={[styles.navLabel, selected && styles.navSelected]}>{label}</OwnerText>
     </Pressable>;
   })}</View>;
 }
@@ -104,7 +127,7 @@ function SettlementOption({ method, selected, title, children, onSelect }: {
     <View style={styles.optionHead}>
       <View pointerEvents="none"><FigmaSvg uri={selected ? ownerAssets.settlementRadioSelected : ownerAssets.settlementRadioEmpty} width={16} height={16} /></View>
       <View pointerEvents="none"><FigmaSvg uri={method === "monthly" ? ownerAssets.settlementWallet : ownerAssets.settlementChartPie} width={24} height={24} /></View>
-      <Text style={styles.optionTitle}>{title}</Text>
+      <OwnerText style={styles.optionTitle}>{title}</OwnerText>
     </View>
     {children}
   </Pressable>;
@@ -117,23 +140,24 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
   const net = monthlyRent - fee;
   const ownerMethod = ownerSettlement === "monthly" ? "دریافت ماهانه" : "تجمیع دریافتی در صندوق";
   let body: ReactNode;
-  let activeNav: "home" | "payments" | undefined;
+  let activeNav: OwnerNavTab | undefined;
 
   switch (screen) {
     case "connected":
+      activeNav = "contracts";
       body = <>
         <OwnerHeader title="قرارداد مالک" />
         <OwnerHero badge="متصل شد • MOCK" title="قرارداد به حساب شما متصل شد"
           body="اطلاعات این قرارداد به‌صورت نمونه با نقش مالک نمایش داده شده‌اند." />
         <OwnerCard title="وضعیت قرارداد">
           <OwnerRow label="وضعیت" value="در انتظار تکمیل فرایند تأمین مالی" />
-          <Text style={styles.hint}>فرایند تأمین مالی در این پیش‌نمایش صرفاً شبیه‌سازی می‌شود.</Text>
+          <OwnerText style={styles.hint}>فرایند تأمین مالی در این پیش‌نمایش صرفاً شبیه‌سازی می‌شود.</OwnerText>
         </OwnerCard>
         <OwnerCard title="مستأجر"><OwnerRow label="نام" value="علی رضایی (نمونه)" /><OwnerRow label="کد ملی" value="۰۰۱•••••۷۸۹" /></OwnerCard>
         <OwnerCard title="خلاصه قرارداد"><ContractRows deposit={financialModel.cashDeposit} rent={financialModel.monthlyRent} /></OwnerCard>
         <PropertyCard />
         <OwnerCard title="مرحله بعد">
-          <Text style={styles.body}>در فرایند واقعی، پس از تکمیل بررسی مستأجر برای تأیید نهایی قرارداد به مالک اطلاع داده می‌شود.</Text>
+          <OwnerText style={styles.body}>در فرایند واقعی، پس از تکمیل بررسی مستأجر برای تأیید نهایی قرارداد به مالک اطلاع داده می‌شود.</OwnerText>
           <OwnerNotice>در این نسخه، برای بازبینی طراحی می‌توانید مراحل بعدی MOCK را دستی مرور کنید.</OwnerNotice>
         </OwnerCard>
         <OwnerAction label="انتخاب روش دریافت (پیش‌نمایش)" to="owner-settlement-preference" />
@@ -143,29 +167,29 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
     case "settlement-preference":
       body = <>
         <OwnerHeader title="روش دریافت" back="owner-connected" />
-        <Text style={styles.sectionHeading}>روش دریافت خود را انتخاب کنید</Text>
-        <Text style={styles.topText}>مشخص کنید دریافتی‌های این قرارداد چگونه برای شما تسویه شوند.</Text>
+        <OwnerText style={styles.sectionHeading}>روش دریافت خود را انتخاب کنید</OwnerText>
+        <OwnerText style={styles.topText}>مشخص کنید دریافتی‌های این قرارداد چگونه برای شما تسویه شوند.</OwnerText>
         <OwnerCard title="قرارداد مرتبط">
           <OwnerRow label="ملک" value="تهران، سعادت‌آباد" />
           <OwnerRow label="اجاره ماهانه قرارداد" value={financialModel.monthlyRent} />
           <OwnerRow label="مدت قرارداد" value="۱۵ مهر ۱۴۰۵ تا ۱۵ مهر ۱۴۰۶" />
         </OwnerCard>
         <SettlementOption method="monthly" title="دریافت ماهانه" selected={ownerSettlement === "monthly"} onSelect={setOwnerSettlement}>
-          <Text style={styles.body}>خالص دریافتی ماهانه بر پایه اجاره قرارداد و کارمزد نمونه محاسبه می‌شود.</Text>
+          <OwnerText style={styles.body}>خالص دریافتی ماهانه بر پایه اجاره قرارداد و کارمزد نمونه محاسبه می‌شود.</OwnerText>
           <View style={styles.soft}>
             <OwnerRow label="مبلغ ناخالص دریافتی" value={financialModel.monthlyRent} />
             <OwnerRow label="کارمزد خدمات نمونه (۰٫۵٪)" value={`−${toman(fee)}`} />
             <OwnerRow label="خالص قابل تسویه نمونه" value={toman(net)} />
           </View>
-          <Text style={styles.hint}>دسترسی منظم به دریافتی ماهانه • تسویه طبق شرایط قرارداد</Text>
+          <OwnerText style={styles.hint}>دسترسی منظم به دریافتی ماهانه • تسویه طبق شرایط قرارداد</OwnerText>
         </SettlementOption>
         <SettlementOption method="fund" title="تجمیع دریافتی در صندوق" selected={ownerSettlement === "fund"} onSelect={setOwnerSettlement}>
-          <Text style={styles.body}>انتخاب نمایشی؛ هیچ پولی وارد صندوق نمی‌شود و بازده یا مبلغ پایان دوره محاسبه نمی‌گردد.</Text>
+          <OwnerText style={styles.body}>انتخاب نمایشی؛ هیچ پولی وارد صندوق نمی‌شود و بازده یا مبلغ پایان دوره محاسبه نمی‌گردد.</OwnerText>
           <View style={styles.soft}>
             <OwnerRow label="دریافتی ماهانه قرارداد" value={financialModel.monthlyRent} />
             <OwnerRow label="بازده و ارزش پایان دوره" value="منوط به شرایط واقعی صندوق" />
           </View>
-          <Text style={styles.hint}>شرایط سرمایه‌گذاری واقعی هنوز تعریف و تأیید نشده‌اند.</Text>
+          <OwnerText style={styles.hint}>شرایط سرمایه‌گذاری واقعی هنوز تعریف و تأیید نشده‌اند.</OwnerText>
         </SettlementOption>
         <OwnerNotice>کارمزد ۰٫۵٪ صرفاً مثال فیگماست؛ سود وام ماهانه مستأجر، درآمد مالک یا بازده صندوق نیست.</OwnerNotice>
         <OwnerAction label="انتخاب و ادامه" to="owner-final-confirmation" />
@@ -181,13 +205,13 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
         <OwnerCard title="تأمین مالی قرارداد">
           <OwnerRow label="مبلغ تأمین‌شده نمونه (C3 / ۳۰٪)" value={financialModel.financing} />
           <OwnerRow label="وضعیت بانک" value="تأیید نشده؛ MOCK" />
-          <Text style={styles.hint}>تأمین مالی، مستقل از اجاره/دریافتی مالک است؛ مبلغ ۴۵۰ میلیونِ قدیمی فیگما مبنای این نسخه نیست.</Text>
+          <OwnerText style={styles.hint}>تأمین مالی، مستقل از اجاره/دریافتی مالک است؛ مبلغ ۴۵۰ میلیونِ قدیمی فیگما مبنای این نسخه نیست.</OwnerText>
         </OwnerCard>
         <OwnerCard title="روش دریافت انتخاب‌شده">
           <OwnerRow label="روش انتخابی" value={ownerMethod} />
           {ownerSettlement === "monthly"
             ? <><OwnerRow label="ناخالص ماهانه" value={financialModel.monthlyRent} /><OwnerRow label="کارمزد نمونه" value={`−${toman(fee)}`} /><OwnerRow label="خالص نمونه" value={toman(net)} /></>
-            : <Text style={styles.hint}>سود، ارزش پایان دوره و زمان برداشت صندوق هنوز مشخص نیست.</Text>}
+            : <OwnerText style={styles.hint}>سود، ارزش پایان دوره و زمان برداشت صندوق هنوز مشخص نیست.</OwnerText>}
           <OwnerAction label="تغییر روش دریافت" to="owner-settlement-preference" outline />
         </OwnerCard>
         <PropertyCard />
@@ -196,12 +220,12 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
           <OwnerRow label="مستأجر" value="علی رضایی • ۰۰۱•••••۷۸۹" />
         </OwnerCard>
         <OwnerCard title="پس از تأیید شما">
-          <Text style={styles.body}>۱. تکمیل تأیید نهایی طرفین؛ ۲. ادامه مسیر مالی قرارداد؛ ۳. فعال‌سازی در چارخونه، فقط در نسخه عملیاتی.</Text>
+          <OwnerText style={styles.body}>۱. تکمیل تأیید نهایی طرفین؛ ۲. ادامه مسیر مالی قرارداد؛ ۳. فعال‌سازی در چارخونه، فقط در نسخه عملیاتی.</OwnerText>
         </OwnerCard>
         <Pressable accessibilityRole="checkbox" accessibilityState={{ checked: consent }} accessibilityLabel="شرایط نمونه را خواندم"
           onPress={() => setConsent(!consent)} style={styles.checkRow}>
-          <View style={[styles.checkbox, consent && styles.checkboxChecked]}><Text style={styles.checkText}>{consent ? "✓" : ""}</Text></View>
-          <Text style={styles.checkLabel}>شرایط قرارداد و نمایشی‌بودن تأیید را مطالعه کردم.</Text>
+          <View style={[styles.checkbox, consent && styles.checkboxChecked]}><OwnerText style={styles.checkText}>{consent ? "✓" : ""}</OwnerText></View>
+          <OwnerText style={styles.checkLabel}>شرایط قرارداد و نمایشی‌بودن تأیید را مطالعه کردم.</OwnerText>
         </Pressable>
         <OwnerConfirmationButton active={consent} />
         <OwnerAction label="بازگشت به قرارداد" to="owner-connected" outline />
@@ -216,15 +240,15 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
         <OwnerCard title="دریافتی بعدی">
           <OwnerBadge tone="warning">در انتظار تسویه نمونه</OwnerBadge>
           {ownerSettlement === "monthly"
-            ? <><Text style={styles.heroAmount}>{toman(net)}</Text><OwnerRow label="مبلغ ناخالص" value={financialModel.monthlyRent} /><OwnerRow label="کارمزد خدمات نمونه" value={`−${toman(fee)}`} /><OwnerRow label="خالص قابل تسویه" value={toman(net)} /></>
-            : <Text style={styles.body}>دریافتی‌ها طبق انتخاب نمایشی شما تجمیع می‌شوند؛ بازده صندوق و مبلغ قابل برداشت مشخص نیست.</Text>}
+            ? <><OwnerText style={styles.heroAmount}>{toman(net)}</OwnerText><OwnerRow label="مبلغ ناخالص" value={financialModel.monthlyRent} /><OwnerRow label="کارمزد خدمات نمونه" value={`−${toman(fee)}`} /><OwnerRow label="خالص قابل تسویه" value={toman(net)} /></>
+            : <OwnerText style={styles.body}>دریافتی‌ها طبق انتخاب نمایشی شما تجمیع می‌شوند؛ بازده صندوق و مبلغ قابل برداشت مشخص نیست.</OwnerText>}
           <OwnerRow label="زمان نمونه" value="۱۵ آبان ۱۴۰۵" />
           <OwnerAction label="مشاهده دریافت و پرداخت" to="owner-receive-pay" />
         </OwnerCard>
         <OwnerCard title="مستأجر"><OwnerRow label="نام" value="علی رضایی (نمونه)" /><OwnerRow label="کد ملی" value="۰۰۱•••••۷۸۹" /></OwnerCard>
         <OwnerCard title="شرایط قرارداد"><ContractRows deposit={financialModel.cashDeposit} rent={financialModel.monthlyRent} /></OwnerCard>
         <OwnerCard title="وضعیت تأمین مالی"><OwnerRow label="مبلغ تأمین مالی C3 مستأجر" value={financialModel.financing} /><OwnerRow label="وضعیت" value="نمونه؛ بانک تأیید نکرده" /></OwnerCard>
-        <OwnerCard title="روش تسویه"><OwnerRow label="روش" value={ownerMethod} /><Text style={styles.hint}>اجاره مالک را با سود بانکی مستأجر یکی نکنید.</Text></OwnerCard>
+        <OwnerCard title="روش تسویه"><OwnerRow label="روش" value={ownerMethod} /><OwnerText style={styles.hint}>اجاره مالک را با سود بانکی مستأجر یکی نکنید.</OwnerText></OwnerCard>
         <PropertyCard />
         <OwnerAction label="مشاهده دریافتی‌ها" to="owner-receive-pay" />
         <OwnerAction label="مشاهده سناریوی فسخ (MOCK)" to="owner-terminated" outline />
@@ -235,8 +259,8 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
       body = <>
         <OwnerHeader title="دریافت و پرداخت" back="owner-active" />
         <View style={styles.summaryRow}>
-          <View style={styles.summaryTile}><Text style={styles.summaryCaption}>دریافتی بعدی نمونه</Text><Text style={styles.summaryAmount}>{ownerSettlement === "monthly" ? toman(net) : "تجمیعی"}</Text></View>
-          <View style={styles.summaryTile}><Text style={styles.summaryCaption}>تسویه واقعی این ماه</Text><Text style={styles.summaryAmount}>۰ مورد ثبت‌شده</Text></View>
+          <View style={styles.summaryTile}><OwnerText style={styles.summaryCaption}>دریافتی بعدی نمونه</OwnerText><OwnerText style={styles.summaryAmount}>{ownerSettlement === "monthly" ? toman(net) : "تجمیعی"}</OwnerText></View>
+          <View style={styles.summaryTile}><OwnerText style={styles.summaryCaption}>تسویه واقعی این ماه</OwnerText><OwnerText style={styles.summaryAmount}>۰ مورد ثبت‌شده</OwnerText></View>
         </View>
         <OwnerCard title="دریافتی بعدی شما">
           <OwnerBadge tone="warning">در انتظار تسویه • MOCK</OwnerBadge>
@@ -245,18 +269,18 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
           <OwnerRow label="مستأجر" value="علی رضایی" />
           {ownerSettlement === "monthly"
             ? <><OwnerRow label="ناخالص قرارداد" value={financialModel.monthlyRent} /><OwnerRow label="کارمزد ۰٫۵٪ نمونه" value={`−${toman(fee)}`} /><OwnerRow label="خالص قابل تسویه نمونه" value={toman(net)} /></>
-            : <Text style={styles.body}>روش انتخابی: تجمیع نمونه. بازده صندوق و زمان برداشت هنوز تعیین نشده‌اند.</Text>}
+            : <OwnerText style={styles.body}>روش انتخابی: تجمیع نمونه. بازده صندوق و زمان برداشت هنوز تعیین نشده‌اند.</OwnerText>}
         </OwnerCard>
-        <Text style={styles.sectionHeading}>دریافتی‌های پیش رو</Text>
-        <OwnerCard><OwnerRow label="قرارداد سعادت‌آباد" value="۱۵ آبان ۱۴۰۵" /><Text style={styles.hint}>نمایش برنامه فرضی، نه بدهی یا واریز واقعی</Text></OwnerCard>
-        <Text style={styles.sectionHeading}>سوابق تسویه</Text>
-        <OwnerCard><Text style={styles.body}>هنوز تسویه واقعی ثبت نشده است.</Text></OwnerCard>
+        <OwnerText style={styles.sectionHeading}>دریافتی‌های پیش رو</OwnerText>
+        <OwnerCard><OwnerRow label="قرارداد سعادت‌آباد" value="۱۵ آبان ۱۴۰۵" /><OwnerText style={styles.hint}>نمایش برنامه فرضی، نه بدهی یا واریز واقعی</OwnerText></OwnerCard>
+        <OwnerText style={styles.sectionHeading}>سوابق تسویه</OwnerText>
+        <OwnerCard><OwnerText style={styles.body}>هنوز تسویه واقعی ثبت نشده است.</OwnerText></OwnerCard>
         <OwnerAction label="مشاهده قرارداد مالک" to="owner-active" outline />
         <OwnerAction label="سناریوی فسخ مالک" to="owner-terminated" outline />
       </>;
       break;
     case "terminated":
-      activeNav = "home";
+      activeNav = "contracts";
       body = <>
         <OwnerHeader title="وضعیت قرارداد" back="owner-active" />
         <OwnerHero warn badge="فسخ شده • MOCK" title="قرارداد فسخ شده است"
@@ -268,7 +292,7 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
           <OwnerRow label="بدهی معوق مستأجر" value="در این MOCK محاسبه نمی‌شود" />
           <OwnerRow label="کسر از آورده" value="در این MOCK محاسبه نمی‌شود" />
           <OwnerRow label="مبلغ قابل تسویه به مالک" value="نیازمند قرارداد و داده معتبر" />
-          <Text style={styles.hint}>مبالغ قدیمی فسخ فیگما به قرارداد مالی این نمونه تعمیم داده نمی‌شوند.</Text>
+          <OwnerText style={styles.hint}>مبالغ قدیمی فسخ فیگما به قرارداد مالی این نمونه تعمیم داده نمی‌شوند.</OwnerText>
         </OwnerCard>
         <OwnerCard title="روش دریافت"><OwnerRow label="روش انتخاب‌شده" value={ownerMethod} /></OwnerCard>
         <OwnerAction label="بازگشت به قرارداد" to="owner-active" />
@@ -276,7 +300,7 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
       </>;
       break;
     case "account":
-      activeNav = "home";
+      activeNav = "profile";
       body = <>
         <OwnerHeader title="حساب مالک" back="owner-active" />
         <OwnerCard title="پروفایل نمایشی"><OwnerRow label="نقش" value="مالک" /><OwnerRow label="نام" value="محمد رضایی (MOCK)" /><OwnerRow label="کد ملی" value="۰۰۲•••••۴۵۶" /></OwnerCard>
@@ -301,12 +325,15 @@ function OwnerConfirmationButton({ active }: { active: boolean }) {
   return <Pressable accessibilityRole="button" accessibilityLabel="تأیید نمایشی و نمایش قرارداد فعال"
     disabled={!active} accessibilityState={{ disabled: !active }} onPress={() => router.push("/preview/owner-active")}
     style={[styles.action, !active && styles.disabled]}>
-    <Text style={styles.actionLabel}>تأیید نمایشی و مشاهده قرارداد</Text>
+    <OwnerText style={styles.actionLabel}>تأیید نمایشی و مشاهده قرارداد</OwnerText>
   </Pressable>;
 }
 
 const rtl = { textAlign: "right", writingDirection: "rtl" } as const;
 const styles = StyleSheet.create({
+  ownerText: { writingDirection: "rtl", textAlign: "right" },
+  rowLabel: { flex: 1, minWidth: 0, textAlign: "right", writingDirection: "rtl" },
+  rowValue: { flexShrink: 1, minWidth: 0, textAlign: "left", writingDirection: "rtl" },
   safe: { flex: 1, backgroundColor: colors.primary },
   scroll: { padding: 16, paddingBottom: 32, gap: 16 },
   header: { marginHorizontal: -16, marginTop: -16, marginBottom: 0, backgroundColor: colors.primary },
@@ -341,12 +368,12 @@ const styles = StyleSheet.create({
   checkLabel: { color: colors.page, fontFamily: fonts.regular, fontSize: 12, flex: 1, ...rtl },
   confirmOuter: { marginVertical: 0 },
   heroAmount: { color: colors.primary, fontFamily: fonts.bold, fontSize: 26, ...rtl },
-  summaryRow: { flexDirection: "row", gap: 8 },
+  summaryRow: { flexDirection: "row-reverse", gap: 8 },
   summaryTile: { backgroundColor: colors.surface, borderRadius: 12, flex: 1, minWidth: 0, padding: 12, gap: 8 },
   summaryCaption: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, ...rtl },
   summaryAmount: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 13, ...rtl },
-  nav: { minHeight: 68, backgroundColor: colors.page, flexDirection: "row", padding: 8, gap: 2 },
-  navItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 2 },
-  navLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 10, textAlign: "center" },
-  navSelected: { color: colors.accent, fontFamily: fonts.semibold },
+  nav: { height: 80, backgroundColor: colors.page, borderTopWidth: 1, borderTopColor: colors.border, flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, gap: 2 },
+  navItem: { flex: 1, minHeight: 48, alignItems: "center", justifyContent: "center", gap: 4 },
+  navLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "center", writingDirection: "rtl" },
+  navSelected: { color: colors.accent, fontFamily: fonts.medium },
 });
