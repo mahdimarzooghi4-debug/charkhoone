@@ -17,7 +17,7 @@ const PreviewContext = createContext<MockPreviewState | null>(null);
 
 export function MockPreviewProvider({ children }: PropsWithChildren) {
   const [financingPlan, setFinancingPlan] = useState<MockFinancingPlan>("عمومی");
-  const [membership, setMembership] = useState<MockMembership>("پایه");
+  const [membership, setMembership] = useState<MockMembership>("۱ بار استفاده");
   const [cashDeposit, setCashDeposit] = useState(500_000_000);
   const [monthlyRent, setMonthlyRent] = useState(20_000_000);
   const financialModel = useMemo(() => calculateMockFinancialModel(cashDeposit, monthlyRent), [cashDeposit, monthlyRent]);
