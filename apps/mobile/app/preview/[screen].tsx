@@ -1,7 +1,7 @@
-import { MockTenantScreen } from "@/preview/MockTenantScreen";
-import { useLocalSearchParams } from "expo-router";
+import { Redirect } from "expo-router";
 
-export default function MockPreviewRoute() {
-  const { screen } = useLocalSearchParams<{ screen: string }>();
-  return <MockTenantScreen screen={screen ?? "home"} />;
+// Unknown deep links must not silently render the home screen at /preview/undefined.
+// All real MOCK journey steps are explicit Expo Router files in this directory.
+export default function UnknownPreviewRoute() {
+  return <Redirect href="/preview/home" />;
 }
