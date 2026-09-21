@@ -10,7 +10,7 @@ export const mockFinancialModel = {
 } as const;
 
 export type MockFinancingPlan = "عمومی" | "ویژهٔ نمونه";
-export type MockMembership = "پایه" | "همراه";
+export type MockMembership = "۱ بار استفاده" | "۲ بار استفاده" | "۳ بار استفاده";
 
 export const mockDisclaimer = "این یک پیش‌نمایش MOCK است. هیچ درخواست، پرداخت، تأیید بانک، عضویت یا قراردادی ثبت نمی‌شود.";
 
