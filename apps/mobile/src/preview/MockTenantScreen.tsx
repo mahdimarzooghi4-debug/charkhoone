@@ -6,7 +6,7 @@ import { FigmaSvg } from "@/components/FigmaSvg";
 import { BrandLogo } from "@/components/BrandLogo";
 import { figmaAssets } from "@/figmaAssets";
 import { mockDisclaimer, parseMockAmount, type MockFinancingPlan, type MockMembership } from "./mockTenantData";
-import { useMockPreview } from "./MockPreviewProvider";
+import { useMockPreview, type MockContractRole } from "./MockPreviewProvider";
 
 type Props = { screen: string };
 function Button({ label, to, tone = "primary" }: { label: string; to: string; tone?: "primary" | "outline" | "danger" }) {
@@ -20,6 +20,36 @@ function Row({ label, value }: { label: string; value: string }) {
 
 function Choice<T extends string>({ label, value, selected, onPress }: { label: string; value: T; selected: boolean; onPress: (value: T) => void }) {
   return <Pressable accessibilityRole="radio" accessibilityState={{ selected }} onPress={() => onPress(value)} style={[styles.choice, selected && styles.choiceSelected]}><View style={[styles.radio, selected && styles.radioSelected]} /> <Text style={styles.choiceText}>{label}</Text></Pressable>;
+}
+
+function ContractRoleCard({
+  role, selected, onPress, name, maskedNationalId,
+}: {
+  role: MockContractRole;
+  selected: boolean;
+  onPress: (role: MockContractRole) => void;
+  name: string;
+  maskedNationalId: string;
+}) {
+  const title = role === "Tenant" ? "مستأجر" : "مالک";
+  return (
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityLabel={`انتخاب نقش ${title}، ${name}، داده نمایشی`}
+      accessibilityState={{ selected }}
+      onPress={() => onPress(role)}
+      style={[styles.roleCard, selected && styles.roleCardSelected]}
+    >
+      <View style={styles.roleTitleRow}>
+        <Text style={[styles.roleTitle, selected && styles.roleTextSelected]}>{title}</Text>
+        <View pointerEvents="none">
+          <FigmaSvg uri={selected ? figmaAssets.roleSelected : figmaAssets.roleUnselected} width={16} height={16} />
+        </View>
+      </View>
+      <Text style={[styles.roleName, selected && styles.roleTextSelected]}>{name}</Text>
+      <Text style={[styles.roleId, selected && styles.roleTextSelected]}>کد ملی: {maskedNationalId}</Text>
+    </Pressable>
+  );
 }
 
 function BottomNav({ active }: { active: "home" | "payments" | "contracts" | "profile" }) {
@@ -51,7 +81,7 @@ function ScreenTitle({ title, back = "home" }: { title: string; back?: string })
 }
 
 export function MockTenantScreen({ screen }: Props) {
-  const { financingPlan, membership, setFinancingPlan, setMembership, financialModel: mockFinancialModel } = useMockPreview();
+  const { financingPlan, membership, contractRole, setContractRole, setFinancingPlan, setMembership, financialModel: mockFinancialModel } = useMockPreview();
   const [trackingCode, setTrackingCode] = useState("۱۲۳۴۵۶۷۸۹۰۱۲");
   const [trackingError, setTrackingError] = useState(false);
   const router = useRouter();
@@ -63,7 +93,7 @@ export function MockTenantScreen({ screen }: Props) {
   ["آوردهٔ مستأجر", mockFinancialModel.contribution],
 ] as const;
 
-  const active = screen === "payments" || screen.startsWith("payment-") || screen === "receipt" ? "payments" : screen.startsWith("contract") || screen === "contracts" || screen === "final-confirmation" ? "contracts" : screen === "profile" ? "profile" : "home";
+  const active = screen === "payments" || screen.startsWith("payment-") || screen === "receipt" ? "payments" : screen.startsWith("contract") || screen === "owner-contract" || screen === "contracts" || screen === "final-confirmation" ? "contracts" : screen === "profile" ? "profile" : "home";
   const planChoice = (label: MockFinancingPlan) => <Choice label={`طرح تأمین مالی ${label} — ${mockFinancialModel.financing}`} value={label} selected={financingPlan === label} onPress={setFinancingPlan} />;
   const membershipChoice = (label: MockMembership) => <Choice label={`عضویت ${label} (فقط نمونه)`} value={label} selected={membership === label} onPress={setMembership} />;
 
@@ -98,35 +128,71 @@ export function MockTenantScreen({ screen }: Props) {
         <Text style={styles.cardTitle}>کد رهگیری خودنویس (نمونه)</Text>
         <TextInput accessibilityLabel="کد رهگیری نمونه" keyboardType="number-pad" value={trackingCode} onChangeText={value => { setTrackingCode(value); setTrackingError(false); }} style={styles.trackInput} />
         <Text style={styles.note}>کد نمایشی ۱۲ رقمی از پیش وارد شده است. ورود کد شما باعث ارسال به هیچ سامانه‌ای نمی‌شود.</Text>
-        {trackingError && <Text style={styles.errorText}>برای ادامه، یک کد نمونه ۱۲ رقمی وارد کنید.</Text>}
+        {trackingError && <Text style={styles.errorText}>برای ادامه، از کد نمونهٔ ۱۲ رقمی نمایش‌داده‌شده استفاده کنید؛ استعلام واقعی فعال نیست.</Text>}
       </View>
       <View style={styles.card}>
         <Text style={styles.cardTitle}>پس از استعلام چه اتفاقی می‌افتد؟ (صرفاً توضیح فرایند آینده)</Text>
         <Text style={styles.body}>۱. دریافت اطلاعات قرارداد از خودنویس؛ ۲. تطبیق هویت طرفین؛ ۳. انتخاب نقش در قرارداد. این مراحل هنوز در MOCK به سرویس واقعی متصل نیستند.</Text>
       </View>
       <Pressable accessibilityRole="button" accessibilityLabel="نمایش نتیجه نمایشی قرارداد" style={StyleSheet.flatten([styles.button, styles.primary])} onPress={() => {
-        if (String(parseMockAmount(trackingCode)).length !== 12) setTrackingError(true);
+        if (parseMockAmount(trackingCode) !== 123456789012) setTrackingError(true);
         else router.push("/preview/contract-lookup");
       }}><Text style={styles.buttonText}>نمایش نتیجه نمونه استعلام قرارداد</Text></Pressable>
       <Button label="بازگشت به نتیجه محاسبه" to="calculator-result" tone="outline" />
     </>; break;
     case "contract-lookup": body = <>
-      <ScreenTitle title="اطلاعات قرارداد نمونه" back="contract-tracking" />
-      <Text style={styles.figmaHeading}>نقش خود را در این قرارداد انتخاب کنید</Text>
+      <View style={styles.homeLogo}><BrandLogo /></View>
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>طرفین قرارداد MOCK</Text>
-        <Row label="مستأجر (نقش پیش‌نمایش)" value="کاربر نمونه" />
-        <Row label="مالک" value="مالک نمونه" />
-        <Text style={styles.note}>این داده‌ها از سامانه خودنویس خوانده نشده‌اند. مسیر MOCK فعلاً برای نقش مستأجر است.</Text>
+        <Text style={styles.cardTitle}>نقش خود را در این قرارداد انتخاب کنید</Text>
+        <Text style={styles.note}>در فیگما مشخصات طرفین از خودنویس دریافت می‌شود؛ در این پیش‌نمایش نام‌ها و کدهای ملی پوشیده صرفاً نمونه هستند و هیچ استعلامی انجام نشده است.</Text>
+        <View style={styles.roleCards}>
+          <ContractRoleCard role="Owner" name="محمد رضایی" maskedNationalId="۰۰۲•••••۴۵۶" selected={contractRole === "Owner"} onPress={setContractRole} />
+          <ContractRoleCard role="Tenant" name="علی رضایی" maskedNationalId="۰۰۱•••••۷۸۹" selected={contractRole === "Tenant"} onPress={setContractRole} />
+        </View>
       </View>
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>مشخصات کلی قرارداد نمونه</Text>
-        <Row label="کد رهگیری" value="۱۲۳۴۵۶۷۸۹۰۱۲ (MOCK)" />
+        <Text style={styles.cardTitle}>مشخصات کلی قرارداد</Text>
+        <Row label="کد رهگیری نمونه" value="۱۲۳۴۵۶۷۸۹۰۱۲" />
+        <Row label="تاریخ شروع نمونه" value="۱۵ مهر ۱۴۰۵" />
+        <Row label="تاریخ پایان نمونه" value="۱۵ مهر ۱۴۰۶" />
         <Row label="مبلغ رهن" value={mockFinancialModel.cashDeposit} />
         <Row label="اجاره ماهانه" value={mockFinancialModel.monthlyRent} />
       </View>
-      <Button label="تأیید نقش مستأجر و ادامه" to="financing-plans" />
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>ملک قرارداد</Text>
+        <Text style={styles.note}>آدرس ملک نمونه، نه نتیجه استعلام واقعی</Text>
+        <Text style={styles.body}>تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴، واحد ۳</Text>
+        <Row label="کدپستی نمونه" value="۱۹۹۸۷۶۵۴۳۲" />
+        <Row label="پلاک" value="۲۴" />
+        <Row label="واحد" value="۳" />
+      </View>
+      <View style={styles.roleNotice}>
+        <Text style={styles.roleNoticeText}>{contractRole === "Tenant"
+          ? "در مرحله بعد، طرح‌های تأمین مالی سناریوی مستأجر نمایش داده می‌شوند."
+          : "در مرحله بعد، خلاصه قرارداد نمونه مالک نمایش داده می‌شود؛ طرح و تعهد سود مستأجر به مالک نسبت داده نمی‌شود."}</Text>
+      </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`تأیید نقش ${contractRole === "Tenant" ? "مستأجر" : "مالک"} و ادامه`}
+        style={[styles.button, styles.roleContinue]}
+        onPress={() => router.push(contractRole === "Tenant" ? "/preview/financing-plans" : "/preview/owner-contract")}
+      >
+        <Text style={styles.buttonText}>تأیید نقش {contractRole === "Tenant" ? "مستأجر" : "مالک"} و ادامه</Text>
+      </Pressable>
       <Button label="اصلاح کد رهگیری" to="contract-tracking" tone="outline" />
+    </>; break;
+    case "owner-contract": body = <>
+      <ScreenTitle title="قرارداد مالک • پیش‌نمایش" back="contract-lookup" />
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>خلاصه قرارداد نمونه مالک</Text>
+        <Text style={styles.body}>نقش انتخاب‌شده: مالک نمونه (محمد رضایی)</Text>
+        <Row label="رهن قرارداد" value={mockFinancialModel.cashDeposit} />
+        <Row label="اجاره ماهانه قرارداد" value={mockFinancialModel.monthlyRent} />
+        <Text style={styles.note}>این فقط نمای مالک برای مرور انتخاب نقش است. اجاره قرارداد مالک با سود وام مستأجر یکی نیست؛ هیچ دریافتی، سرمایه‌گذاری، تسویه یا پرداخت بانکی در این صفحه انجام نمی‌شود.</Text>
+      </View>
+      <View style={styles.roleNotice}><Text style={styles.roleNoticeText}>برای مشاهده طرح‌های تأمین مالی مستأجر، به انتخاب نقش برگردید و «مستأجر» را انتخاب کنید. مسیر عملیاتی مالک در این پیش‌نمایش متصل نشده است.</Text></View>
+      <Button label="بازگشت به انتخاب نقش" to="contract-lookup" />
+      <Button label="بازگشت به خانه پیش‌نمایش" to="home" tone="outline" />
     </>; break;
     case "financing-plans": body = <>
       <ScreenTitle title="انتخاب طرح تأمین مالی" back="contract-lookup" />
@@ -308,11 +374,22 @@ export function MockTenantScreen({ screen }: Props) {
       <View style={styles.homeNotice}><FigmaSvg uri={figmaAssets.info} width={16} height={16} /><Text style={styles.homeNoticeText}>پیش‌نمایش مستقل MOCK: ارقام مثال C3 هستند، نه وضعیت حساب یا پرداخت واقعی شما.</Text></View>
     </>;
   }
-  return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>{body}<View style={styles.disclaimer}><Text style={styles.disclaimerText}>{mockDisclaimer}</Text></View></ScrollView><BottomNav active={active} /></SafeAreaView>;
+  return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>{body}<View style={styles.disclaimer}><Text style={styles.disclaimerText}>{mockDisclaimer}</Text></View></ScrollView>{screen !== "contract-lookup" && screen !== "owner-contract" && <BottomNav active={active} />}</SafeAreaView>;
 }
 
 const text = { textAlign: "right" as const, writingDirection: "rtl" as const };
 const styles = StyleSheet.create({
+  roleCards: { flexDirection: "row", gap: 12 },
+  roleCard: { flex: 1, minWidth: 0, minHeight: 114, padding: 12, gap: 8, borderRadius: 12, borderColor: colors.border, borderWidth: 1, alignItems: "flex-end", backgroundColor: colors.surface },
+  roleCardSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
+  roleTitleRow: { width: "100%", flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8 },
+  roleTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 14, ...text },
+  roleName: { color: colors.text, fontFamily: fonts.semibold, fontSize: 14, ...text },
+  roleId: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, ...text },
+  roleTextSelected: { color: colors.surface },
+  roleNotice: { padding: 12, backgroundColor: colors.successSoft, borderRadius: 8, alignItems: "flex-end" },
+  roleNoticeText: { color: colors.primary, fontFamily: fonts.regular, fontSize: 11, lineHeight: 18, ...text },
+  roleContinue: { backgroundColor: colors.page, minHeight: 48 },
   homeLogo: { height: 60, alignItems: "flex-end" },
   homeHeader: { height: 56, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
   homeBell: { width: 40, height: 40, borderRadius: 12, justifyContent: "center", alignItems: "center" },
