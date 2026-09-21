@@ -25,7 +25,8 @@ Do not close Expo's terminal to run Git commands. Use a second terminal for Git.
 | `calculator` | 65:55 Calculator / Manual Estimate | Adjustable cash deposit + monthly rent → calculator-result |
 | `calculator-result` | 71:43 Calculator / Result | «ثبت کد رهگیری قرارداد» → contract-tracking; recalculate → calculator |
 | `contract-tracking` | 79:41 Contract / Tracking Code | Sample 12-digit MOCK code → contract-lookup; **no Khodnevis inquiry** |
-| `contract-lookup` | 66:382 Contract Lookup Result | Sample tenant role → financing-plans; no real party verification |
+| `contract-lookup` | 66:382 Contract Lookup Result | Choose Owner or Tenant with selectable Figma cards: Tenant → financing-plans; Owner → owner-contract; no real party verification |
+| `owner-contract` | Owner-only MOCK continuation (outside tenant Figma 41:2) | Sample owner contract summary and back to role selection; no tenant bank interest or actual owner settlement |
 | `financing-plans` | 85:62 Financing / Eligible Plans | Separate financing-plan choice → plan-confirmation |
 | `plan-confirmation` | 90:52 Financing / Plan Confirmation | Inspect figures → review |
 | `review` | 91:53 Financing / Under Review | Demo-only approved/rejected branches |
