@@ -238,7 +238,7 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
         <OwnerHero badge="فعال در سناریو • MOCK" title="مالک • سعادت‌آباد"
           body="قرارداد نمونهٔ متصل‌شده برای مرور نمایش فعال؛ در واقعیت تأیید بانکی یا فعال‌سازی نشده است." />
         <OwnerCard title="دریافتی بعدی">
-          <OwnerBadge tone="warning">در انتظار تسویه نمونه</OwnerBadge>
+          <View style={styles.badgeRight}><OwnerBadge tone="warning">در انتظار تسویه نمونه</OwnerBadge></View>
           {ownerSettlement === "monthly"
             ? <><OwnerText style={styles.heroAmount}>{toman(net)}</OwnerText><OwnerRow label="مبلغ ناخالص" value={financialModel.monthlyRent} /><OwnerRow label="کارمزد خدمات نمونه" value={`−${toman(fee)}`} /><OwnerRow label="خالص قابل تسویه" value={toman(net)} /></>
             : <OwnerText style={styles.body}>دریافتی‌ها طبق انتخاب نمایشی شما تجمیع می‌شوند؛ بازده صندوق و مبلغ قابل برداشت مشخص نیست.</OwnerText>}
@@ -263,7 +263,7 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
           <View style={styles.summaryTile}><OwnerText style={styles.summaryCaption}>تسویه واقعی این ماه</OwnerText><OwnerText style={styles.summaryAmount}>۰ مورد ثبت‌شده</OwnerText></View>
         </View>
         <OwnerCard title="دریافتی بعدی شما">
-          <OwnerBadge tone="warning">در انتظار تسویه • MOCK</OwnerBadge>
+          <View style={styles.badgeRight}><OwnerBadge tone="warning">در انتظار تسویه • MOCK</OwnerBadge></View>
           <OwnerRow label="تاریخ نمونه" value="۱۵ آبان ۱۴۰۵" />
           <OwnerRow label="ملک" value="سعادت‌آباد" />
           <OwnerRow label="مستأجر" value="علی رضایی" />
@@ -288,7 +288,7 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
         <OwnerNotice>نمونه فیگما سه قسط معوق و تسویه نهایی دارد؛ هیچ شمارش بدهی یا مبلغ قابل کسر واقعی در MOCK محاسبه نشده است.</OwnerNotice>
         <OwnerCard title="اطلاعات قرارداد"><OwnerRow label="ملک" value="قرارداد سعادت‌آباد" /><OwnerRow label="وضعیت" value="فسخ نمایشی" /><OwnerRow label="اجاره ماهانه قرارداد" value={financialModel.monthlyRent} /></OwnerCard>
         <OwnerCard title="وضعیت تسویه نهایی">
-          <OwnerBadge tone="warning">محاسبه نشده</OwnerBadge>
+          <View style={styles.badgeRight}><OwnerBadge tone="warning">محاسبه نشده</OwnerBadge></View>
           <OwnerRow label="بدهی معوق مستأجر" value="در این MOCK محاسبه نمی‌شود" />
           <OwnerRow label="کسر از آورده" value="در این MOCK محاسبه نمی‌شود" />
           <OwnerRow label="مبلغ قابل تسویه به مالک" value="نیازمند قرارداد و داده معتبر" />
@@ -349,6 +349,7 @@ const styles = StyleSheet.create({
   topText: { color: colors.page, fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, ...rtl },
   body: { color: colors.text, fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, ...rtl },
   hint: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, lineHeight: 19, ...rtl },
+  badgeRight: { alignSelf: "flex-end" },
   notice: { backgroundColor: colors.successSoft, padding: 14, borderRadius: 10, alignItems: "flex-end" },
   noticeText: { color: colors.primary, fontFamily: fonts.regular, fontSize: 11, lineHeight: 20, ...rtl },
   soft: { padding: 12, gap: 12, backgroundColor: colors.infoSoft, borderRadius: 8 },
