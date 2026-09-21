@@ -75,3 +75,30 @@ The original implementation focused on clickability; it was **not** a faithful s
 - Shared app bars are full-width; result and financing pages do not incorrectly show the tenant tab bar below their Figma action footer.
 
 **Not yet accepted visually:** the Figma file contains many further detailed states and overlays. Typecheck/Expo exports and structural regression tests cannot measure pixel-perfect visual similarity, real icon loading or browser tap targets. Compare each page in Chrome iPhone 16 393×852 and capture differences against its Figma frame. Existing `apps/mobile/src/figmaAssets.ts` contains temporary Figma asset URLs which must be replaced with the exact exported bytes before merging, or visuals may break when the URLs expire.
+
+## Owner Mobile MOCK — Figma 04 / 39:161 (21 Sep 2026)
+
+The `04 - Owner Mobile` page contains these six (390px-wide) frames. The isolated preview now has explicit equivalent routes, separate from the authenticated `apps/mobile/app/(owner)` routes; those remain fail-closed except for read-only trusted owner contract terms.
+
+| Preview route | Figma node | What is shown in MOCK |
+|---|---|---|
+| `/preview/contract-lookup` | Shared role selection `66:382` | Choose **Owner** → `owner-connected`, not tenant financing |
+| `/preview/owner-connected` | `112:16` | Contract connected, owner status, masked tenant identity, contract/property and next steps |
+| `/preview/owner-settlement-preference` | `136:150` | Select monthly receipt or aggregation in fund; choice preserved across screens |
+| `/preview/owner-final-confirmation` | `116:140` | Recheck tenant, rental terms, bank financing C3, chosen owner settlement, and opt-in to example consent |
+| `/preview/owner-active` | `118:154` | Sample active contract, next owner receipt, financing status, owner-selected settlement and property |
+| `/preview/owner-receive-pay` | `118:251` | Owner receipt/pay overview, illustrative next receipt and empty real-payment history |
+| `/preview/owner-terminated` | `204:345` | Sample termination; final settlement requires trusted bank/contract/arrears inputs and is **not fabricated** |
+| `/preview/owner-account` | Auxiliary, not a Figma owner frame | Safe target for owner bottom navigation; no fake real identity or bank data |
+
+Baseline monthly owner receipt **is distinct from the tenant's 6,708,333 monthly bank interest**: contract rent 20,000,000 gross, illustrative Figma service fee at 0.5% = 100,000, owner net receipt = 19,900,000 toman. If the tenant changes sample rent, the owner's mock fee and net follow the same sample rent rather than hard-coding stale values. This fee is a UI example, not an operationally agreed fee. The second fund preference is **selection only**: no 3%/3.5% investment calculation, guaranteed yield or fund transfer. Figma's older owner funding 450m and termination deductions 55.5m / 394.5m are not treated as authoritative C3/settlement rules.
+
+### Owner QA (web iPhone 16 width 393 × 852)
+
+1. In preview, open `/preview/contract-lookup`, select مالک and confirm. You should land on `/preview/owner-connected`.
+2. Walk through connected → settlement preference, switch to fund then back to monthly; verify displayed choice persists on final confirmation.
+3. At final confirmation, the demo acknowledgment checkbox gates continuing; owner funding line should be **350m** for default C3, not 450m.
+4. Active → receive/pay → termination and back; owner receipt should be **19.9m monthly** for the default sample, not tenant monthly bank interest.
+5. Owner bottom tabs may only open MOCK owner destinations, never authenticated OIDC or tenant screens. No real payment history, fund execution or owner settlement should be claimed.
+6. Refresh and check console/asset failures. CI route checks and typecheck do not substitute for this visual/click walkthrough.
+
