@@ -107,7 +107,7 @@ export function MockTenantScreen({ screen }: Props) {
         <Text style={styles.homeActionCopy}>شرایط نمونه تأمین مالی را بررسی کنید یا به سناریوی نمایشی قرارداد بروید. هیچ درخواستی برای بانک ارسال نمی‌شود.</Text>
         <View style={styles.homeActionButtons}>
           <View style={styles.homeHalfButton}><Button label="مشاهده قرارداد" to="contract-active" tone="outline" /></View>
-          <View style={styles.homeHalfButton}><Button label="محاسبه شرایط" to="calculator" /></View>
+          <View style={styles.homeHalfButton}><Link href="/preview/calculator" style={StyleSheet.flatten([styles.button, styles.primary, styles.linkButton])}>محاسبه شرایط</Link></View>
         </View>
       </View>
       <Text style={styles.homeSectionTitle}>دسترسی سریع</Text>
