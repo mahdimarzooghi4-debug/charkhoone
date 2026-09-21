@@ -5,18 +5,10 @@ import { colors, fonts, radii } from "@/theme";
 import { FigmaSvg } from "@/components/FigmaSvg";
 import { BrandLogo } from "@/components/BrandLogo";
 import { figmaAssets } from "@/figmaAssets";
-import { mockDisclaimer, mockFinancialModel, type MockFinancingPlan, type MockMembership } from "./mockTenantData";
+import { mockDisclaimer, type MockFinancingPlan, type MockMembership } from "./mockTenantData";
 import { useMockPreview } from "./MockPreviewProvider";
 
 type Props = { screen: string };
-const financeRows = [
-  ["ودیعهٔ نقدی", mockFinancialModel.cashDeposit],
-  ["اجارهٔ ماهانه", mockFinancialModel.monthlyRent],
-  ["معادل ودیعهٔ کامل", mockFinancialModel.fullDeposit],
-  ["تأمین مالی ۳۰٪", mockFinancialModel.financing],
-  ["آوردهٔ مستأجر", mockFinancialModel.contribution],
-] as const;
-
 function Button({ label, to, tone = "primary" }: { label: string; to: string; tone?: "primary" | "outline" | "danger" }) {
   return <Link href={`/preview/${to}`} style={StyleSheet.flatten([styles.button, styles[tone], styles.linkButton])}>{label}</Link>;
 }
@@ -57,14 +49,22 @@ function ScreenTitle({ title, back = "home" }: { title: string; back?: string })
 }
 
 export function MockTenantScreen({ screen }: Props) {
-  const { financingPlan, membership, setFinancingPlan, setMembership } = useMockPreview();
+  const { financingPlan, membership, setFinancingPlan, setMembership, financialModel: mockFinancialModel } = useMockPreview();
+  const financeRows = [
+  ["ودیعهٔ نقدی", mockFinancialModel.cashDeposit],
+  ["اجارهٔ ماهانه", mockFinancialModel.monthlyRent],
+  ["معادل ودیعهٔ کامل", mockFinancialModel.fullDeposit],
+  ["تأمین مالی ۳۰٪", mockFinancialModel.financing],
+  ["آوردهٔ مستأجر", mockFinancialModel.contribution],
+] as const;
+
   const active = screen === "payments" || screen.startsWith("payment-") || screen === "receipt" ? "payments" : screen.startsWith("contract") || screen === "final-confirmation" ? "contracts" : screen === "profile" ? "profile" : "home";
   const planChoice = (label: MockFinancingPlan) => <Choice label={`طرح تأمین مالی ${label} — ${mockFinancialModel.financing}`} value={label} selected={financingPlan === label} onPress={setFinancingPlan} />;
   const membershipChoice = (label: MockMembership) => <Choice label={`عضویت ${label} (فقط نمونه)`} value={label} selected={membership === label} onPress={setMembership} />;
 
   let body: ReactNode;
   switch (screen) {
-    case "calculator": body = <><ScreenTitle title="ماشین‌حساب مستأجر" /><View style={styles.card}><Text style={styles.cardTitle}>مدل ثابت C3</Text><Text style={styles.body}>ضریب تبدیل اجاره به رهن: {mockFinancialModel.conversionRate}</Text>{financeRows.slice(0, 3).map(([label, value]) => <Row key={label} label={label} value={value} />)}<Text style={styles.note}>این محاسبه صندوق ۳٪ یا دریافتی مالک ۳٫۵٪ را نمایش نمی‌دهد.</Text></View><Button label="مشاهدهٔ نتیجهٔ نمونه" to="calculator-result" /></>; break;
+    case "calculator": body = <><ScreenTitle title="ماشین‌حساب مستأجر" /><View style={styles.card}><Text style={styles.cardTitle}>مدل نمونه C3</Text><Text style={styles.body}>ضریب تبدیل اجاره به رهن: {mockFinancialModel.conversionRate}</Text>{financeRows.slice(0, 3).map(([label, value]) => <Row key={label} label={label} value={value} />)}<Text style={styles.note}>این محاسبه صندوق ۳٪ یا دریافتی مالک ۳٫۵٪ را نمایش نمی‌دهد.</Text></View><Button label="مشاهدهٔ نتیجهٔ نمونه" to="calculator-result" /></>; break;
     case "calculator-result": body = <><ScreenTitle title="نتیجهٔ ماشین‌حساب" back="calculator" /><View style={styles.card}>{financeRows.map(([label, value]) => <Row key={label} label={label} value={value} />)}<Row label="نرخ اسمی سالانهٔ نمونهٔ بانک" value={mockFinancialModel.annualRate} /><Row label="پرداخت ماهانهٔ مستأجر (فقط سود)" value={mockFinancialModel.monthlyInterest} /><Text style={styles.note}>بازپرداخت اصل وام مطابق قرارداد نهایی بانک خواهد بود.</Text></View><Button label="انتخاب طرح تأمین مالی" to="financing-plans" /></>; break;
     case "financing-plans": body = <><ScreenTitle title="طرح‌های تأمین مالی" back="calculator-result" /><View style={styles.card}><Text style={styles.cardTitle}>انتخاب طرح MOCK</Text>{planChoice("عمومی")}{planChoice("ویژهٔ نمونه")}<Text style={styles.note}>انتخاب طرح صرفاً در این پیش‌نمایش حفظ می‌شود و به نوع عضویت وابسته نیست.</Text></View><Button label="تأیید طرح و ادامه" to="plan-confirmation" /></>; break;
     case "plan-confirmation": body = <><ScreenTitle title="تأیید طرح تأمین مالی" back="financing-plans" /><View style={styles.card}><Row label="طرح انتخاب‌شده" value={financingPlan} /><Row label="تأمین مالی نمونه" value={mockFinancialModel.financing} /><Row label="آوردهٔ نمونه" value={mockFinancialModel.contribution} /><Text style={styles.note}>{mockDisclaimer}</Text></View><Button label="ارسال نمونه برای بررسی" to="review" /></>; break;
