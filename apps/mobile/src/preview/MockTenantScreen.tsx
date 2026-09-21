@@ -128,20 +128,106 @@ export function MockTenantScreen({ screen }: Props) {
       <Button label="تأیید نقش مستأجر و ادامه" to="financing-plans" />
       <Button label="اصلاح کد رهگیری" to="contract-tracking" tone="outline" />
     </>; break;
-    case "financing-plans": body = <><ScreenTitle title="طرح‌های تأمین مالی" back="calculator-result" /><View style={styles.card}><Text style={styles.cardTitle}>انتخاب طرح MOCK</Text>{planChoice("عمومی")}{planChoice("ویژهٔ نمونه")}<Text style={styles.note}>انتخاب طرح صرفاً در این پیش‌نمایش حفظ می‌شود و به نوع عضویت وابسته نیست.</Text></View><Button label="تأیید طرح و ادامه" to="plan-confirmation" /></>; break;
-    case "plan-confirmation": body = <><ScreenTitle title="تأیید طرح تأمین مالی" back="financing-plans" /><View style={styles.card}><Row label="طرح انتخاب‌شده" value={financingPlan} /><Row label="تأمین مالی نمونه" value={mockFinancialModel.financing} /><Row label="آوردهٔ نمونه" value={mockFinancialModel.contribution} /><Text style={styles.note}>{mockDisclaimer}</Text></View><Button label="ارسال نمونه برای بررسی" to="review" /></>; break;
-    case "review": body = <><ScreenTitle title="بررسی درخواست" back="plan-confirmation" /><View style={styles.card}><Text style={styles.cardTitle}>در انتظار بررسی نمونه</Text><Text style={styles.body}>طرح {financingPlan} در سناریوی MOCK در حال بررسی نمایش داده می‌شود.</Text></View><Button label="نمایش تأیید نمونه" to="approved" /><Button label="نمایش رد نمونه" to="rejected" tone="danger" /></>; break;
-    case "approved": body = <><ScreenTitle title="تأیید نمونهٔ درخواست" back="review" /><View style={styles.successCard}><Text style={styles.cardTitle}>تأیید نمونه</Text><Row label="تأمین مالی تأییدشدهٔ نمونه" value={mockFinancialModel.financing} /><Text style={styles.note}>این تأیید از بانک نیست و هیچ تخصیص مالی ایجاد نشده است.</Text></View><Button label="ادامه به عضویت نمونه" to="membership" /></>; break;
-    case "rejected": body = <><ScreenTitle title="رد نمونهٔ درخواست" back="review" /><View style={styles.errorCard}><Text style={styles.cardTitle}>رد صرفاً نمایشی</Text><Text style={styles.body}>برای آزمایش مسیر رد. علت یا تصمیم واقعی بانک نمایش داده نمی‌شود.</Text></View><Button label="بازگشت به طرح‌ها" to="financing-plans" tone="outline" /></>; break;
-    case "membership": body = <><ScreenTitle title="عضویت" back="approved" /><View style={styles.card}><Text style={styles.cardTitle}>انتخاب نوع عضویت MOCK</Text>{membershipChoice("پایه")}{membershipChoice("همراه")}<Text style={styles.note}>نوع عضویت مستقل از طرح تأمین مالی «{financingPlan}» است.</Text></View><Button label="نتیجهٔ موفق نمونه" to="membership-success" /><Button label="وضعیت انتظار نمونه" to="membership-pending" tone="outline" /><Button label="خطای نمونه" to="membership-failed" tone="danger" /></>; break;
+    case "financing-plans": body = <>
+      <ScreenTitle title="انتخاب طرح تأمین مالی" back="contract-lookup" />
+      <Text style={styles.figmaHeading}>طرح‌های قابل استفاده برای شما</Text>
+      <Text style={styles.figmaIntro}>دو انتخاب صرفاً نمایشی برای بررسی تجربه کاربری؛ واجد شرایط بودن نزد بانک استعلام نشده است.</Text>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>طرح ویژه کارکنان سازمان (نمونه)</Text>
+        <Row label="تأمین مالی سناریوی C3" value={mockFinancialModel.financing} />
+        <Row label="آورده موردنیاز" value={mockFinancialModel.contribution} />
+        <Row label="نرخ اسمی سالانه نمونه" value={mockFinancialModel.annualRate} />
+        <Row label="پرداخت ماهانه فقط سود" value={mockFinancialModel.monthlyInterest} />
+        {planChoice("ویژهٔ نمونه")}
+      </View>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>طرح عمومی تأمین مسکن (نمونه)</Text>
+        <Row label="تأمین مالی سناریوی C3" value={mockFinancialModel.financing} />
+        <Row label="آورده موردنیاز" value={mockFinancialModel.contribution} />
+        <Row label="پرداخت ماهانه فقط سود" value={mockFinancialModel.monthlyInterest} />
+        {planChoice("عمومی")}
+      </View>
+      <Text style={styles.figmaIntro}>نوع طرح تأمین مالی مستقل از نوع عضویت است. نرخ‌های قدیمی فیگما و تخفیف ادعایی در این نمونه اعمال نمی‌شوند.</Text>
+      <Button label="تأیید طرح و ادامه" to="plan-confirmation" />
+    </>; break;
+    case "plan-confirmation": body = <>
+      <ScreenTitle title="تأیید درخواست" back="financing-plans" />
+      <Text style={styles.figmaHeading}>جزئیات درخواست خود را بررسی کنید</Text>
+      <Text style={styles.figmaIntro}>پیش از ارسال نمونه، شرایط طرح انتخاب‌شده را بررسی کنید.</Text>
+      <View style={styles.card}><Text style={styles.cardTitle}>طرح انتخاب‌شده</Text><Row label="طرح" value={financingPlan} /><Text style={styles.note}>بانک و نرخ اختصاصی طرح هنوز در پیش‌نمایش تعریف عملیاتی ندارند.</Text></View>
+      <View style={styles.card}><Text style={styles.cardTitle}>خلاصه مالی طرح</Text>{financeRows.map(([label,value]) => <Row key={label} label={label} value={value} />)}<Row label="نرخ اسمی نمونه" value={mockFinancialModel.annualRate} /><Row label="پرداخت ماهانه فقط سود" value={mockFinancialModel.monthlyInterest} /></View>
+      <View style={styles.card}><Text style={styles.cardTitle}>پس از ارسال درخواست</Text><Text style={styles.body}>بررسی قرارداد ← بررسی اعتبار ← تصمیم بانک ← اعلام نتیجه در چارخونه. در این نسخه همه مراحل MOCK هستند.</Text></View>
+      <Button label="ارسال نمونه برای بررسی" to="review" />
+    </>; break;
+    case "review": body = <>
+      <ScreenTitle title="وضعیت درخواست" back="plan-confirmation" />
+      <View style={styles.card}><Text style={styles.cardTitle}>درخواست نمونه ثبت شد</Text><Text style={styles.body}>درخواست تأمین مالی فقط در پیش‌نمایش در حال بررسی است؛ هیچ اطلاعاتی به بانک ارسال نشده.</Text><Row label="وضعیت" value="در حال بررسی • MOCK" /></View>
+      <View style={styles.card}><Text style={styles.cardTitle}>خلاصه درخواست</Text><Row label="طرح انتخاب‌شده" value={financingPlan} /><Row label="مبلغ درخواست" value={mockFinancialModel.financing} /><Row label="آورده موردنیاز" value={mockFinancialModel.contribution} /></View>
+      <Button label="نمایش تأیید نمونه" to="approved" />
+      <Button label="نمایش رد نمونه" to="rejected" tone="danger" />
+      <Button label="بازگشت به خانه" to="home" tone="outline" />
+    </>; break;
+    case "approved": body = <>
+      <ScreenTitle title="وضعیت درخواست" back="review" />
+      <View style={styles.successCard}><Text style={styles.cardTitle}>درخواست تأمین مالی شما در نمونه تأیید شد</Text><Text style={styles.body}>این تأیید نمایشی است، نه تأیید بانک. برای ادامه، عضویت نمونه چارخونه را انتخاب کنید.</Text></View>
+      <View style={styles.card}><Text style={styles.cardTitle}>مرحله بعد: عضویت چارخونه</Text><Row label="وضعیت" value="نیازمند اقدام نمونه" /><Row label="مبلغ تأمین مالی نمونه" value={mockFinancialModel.financing} /><Row label="آورده موردنیاز" value={mockFinancialModel.contribution} /><Row label="پرداخت ماهانه فقط سود" value={mockFinancialModel.monthlyInterest} /></View>
+      <Button label="ادامه به عضویت چارخونه" to="membership" />
+    </>; break;
+    case "rejected": body = <>
+      <ScreenTitle title="وضعیت درخواست" back="review" />
+      <View style={styles.errorCard}><Text style={styles.cardTitle}>درخواست تأمین مالی در سناریوی نمونه تأیید نشد</Text><Text style={styles.body}>این وضعیت فقط برای مرور مسیر رد است؛ تصمیمی از بانک دریافت نشده.</Text></View>
+      <View style={styles.card}><Text style={styles.cardTitle}>خلاصه درخواست</Text><Row label="طرح انتخاب‌شده" value={financingPlan} /><Row label="مبلغ نمونه" value={mockFinancialModel.financing} /><Text style={styles.note}>دلیل واقعی بانک و سایر طرح‌های قابل استفاده در این نسخه وجود ندارند.</Text></View>
+      <Button label="بازگشت به طرح‌های تأمین مالی" to="financing-plans" />
+      <Button label="بازگشت به قراردادها" to="contracts" tone="outline" />
+    </>; break;
+    case "membership": body = <>
+      <ScreenTitle title="عضویت چارخونه" back="approved" />
+      <Text style={styles.figmaHeading}>طرح‌های عضویت در دسترس</Text>
+      <Text style={styles.figmaIntro}>حق عضویت، سقف تأمین مالی و تعداد استفاده در این صفحه فقط برای سناریوی نمایشی هستند.</Text>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>طرح ۱ بار استفاده</Text>
+        <Row label="سقف تأمین مالی عضویت" value="تا ۵۰۰٬۰۰۰٬۰۰۰ تومان" />
+        <Row label="حق عضویت نمونه" value="۲٬۵۰۰٬۰۰۰ تومان" />
+        {membershipChoice("۱ بار استفاده")}
+      </View>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>طرح ۲ بار استفاده</Text>
+        <Row label="سقف تأمین مالی عضویت" value="تا ۷۵۰٬۰۰۰٬۰۰۰ تومان" />
+        <Row label="حق عضویت نمونه" value="۴٬۰۰۰٬۰۰۰ تومان" />
+        {membershipChoice("۲ بار استفاده")}
+      </View>
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>طرح ۳ بار استفاده</Text>
+        <Row label="سقف تأمین مالی عضویت" value="تا ۱٬۰۰۰٬۰۰۰٬۰۰۰ تومان" />
+        <Row label="حق عضویت نمونه" value="۵٬۵۰۰٬۰۰۰ تومان" />
+        {membershipChoice("۳ بار استفاده")}
+      </View>
+      <Text style={styles.figmaIntro}>نوع عضویت مستقل از طرح تأمین مالی «{financingPlan}» باقی می‌ماند. هیچ مبلغی دریافت نمی‌شود.</Text>
+      <Button label="نمایش نتیجه موفق عضویت نمونه" to="membership-success" />
+      <Button label="وضعیت انتظار نمونه" to="membership-pending" tone="outline" />
+      <Button label="خطای نمونه" to="membership-failed" tone="danger" />
+    </>; break;
     case "membership-success": case "membership-pending": case "membership-failed": {
       const kind = screen.split("-")[1]; const title = kind === "success" ? "عضویت نمونه ثبت شد" : kind === "pending" ? "عضویت نمونه در انتظار است" : "خطای عضویت نمونه";
       body = <><ScreenTitle title={title} back="membership" /><View style={kind === "failed" ? styles.errorCard : styles.card}><Row label="نوع عضویت انتخاب‌شده" value={membership} /><Text style={styles.note}>{mockDisclaimer}</Text></View>{kind === "success" ? <Button label="ادامه به آورده" to="contribution" /> : <Button label="بازگشت به عضویت" to="membership" tone="outline" />}</>;
       break;
     }
-    case "contribution": body = <><ScreenTitle title="آوردهٔ مستأجر" back="membership" /><View style={styles.card}><Row label="آوردهٔ مستأجر در مدل نمونه" value={mockFinancialModel.contribution} /><Text style={styles.note}>این مبلغ از تأمین مالی تأییدشدهٔ نمونه کسر شده، نه صرفاً از سقف نظری. هیچ پرداختی ایجاد نمی‌شود.</Text></View><Button label="موفقیت نمونه" to="contribution-success" /><Button label="انتظار نمونه" to="contribution-pending" tone="outline" /><Button label="خطای نمونه" to="contribution-failed" tone="danger" /></>; break;
+    case "contribution": body = <>
+      <ScreenTitle title="وضعیت درخواست" back="membership-success" />
+      <View style={styles.card}><Text style={styles.cardTitle}>پرداخت آورده</Text><Text style={styles.body}>عضویت نمونه {membership} انتخاب شده است. برای ادامه، آورده موردنیاز قرارداد را در مسیر MOCK بررسی کنید.</Text><Row label="آورده شما" value={mockFinancialModel.contribution} /><Row label="وضعیت" value="در انتظار پرداخت • نمایشی" /></View>
+      <View style={styles.card}><Text style={styles.cardTitle}>شرایط نمونه تأمین مالی</Text><Row label="مبلغ تأمین مالی" value={mockFinancialModel.financing} /><Row label="پرداخت ماهانه فقط سود" value={mockFinancialModel.monthlyInterest} /><Row label="نرخ اسمی سالانه" value={mockFinancialModel.annualRate} /></View>
+      <Button label="نمایش موفقیت پرداخت نمونه آورده" to="contribution-success" />
+      <Button label="وضعیت انتظار نمونه" to="contribution-pending" tone="outline" />
+      <Button label="خطای نمونه" to="contribution-failed" tone="danger" />
+    </>; break;
     case "contribution-success": case "contribution-pending": case "contribution-failed": { const contributionSucceeded = screen === "contribution-success"; body = <><ScreenTitle title="نتیجهٔ نمونهٔ آورده" back="contribution" /><View style={screen.endsWith("failed") ? styles.errorCard : styles.card}><Row label="آوردهٔ نمونه" value={mockFinancialModel.contribution} /><Text style={styles.note}>{mockDisclaimer}</Text></View>{contributionSucceeded ? <Button label="تأیید نهایی نمونه" to="final-confirmation" /> : <Button label="بازگشت به آورده" to="contribution" tone="outline" />}</>; break; }
-    case "final-confirmation": body = <><ScreenTitle title="تأیید نهایی" back="contribution" /><View style={styles.card}><Text style={styles.body}>تأیید نهایی در این مسیر فقط برای نمایش ناوبری است و قرارداد واقعی نمی‌سازد.</Text><Row label="طرح MOCK" value={financingPlan} /><Row label="عضویت MOCK" value={membership} /></View><Button label="نمایش قرارداد فعال نمونه" to="contract-active" /></>; break;
+    case "final-confirmation": body = <>
+      <ScreenTitle title="وضعیت درخواست" back="contribution-success" />
+      <View style={styles.card}><Text style={styles.cardTitle}>آورده نمونه پرداخت شد</Text><Text style={styles.body}>در ادامه مسیر نمونه، تأیید نهایی طرفین قرارداد لازم است؛ تأیید، واریز یا قراردادی در واقعیت ایجاد نشده است.</Text><Row label="مبلغ آورده نمونه" value={mockFinancialModel.contribution} /></View>
+      <View style={styles.card}><Text style={styles.cardTitle}>تأیید نهایی طرفین</Text><Row label="مستأجر" value="تأیید نمایشی" /><Row label="مالک" value="در انتظار تأیید نمایشی" /><Row label="طرح تأمین مالی" value={financingPlan} /><Row label="عضویت" value={membership} /></View>
+      <Button label="نمایش قرارداد فعال نمونه" to="contract-active" />
+      <Button label="بازگشت به خانه" to="home" tone="outline" />
+    </>; break;
     case "profile": body = <><ScreenTitle title="حساب من" /><View style={styles.card}><Text style={styles.cardTitle}>حساب MOCK مستأجر</Text><Text style={styles.body}>اطلاعات هویتی یا حساب واقعی در پیش‌نمایش خوانده نمی‌شود.</Text><Text style={styles.note}>{mockDisclaimer}</Text></View><Button label="بازگشت به خانه" to="home" /></>; break;
     case "contract-active": body = <><ScreenTitle title="قرارداد فعال نمونه" /><View style={styles.successCard}><Text style={styles.cardTitle}>قرارداد MOCK</Text><Row label="وضعیت" value="فعال — صرفاً نمایشی" /><Row label="ودیعهٔ نقدی" value={mockFinancialModel.cashDeposit} /><Row label="اجارهٔ ماهانه" value={mockFinancialModel.monthlyRent} /></View><Button label="جزئیات قرارداد نمونه" to="contract-detail" /><Button label="دریافت‌وپرداخت" to="payments" tone="outline" /></>; break;
     case "contract-detail": body = <><ScreenTitle title="جزئیات قرارداد نمونه" back="contract-active" /><View style={styles.card}>{financeRows.slice(0, 3).map(([label, value]) => <Row key={label} label={label} value={value} />)}<Text style={styles.note}>هیچ کد رهگیری، ملک یا قرارداد ثبت‌شده‌ای در این صفحه ادعا نمی‌شود.</Text></View><Button label="بازگشت به قرارداد" to="contract-active" /></>; break;
