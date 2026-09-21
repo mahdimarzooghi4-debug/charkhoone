@@ -19,6 +19,7 @@ function PreviewAmount({ label, value, limit, progress }: { label: string; value
         <Text style={styles.amountValue}>{value}</Text>
       </View>
       <View accessibilityLabel={`${label}: ${value} تومان، نمونه ثابت`} style={styles.sliderTrack}>
+        <View style={styles.sliderBase} />
         <View style={[styles.sliderFill, { width: percentage }]} />
         <View style={[styles.sliderThumb, { right: percentage }]} />
       </View>
@@ -80,6 +81,7 @@ const styles = StyleSheet.create({
   currency: { color: colors.muted, fontFamily: fonts.medium, fontSize: 12, ...rtl },
   amountValue: { color: colors.primary, fontFamily: fonts.bold, fontSize: 25, ...rtl },
   sliderTrack: { height: 24, width: "100%", justifyContent: "center", overflow: "visible" },
+  sliderBase: { height: 4, backgroundColor: colors.border, borderRadius: 2, width: "100%" },
   sliderFill: { height: 4, backgroundColor: colors.primary, borderRadius: 2, position: "absolute", right: 0 },
   sliderThumb: { height: 16, width: 16, borderRadius: 8, borderWidth: 3, borderColor: colors.primary, backgroundColor: colors.surface, position: "absolute" },
   sliderLabels: { width: "100%", flexDirection: "row", justifyContent: "space-between" },
