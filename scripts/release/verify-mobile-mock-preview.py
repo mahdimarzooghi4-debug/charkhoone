@@ -35,6 +35,14 @@ for token in ("financingPlan", "membership", "setFinancingPlan", "setMembership"
     if token not in provider:
         failures.append(f"financing/membership state separation missing: {token}")
 
+for token in (
+    'kind === "success" ? <Button label="ادامه به آورده" to="contribution" /> : <Button label="بازگشت به عضویت"',
+    'contributionSucceeded ? <Button label="تأیید نهایی نمونه" to="final-confirmation" /> : <Button label="بازگشت به آورده"',
+    "bottomButton: { flex: 1, minHeight: 44, paddingHorizontal: 2 }",
+):
+    if token not in screen:
+        failures.append(f"MOCK result gating or four-item bottom navigation missing: {token}")
+
 for token in ("MOCK", "هیچ درخواست، پرداخت، تأیید بانک، عضویت یا قراردادی ثبت نمی‌شود"):
     if token not in screen and token not in data:
         failures.append(f"MOCK boundary notice missing: {token}")
