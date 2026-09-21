@@ -1,33 +1,84 @@
 import { Link, useRouter } from "expo-router";
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { BrandLogo } from "@/components/BrandLogo";
 import { FigmaSvg } from "@/components/FigmaSvg";
 import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts, radii } from "@/theme";
-import { mockFinancialModel } from "./mockTenantData";
+import { clampMockAmount, formatMockNumber, parseMockAmount, MOCK_CASH_DEPOSIT_MAX, MOCK_CASH_DEPOSIT_STEP, MOCK_MONTHLY_RENT_MAX, MOCK_MONTHLY_RENT_STEP } from "./mockTenantData";
+import { useMockPreview } from "./MockPreviewProvider";
 
 /**
  * Figma "Calculator / Manual Estimate" (65:55) for the isolated tenant MOCK.
  * The Figma figure of 18.5m is a stale visual fixture; C3-approved interest-only
- * amount is 6,708,333 toman. Controls are a labelled fixed sample, not fake inputs.
+ * amount starts at 6,708,333 toman. Local inputs calculate without bank calls.
  */
-function PreviewAmount({ label, value, limit, progress }: { label: string; value: string; limit: string; progress: number }) {
+function PreviewAmount({ label, value, maximum, step, limit, onChange }: {
+  label: string;
+  value: number;
+  maximum: number;
+  step: number;
+  limit: string;
+  onChange: (amount: number) => void;
+}) {
+  const [trackWidth, setTrackWidth] = useState(240);
+  const [editing, setEditing] = useState<string | null>(null);
+  const progress = maximum > 0 ? value / maximum : 0;
   const percentage = `${progress * 100}%` as `${number}%`;
+
+  const commit = () => {
+    if (editing !== null) onChange(clampMockAmount(parseMockAmount(editing), maximum));
+    setEditing(null);
+  };
+  const moveTo = (locationX: number) => {
+    if (!Number.isFinite(locationX) || trackWidth <= 0) return;
+    const ratio = Math.max(0, Math.min(1, locationX / trackWidth));
+    const next = Math.round(ratio * maximum / step) * step;
+    onChange(clampMockAmount(next, maximum));
+  };
+
   return (
     <View style={styles.amountGroup}>
       <Text style={styles.amountLabel}>{label}</Text>
       <View style={styles.amountValueRow}>
         <Text style={styles.currency}>تومان</Text>
-        <Text style={styles.amountValue}>{value}</Text>
+        <TextInput
+          accessibilityLabel={`${label} به تومان`}
+          keyboardType="number-pad"
+          selectTextOnFocus
+          value={editing === null ? formatMockNumber(value) : editing}
+          onFocus={() => setEditing(String(value))}
+          onChangeText={setEditing}
+          onBlur={commit}
+          onSubmitEditing={commit}
+          style={styles.amountValue}
+        />
       </View>
-      <View accessibilityLabel={`${label}: ${value} تومان، نمونه ثابت`} style={styles.sliderTrack}>
-        <View style={styles.sliderBase} />
-        <View style={[styles.sliderFill, { width: percentage }]} />
-        <View style={[styles.sliderThumb, { right: percentage }]} />
+      <View
+        accessible
+        accessibilityRole="adjustable"
+        accessibilityLabel={label}
+        accessibilityValue={{ min: 0, max: maximum, now: value }}
+        accessibilityActions={[{ name: "increment" }, { name: "decrement" }]}
+        onAccessibilityAction={event => onChange(clampMockAmount(value + (event.nativeEvent.actionName === "increment" ? step : -step), maximum))}
+        onLayout={event => setTrackWidth(event.nativeEvent.layout.width)}
+        onStartShouldSetResponder={() => true}
+        onMoveShouldSetResponder={() => true}
+        onResponderGrant={event => moveTo(event.nativeEvent.locationX)}
+        onResponderMove={event => moveTo(event.nativeEvent.locationX)}
+        style={styles.sliderTrack}
+      >
+        <View pointerEvents="none" style={styles.sliderBase} />
+        <View pointerEvents="none" style={[styles.sliderFill, { width: percentage }]} />
+        <View pointerEvents="none" style={[styles.sliderThumb, { left: `${progress * 100}%` as `${number}%` }]} />
       </View>
       <View style={styles.sliderLabels}>
         <Text style={styles.sliderLimit}>۰</Text>
         <Text style={styles.sliderLimit}>{limit}</Text>
+      </View>
+      <View style={styles.adjustRow}>
+        <Pressable accessibilityRole="button" accessibilityLabel={`افزایش ${label}`} onPress={() => onChange(clampMockAmount(value + step, maximum))} style={styles.adjustButton}><Text style={styles.adjustText}>+ افزایش</Text></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel={`کاهش ${label}`} onPress={() => onChange(clampMockAmount(value - step, maximum))} style={styles.adjustButton}><Text style={styles.adjustText}>− کاهش</Text></Pressable>
       </View>
     </View>
   );
@@ -35,6 +86,7 @@ function PreviewAmount({ label, value, limit, progress }: { label: string; value
 
 export function MockTenantCalculatorScreen() {
   const router = useRouter();
+  const { cashDeposit, monthlyRent, setCashDeposit, setMonthlyRent, financialModel } = useMockPreview();
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.brand}><BrandLogo /></View>
@@ -46,19 +98,19 @@ export function MockTenantCalculatorScreen() {
         <Text style={styles.heading}>شرایط قرارداد را وارد کنید</Text>
         <Text style={styles.intro}>با وارد کردن مبلغ رهن و اجاره، محدوده تقریبی قابل تأمین را مشاهده کنید.</Text>
         <View style={styles.card}>
-          <PreviewAmount label="مبلغ رهن" value="۵۰۰٬۰۰۰٬۰۰۰" limit="۲ میلیارد" progress={0.25} />
+          <PreviewAmount label="مبلغ رهن" value={cashDeposit} maximum={MOCK_CASH_DEPOSIT_MAX} step={MOCK_CASH_DEPOSIT_STEP} limit="۲ میلیارد" onChange={setCashDeposit} />
           <View style={styles.divider} />
-          <PreviewAmount label="اجاره ماهانه" value="۲۰٬۰۰۰٬۰۰۰" limit="۱۰۰ میلیون" progress={0.2} />
+          <PreviewAmount label="اجاره ماهانه" value={monthlyRent} maximum={MOCK_MONTHLY_RENT_MAX} step={MOCK_MONTHLY_RENT_STEP} limit="۱۰۰ میلیون" onChange={setMonthlyRent} />
         </View>
         <View style={styles.estimate}>
           <Text style={styles.estimateTitle}>پرداخت ماهانه تقریبی شما (فقط سود)</Text>
-          <Text style={styles.estimateValue}>{mockFinancialModel.monthlyInterest}</Text>
-          <Text style={styles.estimateCaption}>مثال ثابت C3 با نرخ اسمی سالانه {mockFinancialModel.annualRate}؛ بازپرداخت اصل، مطابق قرارداد نهایی بانک خواهد بود.</Text>
+          <Text style={styles.estimateValue}>{financialModel.monthlyInterest}</Text>
+          <Text style={styles.estimateCaption}>برآورد C3 با نرخ اسمی سالانه {financialModel.annualRate}؛ بازپرداخت اصل، مطابق قرارداد نهایی بانک خواهد بود.</Text>
         </View>
         <View style={styles.info}>
           <Text style={styles.infoTitle}>برآورد اولیه</Text>
           <Text style={styles.infoText}>پس از محاسبه، محدوده قابل تأمین، شرایط مالی و آورده نمونه برای شما نمایش داده می‌شود.</Text>
-          <Text style={styles.mockNotice}>MOCK: رهن و اجاره در این نسخه نمونه ثابت‌اند؛ اسلایدرها هنوز ورودی قابل تغییر نیستند و استعلام بانک انجام نمی‌شود.</Text>
+          <Text style={styles.mockNotice}>MOCK: رهن و اجاره را با لمس یا کشیدن اسلایدر، دکمه‌های کم‌وزیاد یا ورود عدد تغییر دهید. استعلام بانک و پرداخت واقعی انجام نمی‌شود.</Text>
         </View>
         <View style={styles.grow} />
         <Link href="/preview/calculator-result" style={styles.cta}>محاسبه شرایط</Link>
@@ -83,13 +135,16 @@ const styles = StyleSheet.create({
   amountLabel: { color: colors.muted, fontFamily: fonts.medium, fontSize: 12, ...rtl },
   amountValueRow: { width: "100%", flexDirection: "row", alignItems: "baseline", justifyContent: "flex-end", gap: 8 },
   currency: { color: colors.muted, fontFamily: fonts.medium, fontSize: 12, ...rtl },
-  amountValue: { color: colors.primary, fontFamily: fonts.bold, fontSize: 25, ...rtl },
-  sliderTrack: { height: 24, width: "100%", justifyContent: "center", overflow: "visible" },
+  amountValue: { minWidth: 155, color: colors.primary, fontFamily: fonts.bold, fontSize: 25, padding: 0, ...rtl },
+  sliderTrack: { height: 38, width: "100%", justifyContent: "center", overflow: "visible" },
   sliderBase: { height: 4, backgroundColor: colors.border, borderRadius: 2, width: "100%" },
   sliderFill: { height: 4, backgroundColor: colors.primary, borderRadius: 2, position: "absolute", right: 0 },
-  sliderThumb: { height: 16, width: 16, borderRadius: 8, borderWidth: 3, borderColor: colors.primary, backgroundColor: colors.surface, position: "absolute" },
+  sliderThumb: { height: 18, width: 18, marginLeft: -9, borderRadius: 9, borderWidth: 3, borderColor: colors.primary, backgroundColor: colors.surface, position: "absolute" },
   sliderLabels: { width: "100%", flexDirection: "row", justifyContent: "space-between" },
   sliderLimit: { color: colors.muted, fontFamily: fonts.regular, fontSize: 10, ...rtl },
+  adjustRow: { width: "100%", flexDirection: "row", gap: 8 },
+  adjustButton: { flex: 1, minHeight: 42, borderRadius: 8, backgroundColor: colors.page, alignItems: "center", justifyContent: "center" },
+  adjustText: { color: colors.primary, fontFamily: fonts.medium, fontSize: 12, textAlign: "center" },
   divider: { height: 1, backgroundColor: colors.border },
   estimate: { borderRadius: radii.md, borderColor: colors.border, borderWidth: 1, backgroundColor: colors.surface, padding: 14, gap: 6, alignItems: "flex-end" },
   estimateTitle: { width: "100%", color: colors.primary, fontFamily: fonts.semibold, fontSize: 13, ...rtl },
