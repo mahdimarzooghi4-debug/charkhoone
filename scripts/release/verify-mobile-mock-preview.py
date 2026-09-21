@@ -40,7 +40,9 @@ for token in ("financingPlan", "membership", "setFinancingPlan", "setMembership"
 for token in (
     'kind === "success" ? <Button label="ادامه به آورده" to="contribution" /> : <Button label="بازگشت به عضویت"',
     'contributionSucceeded ? <Button label="تأیید نهایی نمونه" to="final-confirmation" /> : <Button label="بازگشت به آورده"',
-    "bottomButton: { flex: 1, minHeight: 44, paddingHorizontal: 2 }",
+    "<Link href={`/preview/${to}`} asChild>",
+    "figmaAssets.homeActive",
+    "bottomItem: { flex: 1, minHeight: 48",
 ):
     if token not in screen:
         failures.append(f"MOCK result gating or four-item bottom navigation missing: {token}")
