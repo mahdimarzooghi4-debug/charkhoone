@@ -40,8 +40,11 @@ for token in ("financingPlan", "membership", "setFinancingPlan", "setMembership"
 for token in (
     'kind === "success" ? <Button label="ادامه به آورده" to="contribution" /> : <Button label="بازگشت به عضویت"',
     'contributionSucceeded ? <Button label="تأیید نهایی نمونه" to="final-confirmation" /> : <Button label="بازگشت به آورده"',
-    "<Link href={`/preview/${to}`} asChild>",
-    "style={StyleSheet.flatten([styles.button, styles[tone]])}",
+    "<Link href={`/preview/${to}`} style={StyleSheet.flatten([styles.button, styles[tone], styles.linkButton])}>",
+    "onPress={() => router.push(`/preview/${to}`)}",
+    'accessibilityLabel={label}',
+    'homeNotice: { padding: 12, gap: 8, borderRadius: 8, backgroundColor: colors.successSoft, flexDirection: "row-reverse"',
+    'homeNoticeText: { flex: 1, minWidth: 0',
     "figmaAssets.homeActive",
     "bottomItem: { flex: 1, minHeight: 48",
 ):
@@ -62,6 +65,9 @@ for token in (
 for token in ("MOCK", "هیچ درخواست، پرداخت، تأیید بانک، عضویت یا قراردادی ثبت نمی‌شود"):
     if token not in screen and token not in data:
         failures.append(f"MOCK boundary notice missing: {token}")
+
+if "asChild" in screen:
+    failures.append("MOCK navigation must not pass Style arrays to Expo Link asChild on web")
 
 if "@/api/" in screen or "useMobileAuth" in screen or "getMobileBootstrap" in screen:
     failures.append("MOCK preview must not read or mutate the authenticated mobile API")
