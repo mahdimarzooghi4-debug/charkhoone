@@ -83,11 +83,11 @@ require('MockTenantCalculatorScreen' in route_calculator, "calculator must use F
 require('screen="calculator-result"' in route_result, "result must map to Figma 71:43")
 
 # No label or destination may accidentally fall through to /preview/undefined.
-for to in re.findall(r'\\bto="([a-z][a-z-]*)"', screen):
+for to in re.findall(r'\bto="([a-z][a-z-]*)"', screen):
     require((PREVIEW_ROUTES / (to + ".tsx")).is_file(), f"missing explicit MOCK Button destination: {to}")
 for to in re.findall(r'href="/preview/([a-z][a-z-]*)"', screen + calculator):
     require((PREVIEW_ROUTES / (to + ".tsx")).is_file(), f"missing explicit MOCK Link destination: {to}")
-for to in re.findall(r'router\\.(?:push|replace)\\("/preview/([a-z][a-z-]*)"\\)', screen + calculator):
+for to in re.findall(r'router\.(?:push|replace)\("/preview/([a-z][a-z-]*)"\)', screen + calculator):
     require((PREVIEW_ROUTES / (to + ".tsx")).is_file(), f"missing explicit router destination: {to}")
 require('["قراردادها", "contracts",' in screen, "bottom navigation must open Figma Contracts / Overview")
 require('["دریافت و پرداخت", "payments",' in screen, "bottom navigation must open Figma Payments / Overview")
