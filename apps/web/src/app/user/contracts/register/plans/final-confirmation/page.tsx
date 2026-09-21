@@ -74,7 +74,9 @@ const process: readonly ProcessStep[] = [
   { title: "فعال شدن قرارداد", note: "در انتظار", number: "۵" },
 ] as const;
 
-export default function FinalConfirmationPage() {
+export default async function FinalConfirmationPage({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {
+  const plan = (await searchParams).plan === "general" ? "general" : "staff";
+  const selectedFinancingRows = ([["طرح انتخاب‌شده", plan === "general" ? "طرح عمومی" : "طرح ویژه کارکنان", "default"], ...financingRows] as const);
   return (
     <main className={styles.page} data-node-id="150:1489" data-name="Web App / Contribution Paid / Final Confirmation">
       <section className={styles.mainContent} data-node-id="150:1490">
@@ -96,7 +98,7 @@ export default function FinalConfirmationPage() {
 
             <section className={styles.card} data-node-id="150:1535">
               <div className={styles.cardTitleRow} data-node-id="150:1536"><h2 data-node-id="150:1537">تأمین مالی قرارداد</h2><span className={styles.approvedBadge} data-node-id="150:1538">تأیید شده</span></div>
-              <Rows rows={financingRows} />
+              <Rows rows={selectedFinancingRows} />
             </section>
 
             <section className={styles.card} data-node-id="150:1568">
@@ -143,7 +145,7 @@ export default function FinalConfirmationPage() {
             </section>
 
             <div className={styles.confirmationArea} data-node-id="150:1647">
-              <FinalConfirmationConsent />
+              <FinalConfirmationConsent plan={plan} />
               <Link href="/user/contracts/123456789012" className={styles.secondaryAction} data-node-id="150:1655">مشاهده جزئیات قرارداد</Link>
             </div>
           </aside>
