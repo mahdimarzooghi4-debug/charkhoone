@@ -24,6 +24,9 @@ jobs:
       - name: Verify mobile runtime API/OIDC wiring
         working-directory: .
         run: python3 scripts/release/verify-mobile-runtime-wiring.py
+      - name: Verify Figma tenant MOCK route map and C3 calculations
+        working-directory: .
+        run: python3 scripts/release/verify-mobile-mock-preview.py
       - name: Install from lockfile
         run: npm ci --no-audit --no-fund
       - name: Typecheck
