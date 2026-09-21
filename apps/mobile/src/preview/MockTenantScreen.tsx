@@ -342,26 +342,33 @@ export function MockTenantScreen({ screen }: Props) {
     }
     case "plan-confirmation": body = <>
       <ScreenTitle title="تأیید درخواست" back="financing-plans" />
-      <Text style={styles.figmaHeading}>جزئیات درخواست خود را بررسی کنید</Text>
-      <Text style={styles.figmaIntro}>پیش از ارسال نمونه، شرایط طرح انتخاب‌شده را بررسی کنید.</Text>
-      <View style={styles.card}><Text style={styles.cardTitle}>طرح انتخاب‌شده</Text><Row label="طرح" value={financingPlan} /><Text style={styles.note}>بانک و نرخ اختصاصی طرح هنوز در پیش‌نمایش تعریف عملیاتی ندارند.</Text></View>
-      <View style={styles.card}><Text style={styles.cardTitle}>خلاصه مالی طرح</Text>{financeRows.map(([label,value]) => <Row key={label} label={label} value={value} />)}<Row label="نرخ اسمی نمونه" value={mockFinancialModel.annualRate} /><Row label="پرداخت ماهانه فقط سود" value={mockFinancialModel.monthlyInterest} /></View>
-      <View style={styles.card}><Text style={styles.cardTitle}>پس از ارسال درخواست</Text><Text style={styles.body}>بررسی قرارداد ← بررسی اعتبار ← تصمیم بانک ← اعلام نتیجه در چارخونه. در این نسخه همه مراحل MOCK هستند.</Text></View>
-      <Button label="ارسال نمونه برای بررسی" to="review" />
+<Text style={styles.planIntroHeading}>جزئیات درخواست خود را بررسی کنید</Text>
+<Text style={styles.figmaIntro}>پیش از ارسال نمونه، اطلاعات قرارداد و شرایط طرح انتخاب‌شده را بررسی کنید.</Text>
+<View style={styles.card}><Text style={styles.cardTitle}>طرح انتخاب‌شده</Text><View style={styles.membershipBadge}><Text style={styles.membershipBadgeText}>نمونهٔ C3</Text></View><Row label="طرح" value={financingPlan} /><Text style={styles.note}>بانک یا تخفیف ویژه‌ای برای این نمونه تعیین نشده؛ تأیید بانکی رخ نداده است.</Text></View>
+<View style={styles.card}><Text style={styles.cardTitle}>خلاصه مالی طرح</Text><Row label="مبلغ قابل تأمین (۳۰٪)" value={mockFinancialModel.financing} /><Row label="آورده موردنیاز" value={mockFinancialModel.contribution} /><Row label="نرخ اسمی سالانه نمونه" value={mockFinancialModel.annualRate} /><Row label="پرداخت ماهانه تأمین مالی (فقط سود)" value={mockFinancialModel.monthlyInterest} /><Row label="اجاره ماهانه قرارداد (مستقل)" value={mockFinancialModel.monthlyRent} /></View>
+<View style={styles.card}><Text style={styles.cardTitle}>قرارداد مرتبط</Text><Row label="کد رهگیری نمونه" value="۱۲۳۴۵۶۷۸۹۰۱۲" /><Row label="تاریخ شروع" value="۱۵ مهر ۱۴۰۵" /><Row label="تاریخ پایان" value="۱۵ مهر ۱۴۰۶" /><Text style={styles.note}>تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴ (MOCK)</Text></View>
+<View style={styles.statusTextCard}><Text style={styles.cardTitle}>پس از ارسال درخواست</Text><Text style={styles.body}>بررسی اطلاعات و اعتبار ← تصمیم بانک ← اعلام نتیجه در چارخونه. فقط شبیه‌سازی مراحل است.</Text></View>
+<Button label="ارسال درخواست نمونه برای بررسی" to="review" tone="light" />
     </>; break;
     case "review": body = <>
       <ScreenTitle title="وضعیت درخواست" back="plan-confirmation" />
-      <View style={styles.card}><Text style={styles.cardTitle}>درخواست نمونه ثبت شد</Text><Text style={styles.body}>درخواست تأمین مالی فقط در پیش‌نمایش در حال بررسی است؛ هیچ اطلاعاتی به بانک ارسال نشده.</Text><Row label="وضعیت" value="در حال بررسی • MOCK" /></View>
-      <View style={styles.card}><Text style={styles.cardTitle}>خلاصه درخواست</Text><Row label="طرح انتخاب‌شده" value={financingPlan} /><Row label="مبلغ درخواست" value={mockFinancialModel.financing} /><Row label="آورده موردنیاز" value={mockFinancialModel.contribution} /></View>
-      <Button label="نمایش تأیید نمونه" to="approved" />
-      <Button label="نمایش رد نمونه" to="rejected" tone="danger" />
-      <Button label="بازگشت به خانه" to="home" tone="outline" />
+<StatusHero title="درخواست شما ثبت شد" description="درخواست صرفاً در پیش‌نمایش ثبت شده و برای هیچ بانکی ارسال نشده است." badge="در حال بررسی • MOCK" />
+<View style={styles.card}><Text style={styles.cardTitle}>خلاصه درخواست</Text><Row label="مبلغ درخواستی" value={mockFinancialModel.financing} /><Row label="طرح انتخاب‌شده" value={financingPlan} /><Row label="وضعیت" value="بررسی نمونه" /></View>
+<ProgressStepper labels={["ثبت درخواست", "بررسی اطلاعات", "بررسی بانک", "اعلام نتیجه"]} done={1} current={1} />
+<View style={styles.statusTextCard}><Text style={styles.cardTitle}>در حال بررسی اطلاعات</Text><Text style={styles.body}>اطلاعات قرارداد و شرایط طرح در سناریوی نمایشی بررسی می‌شوند؛ اعتبارسنجی واقعی انجام نشده است.</Text><Text style={styles.note}>در نسخه عملیاتی، نتیجه از طریق چارخونه اعلام خواهد شد.</Text></View>
+<View style={styles.card}><Text style={styles.cardTitle}>قرارداد مرتبط</Text><Row label="کد رهگیری نمونه" value="۱۲۳۴۵۶۷۸۹۰۱۲" /><Row label="ملک" value="تهران، سعادت‌آباد" /></View>
+<Button label="بازگشت به خانه" to="home" tone="light" />
+<View style={styles.card}><Text style={styles.cardTitle}>نمایش نتایج برای بررسی طراحی</Text><Button label="سناریوی تأیید نمایشی" to="approved" tone="outline" /><Button label="سناریوی رد نمایشی" to="rejected" tone="outline" /></View>
     </>; break;
     case "approved": body = <>
       <ScreenTitle title="وضعیت درخواست" back="review" />
-      <View style={styles.successCard}><Text style={styles.cardTitle}>درخواست تأمین مالی شما در نمونه تأیید شد</Text><Text style={styles.body}>این تأیید نمایشی است، نه تأیید بانک. برای ادامه، عضویت نمونه چارخونه را انتخاب کنید.</Text></View>
-      <View style={styles.card}><Text style={styles.cardTitle}>مرحله بعد: عضویت چارخونه</Text><Row label="وضعیت" value="نیازمند اقدام نمونه" /><Row label="مبلغ تأمین مالی نمونه" value={mockFinancialModel.financing} /><Row label="آورده موردنیاز" value={mockFinancialModel.contribution} /><Row label="پرداخت ماهانه فقط سود" value={mockFinancialModel.monthlyInterest} /></View>
-      <Button label="ادامه به عضویت چارخونه" to="membership" />
+<StatusHero title="درخواست تأمین مالی در نمونه تأیید شد" description="این تأیید فقط سناریوی نمایشی است؛ هیچ تصمیمی از بانک دریافت نشده است." badge="تأیید نمونه" icon={figmaAssets.approvedCheck} />
+<View style={styles.accentOutlineCard}><Text style={styles.cardTitle}>مرحله بعد: عضویت چارخونه</Text><Text style={styles.accentedAmount}>نیازمند اقدام</Text><Text style={styles.body}>در ادامه پیش‌نمایش، یک طرح عضویت انتخاب می‌کنید. هیچ وجهی دریافت نمی‌شود.</Text></View>
+<View style={styles.card}><Text style={styles.cardTitle}>شرایط تأییدشده در MOCK</Text><Row label="مبلغ تأمین مالی نمونه" value={mockFinancialModel.financing} /><Row label="آورده موردنیاز" value={mockFinancialModel.contribution} /><Row label="پرداخت ماهانه (فقط سود)" value={mockFinancialModel.monthlyInterest} /><Row label="نرخ اسمی نمونه" value={mockFinancialModel.annualRate} /></View>
+<ProgressStepper labels={["ثبت درخواست","بررسی اطلاعات","تأیید بانک","پرداخت آورده","تأیید نهایی"]} done={3} current={3} />
+<View style={styles.statusTextCard}><Text style={styles.body}>ابتدا عضویت نمونه را تکمیل کنید و سپس به مرحله آورده بروید؛ پرداخت و تأیید واقعی انجام نمی‌شود.</Text></View>
+<View style={styles.card}><Text style={styles.cardTitle}>قرارداد مرتبط</Text><Row label="کد رهگیری نمونه" value="۱۲۳۴۵۶۷۸۹۰۱۲" /><Row label="ملک" value="تهران، سعادت‌آباد" /></View>
+<Button label="ادامه به عضویت چارخونه" to="membership" tone="light" />
     </>; break;
     case "rejected": body = <>
       <ScreenTitle title="وضعیت درخواست" back="review" />
