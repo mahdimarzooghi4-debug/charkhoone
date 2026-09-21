@@ -13,13 +13,13 @@ const assets = {
 } as const;
 
 const rows = [
-  ["مبلغ", "۲٬۵۰۰٬۰۰۰ تومان", true],
+  ["مبلغ نمونه", "۲٬۵۰۰٬۰۰۰ تومان", true],
   ["بابت", "حق عضویت چارخونه", false],
   ["تاریخ", "۱۵ آبان ۱۴۰۵", false],
   ["ساعت", "۱۴:۳۵", false],
-  ["شماره پیگیری", "۱۲۳۴۵۶۷۸۹", false],
+  ["شناسه نمونه", "۱۲۳۴۵۶۷۸۹", false],
   ["سقف تأمین مالی", "تا ۵۰۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["وضعیت پرداخت", "فعال", false],
+  ["وضعیت عضویت", "فعال (نمونه)", false],
 ] as const;
 
 export default function MembershipPaymentSuccessStatePage() {
@@ -31,7 +31,7 @@ export default function MembershipPaymentSuccessStatePage() {
           <div className={styles.headerRight} data-node-id="912:285">
             <div className={styles.breadcrumb}><span>دریافت و پرداخت</span><span>/</span><strong>نتیجه پرداخت</strong></div>
             <h1 data-node-id="912:290">نتیجه پرداخت</h1>
-            <p data-node-id="912:291">وضعیت تراکنش شما در سامانه چارخونه</p>
+            <p data-node-id="912:291">این صفحه سناریوی نمایشی پرداخت است؛ هیچ تراکنش یا فعال‌سازی واقعی ثبت نمی‌شود.</p>
           </div>
         </header>
 
@@ -40,9 +40,9 @@ export default function MembershipPaymentSuccessStatePage() {
             <div className={styles.receiptBrand} data-node-id="912:294"><strong data-node-id="912:295">چارخونه</strong><div className={styles.divider} /></div>
             <div className={styles.statusSection} data-node-id="912:297">
               <span className={styles.checkCircle} data-node-id="912:298"><img src={assets.check} alt="" width={24} height={24} /></span>
-              <h2 data-node-id="912:302">حق عضویت با موفقیت پرداخت شد</h2>
+              <h2 data-node-id="912:302">سناریوی نمونه: حق عضویت پرداخت شد</h2>
               <strong className={styles.amount} data-node-id="912:303">۲٬۵۰۰٬۰۰۰ تومان</strong>
-              <span className={styles.successBadge} data-node-id="912:305">موفق</span>
+              <span className={styles.successBadge} data-node-id="912:305">موفق (نمونه)</span>
             </div>
             <div className={styles.divider} />
             <div className={styles.details} data-node-id="912:308">
@@ -61,7 +61,7 @@ export default function MembershipPaymentSuccessStatePage() {
 
           <div className={styles.actions} data-node-id="912:349">
             <Link href="/user/contracts/123456789012" className={styles.secondaryAction} data-node-id="912:350">بازگشت به قرارداد</Link>
-            <Link href="/user/contracts/register/plans/contribution" className={styles.primaryAction} data-node-id="912:352">ادامه و پرداخت آورده</Link>
+            <Link href="/user/contracts/register/plans/contribution" className={styles.primaryAction} data-node-id="912:352">پیش‌نمایش مرحله آورده</Link>
           </div>
         </div>
       </section>

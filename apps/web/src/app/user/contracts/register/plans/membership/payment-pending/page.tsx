@@ -17,7 +17,7 @@ const rows = [
   ["بابت", "حق عضویت چارخونه", false],
   ["تاریخ", "۱۵ آبان ۱۴۰۵", false],
   ["ساعت", "۱۴:۳۵", false],
-  ["شماره پیگیری", "۱۲۳۴۵۶۷۸۹", false],
+  ["شناسه نمونه", "۱۲۳۴۵۶۷۸۹", false],
   ["وضعیت پرداخت", "در انتظار تأیید پرداخت", false],
 ] as const;
 
@@ -30,7 +30,7 @@ export default function MembershipPaymentPendingStatePage() {
           <div className={styles.headerRight} data-node-id="912:493">
             <div className={styles.breadcrumb} data-node-id="912:494"><span>دریافت و پرداخت</span><span>/</span><strong>نتیجه پرداخت</strong></div>
             <h1 data-node-id="912:498">نتیجه پرداخت</h1>
-            <p data-node-id="912:499">وضعیت تراکنش شما در سامانه چارخونه</p>
+            <p data-node-id="912:499">این صفحه سناریوی نمایشی پرداخت در انتظار است؛ استعلام درگاه یا تراکنش واقعی انجام نمی‌شود.</p>
           </div>
         </header>
 
@@ -39,7 +39,7 @@ export default function MembershipPaymentPendingStatePage() {
             <div className={styles.receiptBrand} data-node-id="912:502"><strong data-node-id="912:503">چارخونه</strong><div className={styles.divider} /></div>
             <div className={styles.statusSection} data-node-id="912:505">
               <span className={`${styles.checkCircle} ${styles.pendingCircle}`} data-node-id="912:506"><img src={assets.check} alt="" width={24} height={24} /></span>
-              <h2 data-node-id="912:510">وضعیت پرداخت حق عضویت در حال بررسی است</h2>
+              <h2 data-node-id="912:510">سناریوی نمونه: پرداخت حق عضویت در انتظار است</h2>
               <strong className={`${styles.amount} ${styles.pendingAmount}`} data-node-id="912:511">۲٬۵۰۰٬۰۰۰ تومان</strong>
               <span className={styles.pendingBadge} data-node-id="912:513">در حال بررسی</span>
             </div>
@@ -60,7 +60,7 @@ export default function MembershipPaymentPendingStatePage() {
 
           <div className={styles.actions} data-node-id="912:557">
             <Link href="/user/contracts/123456789012" className={styles.secondaryAction} data-node-id="912:558">بازگشت به قرارداد</Link>
-            <Link href="/user/contracts/register/plans/membership/payment-pending" className={styles.primaryAction} data-node-id="912:560">بررسی مجدد وضعیت</Link>
+            <Link href="/user/contracts/register/plans/membership/payment-pending" className={styles.primaryAction} data-node-id="912:560">بازنمایش وضعیت نمونه</Link>
           </div>
         </div>
       </section>

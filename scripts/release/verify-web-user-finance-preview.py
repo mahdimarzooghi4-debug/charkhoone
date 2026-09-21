@@ -102,4 +102,19 @@ demand(sample["loan"] in owner_active and "۴۵۰٬۰۰۰٬۰۰۰" not in owner_
        "برآورد مستقل مالک سعادت‌آباد" in payments,
        "owner payout preview must not be represented as tenant bank interest")
 
+# Legacy membership result routes remain directly navigable. Make their status
+# unambiguously illustrative even though the primary flow uses membership/result.
+for relative in (
+    "contracts/register/plans/membership/payment-success/page.tsx",
+    "contracts/register/plans/membership/payment-failed/page.tsx",
+    "contracts/register/plans/membership/payment-pending/page.tsx",
+    "contracts/register/plans/membership/failed/page.tsx",
+    "contracts/register/plans/membership/pending/page.tsx",
+):
+    legacy = (PAGES / relative).read_text(encoding="utf-8")
+    demand("سناریوی نمایشی" in legacy and "شناسه نمونه" in legacy and
+           "شماره پیگیری" not in legacy and
+           "وضعیت تراکنش شما در سامانه چارخونه" not in legacy,
+           relative + ": legacy membership screen must not claim a real payment")
+
 print("web C3 interest-only mock financing is consistent across user panel")
