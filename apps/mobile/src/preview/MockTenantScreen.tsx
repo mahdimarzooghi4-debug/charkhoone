@@ -1,6 +1,6 @@
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Link, useRouter } from "expo-router";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { colors, fonts, radii } from "@/theme";
 import { FigmaSvg } from "@/components/FigmaSvg";
 import { BrandLogo } from "@/components/BrandLogo";
@@ -10,7 +10,8 @@ import { useMockPreview } from "./MockPreviewProvider";
 
 type Props = { screen: string };
 function Button({ label, to, tone = "primary" }: { label: string; to: string; tone?: "primary" | "outline" | "danger" }) {
-  return <Link href={`/preview/${to}`} style={StyleSheet.flatten([styles.button, styles[tone], styles.linkButton])}>{label}</Link>;
+  const router = useRouter();
+  return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => router.push(`/preview/${to}`)} style={StyleSheet.flatten([styles.button, styles[tone]])}><Text style={styles.buttonText}>{label}</Text></Pressable>;
 }
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -25,12 +26,12 @@ function BottomNav({ active }: { active: "home" | "payments" | "contracts" | "pr
   const router = useRouter();
   const items = [
     ["حساب من", "profile", figmaAssets.user],
-    ["قراردادها", "contract-active", figmaAssets.fileText],
+    ["قراردادها", "contracts", figmaAssets.fileText],
     ["دریافت و پرداخت", "payments", figmaAssets.creditCard],
     ["خانه", "home", figmaAssets.home],
   ] as const;
   return <View style={styles.bottomNav}>{items.map(([label, to, icon]) => {
-    const selected = active === (to === "contract-active" ? "contracts" : to);
+    const selected = active === to;
     return <Pressable key={to} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected }} onPress={() => router.push(`/preview/${to}`)} style={styles.bottomItem}><View pointerEvents="none"><FigmaSvg uri={selected && to === "home" ? figmaAssets.homeActive : icon} width={24} height={24} /></View><Text style={[styles.bottomLabel, selected && styles.bottomLabelActive]}>{label}</Text></Pressable>;
   })}</View>;
 }
@@ -45,11 +46,14 @@ function PreviewShortcut({ label, to, icon }: { label: string; to: string; icon:
 }
 
 function ScreenTitle({ title, back = "home" }: { title: string; back?: string }) {
-  return <View style={styles.titleRow}><Button label="‹" to={back} tone="outline" /><View style={styles.titleGroup}><Text style={styles.mock}>MOCK • پیش‌نمایش مستقل</Text><Text style={styles.title}>{title}</Text></View></View>;
+  const router = useRouter();
+  return <><View style={styles.previewBrand}><BrandLogo /></View><View style={styles.titleRow}><Pressable accessibilityRole="button" accessibilityLabel="بازگشت" onPress={() => router.push(`/preview/${back}`)} style={styles.titleBack}><View pointerEvents="none"><FigmaSvg uri={figmaAssets.back} width={24} height={40} /></View></Pressable><View style={styles.titleGroup}><Text style={styles.title}>{title}</Text></View></View><Text style={styles.mock}>MOCK • پیش‌نمایش مستقل</Text></>;
 }
 
 export function MockTenantScreen({ screen }: Props) {
   const { financingPlan, membership, setFinancingPlan, setMembership, financialModel: mockFinancialModel } = useMockPreview();
+  const [trackingCode, setTrackingCode] = useState("۱۲۳۴۵۶۷۸۹۰۱۲");
+  const [trackingError, setTrackingError] = useState(false);
   const financeRows = [
   ["ودیعهٔ نقدی", mockFinancialModel.cashDeposit],
   ["اجارهٔ ماهانه", mockFinancialModel.monthlyRent],
@@ -106,7 +110,7 @@ export function MockTenantScreen({ screen }: Props) {
         <Text style={styles.homeActionTitle}>اقدام بعدی شما</Text>
         <Text style={styles.homeActionCopy}>شرایط نمونه تأمین مالی را بررسی کنید یا به سناریوی نمایشی قرارداد بروید. هیچ درخواستی برای بانک ارسال نمی‌شود.</Text>
         <View style={styles.homeActionButtons}>
-          <View style={styles.homeHalfButton}><Button label="مشاهده قرارداد" to="contract-active" tone="outline" /></View>
+          <View style={styles.homeHalfButton}><Button label="ثبت کد رهگیری" to="contract-tracking" tone="outline" /></View>
           <View style={styles.homeHalfButton}><Link href="/preview/calculator" style={StyleSheet.flatten([styles.button, styles.primary, styles.linkButton])}>محاسبه شرایط</Link></View>
         </View>
       </View>
@@ -114,8 +118,8 @@ export function MockTenantScreen({ screen }: Props) {
       <View style={styles.homeQuickRow}>
         <PreviewShortcut label="ماشین‌حساب" to="calculator" icon={figmaAssets.calculator} />
         <PreviewShortcut label="دریافت و پرداخت" to="payments" icon={figmaAssets.wallet} />
-        <PreviewShortcut label="قراردادها" to="contract-active" icon={figmaAssets.file} />
-        <PreviewShortcut label="انتخاب طرح" to="financing-plans" icon={figmaAssets.home} />
+        <PreviewShortcut label="قراردادها" to="contracts" icon={figmaAssets.file} />
+        <PreviewShortcut label="املاک من" to="contracts" icon={figmaAssets.home} />
       </View>
       <View style={styles.homeNotice}><FigmaSvg uri={figmaAssets.info} width={16} height={16} /><Text style={styles.homeNoticeText}>پیش‌نمایش مستقل MOCK: ارقام مثال C3 هستند، نه وضعیت حساب یا پرداخت واقعی شما.</Text></View>
     </>;
@@ -149,5 +153,11 @@ const styles = StyleSheet.create({
   homeShortcutLabel: { color: colors.text, fontFamily: fonts.medium, fontSize: 10, textAlign: "center", writingDirection: "rtl" },
   homeNotice: { padding: 12, gap: 8, borderRadius: 8, backgroundColor: colors.successSoft, flexDirection: "row-reverse", alignItems: "flex-start", justifyContent: "flex-end" },
   homeNoticeText: { flex: 1, minWidth: 0, color: colors.primary, fontFamily: fonts.regular, fontSize: 11, lineHeight: 18, textAlign: "right", writingDirection: "rtl" },
-  safe: { flex: 1, backgroundColor: colors.primary }, scroll: { padding: 16, gap: 14, paddingBottom: 24 }, titleRow: { flexDirection: "row", gap: 12, alignItems: "center" }, titleGroup: { flex: 1, alignItems: "flex-end" }, mock: { color: colors.accent, fontFamily: fonts.bold, fontSize: 11, ...text }, title: { color: colors.surface, fontFamily: fonts.bold, fontSize: 22, ...text }, card: { backgroundColor: colors.surface, borderRadius: radii.lg, padding: 16, gap: 12 }, successCard: { backgroundColor: colors.successSoft, borderRadius: radii.lg, padding: 16, gap: 12 }, errorCard: { backgroundColor: "#FEE2E2", borderRadius: radii.lg, padding: 16, gap: 12 }, hero: { backgroundColor: "#174D46", borderRadius: radii.xl, padding: 20, gap: 8 }, heroTitle: { color: colors.surface, fontFamily: fonts.bold, fontSize: 20, ...text }, heroText: { color: "#D1E7E2", fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, ...text }, cardTitle: { color: colors.primary, fontFamily: fonts.bold, fontSize: 16, ...text }, body: { color: colors.text, fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, ...text }, note: { color: "#56616C", fontFamily: fonts.regular, fontSize: 11, lineHeight: 19, ...text }, row: { flexDirection: "row", justifyContent: "space-between", gap: 12, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 8 }, label: { color: "#56616C", flex: 1, fontFamily: fonts.regular, fontSize: 12, ...text }, value: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 12, textAlign: "left" }, button: { minHeight: 46, borderRadius: radii.md, paddingHorizontal: 14, alignItems: "center", justifyContent: "center" }, linkButton: { display: "flex", textAlign: "center", textAlignVertical: "center", fontFamily: fonts.semibold, fontSize: 13, lineHeight: 46, color: colors.primary, textDecorationLine: "none" }, primary: { backgroundColor: colors.accent }, outline: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.primary }, danger: { backgroundColor: "#FEE2E2", borderWidth: 1, borderColor: "#B91C1C" }, buttonText: { fontFamily: fonts.semibold, fontSize: 13, ...text }, buttonTextLight: { color: colors.primary }, buttonTextDark: { color: colors.primary }, choice: { minHeight: 48, padding: 12, flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md }, choiceSelected: { borderColor: colors.accent, backgroundColor: colors.accentSoft }, choiceText: { color: colors.text, flex: 1, fontFamily: fonts.medium, fontSize: 12, ...text }, radio: { width: 18, height: 18, borderWidth: 2, borderRadius: 9, borderColor: colors.muted }, radioSelected: { borderColor: colors.accent, backgroundColor: colors.accent }, disclaimer: { padding: 12, backgroundColor: "#FFF7ED", borderRadius: radii.md }, disclaimerText: { color: "#9A4F00", fontFamily: fonts.medium, fontSize: 11, lineHeight: 18, ...text }, bottomNav: { height: 80, flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, backgroundColor: colors.page, borderTopWidth: 1, borderColor: colors.border }, bottomItem: { flex: 1, minHeight: 48, alignItems: "center", justifyContent: "center", gap: 4 }, bottomLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "center", writingDirection: "rtl" }, bottomLabelActive: { color: colors.accent, fontFamily: fonts.medium },
+  previewBrand: { height: 60, alignItems: "flex-end", paddingHorizontal: 16 },
+  titleBack: { height: 44, width: 40, justifyContent: "center", alignItems: "center", transform: [{ rotate: "180deg" }] },
+  trackInput: { minHeight: 48, borderRadius: 10, borderWidth: 1, borderColor: colors.border, color: colors.primary, paddingHorizontal: 12, textAlign: "right", fontFamily: fonts.medium, fontSize: 18 },
+  softCard: { backgroundColor: colors.page, borderRadius: 12, padding: 14, gap: 8 },
+  figmaHeading: { color: colors.page, fontFamily: fonts.bold, fontSize: 18, ...text },
+  figmaIntro: { color: colors.page, fontFamily: fonts.regular, fontSize: 12, lineHeight: 21, ...text },
+  safe: { flex: 1, backgroundColor: colors.primary }, scroll: { padding: 16, gap: 14, paddingBottom: 24 }, titleRow: { minHeight: 56, paddingHorizontal: 16, flexDirection: "row", backgroundColor: colors.surface, gap: 12, alignItems: "center" }, titleGroup: { flex: 1, alignItems: "flex-end" }, mock: { color: colors.accent, fontFamily: fonts.bold, fontSize: 10, paddingHorizontal: 16, paddingTop: 8, ...text }, title: { color: colors.text, fontFamily: fonts.semibold, fontSize: 18, ...text }, card: { backgroundColor: colors.surface, borderRadius: radii.lg, padding: 16, gap: 12 }, successCard: { backgroundColor: colors.successSoft, borderRadius: radii.lg, padding: 16, gap: 12 }, errorCard: { backgroundColor: "#FEE2E2", borderRadius: radii.lg, padding: 16, gap: 12 }, hero: { backgroundColor: "#174D46", borderRadius: radii.xl, padding: 20, gap: 8 }, heroTitle: { color: colors.surface, fontFamily: fonts.bold, fontSize: 20, ...text }, heroText: { color: "#D1E7E2", fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, ...text }, cardTitle: { color: colors.primary, fontFamily: fonts.bold, fontSize: 16, ...text }, body: { color: colors.text, fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, ...text }, note: { color: "#56616C", fontFamily: fonts.regular, fontSize: 11, lineHeight: 19, ...text }, row: { flexDirection: "row", justifyContent: "space-between", gap: 12, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 8 }, label: { color: "#56616C", flex: 1, fontFamily: fonts.regular, fontSize: 12, ...text }, value: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 12, textAlign: "left" }, button: { minHeight: 46, borderRadius: radii.md, paddingHorizontal: 14, alignItems: "center", justifyContent: "center" }, linkButton: { display: "flex", textAlign: "center", textAlignVertical: "center", fontFamily: fonts.semibold, fontSize: 13, lineHeight: 46, color: colors.primary, textDecorationLine: "none" }, primary: { backgroundColor: colors.accent }, outline: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.primary }, danger: { backgroundColor: "#FEE2E2", borderWidth: 1, borderColor: "#B91C1C" }, buttonText: { fontFamily: fonts.semibold, fontSize: 13, ...text }, buttonTextLight: { color: colors.primary }, buttonTextDark: { color: colors.primary }, choice: { minHeight: 48, padding: 12, flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md }, choiceSelected: { borderColor: colors.accent, backgroundColor: colors.accentSoft }, choiceText: { color: colors.text, flex: 1, fontFamily: fonts.medium, fontSize: 12, ...text }, radio: { width: 18, height: 18, borderWidth: 2, borderRadius: 9, borderColor: colors.muted }, radioSelected: { borderColor: colors.accent, backgroundColor: colors.accent }, disclaimer: { padding: 12, backgroundColor: "#FFF7ED", borderRadius: radii.md }, disclaimerText: { color: "#9A4F00", fontFamily: fonts.medium, fontSize: 11, lineHeight: 18, ...text }, bottomNav: { height: 80, flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, backgroundColor: colors.page, borderTopWidth: 1, borderColor: colors.border }, bottomItem: { flex: 1, minHeight: 48, alignItems: "center", justifyContent: "center", gap: 4 }, bottomLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "center", writingDirection: "rtl" }, bottomLabelActive: { color: colors.accent, fontFamily: fonts.medium },
 });
