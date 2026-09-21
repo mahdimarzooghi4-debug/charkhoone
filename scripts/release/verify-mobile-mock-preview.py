@@ -41,6 +41,7 @@ for token in (
     'kind === "success" ? <Button label="ادامه به آورده" to="contribution" /> : <Button label="بازگشت به عضویت"',
     'contributionSucceeded ? <Button label="تأیید نهایی نمونه" to="final-confirmation" /> : <Button label="بازگشت به آورده"',
     "<Link href={`/preview/${to}`} asChild>",
+    "style={StyleSheet.flatten([styles.button, styles[tone]])}",
     "figmaAssets.homeActive",
     "bottomItem: { flex: 1, minHeight: 48",
 ):
