@@ -98,7 +98,7 @@ owner_active = (PAGES / "contracts/123456789012/owner/page.tsx").read_text(encod
 owner_final = (PAGES / "contracts/123456789012/owner/final-confirmation/page.tsx").read_text(encoding="utf-8")
 payments = (PAGES / "receive-pay/page.tsx").read_text(encoding="utf-8")
 demand(sample["loan"] in owner_active and "۴۵۰٬۰۰۰٬۰۰۰" not in owner_active and
-       "با سود وام ماهانه مستأجر یکی نیست" in owner_final and
+       "با پرداخت سود وام مستأجر یکی نیست" in owner_final and
        "برآورد مستقل مالک سعادت‌آباد" in payments,
        "owner payout preview must not be represented as tenant bank interest")
 
