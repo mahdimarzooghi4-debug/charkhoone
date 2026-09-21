@@ -126,7 +126,7 @@ No bank, credit, fund, organization, payment-gateway or Khodnevis API is called 
 
 ## Isolated tenant MOCK preview
 
-`/preview` is a separate, clearly labelled tenant walkthrough for product review. It is deliberately outside the authenticated `(tenant)` and `(shared)` routes and does not call OIDC, the mobile API, or PostgreSQL. It covers calculator, finance-plan selection/review outcomes, membership, tenant contribution, final confirmation, contract, payment receipt, pending/failed and terminated examples. Every displayed result is labelled `MOCK`; no result represents a real payment, bank approval, membership or contract.
+`/preview` is a separate, clearly labelled tenant walkthrough for product review. Its explicit `/preview/home` route is deliberately outside the authenticated `(tenant)` and `(shared)` routes; the root layout does not mount the OIDC runtime provider for the `preview` segment. It does not call OIDC, the mobile API, or PostgreSQL. It covers calculator, finance-plan selection/review outcomes, membership, tenant contribution, final confirmation, contract, payment receipt, pending/failed and terminated examples. Every displayed result is labelled `MOCK`; no result represents a real payment, bank approval, membership or contract.
 
 The fixed C3 presentation fixture uses: cash deposit `۵۰۰٬۰۰۰٬۰۰۰ تومان`, monthly rent `۲۰٬۰۰۰٬۰۰۰ تومان`, full-deposit equivalent `۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان`, 30% financing `۳۵۰٬۰۰۰٬۰۰۰ تومان`, tenant contribution `۸۱۶٬۶۶۶٬۶۶۷ تومان`, illustrative annual bank rate `۲۳٪`, and tenant monthly interest-only payment `۶٬۷۰۸٬۳۳۳ تومان`. Repayment of loan principal remains subject to the final bank contract. The preview keeps financing-plan selection and membership choice in independent local state.
 

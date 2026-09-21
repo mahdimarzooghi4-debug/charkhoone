@@ -18,6 +18,8 @@ screen = read("apps/mobile/src/preview/MockTenantScreen.tsx")
 data = read("apps/mobile/src/preview/mockTenantData.ts")
 provider = read("apps/mobile/src/preview/MockPreviewProvider.tsx")
 route = read("apps/mobile/app/preview/[screen].tsx")
+home_route = read("apps/mobile/app/preview/home.tsx")
+root_layout = read("apps/mobile/app/_layout.tsx")
 
 for value in ("۵۰۰٬۰۰۰٬۰۰۰", "۲۰٬۰۰۰٬۰۰۰", "۱٬۱۶۶٬۶۶۶٬۶۶۷", "۳۵۰٬۰۰۰٬۰۰۰", "۸۱۶٬۶۶۶٬۶۶۷", "۶٬۷۰۸٬۳۳۳", "۲۳٪"):
     if value not in data:
@@ -52,6 +54,13 @@ if "@/api/" in screen or "useMobileAuth" in screen or "getMobileBootstrap" in sc
 
 if "MockTenantScreen" not in route:
     failures.append("/preview/[screen] must render isolated MOCK screen")
+
+if 'return <MockTenantScreen screen="home" />;' not in home_route:
+    failures.append("/preview/home must be an explicit MOCK route")
+
+for token in ('useSegments', 'segments[0] === "preview"', 'if (segments[0] === "preview") return navigator'):
+    if token not in root_layout:
+        failures.append(f"preview must bypass the OIDC runtime provider: {token}")
 
 if failures:
     raise SystemExit("\n".join(f"mobile MOCK preview verification failed: {item}" for item in failures))
