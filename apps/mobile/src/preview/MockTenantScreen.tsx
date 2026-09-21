@@ -85,8 +85,8 @@ function ProgressStepper({ labels, done, current }: { labels: readonly string[];
       <View style={styles.progressRow}>
         {labels.map((label, index) => (
           <View key={label} style={styles.progressItem}>
-            <View style={[styles.progressCircle, index < done && styles.progressDone, index === current && styles.progressCurrent]}>
-              <Text style={[styles.progressNumber, index < done && styles.progressNumberDone]}>{index < done ? "✓" : index + 1}</Text>
+            <View pointerEvents="none">
+              <FigmaSvg uri={index < done ? figmaAssets.reviewStepDone : index === current ? figmaAssets.reviewStepCurrent : figmaAssets.reviewStepIdle} width={24} height={24} />
             </View>
             <Text style={[styles.progressLabel, index <= current && styles.progressLabelActive]}>{label}</Text>
           </View>
