@@ -108,3 +108,28 @@ Owner bottom tabs match the tenant / Figma order **left to right: حساب من 
 5. Owner bottom tabs may only open MOCK owner destinations, never authenticated OIDC or tenant screens. No real payment history, fund execution or owner settlement should be claimed.
 6. Refresh and check console/asset failures. CI route checks and typecheck do not substitute for this visual/click walkthrough.
 
+
+## Offline Figma asset packaging (release prerequisite)
+
+The two source modules currently contain **62** temporary Figma MCP image/SVG URLs. The user-approved local browser rendering does not guarantee they will keep working after those links expire. For an exact design match, do not swap in lookalike icons or ignore broken assets.
+
+The branch contains a source-only manifest and an atomic downloader:
+`apps/mobile/assets/figma-source-manifest.json`,
+`scripts/release/vendor-mobile-figma-assets.py`.
+The manifest is only for *build-time vendoring*; runtime imports never read it. The downloader gets all **51 tenant + 11 owner** original Figma SVG/PNG bytes, validates format and size, and only writes output if **every** download succeeds. SVGs become percent-encoded local data URIs in `apps/mobile/src/{figmaAssets,ownerAssets}.ts` and are rendered with `SvgXml`; PNGs become local base64 data URIs in the existing `BrandLogo` `Image` source. The generated sha256 inventory allows tracking the exact byte outputs. All three platforms no longer have to fetch those Figma URLs once vendored.
+
+From the **repository root** on the user's Windows machine (with Figma reachable):
+
+```powershell
+python scripts/release/vendor-mobile-figma-assets.py
+python scripts/release/vendor-mobile-figma-assets.py --check
+cd apps/mobile
+npm run typecheck
+cd ../..
+python scripts/release/verify-mobile-mock-preview.py
+git status --short
+```
+
+Review and commit only the generated `figmaAssets.ts`, `ownerAssets.ts`, `figma-assets.sha256.txt` (plus any expected script/doc changes), push the branch, and confirm all SHA-bound PR checks and iPhone 16 screenshots again. Do **not** commit downloaded files from arbitrary internet sources. If a Figma URL has expired (401/403/404/410), the downloader aborts **without changing either module** and identifies its exact asset key; refresh only those URLs from the original Figma file and rerun. If Python is installed as `py -3` on Windows, substitute `py -3` for `python`.
+
+To verify before merge, `--check` must say that **all 62 keys are local and valid**. As long as asset URLs remain in either TS module, leave this PR draft/unmerged even if Expo export and browser click-through both passed.
