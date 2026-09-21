@@ -3,6 +3,7 @@ import { Link } from "expo-router";
 import type { ReactNode } from "react";
 import { colors, fonts, radii } from "@/theme";
 import { FigmaSvg } from "@/components/FigmaSvg";
+import { BrandLogo } from "@/components/BrandLogo";
 import { figmaAssets } from "@/figmaAssets";
 import { mockDisclaimer, mockFinancialModel, type MockFinancingPlan, type MockMembership } from "./mockTenantData";
 import { useMockPreview } from "./MockPreviewProvider";
@@ -41,6 +42,14 @@ function BottomNav({ active }: { active: "home" | "payments" | "contracts" | "pr
   })}</View>;
 }
 
+function PreviewSummaryCard({ label, value, caption }: { label: string; value: string; caption: string }) {
+  return <View style={styles.homeSummaryCard}><Text style={styles.homeSummaryLabel}>{label}</Text><Text style={styles.homeSummaryValue}>{value}</Text><Text style={styles.homeSummaryCaption}>{caption}</Text></View>;
+}
+
+function PreviewShortcut({ label, to, icon }: { label: string; to: string; icon: string }) {
+  return <Link href={`/preview/${to}`} asChild><Pressable accessibilityRole="link" style={styles.homeShortcut}><View style={styles.homeShortcutIcon}><FigmaSvg uri={icon} width={20} height={20} /></View><Text style={styles.homeShortcutLabel}>{label}</Text></Pressable></Link>;
+}
+
 function ScreenTitle({ title, back = "home" }: { title: string; back?: string }) {
   return <View style={styles.titleRow}><Button label="‹" to={back} tone="outline" /><View style={styles.titleGroup}><Text style={styles.mock}>MOCK • پیش‌نمایش مستقل</Text><Text style={styles.title}>{title}</Text></View></View>;
 }
@@ -75,12 +84,68 @@ export function MockTenantScreen({ screen }: Props) {
     case "payments": body = <><ScreenTitle title="دریافت‌وپرداخت" /><View style={styles.card}><Row label="پرداخت ماهانهٔ نمونه (فقط سود)" value={mockFinancialModel.monthlyInterest} /><Text style={styles.note}>اصل وام در صندوق فریز است و برای پوشش تأخیر برداشت نمی‌شود.</Text></View><Button label="رسید نمونه" to="receipt" /><Button label="وضعیت انتظار نمونه" to="payment-pending" tone="outline" /><Button label="خطای نمونه" to="payment-failed" tone="danger" /><Button label="فسخ نمونه" to="payment-terminated" tone="danger" /></>; break;
     case "receipt": body = <><ScreenTitle title="رسید نمونه" back="payments" /><View style={styles.card}><Row label="مبلغ نمونه" value={mockFinancialModel.monthlyInterest} /><Row label="وضعیت" value="رسید نمایشی — پرداخت ثبت نشده" /><Text style={styles.note}>{mockDisclaimer}</Text></View><Button label="بازگشت به پرداخت‌ها" to="payments" /></>; break;
     case "payment-pending": case "payment-failed": case "payment-terminated": { const failed = screen === "payment-failed"; const terminated = screen === "payment-terminated"; body = <><ScreenTitle title={terminated ? "فسخ نمونه" : failed ? "خطای پرداخت نمونه" : "پرداخت نمونه در انتظار"} back="payments" /><View style={failed || terminated ? styles.errorCard : styles.card}><Text style={styles.body}>{terminated ? "سه ماه عدم پرداخت در این صفحه فقط یک حالت نمایشی است؛ بدهی واقعی یا تسویه‌ای محاسبه نمی‌شود." : mockDisclaimer}</Text></View><Button label="بازگشت به پرداخت‌ها" to="payments" /></>; break; }
-    default: body = <><ScreenTitle title="خانهٔ مستأجر" /><View style={styles.hero}><Text style={styles.heroTitle}>پیش‌نمایش موبایل مستأجر</Text><Text style={styles.heroText}>مسیر مستقل MOCK برای مرور تجربهٔ کامل؛ دادهٔ واقعی API/OIDC در اینجا خوانده یا تغییر داده نمی‌شود.</Text></View><View style={styles.card}><Row label="معادل ودیعهٔ کامل" value={mockFinancialModel.fullDeposit} /><Row label="پرداخت ماهانه (فقط سود)" value={mockFinancialModel.monthlyInterest} /></View><Button label="ماشین‌حساب و نتیجه" to="calculator" /><Button label="شروع انتخاب طرح" to="financing-plans" tone="outline" /></>;
+    default: body = <>
+      <View style={styles.homeLogo}><BrandLogo /></View>
+      <View style={styles.homeHeader}>
+        <View style={styles.homeBell}><FigmaSvg uri={figmaAssets.bell} width={20} height={20} /></View>
+        <View style={styles.homeGreeting}><Text style={styles.homeGreetingTitle}>سلام، کاربر پیش‌نمایش</Text><Text style={styles.homeGreetingCaption}>به چارخونه خوش آمدید • MOCK</Text></View>
+      </View>
+      <View style={styles.homeGrid}>
+        <View style={styles.homeSummaryRow}>
+          <PreviewSummaryCard label="میزان قابل تأمین" value={mockFinancialModel.financing} caption="سناریوی نمونه C3 • نه تأیید بانک" />
+          <PreviewSummaryCard label="اعتبار شما" value="رتبه C3 (نمونه)" caption="استعلام اعتبار واقعی انجام نشده" />
+        </View>
+        <View style={styles.homeSummaryRow}>
+          <PreviewSummaryCard label="وضعیت قرارداد" value="قرارداد نمونه" caption="هیچ قرارداد خودنویسی ثبت نشده" />
+          <PreviewSummaryCard label="پرداخت ماهانه" value={mockFinancialModel.monthlyInterest} caption="فقط سود نمونه • نه بدهی واقعی" />
+        </View>
+      </View>
+      <View style={styles.homeAction}>
+        <Text style={styles.homeActionTitle}>اقدام بعدی شما</Text>
+        <Text style={styles.homeActionCopy}>شرایط نمونه تأمین مالی را بررسی کنید یا به سناریوی نمایشی قرارداد بروید. هیچ درخواستی برای بانک ارسال نمی‌شود.</Text>
+        <View style={styles.homeActionButtons}>
+          <View style={styles.homeHalfButton}><Button label="مشاهده قرارداد" to="contract-active" tone="outline" /></View>
+          <View style={styles.homeHalfButton}><Button label="محاسبه شرایط" to="calculator" /></View>
+        </View>
+      </View>
+      <Text style={styles.homeSectionTitle}>دسترسی سریع</Text>
+      <View style={styles.homeQuickRow}>
+        <PreviewShortcut label="ماشین‌حساب" to="calculator" icon={figmaAssets.calculator} />
+        <PreviewShortcut label="دریافت و پرداخت" to="payments" icon={figmaAssets.wallet} />
+        <PreviewShortcut label="قراردادها" to="contract-active" icon={figmaAssets.file} />
+        <PreviewShortcut label="انتخاب طرح" to="financing-plans" icon={figmaAssets.home} />
+      </View>
+      <View style={styles.homeNotice}><FigmaSvg uri={figmaAssets.info} width={16} height={16} /><Text style={styles.homeNoticeText}>پیش‌نمایش مستقل MOCK: ارقام مثال C3 هستند، نه وضعیت حساب یا پرداخت واقعی شما.</Text></View>
+    </>;
   }
   return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>{body}<View style={styles.disclaimer}><Text style={styles.disclaimerText}>{mockDisclaimer}</Text></View></ScrollView><BottomNav active={active} /></SafeAreaView>;
 }
 
 const text = { textAlign: "right" as const, writingDirection: "rtl" as const };
 const styles = StyleSheet.create({
+  homeLogo: { height: 60, alignItems: "flex-end" },
+  homeHeader: { height: 56, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
+  homeBell: { width: 40, height: 40, borderRadius: 12, justifyContent: "center", alignItems: "center" },
+  homeGreeting: { flex: 1, alignItems: "flex-end", gap: 2 },
+  homeGreetingTitle: { color: colors.page, fontFamily: fonts.semibold, fontSize: 16, ...text },
+  homeGreetingCaption: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, ...text },
+  homeGrid: { gap: 12 },
+  homeSummaryRow: { flexDirection: "row", gap: 12 },
+  homeSummaryCard: { flex: 1, minWidth: 0, minHeight: 110, padding: 14, borderRadius: 12, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: "flex-end", gap: 5 },
+  homeSummaryLabel: { color: colors.primary, fontFamily: fonts.bold, fontSize: 12, ...text },
+  homeSummaryValue: { width: "100%", color: colors.primary, fontFamily: fonts.medium, fontSize: 12, ...text },
+  homeSummaryCaption: { width: "100%", color: colors.muted, fontFamily: fonts.regular, fontSize: 10, lineHeight: 17, ...text },
+  homeAction: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 16, gap: 12 },
+  homeActionTitle: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 16, ...text },
+  homeActionCopy: { color: colors.muted, fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, ...text },
+  homeActionButtons: { flexDirection: "row", gap: 12 },
+  homeHalfButton: { flex: 1, minWidth: 0 },
+  homeSectionTitle: { color: colors.page, fontFamily: fonts.semibold, fontSize: 16, ...text },
+  homeQuickRow: { flexDirection: "row", gap: 8 },
+  homeShortcut: { flex: 1, minWidth: 0, minHeight: 92, paddingVertical: 12, paddingHorizontal: 3, borderRadius: 12, backgroundColor: colors.surface, justifyContent: "center", alignItems: "center", gap: 8 },
+  homeShortcutIcon: { width: 40, height: 40, backgroundColor: colors.page, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+  homeShortcutLabel: { color: colors.text, fontFamily: fonts.medium, fontSize: 10, textAlign: "center", writingDirection: "rtl" },
+  homeNotice: { padding: 12, gap: 8, borderRadius: 8, backgroundColor: colors.successSoft, flexDirection: "row", alignItems: "center" },
+  homeNoticeText: { flex: 1, color: colors.primary, fontFamily: fonts.regular, fontSize: 11, lineHeight: 18, ...text },
   safe: { flex: 1, backgroundColor: colors.primary }, scroll: { padding: 16, gap: 14, paddingBottom: 24 }, titleRow: { flexDirection: "row", gap: 12, alignItems: "center" }, titleGroup: { flex: 1, alignItems: "flex-end" }, mock: { color: colors.accent, fontFamily: fonts.bold, fontSize: 11, ...text }, title: { color: colors.surface, fontFamily: fonts.bold, fontSize: 22, ...text }, card: { backgroundColor: colors.surface, borderRadius: radii.lg, padding: 16, gap: 12 }, successCard: { backgroundColor: colors.successSoft, borderRadius: radii.lg, padding: 16, gap: 12 }, errorCard: { backgroundColor: "#FEE2E2", borderRadius: radii.lg, padding: 16, gap: 12 }, hero: { backgroundColor: "#174D46", borderRadius: radii.xl, padding: 20, gap: 8 }, heroTitle: { color: colors.surface, fontFamily: fonts.bold, fontSize: 20, ...text }, heroText: { color: "#D1E7E2", fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, ...text }, cardTitle: { color: colors.primary, fontFamily: fonts.bold, fontSize: 16, ...text }, body: { color: colors.text, fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, ...text }, note: { color: "#56616C", fontFamily: fonts.regular, fontSize: 11, lineHeight: 19, ...text }, row: { flexDirection: "row", justifyContent: "space-between", gap: 12, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 8 }, label: { color: "#56616C", flex: 1, fontFamily: fonts.regular, fontSize: 12, ...text }, value: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 12, textAlign: "left" }, button: { minHeight: 46, borderRadius: radii.md, paddingHorizontal: 14, alignItems: "center", justifyContent: "center" }, primary: { backgroundColor: colors.accent }, outline: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.primary }, danger: { backgroundColor: "#FEE2E2", borderWidth: 1, borderColor: "#B91C1C" }, buttonText: { fontFamily: fonts.semibold, fontSize: 13, ...text }, buttonTextLight: { color: colors.primary }, buttonTextDark: { color: colors.primary }, choice: { minHeight: 48, padding: 12, flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md }, choiceSelected: { borderColor: colors.accent, backgroundColor: colors.accentSoft }, choiceText: { color: colors.text, flex: 1, fontFamily: fonts.medium, fontSize: 12, ...text }, radio: { width: 18, height: 18, borderWidth: 2, borderRadius: 9, borderColor: colors.muted }, radioSelected: { borderColor: colors.accent, backgroundColor: colors.accent }, disclaimer: { padding: 12, backgroundColor: "#FFF7ED", borderRadius: radii.md }, disclaimerText: { color: "#9A4F00", fontFamily: fonts.medium, fontSize: 11, lineHeight: 18, ...text }, bottomNav: { height: 80, flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, backgroundColor: colors.page, borderTopWidth: 1, borderColor: colors.border }, bottomItem: { flex: 1, minHeight: 48, alignItems: "center", justifyContent: "center", gap: 4 }, bottomLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "center", writingDirection: "rtl" }, bottomLabelActive: { color: colors.accent, fontFamily: fonts.medium },
 });
