@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import styles from "./page.module.css";
 
 /** Illustrative approval flow only; nothing is submitted to a real financial service. */
-export function FinalConfirmationConsent() {
+export function FinalConfirmationConsent({ plan }: { plan: "general" | "staff" }) {
   const [confirmed, setConfirmed] = useState(false);
   const router = useRouter();
 
@@ -27,7 +27,7 @@ export function FinalConfirmationConsent() {
         className={styles.primaryAction}
         data-node-id="150:1653"
         disabled={!confirmed}
-        onClick={() => router.push("/user/contracts/register/plans/waiting-owner")}
+        onClick={() => router.push(`/user/contracts/register/plans/waiting-owner?plan=${plan}`)}
       >
         تأیید نهایی و ادامه
       </button>
