@@ -20,6 +20,7 @@ provider = read("apps/mobile/src/preview/MockPreviewProvider.tsx")
 route = read("apps/mobile/app/preview/[screen].tsx")
 home_route = read("apps/mobile/app/preview/home.tsx")
 calculator_route = read("apps/mobile/app/preview/calculator.tsx")
+calculator_screen = read("apps/mobile/src/preview/MockTenantCalculatorScreen.tsx")
 calculator_result_route = read("apps/mobile/app/preview/calculator-result.tsx")
 root_layout = read("apps/mobile/app/_layout.tsx")
 
@@ -77,8 +78,28 @@ if "@/api/" in screen or "useMobileAuth" in screen or "getMobileBootstrap" in sc
 if "MockTenantScreen" not in route:
     failures.append("/preview/[screen] must render isolated MOCK screen")
 
-if 'return <MockTenantScreen screen="calculator" />;' not in calculator_route:
-    failures.append("/preview/calculator must be an explicit route on Expo Web")
+if 'return <MockTenantCalculatorScreen />;' not in calculator_route:
+    failures.append("/preview/calculator must render the explicit Figma 65:55 MOCK calculator")
+
+for token in (
+    'href="/preview/calculator"',
+    'محاسبه شرایط',
+):
+    if token not in screen:
+        failures.append(f"home CTA must link to the explicit calculator route: {token}")
+
+for token in (
+    'شرایط قرارداد را وارد کنید',
+    'مبلغ رهن', 'اجاره ماهانه',
+    'mockFinancialModel.monthlyInterest',
+    'href="/preview/calculator-result"',
+    'نمونه ثابت',
+):
+    if token not in calculator_screen:
+        failures.append(f"Figma 65:55 C3 MOCK calculator missing: {token}")
+
+if "۱۸٬۵۰۰٬۰۰۰" in calculator_screen or "@/api/" in calculator_screen:
+    failures.append("calculator must not restore stale Figma numbers or call real APIs")
 
 if 'return <MockTenantScreen screen="calculator-result" />;' not in calculator_result_route:
     failures.append("/preview/calculator-result must be an explicit route on Expo Web")
