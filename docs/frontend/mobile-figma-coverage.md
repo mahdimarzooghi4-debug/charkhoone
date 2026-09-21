@@ -123,3 +123,11 @@ The Owner Mobile code passed the mobile TypeScript CI check on the implementatio
 ## Open implementation boundary
 
 No bank, credit, fund, organization, payment-gateway or Khodnevis API is called by the mobile app yet. Navigation and screen state are frontend-only placeholders until the backend phase begins. Owner bottom-navigation items reuse the existing shared profile/contracts surfaces where those destinations are already represented; no additional owner-only home/account/contracts screens were invented beyond the supplied `04 - Owner Mobile` source page.
+
+## Isolated tenant MOCK preview
+
+`/preview` is a separate, clearly labelled tenant walkthrough for product review. Its explicit `/preview/home` route is deliberately outside the authenticated `(tenant)` and `(shared)` routes; the root layout does not mount the OIDC runtime provider for the `preview` segment. It does not call OIDC, the mobile API, or PostgreSQL. It covers calculator, finance-plan selection/review outcomes, membership, tenant contribution, final confirmation, contract, payment receipt, pending/failed and terminated examples. Every displayed result is labelled `MOCK`; no result represents a real payment, bank approval, membership or contract.
+
+The fixed C3 presentation fixture uses: cash deposit `۵۰۰٬۰۰۰٬۰۰۰ تومان`, monthly rent `۲۰٬۰۰۰٬۰۰۰ تومان`, full-deposit equivalent `۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان`, 30% financing `۳۵۰٬۰۰۰٬۰۰۰ تومان`, tenant contribution `۸۱۶٬۶۶۶٬۶۶۷ تومان`, illustrative annual bank rate `۲۳٪`, and tenant monthly interest-only payment `۶٬۷۰۸٬۳۳۳ تومان`. Repayment of loan principal remains subject to the final bank contract. The preview keeps financing-plan selection and membership choice in independent local state.
+
+Run it with `npx expo start --lan` in `apps/mobile`. In Expo Go, use **Enter URL manually** and enter `exp://<LAN-IP-of-your-computer>:8081/--/preview/home` (replace the LAN IP with the host shown by Expo, for example `192.168.1.10`). This opens the isolated preview directly and does not require real OIDC login. The four bottom-navigation buttons share the available width (`flex: 1`) and use compact 10px labels for normal phone widths. Regression coverage is in `scripts/release/verify-mobile-mock-preview.py`; it checks route coverage, fixed financial values, MOCK labelling and that this surface has no authenticated API imports.
