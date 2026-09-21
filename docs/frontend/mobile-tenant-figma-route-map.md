@@ -93,6 +93,12 @@ The `04 - Owner Mobile` page contains these six (390px-wide) frames. The isolate
 
 Baseline monthly owner receipt **is distinct from the tenant's 6,708,333 monthly bank interest**: contract rent 20,000,000 gross, illustrative Figma service fee at 0.5% = 100,000, owner net receipt = 19,900,000 toman. If the tenant changes sample rent, the owner's mock fee and net follow the same sample rent rather than hard-coding stale values. This fee is a UI example, not an operationally agreed fee. The second fund preference is **selection only**: no 3%/3.5% investment calculation, guaranteed yield or fund transfer. Figma's older owner funding 450m and termination deductions 55.5m / 394.5m are not treated as authoritative C3/settlement rules.
 
+### Owner RTL, Persian digits and bottom navigation (follow-up)
+
+The owner preview now wraps all its native visible `Text` and `OwnerRow` content in one **presentation-only** Persian-digit formatter. It converts ASCII 0–9 and Arabic-Indic ٠–٩ into Persian ۰–۹ (including interpolated mock amounts and C3 captions); it never changes the stored numeric calculation, route, contract identifier or real API payload. Card labels, explanatory copy and owner property text use RTL/right alignment; side-by-side owner summary tiles start on the right.
+
+Owner bottom tabs match the tenant / Figma order **left to right: حساب من | قراردادها | دریافت و پرداخت | خانه** and use one shared owner component with the same height (80), label size (11), spacing and orange selected state. Home, Payments, Contracts and Account each have their own correct active state and icon; the payment icon is not permanently orange on other tabs. Their routes stay strictly under `/preview/owner-*`: contracts → `owner-connected`, payments → `owner-receive-pay`, home → `owner-active`, account → `owner-account`. The active/overview, contracts-connected, terminated, payment-overview and auxiliary account pages have the tab bar; the settlement-selection and final-consent wizard screens retain their intentionally focused Figma layouts without it.
+
 ### Owner QA (web iPhone 16 width 393 × 852)
 
 1. In preview, open `/preview/contract-lookup`, select مالک and confirm. You should land on `/preview/owner-connected`.
