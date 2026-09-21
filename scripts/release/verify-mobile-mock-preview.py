@@ -80,6 +80,22 @@ for name in ("payment-terminated", "preview-index"):
     require(target.is_file(), f"missing fallback /preview/{name}")
 require('screen="home"' in route_home, "home needs explicit Figma 61:28 route")
 require('MockTenantCalculatorScreen' in route_calculator, "calculator must use Figma 65:55")
+# A single continuous slider rail: base/fill share vertical center and left
+# origin, with the thumb centered on the same rail. Old right-origin fill
+# left a visible gap between progress and the thumb at 25% deposit.
+for token in (
+    'sliderTrack: { position: "relative", height: 38',
+    'sliderBase: { position: "absolute", top: 17, left: 0, right: 0',
+    'sliderFill: { position: "absolute", top: 17, left: 0',
+    'sliderThumb: { position: "absolute", top: 10',
+    'style={[styles.sliderFill, { width: percentage }]}',
+    'style={[styles.sliderThumb, { left: `${progress * 100}%` as `${number}%` }]}',
+    'onResponderMove={event => moveTo(event.nativeEvent.locationX)}',
+):
+    require(token in calculator, f"continuous editable calculator slider regression: {token}")
+require('sliderFill: { position: "absolute", top: 17, left: 0, height: 4, backgroundColor: colors.primary' in calculator,
+    "calculator progress fill must start from left zero, not from right")
+
 require('screen="calculator-result"' in route_result, "result must map to Figma 71:43")
 
 # No label or destination may accidentally fall through to /preview/undefined.
