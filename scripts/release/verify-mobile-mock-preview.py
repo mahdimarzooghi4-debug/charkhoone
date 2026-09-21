@@ -19,6 +19,8 @@ data = read("apps/mobile/src/preview/mockTenantData.ts")
 provider = read("apps/mobile/src/preview/MockPreviewProvider.tsx")
 route = read("apps/mobile/app/preview/[screen].tsx")
 home_route = read("apps/mobile/app/preview/home.tsx")
+calculator_route = read("apps/mobile/app/preview/calculator.tsx")
+calculator_result_route = read("apps/mobile/app/preview/calculator-result.tsx")
 root_layout = read("apps/mobile/app/_layout.tsx")
 
 for value in ("۵۰۰٬۰۰۰٬۰۰۰", "۲۰٬۰۰۰٬۰۰۰", "۱٬۱۶۶٬۶۶۶٬۶۶۷", "۳۵۰٬۰۰۰٬۰۰۰", "۸۱۶٬۶۶۶٬۶۶۷", "۶٬۷۰۸٬۳۳۳", "۲۳٪"):
@@ -74,6 +76,12 @@ if "@/api/" in screen or "useMobileAuth" in screen or "getMobileBootstrap" in sc
 
 if "MockTenantScreen" not in route:
     failures.append("/preview/[screen] must render isolated MOCK screen")
+
+if 'return <MockTenantScreen screen="calculator" />;' not in calculator_route:
+    failures.append("/preview/calculator must be an explicit route on Expo Web")
+
+if 'return <MockTenantScreen screen="calculator-result" />;' not in calculator_result_route:
+    failures.append("/preview/calculator-result must be an explicit route on Expo Web")
 
 if 'return <MockTenantScreen screen="home" />;' not in home_route:
     failures.append("/preview/home must be an explicit MOCK route")
