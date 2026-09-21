@@ -47,6 +47,17 @@ for token in (
     if token not in screen:
         failures.append(f"MOCK result gating or four-item bottom navigation missing: {token}")
 
+# Preserve the actual Figma 61:28 home hierarchy instead of a generic card/button list.
+for token in (
+    "homeLogo", "BrandLogo", "homeHeader", "homeSummaryRow",
+    "homeAction", "homeActionButtons", "homeQuickRow", "homeShortcut",
+    "homeNotice", "PreviewSummaryCard", "PreviewShortcut",
+    "میزان قابل تأمین", "اعتبار شما", "وضعیت قرارداد",
+    "اقدام بعدی شما", "دسترسی سریع",
+):
+    if token not in screen:
+        failures.append(f"Figma tenant preview home missing structure: {token}")
+
 for token in ("MOCK", "هیچ درخواست، پرداخت، تأیید بانک، عضویت یا قراردادی ثبت نمی‌شود"):
     if token not in screen and token not in data:
         failures.append(f"MOCK boundary notice missing: {token}")
