@@ -63,3 +63,15 @@ Scope caveat: The screen hierarchy and user transitions are keyed to all documen
 7. OIDC login and any bank/payment calls must **never** be triggered by MOCK buttons.
 
 Static route/financial/opt-in safeguards: `python scripts/release/verify-mobile-mock-preview.py`; real-runtime fail-closed safeguards: `python scripts/release/verify-mobile-runtime-wiring.py`. GitHub CI typecheck and Expo export are **not** substitutes for a real browser click-through; do not merge the PR until browser acceptance.
+
+## Visual parity pass — 21 Sep 2026
+
+The original implementation focused on clickability; it was **not** a faithful screen-by-screen rendering. This follow-up explicitly compared Figma's structure and typography on the five core pages and the request, membership, contracts, payments and profile overviews. Changes in this branch include:
+
+- **Calculator Result / 71:43:** actual Figma gauge asset and metrics grid, separate monthly-interest-only card, pale benefit-summary section and a fixed white action footer. Original Figma 450m/18.5m/claimed savings are not financially valid for C3 and were not copied.
+- **Eligible Plans / 85:62:** pale selected-plan card with the indicator/badge, independent general-plan card and bottom pale CTA, rather than two identical generic cards. Both still show the same C3 sample rates until bank-specific terms are established.
+- **Confirmation 90:52; Review 91:53; Approved 910:126; Membership 245:228; Contribution 91:149; Final 93:61:** restored Figma hierarchy of intro, status hero, status badge, key amount/next action, progress row and separate card sections. Demo-only outcomes remain clearly marked MOCK.
+- **Contracts 102:86, Payments 94:91, Account 104:93:** separate summary cards, status badges, empty payment progress where appropriate, upcoming demo items and profile-avatar/account layout. Mock owner contracts never present tenant bank interest as owner income.
+- Shared app bars are full-width; result and financing pages do not incorrectly show the tenant tab bar below their Figma action footer.
+
+**Not yet accepted visually:** the Figma file contains many further detailed states and overlays. Typecheck/Expo exports and structural regression tests cannot measure pixel-perfect visual similarity, real icon loading or browser tap targets. Compare each page in Chrome iPhone 16 393×852 and capture differences against its Figma frame. Existing `apps/mobile/src/figmaAssets.ts` contains temporary Figma asset URLs which must be replaced with the exact exported bytes before merging, or visuals may break when the URLs expire.
