@@ -139,6 +139,21 @@ for token in (
     require(token in data, f"shared approved financial formula missing: {token}")
 for token in ("cashDeposit", "monthlyRent", "setCashDeposit", "setMonthlyRent", "financialModel", "setFinancingPlan", "setMembership"):
     require(token in provider, f"MOCK state continuity missing: {token}")
+# Visual-structure regression: guard Figma's distinct screen hierarchies; this does
+# not replace a human screenshot comparison on iPhone 16 at 393x852.
+for token in (
+    'figmaAssets.gauge', 'resultGaugeSection', 'resultGridRow', 'ResultMetricCard',
+    'resultBenefit', 'resultActions', 'FinancingPlanCard', 'planCardSelected',
+    'planBadgeSelected', 'planActions', 'StatusHero', 'ProgressStepper',
+    'figmaAssets.reviewStepDone', 'figmaAssets.reviewStepCurrent',
+    'MembershipOption', 'membershipCardSelected', 'accentOutlineCard',
+    'contractOverviewCard', 'profileTop', 'paymentTrack',
+):
+    require(token in screen, f"Figma mobile visual structure missing: {token}")
+require('actions = <View style={styles.resultActions}>' in screen, "result CTA should be outside the scrolling body")
+require('actions = <View style={styles.planActions}>' in screen, "financing-plan CTA should be outside the scrolling body")
+require('!actions && screen !== "contract-lookup"' in screen, "avoid showing the tenant bottom bar on Figma result/financing screens")
+
 require('financialModel: mockFinancialModel' in screen, "home/results/plans/contract/payments must use edited values")
 for token in ("onResponderMove", "TextInput", "setCashDeposit", "setMonthlyRent", "financialModel.monthlyInterest"):
     require(token in calculator, f"editable Figma calculator missing: {token}")
