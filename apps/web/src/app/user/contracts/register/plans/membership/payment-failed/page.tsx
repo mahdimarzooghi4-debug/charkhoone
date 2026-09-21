@@ -17,7 +17,7 @@ const rows = [
   ["بابت", "حق عضویت چارخونه", false],
   ["تاریخ", "۱۵ آبان ۱۴۰۵", false],
   ["ساعت", "۱۴:۳۵", false],
-  ["شماره پیگیری", "۱۲۳۴۵۶۷۸۹", false],
+  ["شناسه نمونه", "۱۲۳۴۵۶۷۸۹", false],
   ["وضعیت", "ناموفق", false],
 ] as const;
 
@@ -30,7 +30,7 @@ export default function MembershipPaymentFailedPage() {
           <div className={styles.headerRight} data-node-id="912:389">
             <div className={styles.breadcrumb} data-node-id="912:390"><span>دریافت و پرداخت</span><span>/</span><strong>نتیجه پرداخت</strong></div>
             <h1 data-node-id="912:394">نتیجه پرداخت</h1>
-            <p data-node-id="912:395">وضعیت تراکنش شما در سامانه چارخونه</p>
+            <p data-node-id="912:395">این صفحه سناریوی نمایشی پرداخت ناموفق است؛ هیچ تراکنش واقعی ثبت نمی‌شود.</p>
           </div>
         </header>
 
@@ -39,7 +39,7 @@ export default function MembershipPaymentFailedPage() {
             <div className={styles.receiptBrand} data-node-id="912:398"><strong data-node-id="912:399">چارخونه</strong><div className={styles.divider} /></div>
             <div className={styles.statusSection} data-node-id="912:401">
               <span className={`${styles.checkCircle} ${styles.failedCircle}`} data-node-id="912:402"><img src={assets.check} alt="" width={24} height={24} /></span>
-              <h2 data-node-id="912:406">پرداخت حق عضویت انجام نشد</h2>
+              <h2 data-node-id="912:406">سناریوی نمونه: پرداخت حق عضویت ناموفق بود</h2>
               <strong className={`${styles.amount} ${styles.failedAmount}`} data-node-id="912:407">۲٬۵۰۰٬۰۰۰ تومان</strong>
               <span className={styles.failedBadge} data-node-id="912:409">ناموفق</span>
             </div>
@@ -60,7 +60,7 @@ export default function MembershipPaymentFailedPage() {
 
           <div className={styles.actions} data-node-id="912:453">
             <Link href="/user/contracts/123456789012" className={styles.secondaryAction} data-node-id="912:454">بازگشت به قرارداد</Link>
-            <Link href="/user/contracts/register/plans/membership" className={styles.primaryAction} data-node-id="912:456">تلاش مجدد برای پرداخت</Link>
+            <Link href="/user/contracts/register/plans/membership" className={styles.primaryAction} data-node-id="912:456">بازگشت به انتخاب عضویت (نمونه)</Link>
           </div>
         </div>
       </section>
