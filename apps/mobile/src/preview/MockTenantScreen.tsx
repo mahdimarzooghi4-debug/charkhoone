@@ -63,7 +63,7 @@ export function MockTenantScreen({ screen }: Props) {
   ["آوردهٔ مستأجر", mockFinancialModel.contribution],
 ] as const;
 
-  const active = screen === "payments" || screen.startsWith("payment-") || screen === "receipt" ? "payments" : screen.startsWith("contract") || screen === "final-confirmation" ? "contracts" : screen === "profile" ? "profile" : "home";
+  const active = screen === "payments" || screen.startsWith("payment-") || screen === "receipt" ? "payments" : screen.startsWith("contract") || screen === "contracts" || screen === "final-confirmation" ? "contracts" : screen === "profile" ? "profile" : "home";
   const planChoice = (label: MockFinancingPlan) => <Choice label={`طرح تأمین مالی ${label} — ${mockFinancialModel.financing}`} value={label} selected={financingPlan === label} onPress={setFinancingPlan} />;
   const membershipChoice = (label: MockMembership) => <Choice label={`عضویت ${label} (فقط نمونه)`} value={label} selected={membership === label} onPress={setMembership} />;
 
@@ -104,7 +104,7 @@ export function MockTenantScreen({ screen }: Props) {
         <Text style={styles.cardTitle}>پس از استعلام چه اتفاقی می‌افتد؟ (صرفاً توضیح فرایند آینده)</Text>
         <Text style={styles.body}>۱. دریافت اطلاعات قرارداد از خودنویس؛ ۲. تطبیق هویت طرفین؛ ۳. انتخاب نقش در قرارداد. این مراحل هنوز در MOCK به سرویس واقعی متصل نیستند.</Text>
       </View>
-      <Pressable accessibilityRole="button" accessibilityLabel="نمایش نتیجه نمایشی قرارداد" style={styles.button} onPress={() => {
+      <Pressable accessibilityRole="button" accessibilityLabel="نمایش نتیجه نمایشی قرارداد" style={StyleSheet.flatten([styles.button, styles.primary])} onPress={() => {
         if (String(parseMockAmount(trackingCode)).length !== 12) setTrackingError(true);
         else router.push("/preview/contract-lookup");
       }}><Text style={styles.buttonText}>نمایش نتیجه نمونه استعلام قرارداد</Text></Pressable>
@@ -228,11 +228,51 @@ export function MockTenantScreen({ screen }: Props) {
       <Button label="نمایش قرارداد فعال نمونه" to="contract-active" />
       <Button label="بازگشت به خانه" to="home" tone="outline" />
     </>; break;
-    case "profile": body = <><ScreenTitle title="حساب من" /><View style={styles.card}><Text style={styles.cardTitle}>حساب MOCK مستأجر</Text><Text style={styles.body}>اطلاعات هویتی یا حساب واقعی در پیش‌نمایش خوانده نمی‌شود.</Text><Text style={styles.note}>{mockDisclaimer}</Text></View><Button label="بازگشت به خانه" to="home" /></>; break;
-    case "contract-active": body = <><ScreenTitle title="قرارداد فعال نمونه" /><View style={styles.successCard}><Text style={styles.cardTitle}>قرارداد MOCK</Text><Row label="وضعیت" value="فعال — صرفاً نمایشی" /><Row label="ودیعهٔ نقدی" value={mockFinancialModel.cashDeposit} /><Row label="اجارهٔ ماهانه" value={mockFinancialModel.monthlyRent} /></View><Button label="جزئیات قرارداد نمونه" to="contract-detail" /><Button label="دریافت‌وپرداخت" to="payments" tone="outline" /></>; break;
-    case "contract-detail": body = <><ScreenTitle title="جزئیات قرارداد نمونه" back="contract-active" /><View style={styles.card}>{financeRows.slice(0, 3).map(([label, value]) => <Row key={label} label={label} value={value} />)}<Text style={styles.note}>هیچ کد رهگیری، ملک یا قرارداد ثبت‌شده‌ای در این صفحه ادعا نمی‌شود.</Text></View><Button label="بازگشت به قرارداد" to="contract-active" /></>; break;
-    case "payments": body = <><ScreenTitle title="دریافت‌وپرداخت" /><View style={styles.card}><Row label="پرداخت ماهانهٔ نمونه (فقط سود)" value={mockFinancialModel.monthlyInterest} /><Text style={styles.note}>اصل وام در صندوق فریز است و برای پوشش تأخیر برداشت نمی‌شود.</Text></View><Button label="رسید نمونه" to="receipt" /><Button label="وضعیت انتظار نمونه" to="payment-pending" tone="outline" /><Button label="خطای نمونه" to="payment-failed" tone="danger" /><Button label="فسخ نمونه" to="payment-terminated" tone="danger" /></>; break;
-    case "receipt": body = <><ScreenTitle title="رسید نمونه" back="payments" /><View style={styles.card}><Row label="مبلغ نمونه" value={mockFinancialModel.monthlyInterest} /><Row label="وضعیت" value="رسید نمایشی — پرداخت ثبت نشده" /><Text style={styles.note}>{mockDisclaimer}</Text></View><Button label="بازگشت به پرداخت‌ها" to="payments" /></>; break;
+    case "profile": body = <>
+      <ScreenTitle title="حساب من" />
+      <View style={styles.card}><Text style={styles.cardTitle}>کاربر پیش‌نمایش مستأجر</Text><Text style={styles.body}>اطلاعات این حساب، هویت یا شماره موبایل واقعی نیست.</Text></View>
+      <View style={styles.card}><Text style={styles.cardTitle}>اطلاعات حساب نمونه</Text><Row label="نقش" value="مستأجر • MOCK" /><Row label="وضعیت عضویت نمایشی" value={membership} /><Row label="طرح تأمین مالی نمایشی" value={financingPlan} /></View>
+      <View style={styles.card}><Text style={styles.cardTitle}>عضویت چارخونه</Text><Row label="سقف تأمین مالی سناریوی C3" value={mockFinancialModel.financing} /><Text style={styles.note}>هیچ عضویت، شماره شبا یا اطلاعات هویتی واقعی بارگذاری نشده است.</Text></View>
+      <Button label="مشاهده عضویت نمونه" to="membership" />
+      <Button label="بازگشت به خانه" to="home" tone="outline" />
+    </>; break;
+    case "contracts": body = <>
+      <ScreenTitle title="قراردادهای من" />
+      <Text style={styles.figmaHeading}>قراردادهای ثبت‌شده شما در چارخونه (MOCK)</Text>
+      <View style={styles.card}><Text style={styles.cardTitle}>قرارداد نمونه مستأجر</Text><Row label="وضعیت" value="نمونه نمایشی • ثبت نشده" /><Row label="مبلغ رهن" value={mockFinancialModel.cashDeposit} /><Row label="اجاره ماهانه" value={mockFinancialModel.monthlyRent} /><Row label="تأمین مالی سناریوی C3" value={mockFinancialModel.financing} /><Button label="مشاهده قرارداد نمونه" to="contract-detail" /></View>
+      <View style={styles.card}><Text style={styles.cardTitle}>ثبت قرارداد جدید</Text><Text style={styles.body}>برای پیمودن نمونه مسیر خودنویس، از کد رهگیری نمایشی استفاده کنید.</Text><Button label="ثبت کد رهگیری نمونه" to="contract-tracking" tone="outline" /></View>
+    </>; break;
+    case "contract-active": body = <>
+      <ScreenTitle title="قرارداد فعال نمونه" back="contracts" />
+      <View style={styles.successCard}><Text style={styles.cardTitle}>قرارداد مستأجر • MOCK</Text><Row label="وضعیت" value="فعال در سناریوی نمایشی" /><Row label="ودیعه نقدی" value={mockFinancialModel.cashDeposit} /><Row label="اجاره ماهانه" value={mockFinancialModel.monthlyRent} /><Row label="مبلغ تأمین مالی" value={mockFinancialModel.financing} /><Text style={styles.note}>قرارداد واقعی یا وام تخصیص‌یافته در این صفحه ادعا نمی‌شود.</Text></View>
+      <Button label="جزئیات قرارداد نمونه" to="contract-detail" />
+      <Button label="دریافت و پرداخت" to="payments" tone="outline" />
+    </>; break;
+    case "contract-detail": body = <>
+      <ScreenTitle title="جزئیات قرارداد" back="contracts" />
+      <View style={styles.card}><Text style={styles.cardTitle}>ملک و طرفین قرارداد نمایشی</Text><Text style={styles.body}>قرارداد نمونه مستأجر — برای مرور قالب فیگما؛ به خودنویس متصل نیست.</Text><Row label="نقش" value="مستأجر • نمونه" /><Row label="کد رهگیری" value="۱۲۳۴۵۶۷۸۹۰۱۲ (MOCK)" /></View>
+      <View style={styles.card}><Text style={styles.cardTitle}>شرایط مالی قرارداد</Text>{financeRows.map(([label,value]) => <Row key={label} label={label} value={value} />)}</View>
+      <View style={styles.card}><Text style={styles.cardTitle}>تعهد ماهانه مستأجر</Text><Row label="اجاره ماهانه قرارداد" value={mockFinancialModel.monthlyRent} /><Row label="پرداخت ماهانه تأمین مالی (فقط سود)" value={mockFinancialModel.monthlyInterest} /><Text style={styles.note}>این دو جریان مستقل‌اند؛ اصل وام تابع قرارداد نهایی بانک است.</Text></View>
+      <Button label="مشاهده دریافت و پرداخت" to="payments" />
+      <Button label="مشاهده طرح تأمین مالی" to="financing-plans" tone="outline" />
+    </>; break;
+    case "payments": body = <>
+      <ScreenTitle title="دریافت و پرداخت" />
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>پرداخت بعدی • MOCK</Text>
+        <Row label="پرداخت ماهانه تأمین مالی (فقط سود)" value={mockFinancialModel.monthlyInterest} />
+        <Row label="اجاره ماهانه قرارداد؛ مستقل" value={mockFinancialModel.monthlyRent} />
+        <Text style={styles.note}>هیچ سررسید، وصول، وضعیت بدهی یا پرداخت واقعی ثبت نشده است.</Text>
+        <Button label="نمایش وضعیت انتظار پرداخت نمونه" to="payment-pending" />
+      </View>
+      <View style={styles.card}><Text style={styles.cardTitle}>وضعیت پرداخت‌های قرارداد</Text><Text style={styles.body}>در مسیر MOCK، سابقه پرداخت واقعی وجود ندارد. برای مشاهده قالب رسید می‌توانی رسید نمایشی را باز کنی.</Text><Button label="مشاهده رسید نمونه" to="receipt" tone="outline" /></View>
+      <View style={styles.card}><Text style={styles.cardTitle}>حالت‌های نمایشی پرداخت</Text><Button label="خطای پرداخت نمونه" to="payment-failed" tone="danger" /><Button label="فسخ نمونه" to="payment-terminated" tone="outline" /></View>
+    </>; break;
+    case "receipt": body = <>
+      <ScreenTitle title="رسید پرداخت" back="payments" />
+      <View style={styles.card}><Text style={styles.cardTitle}>رسید صرفاً نمایشی</Text><Row label="مبلغ نمونه (فقط سود)" value={mockFinancialModel.monthlyInterest} /><Row label="وضعیت" value="پرداخت ثبت نشده" /><Text style={styles.note}>{mockDisclaimer}</Text></View>
+      <Button label="بازگشت به دریافت و پرداخت" to="payments" />
+    </>; break;
     case "payment-pending": case "payment-failed": case "payment-terminated": { const failed = screen === "payment-failed"; const terminated = screen === "payment-terminated"; body = <><ScreenTitle title={terminated ? "فسخ نمونه" : failed ? "خطای پرداخت نمونه" : "پرداخت نمونه در انتظار"} back="payments" /><View style={failed || terminated ? styles.errorCard : styles.card}><Text style={styles.body}>{terminated ? "سه ماه عدم پرداخت در این صفحه فقط یک حالت نمایشی است؛ بدهی واقعی یا تسویه‌ای محاسبه نمی‌شود." : mockDisclaimer}</Text></View><Button label="بازگشت به پرداخت‌ها" to="payments" /></>; break; }
     default: body = <>
       <View style={styles.homeLogo}><BrandLogo /></View>
