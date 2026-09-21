@@ -124,6 +124,38 @@ for token in (
     'هیچ پولی وارد صندوق نمی‌شود',
 ):
     require(token in owner_screen, f"owner MOCK / Figma 04 missing: {token}")
+# The Figma owner navigation and RTL/number regression: a unique active icon
+# and semantic selected state must work on ALL four overview tabs, not just
+# Home and Payments. Owner demo routes never fall into tenant tab destinations.
+for token in (
+    'type OwnerNavTab = "home" | "payments" | "contracts" | "profile"',
+    'activeNav = "contracts"', 'activeNav = "payments"',
+    'activeNav = "home"', 'activeNav = "profile"',
+    'tab: "profile"', 'tab: "contracts"', 'tab: "payments"', 'tab: "home"',
+    'route: "owner-account"', 'route: "owner-connected"',
+    'route: "owner-receive-pay"', 'route: "owner-active"',
+    'const selected = active === tab',
+    'accessibilityState={{ selected }}',
+    'uri={selected ? activeIcon : inactive}',
+    'figmaAssets.profileUser', 'figmaAssets.contractsFileText',
+    'figmaAssets.paymentsCreditCard', 'figmaAssets.homeActive',
+    'height: 80, backgroundColor: colors.page',
+    'navSelected: { color: colors.accent',
+    'flexDirection: "row-reverse", gap: 8',
+    'function OwnerText(', 'function OwnerRow(',
+    'localizeOwnerDigits(label)', 'localizeOwnerDigits(value)',
+    'textAlign: "right", writingDirection: "rtl"',
+    'textAlign: "left", writingDirection: "rtl"',
+):
+    require(token in owner_screen, f"owner RTL/Persian/tab-state regression: {token}")
+owner_nav = owner_screen.split('function OwnerFooterNav(')[1].split('function SettlementOption(')[0]
+for invalid in ('"/preview/home"', '"/preview/payments"', '"/preview/contracts"', '"/preview/profile"'):
+    require(invalid not in owner_nav, f"owner bottom navigation must not enter tenant screen: {invalid}")
+require('value.replace(/[0-9٠-٩]/g' in owner_screen,
+    "owner visible string numerals must use a single Persian localization boundary")
+require('return <Text {...props} style={[styles.ownerText, style]}>{localized}</Text>' in owner_screen,
+    "owner text localization must render a native Text rather than recurse")
+require('ownerAssets.navCreditCardActive' not in owner_nav, "active payment icon must not appear on every owner tab")
 require('financialModel.monthlyInterest' not in owner_screen, "owner flow must not display tenant monthly bank interest as owner income")
 for word in ("۵۵٬۵۰۰٬۰۰۰", "۳۹۴٬۵۰۰٬۰۰۰", "۴۵۰٬۰۰۰٬۰۰۰ تومان"):
     require(word not in owner_screen, f"unapproved old Figma owner financial sample must not be a live amount: {word}")
