@@ -80,10 +80,10 @@ jobs:
             printf 'mobile_typecheck=success\n'
             printf 'android_production_export=success\n'
             printf 'ios_production_export=success\n'
-            printf 'web_mock_preview_export=success\\n'
+            printf 'web_mock_preview_export=success\n'
             printf 'android_export_file_count=%s\n' "$android_files"
             printf 'ios_export_file_count=%s\n' "$ios_files"
-            printf 'web_export_file_count=%s\\n' "$web_files"
+            printf 'web_export_file_count=%s\n' "$web_files"
             printf 'native_apk_build=not-claimed\n'
             printf 'native_ipa_build=not-claimed\n'
             printf 'signed_mobile_artifact=not-claimed\n'
