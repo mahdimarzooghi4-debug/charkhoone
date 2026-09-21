@@ -18,7 +18,7 @@ const financeRows = [
 ] as const;
 
 function Button({ label, to, tone = "primary" }: { label: string; to: string; tone?: "primary" | "outline" | "danger" }) {
-  return <Link href={`/preview/${to}`} asChild><Pressable accessibilityRole="link" style={[styles.button, styles[tone]]}><Text style={[styles.buttonText, tone === "primary" ? styles.buttonTextLight : styles.buttonTextDark]}>{label}</Text></Pressable></Link>;
+  return <Link href={`/preview/${to}`} asChild><Pressable accessibilityRole="link" style={StyleSheet.flatten([styles.button, styles[tone]])}><Text style={[styles.buttonText, tone === "primary" ? styles.buttonTextLight : styles.buttonTextDark]}>{label}</Text></Pressable></Link>;
 }
 
 function Row({ label, value }: { label: string; value: string }) {
