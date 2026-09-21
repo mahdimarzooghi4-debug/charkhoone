@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useRouter } from "expo-router";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { BrandLogo } from "@/components/BrandLogo";
 import { FigmaSvg } from "@/components/FigmaSvg";
 import { OwnerBadge, OwnerCard, OwnerRow } from "@/components/OwnerUi";
 import { ownerAssets } from "@/ownerAssets";
+import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts } from "@/theme";
 import { formatMockNumber } from "./mockTenantData";
 import { useMockPreview, type MockOwnerSettlement } from "./MockPreviewProvider";
@@ -24,7 +25,7 @@ function OwnerHeader({ title, back = "contract-lookup" }: { title: string; back?
     <View style={styles.brand}><BrandLogo /></View>
     <View style={styles.appBar}>
       <Pressable accessibilityRole="button" accessibilityLabel="بازگشت" onPress={() => router.push(`/preview/${back}`)} style={styles.back}>
-        <View pointerEvents="none"><FigmaSvg uri={ownerAssets.navHome} width={20} height={20} /></View>
+        <View pointerEvents="none"><FigmaSvg uri={figmaAssets.back} width={24} height={40} /></View>
       </Pressable>
       <Text style={styles.appBarTitle}>{title}</Text>
     </View>
@@ -95,7 +96,7 @@ function OwnerFooterNav({ active }: { active: "home" | "payments" }) {
 }
 
 function SettlementOption({ method, selected, title, children, onSelect }: {
-  method: MockOwnerSettlement; selected: boolean; title: string; children: React.ReactNode;
+  method: MockOwnerSettlement; selected: boolean; title: string; children: ReactNode;
   onSelect: (v: MockOwnerSettlement) => void;
 }) {
   return <Pressable accessibilityRole="radio" accessibilityLabel={title} accessibilityState={{ selected }}
@@ -115,7 +116,7 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
   const fee = Math.round(monthlyRent * 0.005); // only Figma's illustrative service fee, NOT bank interest.
   const net = monthlyRent - fee;
   const ownerMethod = ownerSettlement === "monthly" ? "دریافت ماهانه" : "تجمیع دریافتی در صندوق";
-  let body: React.ReactNode;
+  let body: ReactNode;
   let activeNav: "home" | "payments" | undefined;
 
   switch (screen) {
@@ -202,10 +203,7 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
           <View style={[styles.checkbox, consent && styles.checkboxChecked]}><Text style={styles.checkText}>{consent ? "✓" : ""}</Text></View>
           <Text style={styles.checkLabel}>شرایط قرارداد و نمایشی‌بودن تأیید را مطالعه کردم.</Text>
         </Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="تأیید نمایشی مالک و ادامه" accessibilityState={{ disabled: !consent }} disabled={!consent}
-          onPress={() => { /* go next through explicit route */ }} style={styles.confirmOuter}>
-          <OwnerConfirmationButton active={consent} />
-        </Pressable>
+        <OwnerConfirmationButton active={consent} />
         <OwnerAction label="بازگشت به قرارداد" to="owner-connected" outline />
       </>;
       break;
