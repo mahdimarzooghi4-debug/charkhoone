@@ -66,6 +66,63 @@ function FinancingPlanCard({
   );
 }
 
+function StatusHero({ title, description, badge, icon }: { title: string; description: string; badge?: string; icon?: string }) {
+  return (
+    <View style={styles.statusHero}>
+      <View style={styles.statusCircle}>
+        <View pointerEvents="none"><FigmaSvg uri={icon ?? figmaAssets.reviewCheck} width={24} height={24} /></View>
+      </View>
+      {badge && <View style={styles.statusBadge}><Text style={styles.statusBadgeText}>{badge}</Text></View>}
+      <Text style={styles.statusTitle}>{title}</Text>
+      <Text style={styles.statusDescription}>{description}</Text>
+    </View>
+  );
+}
+
+function ProgressStepper({ labels, done, current }: { labels: readonly string[]; done: number; current: number }) {
+  return (
+    <View style={styles.progressCard}>
+      <View style={styles.progressRow}>
+        {labels.map((label, index) => (
+          <View key={label} style={styles.progressItem}>
+            <View style={[styles.progressCircle, index < done && styles.progressDone, index === current && styles.progressCurrent]}>
+              <Text style={[styles.progressNumber, index < done && styles.progressNumberDone]}>{index < done ? "✓" : index + 1}</Text>
+            </View>
+            <Text style={[styles.progressLabel, index <= current && styles.progressLabelActive]}>{label}</Text>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
+function MembershipOption({
+  label, ceiling, fee, selected, onSelect, recommended = false,
+}: {
+  label: MockMembership;
+  ceiling: string;
+  fee: string;
+  selected: boolean;
+  onSelect: (label: MockMembership) => void;
+  recommended?: boolean;
+}) {
+  return (
+    <Pressable accessibilityRole="radio" accessibilityState={{ selected }} accessibilityLabel={`عضویت ${label}، حق عضویت نمایشی ${fee}`} onPress={() => onSelect(label)}
+      style={[styles.membershipCard, selected && styles.membershipCardSelected]}
+    >
+      <View style={styles.membershipHeader}>
+        <View style={[styles.radio, selected && styles.radioSelected]} />
+        <View style={styles.membershipHeadingRight}>
+          {recommended && <View style={styles.membershipBadge}><Text style={styles.membershipBadgeText}>مناسب برای این قرارداد</Text></View>}
+          <Text style={styles.membershipTitle}>طرح {label}</Text>
+        </View>
+      </View>
+      <Row label="سقف تأمین مالی" value={ceiling} />
+      <Row label="حق عضویت MOCK" value={fee} />
+    </Pressable>
+  );
+}
+
 function ContractRoleCard({
   role, selected, onPress, name, maskedNationalId,
 }: {
@@ -458,6 +515,32 @@ const styles = StyleSheet.create({
   roleNotice: { padding: 12, backgroundColor: colors.successSoft, borderRadius: 8, alignItems: "flex-end" },
   roleNoticeText: { color: colors.primary, fontFamily: fonts.regular, fontSize: 11, lineHeight: 18, ...text },
   roleContinue: { backgroundColor: colors.page, minHeight: 48 },
+  statusHero: { paddingHorizontal: 12, paddingTop: 16, paddingBottom: 12, alignItems: "center", gap: 10 },
+  statusCircle: { width: 56, height: 56, backgroundColor: colors.accent, borderRadius: 28, alignItems: "center", justifyContent: "center" },
+  statusBadge: { paddingHorizontal: 12, paddingVertical: 6, backgroundColor: colors.page, borderRadius: 8 },
+  statusBadgeText: { color: colors.primary, fontFamily: fonts.regular, fontSize: 12, textAlign: "center" },
+  statusTitle: { color: colors.page, fontFamily: fonts.bold, fontSize: 20, textAlign: "center", writingDirection: "rtl" },
+  statusDescription: { color: colors.page, fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, textAlign: "center", writingDirection: "rtl" },
+  progressCard: { backgroundColor: colors.surface, borderRadius: 16, padding: 16 },
+  progressRow: { flexDirection: "row-reverse", alignItems: "flex-start", gap: 3 },
+  progressItem: { flex: 1, minWidth: 0, alignItems: "center", gap: 8 },
+  progressCircle: { width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: colors.border, alignItems: "center", justifyContent: "center" },
+  progressDone: { backgroundColor: colors.primary, borderColor: colors.primary },
+  progressCurrent: { borderWidth: 2, borderColor: colors.accent },
+  progressNumber: { color: colors.muted, fontFamily: fonts.semibold, fontSize: 11 },
+  progressNumberDone: { color: colors.surface },
+  progressLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 10, lineHeight: 15, textAlign: "center", writingDirection: "rtl" },
+  progressLabelActive: { color: colors.primary },
+  membershipCard: { borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 16, gap: 12, backgroundColor: colors.surface },
+  membershipCardSelected: { borderWidth: 2, borderColor: colors.accent, backgroundColor: colors.accentSoft },
+  membershipHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
+  membershipHeadingRight: { flex: 1, alignItems: "flex-end", gap: 5 },
+  membershipTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 15, ...text },
+  membershipBadge: { borderColor: colors.accent, borderWidth: 1, backgroundColor: colors.accentSoft, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
+  membershipBadgeText: { color: colors.accent, fontFamily: fonts.medium, fontSize: 10, ...text },
+  accentOutlineCard: { borderRadius: 16, backgroundColor: "#FFFBF2", borderWidth: 1.5, borderColor: colors.accent, padding: 16, gap: 12 },
+  accentedAmount: { fontFamily: fonts.bold, fontSize: 26, color: colors.primary, ...text },
+  statusTextCard: { borderRadius: 16, backgroundColor: colors.infoSoft, borderWidth: 1, borderColor: colors.primary, padding: 16, gap: 9 },
   resultGaugeSection: { alignItems: "center", paddingTop: 12, paddingBottom: 20 },
   resultGauge: { width: 280, height: 160, justifyContent: "flex-end", alignItems: "center" },
   resultGaugeText: { position: "absolute", top: 75, alignItems: "center", gap: 4 },
