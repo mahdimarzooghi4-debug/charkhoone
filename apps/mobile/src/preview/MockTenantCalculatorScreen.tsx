@@ -68,6 +68,7 @@ function PreviewAmount({ label, value, maximum, step, limit, onChange }: {
         onResponderMove={event => moveTo(event.nativeEvent.locationX)}
         style={styles.sliderTrack}
       >
+        {/* Keep the base, fill and thumb on the same 19px center line. */}
         <View pointerEvents="none" style={styles.sliderBase} />
         <View pointerEvents="none" style={[styles.sliderFill, { width: percentage }]} />
         <View pointerEvents="none" style={[styles.sliderThumb, { left: `${progress * 100}%` as `${number}%` }]} />
@@ -136,10 +137,10 @@ const styles = StyleSheet.create({
   amountValueRow: { width: "100%", flexDirection: "row", alignItems: "baseline", justifyContent: "flex-end", gap: 8 },
   currency: { color: colors.muted, fontFamily: fonts.medium, fontSize: 12, ...rtl },
   amountValue: { minWidth: 155, color: colors.primary, fontFamily: fonts.bold, fontSize: 25, padding: 0, ...rtl },
-  sliderTrack: { height: 38, width: "100%", justifyContent: "center", overflow: "visible" },
-  sliderBase: { height: 4, backgroundColor: colors.border, borderRadius: 2, width: "100%" },
-  sliderFill: { height: 4, backgroundColor: colors.primary, borderRadius: 2, position: "absolute", right: 0 },
-  sliderThumb: { height: 18, width: 18, marginLeft: -9, borderRadius: 9, borderWidth: 3, borderColor: colors.primary, backgroundColor: colors.surface, position: "absolute" },
+  sliderTrack: { position: "relative", height: 38, width: "100%", overflow: "visible" },
+  sliderBase: { position: "absolute", top: 17, left: 0, right: 0, height: 4, backgroundColor: colors.border, borderRadius: 2 },
+  sliderFill: { position: "absolute", top: 17, left: 0, height: 4, backgroundColor: colors.primary, borderRadius: 2 },
+  sliderThumb: { position: "absolute", top: 10, height: 18, width: 18, marginLeft: -9, borderRadius: 9, borderWidth: 3, borderColor: colors.primary, backgroundColor: colors.surface },
   sliderLabels: { width: "100%", flexDirection: "row", justifyContent: "space-between" },
   sliderLimit: { color: colors.muted, fontFamily: fonts.regular, fontSize: 10, ...rtl },
   adjustRow: { width: "100%", flexDirection: "row", gap: 8 },
