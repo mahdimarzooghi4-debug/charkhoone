@@ -1,6 +1,8 @@
-import { Link } from "expo-router";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Link, useRouter } from "expo-router";
+import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { BrandLogo } from "@/components/BrandLogo";
+import { FigmaSvg } from "@/components/FigmaSvg";
+import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts, radii } from "@/theme";
 import { mockFinancialModel } from "./mockTenantData";
 
@@ -32,11 +34,12 @@ function PreviewAmount({ label, value, limit, progress }: { label: string; value
 }
 
 export function MockTenantCalculatorScreen() {
+  const router = useRouter();
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.brand}><BrandLogo /></View>
       <View style={styles.appBar}>
-        <Link href="/preview/home" accessibilityLabel="بازگشت به خانه مستأجر" style={styles.back}>‹</Link>
+        <Pressable accessibilityRole="button" accessibilityLabel="بازگشت به خانه مستأجر" onPress={() => router.replace("/preview/home")} style={styles.back}><View pointerEvents="none" style={styles.backIcon}><FigmaSvg uri={figmaAssets.back} width={24} height={40} /></View></Pressable>
         <Text style={styles.appBarTitle}>محاسبه شرایط</Text>
       </View>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -69,7 +72,8 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.primary },
   brand: { height: 60, alignItems: "flex-end", paddingHorizontal: 16 },
   appBar: { height: 56, paddingHorizontal: 16, backgroundColor: colors.surface, flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  back: { width: 40, height: 44, textAlign: "center", lineHeight: 44, color: colors.primary, fontSize: 30, textDecorationLine: "none" },
+  back: { width: 40, height: 44, alignItems: "center", justifyContent: "center" },
+  backIcon: { width: 24, height: 40, transform: [{ rotate: "180deg" }] },
   appBarTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 18, ...rtl },
   content: { flexGrow: 1, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24, gap: 12 },
   heading: { color: colors.surface, fontFamily: fonts.bold, fontSize: 18, ...rtl },
