@@ -77,4 +77,29 @@ contract = (PAGES / "contracts/123456789012/page.tsx").read_text(encoding="utf-8
 demand('label="مدت زمان قرارداد" value="۱۲ ماه"' in contract,
        "lease length must remain 12 months, independent of bank principal settlement")
 
+# Guard the split between the financing-plan key and the membership choice.
+membership = (PAGES / "contracts/register/plans/membership/page.tsx").read_text(encoding="utf-8")
+membership_result = (PAGES / "contracts/register/plans/membership/result/page.tsx").read_text(encoding="utf-8")
+contribution_page = (PAGES / "contracts/register/plans/contribution/page.tsx").read_text(encoding="utf-8")
+final_page = (PAGES / "contracts/register/plans/final-confirmation/page.tsx").read_text(encoding="utf-8")
+final_consent = (PAGES / "contracts/register/plans/final-confirmation/FinalConfirmationConsent.tsx").read_text(encoding="utf-8")
+waiting_owner = (PAGES / "contracts/register/plans/waiting-owner/page.tsx").read_text(encoding="utf-8")
+demand("financingPlan}&membership=${selectedPlan}" in membership and
+       "const { plan, membership } = await searchParams;" in membership_result and
+       "const chosenId = membership" in membership_result and
+       "contribution?plan=${financingPlan}" in membership_result and
+       "final-confirmation?plan=${plan}" in contribution_page and
+       "<FinalConfirmationConsent plan={plan} />" in final_page and
+       "waiting-owner?plan=${plan}" in final_consent and
+       "selectedPlanRows" in waiting_owner,
+       "financing plan must survive the separate membership choice and tenant confirmation")
+
+owner_active = (PAGES / "contracts/123456789012/owner/page.tsx").read_text(encoding="utf-8")
+owner_final = (PAGES / "contracts/123456789012/owner/final-confirmation/page.tsx").read_text(encoding="utf-8")
+payments = (PAGES / "receive-pay/page.tsx").read_text(encoding="utf-8")
+demand(sample["loan"] in owner_active and "۴۵۰٬۰۰۰٬۰۰۰" not in owner_active and
+       "سود وام ماهانه مستأجر متفاوت است" in owner_final and
+       "برآورد مستقل مالک سعادت‌آباد" in payments,
+       "owner payout preview must not be represented as tenant bank interest")
+
 print("web C3 interest-only mock financing is consistent across user panel")
