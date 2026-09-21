@@ -113,7 +113,7 @@ require('screen !== "contract-lookup" && screen !== "owner-contract"' in screen,
 require('parseMockAmount(trackingCode) !== 123456789012' in screen, "an arbitrary 12-digit code must not pretend to match a MOCK contract")
 role_section = screen.split('case "contract-lookup": body = <>')[1].split('case "owner-contract": body = <>')[0]
 require('نقش خود را در این قرارداد انتخاب کنید' in role_section and 'مشخصات کلی قرارداد' in role_section and 'ملک قرارداد' in role_section, "Figma 66:382 must show role cards, contract summary and property")
-owner_section = screen.split('case "owner-contract": body = <>')[1].split('case "financing-plans": body = <>')[0]
+owner_section = screen.split('case "owner-contract": body = <>')[1].split('case "financing-plans": {')[0]
 require('to="financing-plans"' not in owner_section and 'mockFinancialModel.monthlyInterest' not in owner_section, "owner MOCK must not inherit tenant financing or monthly bank interest")
 require('router.push("/preview/contract-lookup")' in screen, "MOCK inquiry must navigate on explicit user action")
 require('href="/preview/calculator"' in screen, "home orange CTA must open Figma 65:55")
