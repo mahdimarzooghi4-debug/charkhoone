@@ -142,7 +142,7 @@ export function MockTenantScreen({ screen }: Props) {
     </>; break;
     case "contract-lookup": body = <>
       <View style={styles.homeLogo}><BrandLogo /></View>
-      <View style={styles.card}>
+      <View style={styles.roleSectionCard}>
         <Text style={styles.cardTitle}>نقش خود را در این قرارداد انتخاب کنید</Text>
         <Text style={styles.note}>در فیگما مشخصات طرفین از خودنویس دریافت می‌شود؛ در این پیش‌نمایش نام‌ها و کدهای ملی پوشیده صرفاً نمونه هستند و هیچ استعلامی انجام نشده است.</Text>
         <View style={styles.roleCards}>
@@ -150,7 +150,7 @@ export function MockTenantScreen({ screen }: Props) {
           <ContractRoleCard role="Tenant" name="علی رضایی" maskedNationalId="۰۰۱•••••۷۸۹" selected={contractRole === "Tenant"} onPress={setContractRole} />
         </View>
       </View>
-      <View style={styles.card}>
+      <View style={styles.roleSectionCard}>
         <Text style={styles.cardTitle}>مشخصات کلی قرارداد</Text>
         <Row label="کد رهگیری نمونه" value="۱۲۳۴۵۶۷۸۹۰۱۲" />
         <Row label="تاریخ شروع نمونه" value="۱۵ مهر ۱۴۰۵" />
@@ -158,7 +158,7 @@ export function MockTenantScreen({ screen }: Props) {
         <Row label="مبلغ رهن" value={mockFinancialModel.cashDeposit} />
         <Row label="اجاره ماهانه" value={mockFinancialModel.monthlyRent} />
       </View>
-      <View style={styles.card}>
+      <View style={styles.roleSectionCard}>
         <Text style={styles.cardTitle}>ملک قرارداد</Text>
         <Text style={styles.note}>آدرس ملک نمونه، نه نتیجه استعلام واقعی</Text>
         <Text style={styles.body}>تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴، واحد ۳</Text>
@@ -379,8 +379,9 @@ export function MockTenantScreen({ screen }: Props) {
 
 const text = { textAlign: "right" as const, writingDirection: "rtl" as const };
 const styles = StyleSheet.create({
+  roleSectionCard: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: 20, gap: 12 },
   roleCards: { flexDirection: "row", gap: 12 },
-  roleCard: { flex: 1, minWidth: 0, minHeight: 114, padding: 12, gap: 8, borderRadius: 12, borderColor: colors.border, borderWidth: 1, alignItems: "flex-end", backgroundColor: colors.surface },
+  roleCard: { flex: 1, minWidth: 0, minHeight: 114, padding: 16, gap: 8, borderRadius: 12, borderColor: colors.border, borderWidth: 1, alignItems: "flex-end", backgroundColor: colors.surface },
   roleCardSelected: { backgroundColor: colors.primary, borderColor: colors.primary },
   roleTitleRow: { width: "100%", flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 8 },
   roleTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 14, ...text },
