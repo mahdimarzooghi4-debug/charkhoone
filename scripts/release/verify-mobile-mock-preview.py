@@ -94,6 +94,27 @@ require('["دریافت و پرداخت", "payments",' in screen, "bottom naviga
 require('["حساب من", "profile",' in screen, "bottom navigation must open Figma Account / Profile")
 require('["خانه", "home",' in screen, "bottom navigation must open Figma Tenant Home")
 require('to="contract-tracking"' in screen and 'router.push("/preview/contract-lookup")' in screen and 'to="financing-plans"' in screen, "calculator result must pass through the two Figma contract screens")
+# Figma 66:382: two actual selectable role cards, both continued into distinct MOCK flows.
+owner_route = read("apps/mobile/app/preview/owner-contract.tsx")
+require('screen="owner-contract"' in owner_route, "owner role requires its own explicit MOCK route")
+require('type MockContractRole = "Tenant" | "Owner"' in provider, "role selection type must distinguish tenant and owner")
+require('contractRole' in provider and 'setContractRole' in provider, "role selection must persist in preview provider")
+require('function ContractRoleCard' in screen, "Figma 66:382 must render selectable role cards")
+for token in (
+    'role="Owner"', 'role="Tenant"', 'contractRole === "Owner"', 'contractRole === "Tenant"',
+    'selected={contractRole === "Owner"}', 'selected={contractRole === "Tenant"}',
+    'onPress={setContractRole}', 'accessibilityRole="radio"',
+    'figmaAssets.roleSelected', 'figmaAssets.roleUnselected',
+    'router.push(contractRole === "Tenant" ? "/preview/financing-plans" : "/preview/owner-contract")',
+    'case "owner-contract"', 'back="contract-lookup"',
+):
+    require(token in screen, f"Figma 66:382 role selection missing: {token}")
+require('screen !== "contract-lookup" && screen !== "owner-contract"' in screen, "owner and role choice must not display tenant tab navigation")
+require('parseMockAmount(trackingCode) !== 123456789012' in screen, "an arbitrary 12-digit code must not pretend to match a MOCK contract")
+role_section = screen.split('case "contract-lookup": body = <>')[1].split('case "owner-contract": body = <>')[0]
+require('انتخاب نقش' in role_section and 'مشخصات کلی قرارداد' in role_section and 'ملک قرارداد' in role_section, "Figma 66:382 must show role cards, contract summary and property")
+owner_section = screen.split('case "owner-contract": body = <>')[1].split('case "financing-plans": body = <>')[0]
+require('to="financing-plans"' not in owner_section and 'mockFinancialModel.monthlyInterest' not in owner_section, "owner MOCK must not inherit tenant financing or monthly bank interest")
 require('router.push("/preview/contract-lookup")' in screen, "MOCK inquiry must navigate on explicit user action")
 require('href="/preview/calculator"' in screen, "home orange CTA must open Figma 65:55")
 require('href="/preview/calculator-result"' in calculator, "Figma 65:55 CTA must open Figma 71:43")
