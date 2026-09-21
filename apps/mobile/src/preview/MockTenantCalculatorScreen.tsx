@@ -1,8 +1,6 @@
 import { Link } from "expo-router";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { BrandLogo } from "@/components/BrandLogo";
-import { FigmaSvg } from "@/components/FigmaSvg";
-import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts, radii } from "@/theme";
 import { mockFinancialModel } from "./mockTenantData";
 
@@ -12,6 +10,7 @@ import { mockFinancialModel } from "./mockTenantData";
  * amount is 6,708,333 toman. Controls are a labelled fixed sample, not fake inputs.
  */
 function PreviewAmount({ label, value, limit, progress }: { label: string; value: string; limit: string; progress: number }) {
+  const percentage = `${progress * 100}%` as `${number}%`;
   return (
     <View style={styles.amountGroup}>
       <Text style={styles.amountLabel}>{label}</Text>
@@ -20,8 +19,8 @@ function PreviewAmount({ label, value, limit, progress }: { label: string; value
         <Text style={styles.amountValue}>{value}</Text>
       </View>
       <View accessibilityLabel={`${label}: ${value} تومان، نمونه ثابت`} style={styles.sliderTrack}>
-        <View style={[styles.sliderFill, { width: `${progress * 100}%` }]} />
-        <View style={[styles.sliderThumb, { right: `${progress * 100}%` }]} />
+        <View style={[styles.sliderFill, { width: percentage }]} />
+        <View style={[styles.sliderThumb, { right: percentage }]} />
       </View>
       <View style={styles.sliderLabels}>
         <Text style={styles.sliderLimit}>۰</Text>
