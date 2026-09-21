@@ -91,12 +91,32 @@ for token in (
 for token in (
     'شرایط قرارداد را وارد کنید',
     'مبلغ رهن', 'اجاره ماهانه',
-    'mockFinancialModel.monthlyInterest',
+    'financialModel.monthlyInterest',
     'href="/preview/calculator-result"',
-    'نمونه ثابت',
+    'onResponderMove',
+    'setCashDeposit',
+    'setMonthlyRent',
+    'TextInput',
+    'onChangeText={setEditing}',
+    'MOCK: رهن و اجاره را با لمس یا کشیدن اسلایدر',
 ):
     if token not in calculator_screen:
         failures.append(f"Figma 65:55 C3 MOCK calculator missing: {token}")
+
+for token in (
+    'calculateMockFinancialModel', 'Math.round(deposit + rent / 0.03)',
+    'Math.round(fullDeposit * 0.3)', 'Math.round(financing * 0.23 / 12)',
+    'MOCK_CASH_DEPOSIT_MAX', 'MOCK_MONTHLY_RENT_MAX',
+):
+    if token not in data:
+        failures.append(f"editable C3 financial calculator formula missing: {token}")
+
+for token in ("cashDeposit", "monthlyRent", "setCashDeposit", "setMonthlyRent", "financialModel"):
+    if token not in provider:
+        failures.append(f"editable MOCK calculator state continuity missing: {token}")
+
+if 'financialModel: mockFinancialModel' not in screen:
+    failures.append("MOCK result, plans, home, and payments must reflect edited calculation")
 
 if "۱۸٬۵۰۰٬۰۰۰" in calculator_screen or "@/api/" in calculator_screen:
     failures.append("calculator must not restore stale Figma numbers or call real APIs")
