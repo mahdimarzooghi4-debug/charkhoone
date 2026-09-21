@@ -22,32 +22,34 @@ const plans: readonly Plan[] = [
     title: "طرح عمومی",
     bank: "بانک نمونه",
     badges: [
-      { label: "واجد شرایط", tone: "eligible" },
+      { label: "نمونه", tone: "eligible" },
       { label: "عمومی", tone: "public" },
     ],
     rows: [
-      ["مبلغ تأمین مالی", "۴۰۰٬۰۰۰٬۰۰۰ تومان"],
-      ["آورده موردنیاز", "۱۰۰٬۰۰۰٬۰۰۰ تومان"],
-      ["پرداخت ماهانه تأمین مالی", "۲۰٬۵۰۰٬۰۰۰ تومان"],
-      ["مدت بازپرداخت", "۱۲ ماه"],
+      ["مبلغ تأمین مالی (رتبه C3 / ۳۰٪)", "۳۵۰٬۰۰۰٬۰۰۰ تومان"],
+      ["آورده مستأجر از رهن کامل معادل", "۸۱۶٬۶۶۶٬۶۶۷ تومان"],
+      ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان"],
+      ["نرخ اسمی سالانه بانک (نمونه)", "۲۳٪"],
+      ["نحوه تسویه اصل وام", "طبق قرارداد بانک"],
     ],
-    note: "برای کاربران واجد شرایط عمومی",
+    note: "پیش‌نمایش طرح عمومی با سناریوی مشترک C3؛ بدون تأیید واقعی بانک",
   },
   {
     id: "staff",
     title: "طرح ویژه کارکنان",
     bank: "بانک نمونه",
     badges: [
-      { label: "واجد شرایط", tone: "eligible" },
+      { label: "نمونه", tone: "eligible" },
       { label: "ویژه", tone: "special" },
     ],
     rows: [
-      ["مبلغ تأمین مالی", "۴۵۰٬۰۰۰٬۰۰۰ تومان"],
-      ["آورده موردنیاز", "۵۰٬۰۰۰٬۰۰۰ تومان", true],
-      ["پرداخت ماهانه تأمین مالی", "۱۸٬۵۰۰٬۰۰۰ تومان", true],
-      ["مدت بازپرداخت", "۱۲ ماه"],
+      ["مبلغ تأمین مالی (رتبه C3 / ۳۰٪)", "۳۵۰٬۰۰۰٬۰۰۰ تومان"],
+      ["آورده مستأجر از رهن کامل معادل", "۸۱۶٬۶۶۶٬۶۶۷ تومان", true],
+      ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان", true],
+      ["نرخ اسمی سالانه بانک (نمونه)", "۲۳٪"],
+      ["نحوه تسویه اصل وام", "طبق قرارداد بانک"],
     ],
-    note: "شرایط بهتر نسبت به طرح عمومی",
+    note: "اعداد مالی فعلاً برای هر دو طرح یکسان و صرفاً نمونه رتبه C3 هستند",
   },
 ] as const;
 
@@ -94,6 +96,7 @@ function PlanCard({ plan, selected, onSelect }: { plan: Plan; selected: boolean;
 }
 
 export default function EligibleFinancingPlansPage() {
+  // Both presentation variants use the same C3 mock; real bank plan terms are unavailable.
   // Client-only illustrative plan choice; no bank request is submitted.
   const [selectedPlan, setSelectedPlan] = useState<PlanId>("staff");
 
@@ -111,13 +114,14 @@ export default function EligibleFinancingPlansPage() {
         <section className={styles.pageHeader} data-node-id="150:913">
           <p data-node-id="150:914">قراردادها / انتخاب طرح تأمین مالی</p>
           <h2 data-node-id="150:915">طرح‌های قابل استفاده برای شما</h2>
-          <p data-node-id="150:916">براساس شرایط شما و این قرارداد، طرح‌های زیر قابل انتخاب هستند.</p>
+          <p data-node-id="150:916">دو چیدمان نمایشی از طرح‌ها با اعداد مشترک نمونه C3 را ببینید؛ هنوز طرح واقعی از بانک دریافت نشده است.</p>
         </section>
 
         <section className={styles.contractContext} data-node-id="150:917">
-          <div><span>مبلغ موردنیاز:</span><strong>۴۵۰٬۰۰۰٬۰۰۰ تومان</strong></div>
+          <div><span>تأمین مالی نمونه:</span><strong>۳۵۰٬۰۰۰٬۰۰۰ تومان</strong></div>
+          <div><span>رهن کامل معادل:</span><strong>۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان</strong></div>
           <div><span>اجاره ماهانه:</span><strong className={styles.contextRegular}>۲۰٬۰۰۰٬۰۰۰ تومان</strong></div>
-          <div><span>مبلغ رهن:</span><strong className={styles.contextRegular}>۵۰۰٬۰۰۰٬۰۰۰ تومان</strong></div>
+          <div><span>رهن نقدی قرارداد:</span><strong className={styles.contextRegular}>۵۰۰٬۰۰۰٬۰۰۰ تومان</strong></div>
           <div><span>قرارداد:</span><strong>سعادت‌آباد</strong></div>
         </section>
 
@@ -134,7 +138,7 @@ export default function EligibleFinancingPlansPage() {
 
         <div className={styles.informationNote} data-node-id="150:999">
           <span className={styles.noticeIcon} aria-hidden="true">ⓘ</span>
-          <p data-node-id="150:1000">مبالغ و طرح‌ها نمونهٔ طراحی‌اند؛ انتخاب طرح به‌معنای ثبت درخواست یا تأیید واقعی بانک نیست.</p>
+          <p data-node-id="150:1000">اعداد این مسیر با ماشین‌حساب یکسان‌اند: رتبه نمونه C3 با تأمین مالی ۳۰٪ و نرخ اسمی سالانه نمونه ۲۳٪. انتخاب طرح به‌معنای ثبت درخواست یا تأیید واقعی بانک نیست.</p>
         </div>
       </section>
 

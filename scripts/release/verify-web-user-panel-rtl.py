@@ -168,7 +168,7 @@ require("<UserPanelSidebar" in contracts_text and "alertBadge" not in sidebar_co
 require(bool(re.search(r"\.contractHeader,\s*\.contractBottom\s*\{[^}]*direction:\s*rtl\s*;", contracts_css)),
         "contracts card layout must align to right")
 
-require(contracts_text.count('action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/settlement-preference"') == 1 and
+require(contracts_text.count('action: "مشاهده وضعیت (نمونه)", href: "/user/contracts/demo/vanak"') == 1 and
         'nodeId: "149:223"' in contracts_text and
         'statusTone: "attention" as const' in contracts_text and
         '<Link href={contract.href} className={contract.statusTone === "attention" ? styles.reviewButton : styles.detailButton}>{contract.action}</Link>' in contracts_text and
@@ -177,7 +177,7 @@ require(contracts_text.count('action: "بررسی و تأیید", href: "/user/c
         'href: null' not in contracts_text and
         '/user/contracts/demo/pounak' in contracts_text and
         '/user/contracts/demo/jordan' in contracts_text,
-        "contracts review-and-confirm action must navigate to owner final-confirmation sample without changing other cards")
+        "Vanak owner sample must open its own demo detail without changing other contract cards")
 
 contracts_assets = {
     "logo": "dashboard-logo.png",
@@ -264,9 +264,10 @@ plans_page = read(USER_ROOT / "contracts/register/plans/page.tsx")
 plans_css = read(USER_ROOT / "contracts/register/plans/page.module.css")
 plans_confirmation = read(USER_ROOT / "contracts/register/plans/confirmation/page.tsx")
 summary_pairs = (
-    ('مبلغ موردنیاز:', '۴۵۰٬۰۰۰٬۰۰۰ تومان'),
+    ('تأمین مالی نمونه:', '۳۵۰٬۰۰۰٬۰۰۰ تومان'),
+    ('رهن کامل معادل:', '۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان'),
     ('اجاره ماهانه:', '۲۰٬۰۰۰٬۰۰۰ تومان'),
-    ('مبلغ رهن:', '۵۰۰٬۰۰۰٬۰۰۰ تومان'),
+    ('رهن نقدی قرارداد:', '۵۰۰٬۰۰۰٬۰۰۰ تومان'),
     ('قرارداد:', 'سعادت‌آباد'),
 )
 context_markup = plans_page.split('className={styles.contractContext}', 1)[1].split('</section>', 1)[0]
@@ -295,7 +296,7 @@ require('.headerRight h1, .headerRight p, .pageHeader h2, .pageHeader p { width:
         '.planTitle h3, .planTitle p { width: 100%; text-align: right; }' in plans_css and
         '.informationNote { width: 100%; display: grid; grid-template-columns: 20px minmax(0, 1fr);' in plans_css,
         "finance plans heading, plan titles and bottom warning must be right-aligned")
-require('نمونهٔ طراحی‌اند' in plans_page and
+require('رتبه نمونه C3' in plans_page and
         'background: var(--ch-color-primary); border-radius: 50%;' in plans_css,
         "finance plans selection must use brand green and identify fixture values as a preview")
 
@@ -409,11 +410,13 @@ require('const plan = (await searchParams).plan === "general" ? "general" : "sta
         'const planRows = plan === "general" ? generalPlanRows : staffPlanRows;' in approved_page and
         'const resultRows = plan === "general" ? generalResultRows : staffResultRows;' in not_approved_page and
         all(value in review_page and value in approved_page and value in not_approved_page
-            for value in ("۴۰۰٬۰۰۰٬۰۰۰ تومان", "طرح عمومی")) and
-        '۲۰٬۵۰۰٬۰۰۰ تومان' in review_page and
-        '۲۰٬۵۰۰٬۰۰۰ تومان' in approved_page and
-        '۱۰۰٬۰۰۰٬۰۰۰ تومان' in review_page and
-        '۱۰۰٬۰۰۰٬۰۰۰ تومان' in approved_page and
+            for value in ("۳۵۰٬۰۰۰٬۰۰۰ تومان", "طرح عمومی")) and
+        '۸۱۶٬۶۶۶٬۶۶۷ تومان' in review_page and
+        '۸۱۶٬۶۶۶٬۶۶۷ تومان' in approved_page and
+        '۶٬۷۰۸٬۳۳۳ تومان' in review_page and
+        '۶٬۷۰۸٬۳۳۳ تومان' in approved_page and
+        all(value not in (plans_page + plans_confirmation + review_page + approved_page + not_approved_page)
+            for value in ("۴۵۰٬۰۰۰٬۰۰۰ تومان", "۴۰۰٬۰۰۰٬۰۰۰ تومان", "۱۸٬۵۰۰٬۰۰۰ تومان", "۲۰٬۵۰۰٬۰۰۰ تومان", "۱۰۰٬۰۰۰٬۰۰۰ تومان")) and
         'نتیجه واقعی از بانک دریافت نشده است' in not_approved_page,
         "financing preview must preserve general/staff plan across consent, bank review and both results")
 require('disabled={!agreed}' in consent_code and
@@ -449,11 +452,11 @@ require('"use client";' in membership_page and
         '.planCard:focus-within {' in membership_css and
         '.planInput {' in membership_css,
         "all three membership plan cards must be single-choice, interactive and keyboard accessible")
-require('membership/result?plan=${selectedPlan}' in membership_page and
+require('membership/result?plan=${financingPlan}&membership=${selectedPlan}' in membership_page and
         'پرداخت (نمونه)' in membership_page and
-        'searchParams: Promise<{ plan?: string }>' in membership_result and
+        'searchParams: Promise<{ plan?: string; membership?: string }>' in membership_result and
         'const choice = membershipChoices[chosenId];' in membership_result and
-        'plan === "twice" || plan === "twice-high"' in membership_result and
+        'membership === "twice" || membership === "twice-high"' in membership_result and
         '["مبلغ نمونه", choice.amount, true]' in membership_result and
         '["سقف تأمین مالی", choice.cap, false]' in membership_result and
         'سهمیه انتخابی: {choice.uses}' in membership_result,
@@ -464,7 +467,7 @@ require('هیچ پرداخت یا فعال‌سازی واقعی عضویت ان
         'src="/brand/financing-review-check.svg"' in membership_result and
         '.previewNote {' in membership_result_css and
         '.checkCircle img { width: 14px; height: 14px; display: block; }' in membership_result_css and
-        'href="/user/contracts/register/plans/contribution"' in membership_page,
+        'contribution?plan=${financingPlan}' in membership_page,
         "membership buttons must keep the existing illustrative contribution route without claiming a real payment")
 
 contribution_page = read(USER_ROOT / "contracts/register/plans/contribution/page.tsx")
@@ -491,7 +494,7 @@ require('<h1 data-node-id="150:1494">تأیید نهایی قرارداد</h1><s
 require('const toPersianDigits = (value: string) =>' in final_confirmation and
         'value.replace(/[0-9٠-٩]/g,' in final_confirmation and
         '{renderPersianValue(value)}' in final_confirmation and
-        '{renderPersianValue("۵۰٬۰۰۰٬۰۰۰")}' in final_confirmation and
+        '{renderPersianValue("۸۱۶٬۶۶۶٬۶۶۷")}' in final_confirmation and
         '{renderPersianValue("۱۲۳۴۵۶۷۸۹")}' in final_confirmation and
         'renderPersianValue(step.number ?? "")' in final_confirmation,
         "final-confirmation sample figures, reference and step numbers should be Persian digits")
@@ -502,14 +505,14 @@ require('className={styles.successIcon}><img src="/brand/financing-review-check.
         '.successIcon { width: 48px; height: 48px; flex: 0 0 48px; display: inline-flex; align-items: center; justify-content: center; background: var(--ch-color-primary);' in final_css and
         '.successIcon img { width: 14px; height: 14px; display: block; }' in final_css,
         "final confirmation banner icon must be permanent, branded and on the left")
-require('<FinalConfirmationConsent />' in final_confirmation and
+require('<FinalConfirmationConsent plan={plan} />' in final_confirmation and
         'styles.checkbox' not in final_confirmation and
         final_consent.count('type="checkbox"') == 1 and
         'useState(false)' in final_consent and
         'checked={confirmed}' in final_consent and
         'onChange={(event) => setConfirmed(event.target.checked)}' in final_consent and
         'disabled={!confirmed}' in final_consent and
-        'router.push("/user/contracts/register/plans/waiting-owner")' in final_consent and
+        'router.push(`/user/contracts/register/plans/waiting-owner?plan=${plan}`)' in final_consent and
         '.confirmationRow { width: 100%; display: grid; grid-template-columns: 20px minmax(0, 1fr);' in final_css and
         'direction: rtl; cursor: pointer; }' in final_css and
         '.confirmationCheckbox:checked::after { content: "✓";' in final_css,
@@ -658,10 +661,10 @@ require('<section id="owner-property-info" className={styles.card} data-node-id=
         "owner active preview must have working property anchor, three receipt-history/payment links and shared sidebar destinations")
 
 
-require('action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/settlement-preference"' in contracts_text and
-        'action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/final-confirmation"' not in contracts_text and
+require('action: "مشاهده وضعیت (نمونه)", href: "/user/contracts/demo/vanak"' in contracts_text and
+        'action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/settlement-preference"' not in contracts_text and
         'href="/user/contracts/123456789012/owner/settlement-preference"' in owner_final,
-        "owner review CTA must visit receipt model selection before final confirmation")
+        "Vanak preview must not open unrelated Saadatabad owner approval; Saadatabad owner flow retains settlement selection")
 require(owner_settlement.startswith('"use client";') and
         'const [method, setMethod] = useState<ReceiptMethod>("monthly");' in owner_settlement and
         'onClick={() => setMethod("monthly")}' in owner_settlement and
@@ -805,10 +808,10 @@ require('"use client";' in calculator_page and
         'const maxFinancing = Math.round(fullDepositEquivalent * MAX_FINANCING_PERCENT / 100);' in calculator_page and
         'const selectedFinancing = Math.round(fullDepositEquivalent * financingPercent / 100);' in calculator_page and
         'const contribution = fullDepositEquivalent - selectedFinancing;' in calculator_page and
-        '<div className={styles.contributionSummary} aria-label="آورده مستأجر از رهن معادل">' in calculator_page and
-        'آورده مستأجر از رهن معادل (نمونه)' in calculator_page and
+        '<div className={styles.contributionSummary} aria-label="آورده مستأجر از رهن کامل معادل">' in calculator_page and
+        'آورده مستأجر از رهن کامل معادل (نمونه)' in calculator_page and
         '<strong>{money(contribution)}</strong>' in calculator_page and
-        'مبلغ نقدی قطعی هنگام قرارداد نیست' in calculator_page and
+        'این مانده رهن کامل معادل سهمی است که مستأجر تأمین می‌کند' in calculator_page and
         '.contributionSummary > strong' in calculator_css and
         'رهن کامل معادل = رهن نقدی + (اجاره ماهانه ÷ ۰٫۰۳)' in calculator_page and
         'رهن کامل معادل قرارداد' in calculator_page and

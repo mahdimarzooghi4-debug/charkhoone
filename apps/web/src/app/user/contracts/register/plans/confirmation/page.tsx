@@ -3,40 +3,43 @@ import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 import { PlanConfirmationConsent } from "./PlanConfirmationConsent";
 
 const staffPlanRows = [
-  ["مبلغ تأمین مالی", "۴۵۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["آورده موردنیاز شما", "۵۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["پرداخت ماهانه تأمین مالی", "۱۸٬۵۰۰٬۰۰۰ تومان", true],
-  ["مدت بازپرداخت", "۱۲ ماه", false],
+  ["مبلغ تأمین مالی", "۳۵۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["آورده مستأجر از رهن کامل معادل", "۸۱۶٬۶۶۶٬۶۶۷ تومان", false],
+  ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان", true],
+  ["نرخ اسمی سالانه بانک (نمونه)", "۲۳٪", false],
+  ["نحوه تسویه اصل وام", "طبق قرارداد بانک", false],
 ] as const;
 
 const generalPlanRows = [
-  ["مبلغ تأمین مالی", "۴۰۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["آورده موردنیاز شما", "۱۰۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["پرداخت ماهانه تأمین مالی", "۲۰٬۵۰۰٬۰۰۰ تومان", true],
-  ["مدت بازپرداخت", "۱۲ ماه", false],
+  ["مبلغ تأمین مالی", "۳۵۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["آورده مستأجر از رهن کامل معادل", "۸۱۶٬۶۶۶٬۶۶۷ تومان", false],
+  ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان", true],
+  ["نرخ اسمی سالانه بانک (نمونه)", "۲۳٪", false],
+  ["نحوه تسویه اصل وام", "طبق قرارداد بانک", false],
 ] as const;
 
 const contractRows = [
   ["موقعیت ملک", "سعادت‌آباد"],
-  ["مبلغ رهن قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
+  ["رهن نقدی قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
   ["اجاره ماهانه", "۲۰٬۰۰۰٬۰۰۰ تومان"],
+  ["رهن کامل معادل", "۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان"],
   ["مدت زمان قرارداد", "۱۵ مهر ۱۴۰۵ تا ۱۵ مهر ۱۴۰۶"],
 ] as const;
 
 const staffSummaryRows = [
   ["طرح انتخاب‌شده", "طرح ویژه کارکنان", false],
   ["بانک ارائه‌دهنده", "بانک نمونه", false],
-  ["مبلغ درخواست", "۴۵۰٬۰۰۰٬۰۰۰ تومان", true],
-  ["آورده موردنیاز شما", "۵۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["پرداخت ماهانه", "۱۸٬۵۰۰٬۰۰۰ تومان", true],
+  ["مبلغ درخواست", "۳۵۰٬۰۰۰٬۰۰۰ تومان", true],
+  ["آورده مستأجر از رهن کامل معادل", "۸۱۶٬۶۶۶٬۶۶۷ تومان", false],
+  ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان", true],
 ] as const;
 
 const generalSummaryRows = [
   ["طرح انتخاب‌شده", "طرح عمومی", false],
   ["بانک ارائه‌دهنده", "بانک نمونه", false],
-  ["مبلغ درخواست", "۴۰۰٬۰۰۰٬۰۰۰ تومان", true],
-  ["آورده موردنیاز شما", "۱۰۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["پرداخت ماهانه", "۲۰٬۵۰۰٬۰۰۰ تومان", true],
+  ["مبلغ درخواست", "۳۵۰٬۰۰۰٬۰۰۰ تومان", true],
+  ["آورده مستأجر از رهن کامل معادل", "۸۱۶٬۶۶۶٬۶۶۷ تومان", false],
+  ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان", true],
 ] as const;
 
 const steps = [
@@ -75,7 +78,7 @@ export default async function PlanConfirmationPage({
         <header className={styles.pageHeader} data-node-id="150:1055">
           <p data-node-id="150:1056">قراردادها / تأیید طرح</p>
           <h1 data-node-id="150:1057">تأیید طرح تأمین مالی</h1>
-          <p data-node-id="150:1058">پیش از ارسال درخواست، شرایط طرح انتخاب‌شده را بررسی کنید.</p>
+          <p data-node-id="150:1058">پیش از مشاهده مسیر نمایشی درخواست، شرایط نمونه را بررسی کنید؛ هنوز درخواستی برای بانک ارسال نمی‌شود.</p>
         </header>
 
         <div className={styles.columns} data-node-id="150:1059">
@@ -91,7 +94,7 @@ export default async function PlanConfirmationPage({
           <div className={styles.detailColumn} data-node-id="150:1093">
             <section className={styles.card} data-node-id="150:1094">
               <div className={styles.planHeader} data-node-id="150:1095">
-                <div className={styles.badges}><span className={styles.badgeEligible}>واجد شرایط</span><span className={styles.badgeSpecial}>{isGeneral ? "عمومی" : "ویژه"}</span></div>
+                <div className={styles.badges}><span className={styles.badgeEligible}>نمونه</span><span className={styles.badgeSpecial}>{isGeneral ? "عمومی" : "ویژه"}</span></div>
                 <div className={styles.planTitle}><h2 data-node-id="150:1102">{isGeneral ? "طرح عمومی" : "طرح ویژه کارکنان"}</h2><p data-node-id="150:1103">بانک نمونه</p></div>
               </div>
               <div className={styles.divider} />

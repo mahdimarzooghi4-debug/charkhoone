@@ -25,20 +25,22 @@ const previewNextSteps = [
 ] as const;
 
 const finalTerms = [
-  ["مبلغ رهن", "۵۰۰٬۰۰۰٬۰۰۰ تومان", "default"],
+  ["رهن نقدی قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان", "default"],
   ["اجاره ماهانه قرارداد", "۲۰٬۰۰۰٬۰۰۰ تومان در ماه", "default"],
+  ["رهن کامل معادل", "۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان", "default"],
   ["تاریخ شروع", "۱۵ مهر ۱۴۰۵", "default"],
   ["تاریخ پایان", "۱۵ مهر ۱۴۰۶", "default"],
   ["مدت قرارداد", "۱۲ ماه", "default"],
 ] as const;
 
 const financingRows = [
-  ["طرح انتخاب‌شده", "طرح ویژه کارکنان", "default"],
-  ["بانک", "بانک نمونه", "default"],
-  ["مبلغ تأمین‌شده", "۴۵۰٬۰۰۰٬۰۰۰ تومان", "primary"],
-  ["آورده پرداخت‌شدۀ شما", "۵۰٬۰۰۰٬۰۰۰ تومان", "accent"],
-  ["پرداخت ماهانه تأمین مالی", "۱۸٬۵۰۰٬۰۰۰ تومان", "primary"],
-  ["مدت بازپرداخت", "۱۲ ماه", "default"],
+  ["سناریوی تأمین مالی", "رتبه C3 (نمونه)", "default"],
+  ["بانک", "بانک نمونه؛ استعلام و تأیید واقعی انجام نشده", "default"],
+  ["مبلغ تأمین‌شده", "۳۵۰٬۰۰۰٬۰۰۰ تومان", "primary"],
+  ["آورده پرداخت‌شدۀ شما", "۸۱۶٬۶۶۶٬۶۶۷ تومان", "accent"],
+  ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان", "primary"],
+  ["نرخ اسمی سالانه بانک (نمونه)", "۲۳٪", "default"],
+  ["نحوه تسویه اصل وام", "طبق قرارداد بانک", "default"],
 ] as const;
 
 type Tone = "default" | "primary" | "accent";
@@ -72,7 +74,9 @@ const process: readonly ProcessStep[] = [
   { title: "فعال شدن قرارداد", note: "در انتظار", number: "۵" },
 ] as const;
 
-export default function FinalConfirmationPage() {
+export default async function FinalConfirmationPage({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {
+  const plan = (await searchParams).plan === "general" ? "general" : "staff";
+  const selectedFinancingRows = ([["طرح انتخاب‌شده", plan === "general" ? "طرح عمومی" : "طرح ویژه کارکنان", "default"], ...financingRows] as const);
   return (
     <main className={styles.page} data-node-id="150:1489" data-name="Web App / Contribution Paid / Final Confirmation">
       <section className={styles.mainContent} data-node-id="150:1490">
@@ -87,14 +91,14 @@ export default function FinalConfirmationPage() {
             <section className={styles.successCard} data-node-id="150:1500">
               <div className={styles.successTop} data-node-id="150:1501"><span className={styles.successIcon}><img src="/brand/financing-review-check.svg" alt="" width={14} height={14} /></span><div><h2 data-node-id="150:1506">پرداخت آورده در نمونه تکمیل شد</h2><p data-node-id="150:1507">این صفحه نمونهٔ طراحی است؛ پرداخت واقعی ثبت نشده و مرحلهٔ تأیید نهایی نیز نمایشی است.</p></div></div>
               <div className={styles.successDivider} />
-              <div className={styles.successAmount} data-node-id="150:1509"><div><strong data-node-id="150:1511">{renderPersianValue("۵۰٬۰۰۰٬۰۰۰")}</strong><span data-node-id="150:1512">تومان</span></div><p data-node-id="150:1513">شناسهٔ نمونه: {renderPersianValue("۱۲۳۴۵۶۷۸۹")}</p></div>
+              <div className={styles.successAmount} data-node-id="150:1509"><div><strong data-node-id="150:1511">{renderPersianValue("۸۱۶٬۶۶۶٬۶۶۷")}</strong><span data-node-id="150:1512">تومان</span></div><p data-node-id="150:1513">شناسهٔ نمونه: {renderPersianValue("۱۲۳۴۵۶۷۸۹")}</p></div>
             </section>
 
             <section className={styles.card} data-node-id="150:1514"><h2 data-node-id="150:1515">شرایط نهایی قرارداد</h2><Rows rows={finalTerms} /></section>
 
             <section className={styles.card} data-node-id="150:1535">
               <div className={styles.cardTitleRow} data-node-id="150:1536"><h2 data-node-id="150:1537">تأمین مالی قرارداد</h2><span className={styles.approvedBadge} data-node-id="150:1538">تأیید شده</span></div>
-              <Rows rows={financingRows} />
+              <Rows rows={selectedFinancingRows} />
             </section>
 
             <section className={styles.card} data-node-id="150:1568">
@@ -141,7 +145,7 @@ export default function FinalConfirmationPage() {
             </section>
 
             <div className={styles.confirmationArea} data-node-id="150:1647">
-              <FinalConfirmationConsent />
+              <FinalConfirmationConsent plan={plan} />
               <Link href="/user/contracts/123456789012" className={styles.secondaryAction} data-node-id="150:1655">مشاهده جزئیات قرارداد</Link>
             </div>
           </aside>

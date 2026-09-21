@@ -5,8 +5,8 @@ import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 const assets = {
   logo: "https://www.figma.com/api/mcp/asset/6c0f11d8-2c30-413c-aa93-7baa459997c4.png",
   avatar: "https://www.figma.com/api/mcp/asset/5343cc6b-94fc-4729-9566-d28a0ac8b1f5.png",
-  info: "https://www.figma.com/api/mcp/asset/b77da5f5-be72-418e-89b8-e074ba0371f1.svg",
-  alert: "https://www.figma.com/api/mcp/asset/ea8b25cb-8c66-40e2-bb29-0b86ee7e6335.svg",
+  info: "/brand/financing-review-clock.svg",
+  alert: "/brand/financing-review-active.svg",
   home: "https://www.figma.com/api/mcp/asset/dab1667e-cef3-48fd-9fca-4c66f2351509.svg",
   contracts: "https://www.figma.com/api/mcp/asset/d1fe5cdb-d683-4a90-9586-d17cb5823aa6.svg",
   payments: "https://www.figma.com/api/mcp/asset/72c66b90-36ba-4cba-97c6-1ec846e438ba.svg",
@@ -24,15 +24,18 @@ const process = [
 const tenantSteps = ["تأیید بانک", "پرداخت آورده", "تأیید نهایی شما"] as const;
 const summary = [
   ["ملک", "سعادت‌آباد"],
-  ["مبلغ رهن", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
+  ["رهن نقدی قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان"],
+  ["رهن کامل معادل", "۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان"],
   ["اجاره ماهانه قرارداد", "۲۰٬۰۰۰٬۰۰۰ تومان"],
-  ["مبلغ تأمین مالی", "۴۵۰٬۰۰۰٬۰۰۰ تومان"],
-  ["آورده پرداخت‌‌شده", "۵۰٬۰۰۰٬۰۰۰ تومان"],
+  ["تأمین مالی بانک (نمونه C3)", "۳۵۰٬۰۰۰٬۰۰۰ تومان"],
+  ["آورده مستأجر از رهن کامل معادل (نمونه)", "۸۱۶٬۶۶۶٬۶۶۷ تومان"],
   ["تاریخ شروع", "۱۵ مهر ۱۴۰۵"],
   ["تاریخ پایان", "۱۵ مهر ۱۴۰۶"],
 ] as const;
 
-export default function WaitingOwnerPage() {
+export default async function WaitingOwnerPage({ searchParams }: { searchParams: Promise<{ plan?: string }> }) {
+  const plan = (await searchParams).plan === "general" ? "general" : "staff";
+  const selectedPlanRows = ([...summary.slice(0, 4), ["طرح انتخاب‌شده", plan === "general" ? "طرح عمومی" : "طرح ویژه کارکنان"], ...summary.slice(4)] as const);
   return (
     <main className={styles.page} data-node-id="171:211" data-name="Web App / Waiting for Owner Confirmation">
       <section className={styles.mainContent} data-node-id="171:212">
@@ -40,7 +43,7 @@ export default function WaitingOwnerPage() {
           <div className={styles.breadcrumb} data-node-id="171:214"><span>قراردادها</span><span>/</span><span>وضعیت قرارداد</span></div>
           <div className={styles.titleBlock} data-node-id="171:218">
             <div className={styles.badges} data-node-id="171:219"><span className={styles.waitBadge}>در انتظار تأیید مالک</span><span className={styles.tenantBadge}>مستأجر</span></div>
-            <div className={styles.titleCopy} data-node-id="171:225"><h1 data-node-id="171:226">در انتظار تأیید نهایی مالک</h1><p data-node-id="171:227">فرایند شما تکمیل شده و قرارداد برای تأیید نهایی مالک ارسال شده است.</p></div>
+            <div className={styles.titleCopy} data-node-id="171:225"><h1 data-node-id="171:226">در انتظار تأیید نهایی مالک</h1><p data-node-id="171:227">در سناریوی نمایشی، تأیید مستأجر تکمیل و پرونده برای تأیید نمونه مالک آماده شده است؛ ارسال واقعی انجام نشده است.</p></div>
           </div>
         </header>
 
@@ -68,7 +71,7 @@ export default function WaitingOwnerPage() {
           <div className={styles.primaryColumn} data-node-id="171:281">
             <section className={styles.card} data-node-id="171:282"><h2 data-node-id="171:283">وضعیت شما (مستأجر)</h2><div className={styles.divider} /><div className={styles.completedList}>{tenantSteps.map((step) => <div key={step}><span className={styles.completeBadge}>تکمیل شده</span><strong>{step}</strong></div>)}</div></section>
 
-            <section className={styles.card} data-node-id="171:298"><h2 data-node-id="171:299">خلاصه قرارداد</h2><div className={styles.divider} /><div className={styles.summaryGrid} data-node-id="171:301">{summary.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div></section>
+            <section className={styles.card} data-node-id="171:298"><h2 data-node-id="171:299">خلاصه قرارداد</h2><div className={styles.divider} /><div className={styles.summaryGrid} data-node-id="171:301">{selectedPlanRows.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div></section>
 
             <section className={styles.nextStep} data-node-id="171:323"><div className={styles.nextStepHeader} data-node-id="171:324"><img src={assets.info} alt="" width={20} height={20} /><h2 data-node-id="171:325">مرحله بعد</h2></div><p data-node-id="171:328">مالک باید اطلاعات قرارداد و روش دریافت خود را بررسی و تأیید کند.<br />پس از تکمیل تأیید مالک، قرارداد وارد مرحله فعال‌سازی می‌شود.</p></section>
           </div>

@@ -10,32 +10,34 @@ const contractRows = [
 ] as const;
 
 const staffFinanceRows = [
-  ["مبلغ رهن قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["مبلغ تأمین مالی (نمونه)", "۴۵۰٬۰۰۰٬۰۰۰ تومان", true],
-  ["آورده نقدی مستأجر", "۵۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["رهن کامل معادل", "۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان", false],
+  ["مبلغ تأمین مالی (نمونه)", "۳۵۰٬۰۰۰٬۰۰۰ تومان", true],
+  ["آورده نقدی مستأجر", "۸۱۶٬۶۶۶٬۶۶۷ تومان", false],
 ] as const;
 
 const generalFinanceRows = [
-  ["مبلغ رهن قرارداد", "۵۰۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["مبلغ تأمین مالی (نمونه)", "۴۰۰٬۰۰۰٬۰۰۰ تومان", true],
-  ["آورده نقدی مستأجر", "۱۰۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["رهن کامل معادل", "۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان", false],
+  ["مبلغ تأمین مالی (نمونه)", "۳۵۰٬۰۰۰٬۰۰۰ تومان", true],
+  ["آورده نقدی مستأجر", "۸۱۶٬۶۶۶٬۶۶۷ تومان", false],
 ] as const;
 
 const staffPlanRows = [
   ["طرح", "طرح ویژه کارکنان", false],
   ["بانک", "بانک نمونه", false],
-  ["مبلغ تأمین مالی", "۴۵۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["پرداخت ماهانه تأمین مالی", "۱۸٬۵۰۰٬۰۰۰ تومان", true],
-  ["مدت بازپرداخت", "۱۲ ماه", false],
+  ["مبلغ تأمین مالی", "۳۵۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان", true],
+  ["نرخ اسمی سالانه بانک (نمونه)", "۲۳٪", false],
+  ["نحوه تسویه اصل وام", "طبق قرارداد بانک", false],
   ["وضعیت طرح", "تأیید نمونه", true],
 ] as const;
 
 const generalPlanRows = [
   ["طرح", "طرح عمومی", false],
   ["بانک", "بانک نمونه", false],
-  ["مبلغ تأمین مالی", "۴۰۰٬۰۰۰٬۰۰۰ تومان", false],
-  ["پرداخت ماهانه تأمین مالی", "۲۰٬۵۰۰٬۰۰۰ تومان", true],
-  ["مدت بازپرداخت", "۱۲ ماه", false],
+  ["مبلغ تأمین مالی", "۳۵۰٬۰۰۰٬۰۰۰ تومان", false],
+  ["پرداختی ماهانه مستأجر (فقط سود وام)", "۶٬۷۰۸٬۳۳۳ تومان", true],
+  ["نرخ اسمی سالانه بانک (نمونه)", "۲۳٪", false],
+  ["نحوه تسویه اصل وام", "طبق قرارداد بانک", false],
   ["وضعیت طرح", "تأیید نمونه", true],
 ] as const;
 
@@ -105,12 +107,12 @@ export default async function FinancingApprovedPage({ searchParams }: { searchPa
               <Link href={`/user/contracts/register/plans/membership?plan=${plan}`} className={styles.primaryAction} data-node-id="912:195">انتخاب و خرید عضویت (نمونه)</Link>
             </section>
 
-            <section className={styles.card} data-node-id="912:197"><h2>جزئیات مالی</h2><Rows rows={financeRows} /><div className={styles.formula}>رهن قرارداد = تأمین مالی + آورده شما</div></section>
+            <section className={styles.card} data-node-id="912:197"><h2>جزئیات مالی</h2><Rows rows={financeRows} /><div className={styles.formula}>رهن کامل معادل = تأمین مالی بانک + آورده مستأجر</div></section>
 
             <section className={styles.card} data-node-id="912:212">
               <h2>جزئیات طرح تأییدشده</h2>
               <Rows rows={planRows} />
-              <div className={styles.rentNotice}><div><strong>۲۰٬۰۰۰٬۰۰۰ تومان در ماه</strong><span>اجاره ماهانه قرارداد</span></div><p>تذکر: اجاره ماهانه قرارداد اطلاعاتی است و ارتباطی به پرداخت ماهانه تأمین مالی ندارد.</p></div>
+              <div className={styles.rentNotice}><div><strong>۲۰٬۰۰۰٬۰۰۰ تومان در ماه</strong><span>اجاره ماهانه قرارداد</span></div><p>تذکر: اجاره ماهانه قرارداد اطلاعاتی است و ارتباطی به پرداختی ماهانه مستأجر (فقط سود وام) ندارد.</p></div>
             </section>
           </div>
         </div>
