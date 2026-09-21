@@ -26,7 +26,7 @@ export default function OwnerSettlementPreferencePage() {
       <section className={styles.mainContent} data-node-id="150:1686">
         <header className={styles.pageHeader} data-node-id="150:1687">
           <div className={styles.breadcrumb} data-node-id="150:1688"><span>قراردادها</span><span>/</span><span>روش دریافت</span></div>
-          <div className={styles.titleBlock} data-node-id="150:1692"><span className={styles.badgeOwner}>مالک</span><div className={styles.titleCopy}><h1 data-node-id="150:1697">روش دریافت خود را انتخاب کنید</h1><p data-node-id="150:1698">مشخص کنید دریافتی‌های این قرارداد چگونه برای شما مدیریت و تسویه شوند.</p></div></div>
+          <div className={styles.titleBlock} data-node-id="150:1692"><span className={styles.badgeOwner}>مالک</span><div className={styles.titleCopy}><h1 data-node-id="150:1697">روش دریافت خود را انتخاب کنید</h1><p data-node-id="150:1698">در این پیش‌نمایش، روش دریافت فرضی مالک را انتخاب کنید؛ مبلغ بر پایه اجاره قرارداد است و از سود وام مستأجر محاسبه نشده، و هیچ تسویه یا صندوق واقعی فعال نیست.</p></div></div>
         </header>
 
         <div className={styles.columns} data-node-id="150:1699">
@@ -44,13 +44,13 @@ export default function OwnerSettlementPreferencePage() {
 
             <button type="button" aria-pressed={isMonthly} onClick={() => setMethod("monthly")} className={`${styles.optionCard} ${isMonthly ? styles.optionSelected : ""}`} data-node-id="150:1745">
               <div className={styles.optionHeader}><span className={isMonthly ? styles.selectionCheck : styles.selectionUnselected} aria-hidden="true">{isMonthly ? "✓" : ""}</span><div className={styles.optionTitle}><strong data-node-id="150:1750">دریافت ماهانه</strong><span className={styles.optionGlyph} /></div></div>
-              <p data-node-id="150:1753">مبلغ قابل تسویه هر دوره طبق برنامه قرارداد برای شما پرداخت می‌شود.</p>
+              <p data-node-id="150:1753">در نمونه، خالص اجاره پس از کارمزد فرضی نمایش داده می‌شود؛ پرداخت واقعی یا تضمینی نیست.</p>
               <div className={styles.breakdown}><div className={styles.row}><strong>۲۰٬۰۰۰٬۰۰۰ تومان</strong><span>مبلغ ناخالص دریافتی:</span></div><div className={`${styles.row} ${styles.fee}`}><strong>−۱۰۰٬۰۰۰ تومان</strong><span>کارمزد خدمات چارخونه - ۰٫۵٪:</span></div><div className={`${styles.row} ${styles.net}`}><strong>۱۹٬۹۰۰٬۰۰۰ تومان</strong><span>مبلغ خالص قابل تسویه:</span></div></div>
             </button>
 
             <button type="button" aria-pressed={!isMonthly} onClick={() => setMethod("fund")} className={`${styles.optionCard} ${!isMonthly ? styles.optionSelected : ""}`} data-node-id="150:1759">
               <div className={styles.optionHeader}><span className={!isMonthly ? styles.selectionCheck : styles.selectionUnselected} aria-hidden="true">{!isMonthly ? "✓" : ""}</span><div className={styles.optionTitle}><strong data-node-id="150:1763">تجمیع دریافتی در صندوق</strong><span className={styles.optionGlyph} /></div></div>
-              <p data-node-id="150:1766">به‌جای دریافت ماهانه، مبالغ واجد شرایط در صندوق باقی می‌مانند و طبق شرایط صندوق امکان بهره‌مندی از بازده ایجاد می‌شود.</p>
+              <p data-node-id="150:1766">در این نمونه، به‌جای دریافت ماهانه، تجمیع فرضی خالص اجاره نمایش داده می‌شود؛ نرخ بازده و شرایط صندوق نهایی یا عملیاتی نیست.</p>
               <div className={styles.breakdown}><div className={styles.row}><strong>۲۰٬۰۰۰٬۰۰۰ تومان</strong><span>مبلغ ناخالص دریافتی:</span></div><div className={`${styles.row} ${styles.fee}`}><strong>−۱۰۰٬۰۰۰ تومان</strong><span>کارمزد خدمات چارخونه - ۰٫۵٪:</span></div><div className={styles.row}><strong>۱۹٬۹۰۰٬۰۰۰ تومان</strong><span>مبلغ خالص قابل تجمیع:</span></div></div>
             </button>
 
