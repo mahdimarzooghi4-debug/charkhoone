@@ -9,9 +9,9 @@ import { mockDisclaimer, parseMockAmount, type MockFinancingPlan, type MockMembe
 import { useMockPreview, type MockContractRole } from "./MockPreviewProvider";
 
 type Props = { screen: string };
-function Button({ label, to, tone = "primary" }: { label: string; to: string; tone?: "primary" | "outline" | "danger" }) {
+function Button({ label, to, tone = "primary" }: { label: string; to: string; tone?: "primary" | "outline" | "danger" | "brand" | "light" }) {
   const router = useRouter();
-  return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => router.push(`/preview/${to}`)} style={StyleSheet.flatten([styles.button, styles[tone]])}><Text style={styles.buttonText}>{label}</Text></Pressable>;
+  return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => router.push(`/preview/${to}`)} style={StyleSheet.flatten([styles.button, styles[tone]])}><Text style={[styles.buttonText, tone === "brand" && styles.buttonTextWhite]}>{label}</Text></Pressable>;
 }
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -20,6 +20,50 @@ function Row({ label, value }: { label: string; value: string }) {
 
 function Choice<T extends string>({ label, value, selected, onPress }: { label: string; value: T; selected: boolean; onPress: (value: T) => void }) {
   return <Pressable accessibilityRole="radio" accessibilityState={{ selected }} onPress={() => onPress(value)} style={[styles.choice, selected && styles.choiceSelected]}><View style={[styles.radio, selected && styles.radioSelected]} /> <Text style={styles.choiceText}>{label}</Text></Pressable>;
+}
+
+function ResultMetricCard({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <View style={styles.resultMetric}>
+      <Text style={styles.resultMetricLabel}>{label}</Text>
+      <Text style={[styles.resultMetricValue, accent && styles.resultMetricAccent]}>{value}</Text>
+    </View>
+  );
+}
+
+function FinancingPlanCard({
+  type, selected, title, badge, financing, contribution, interest, onSelect,
+}: {
+  type: MockFinancingPlan;
+  selected: boolean;
+  title: string;
+  badge: string;
+  financing: string;
+  contribution: string;
+  interest: string;
+  onSelect: (plan: MockFinancingPlan) => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="radio"
+      accessibilityState={{ selected }}
+      accessibilityLabel={`طرح ${title}، تأمین مالی ${financing}`}
+      onPress={() => onSelect(type)}
+      style={[styles.planCard, selected && styles.planCardSelected]}
+    >
+      <View style={styles.planTop}>
+        <View pointerEvents="none"><FigmaSvg uri={selected ? figmaAssets.financingSelected : figmaAssets.financingUnselected} width={16} height={16} /></View>
+        <View style={[styles.planBadge, selected && styles.planBadgeSelected]}><Text style={styles.planBadgeText}>{badge}</Text></View>
+        <Text style={styles.planTitle}>{title}</Text>
+      </View>
+      <Text style={styles.planSample}>نمونهٔ C3 • استعلام بانک انجام نشده</Text>
+      <View style={styles.planData}><Text style={styles.planDataValue}>{financing}</Text><Text style={styles.planDataLabel}>مبلغ قابل تأمین (۳۰٪)</Text></View>
+      <View style={styles.planDivider} />
+      <View style={styles.planData}><Text style={styles.planDataValue}>{contribution}</Text><Text style={styles.planDataLabel}>آورده موردنیاز</Text></View>
+      <View style={styles.planDivider} />
+      <View style={styles.planData}><Text style={styles.planDataValue}>{interest}</Text><Text style={styles.planDataLabel}>پرداخت ماهانه (فقط سود)</Text></View>
+    </Pressable>
+  );
 }
 
 function ContractRoleCard({
@@ -98,28 +142,49 @@ export function MockTenantScreen({ screen }: Props) {
   const membershipChoice = (label: MockMembership) => <Choice label={`عضویت ${label} (فقط نمونه)`} value={label} selected={membership === label} onPress={setMembership} />;
 
   let body: ReactNode;
+  let actions: ReactNode = null;
   switch (screen) {
     case "calculator": body = <><ScreenTitle title="ماشین‌حساب مستأجر" /><View style={styles.card}><Text style={styles.cardTitle}>مدل نمونه C3</Text><Text style={styles.body}>ضریب تبدیل اجاره به رهن: {mockFinancialModel.conversionRate}</Text>{financeRows.slice(0, 3).map(([label, value]) => <Row key={label} label={label} value={value} />)}<Text style={styles.note}>این محاسبه صندوق ۳٪ یا دریافتی مالک ۳٫۵٪ را نمایش نمی‌دهد.</Text></View><Button label="مشاهدهٔ نتیجهٔ نمونه" to="calculator-result" /></>; break;
-    case "calculator-result": body = <>
-      <ScreenTitle title="نتیجه محاسبه" back="calculator" />
-      <Text style={styles.figmaHeading}>محدوده قابل تأمین</Text>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>برآورد C3 — تأمین مالی نمونه</Text>
-        <Row label="مبلغ قابل تأمین (۳۰٪)" value={mockFinancialModel.financing} />
-        <Row label="آورده موردنیاز شما" value={mockFinancialModel.contribution} />
-        <Row label="معادل ودیعه کامل" value={mockFinancialModel.fullDeposit} />
-        <Row label="اجاره ماهانه قرارداد" value={mockFinancialModel.monthlyRent} />
-        <Row label="پرداخت ماهانه تأمین مالی (فقط سود)" value={mockFinancialModel.monthlyInterest} />
-        <Row label="نرخ اسمی سالانه نمونه" value={mockFinancialModel.annualRate} />
-        <Text style={styles.note}>طبق مدل تأییدشده C3؛ این رقم صرفاً برآورد است و تأیید یا تخصیص بانک نیست. بازپرداخت اصل، مطابق قرارداد بانک خواهد بود.</Text>
-      </View>
-      <View style={styles.softCard}>
-        <Text style={styles.cardTitle}>مرحله بعد: قرارداد خودنویس</Text>
-        <Text style={styles.body}>برای ورود به مسیر نمونه انتخاب طرح، کد رهگیری نمونه قرارداد را وارد کنید. هیچ استعلام واقعی انجام نمی‌شود.</Text>
-      </View>
-      <Button label="ثبت کد رهگیری قرارداد" to="contract-tracking" />
-      <Button label="محاسبه مجدد" to="calculator" tone="outline" />
-    </>; break;
+    case "calculator-result": {
+      body = <>
+        <ScreenTitle title="نتیجه محاسبه" back="calculator" />
+        <View style={styles.resultGaugeSection}>
+          <View style={styles.resultGauge}>
+            <View pointerEvents="none"><FigmaSvg uri={figmaAssets.gauge} width={240} height={120} /></View>
+            <View style={styles.resultGaugeText}>
+              <Text style={styles.resultGaugeCaption}>محدوده قابل تأمین</Text>
+              <Text style={styles.resultGaugeAmount}>تا {mockFinancialModel.financing}</Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.resultGrid}>
+          <View style={styles.resultGridRow}>
+            <ResultMetricCard label="مبلغ قابل تأمین (C3)" value={mockFinancialModel.financing} />
+            <ResultMetricCard label="معادل ودیعه کامل" value={mockFinancialModel.fullDeposit} />
+          </View>
+          <View style={styles.resultGridRow}>
+            <ResultMetricCard label="اجاره ماهانه قرارداد" value={mockFinancialModel.monthlyRent} />
+            <ResultMetricCard label="آورده موردنیاز شما" value={mockFinancialModel.contribution} />
+          </View>
+          <ResultMetricCard label="پرداخت ماهانه تأمین مالی (فقط سود)" value={mockFinancialModel.monthlyInterest} accent />
+          <View style={styles.resultBenefit}>
+            <Text style={styles.resultBenefitTitle}>خلاصه شرایط مالی شما</Text>
+            <Row label="نرخ اسمی سالانه نمونه" value={mockFinancialModel.annualRate} />
+            <Row label="مبلغ رهن نقدی" value={mockFinancialModel.cashDeposit} />
+            <Row label="ضریب تبدیل اجاره به رهن" value={mockFinancialModel.conversionRate} />
+            <View style={styles.resultBenefitNotice}>
+              <Text style={styles.resultBenefitNoticeText}>مقایسه صرفه‌جویی فیگما صرفاً یک مثال طراحی است و مبنای قراردادی ندارد؛ تا روشن شدن شرایط بانک، عدد ساختگی مزیت نمایش داده نمی‌شود.</Text>
+            </View>
+          </View>
+          <Text style={styles.resultFinePrint}>برآورد C3: تأمین مالی ۳۰٪ معادل ودیعه کامل و نرخ اسمی نمونه ۲۳٪. پرداخت ماهانه فقط سود است؛ نحوه بازپرداخت اصل، تابع قرارداد نهایی بانک خواهد بود. هیچ تأیید یا پرداخت واقعی رخ نمی‌دهد.</Text>
+        </View>
+      </>;
+      actions = <View style={styles.resultActions}>
+        <Button label="ثبت کد رهگیری قرارداد" to="contract-tracking" tone="brand" />
+        <Button label="محاسبه مجدد" to="calculator" tone="outline" />
+      </View>;
+      break;
+    }
     case "contract-tracking": body = <>
       <ScreenTitle title="ثبت قرارداد" back="calculator-result" />
       <Text style={styles.figmaHeading}>کد رهگیری قرارداد را وارد کنید</Text>
@@ -194,28 +259,30 @@ export function MockTenantScreen({ screen }: Props) {
       <Button label="بازگشت به انتخاب نقش" to="contract-lookup" />
       <Button label="بازگشت به خانه پیش‌نمایش" to="home" tone="outline" />
     </>; break;
-    case "financing-plans": body = <>
-      <ScreenTitle title="انتخاب طرح تأمین مالی" back="contract-lookup" />
-      <Text style={styles.figmaHeading}>طرح‌های قابل استفاده برای شما</Text>
-      <Text style={styles.figmaIntro}>دو انتخاب صرفاً نمایشی برای بررسی تجربه کاربری؛ واجد شرایط بودن نزد بانک استعلام نشده است.</Text>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>طرح ویژه کارکنان سازمان (نمونه)</Text>
-        <Row label="تأمین مالی سناریوی C3" value={mockFinancialModel.financing} />
-        <Row label="آورده موردنیاز" value={mockFinancialModel.contribution} />
-        <Row label="نرخ اسمی سالانه نمونه" value={mockFinancialModel.annualRate} />
-        <Row label="پرداخت ماهانه فقط سود" value={mockFinancialModel.monthlyInterest} />
-        {planChoice("ویژهٔ نمونه")}
-      </View>
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>طرح عمومی تأمین مسکن (نمونه)</Text>
-        <Row label="تأمین مالی سناریوی C3" value={mockFinancialModel.financing} />
-        <Row label="آورده موردنیاز" value={mockFinancialModel.contribution} />
-        <Row label="پرداخت ماهانه فقط سود" value={mockFinancialModel.monthlyInterest} />
-        {planChoice("عمومی")}
-      </View>
-      <Text style={styles.figmaIntro}>نوع طرح تأمین مالی مستقل از نوع عضویت است. نرخ‌های قدیمی فیگما و تخفیف ادعایی در این نمونه اعمال نمی‌شوند.</Text>
-      <Button label="تأیید طرح و ادامه" to="plan-confirmation" />
-    </>; break;
+    case "financing-plans": {
+      body = <>
+        <ScreenTitle title="انتخاب طرح تأمین مالی" back="contract-lookup" />
+        <View style={styles.planIntro}>
+          <Text style={styles.planIntroHeading}>طرح‌های قابل استفاده برای شما</Text>
+          <Text style={styles.planIntroText}>بر اساس مدل C3 این قرارداد، دو طرح نمونه زیر برای مرور طراحی قابل انتخاب‌اند؛ احراز شرایط بانکی انجام نشده است.</Text>
+        </View>
+        <FinancingPlanCard
+          type="ویژهٔ نمونه" selected={financingPlan === "ویژهٔ نمونه"}
+          badge="طرح ویژه" title="طرح ویژه کارکنان سازمان" onSelect={setFinancingPlan}
+          financing={mockFinancialModel.financing} contribution={mockFinancialModel.contribution} interest={mockFinancialModel.monthlyInterest}
+        />
+        <View style={styles.planHighlight}><Text style={styles.planHighlightText}>ویژگی‌های اختصاصی طرح ویژه و تخفیف بانکی هنوز تأیید نشده‌اند؛ محاسبات فعلاً در هر دو طرح یکسان هستند.</Text></View>
+        <Text style={styles.planOther}>سایر طرح‌های قابل استفاده</Text>
+        <FinancingPlanCard
+          type="عمومی" selected={financingPlan === "عمومی"}
+          badge="طرح عمومی" title="طرح عمومی تأمین مسکن" onSelect={setFinancingPlan}
+          financing={mockFinancialModel.financing} contribution={mockFinancialModel.contribution} interest={mockFinancialModel.monthlyInterest}
+        />
+        <Text style={styles.planFinePrint}>این ارقام پیش‌نمایش MOCK هستند. نرخ اسمی نمونه {mockFinancialModel.annualRate}، پرداخت فقط سود و اصل مطابق قرارداد احتمالی بانک است. طرح تأمین مالی مستقل از نوع عضویت می‌ماند.</Text>
+      </>;
+      actions = <View style={styles.planActions}><Button label="تأیید طرح و ادامه" to="plan-confirmation" tone="light" /></View>;
+      break;
+    }
     case "plan-confirmation": body = <>
       <ScreenTitle title="تأیید درخواست" back="financing-plans" />
       <Text style={styles.figmaHeading}>جزئیات درخواست خود را بررسی کنید</Text>
@@ -374,7 +441,7 @@ export function MockTenantScreen({ screen }: Props) {
       <View style={styles.homeNotice}><FigmaSvg uri={figmaAssets.info} width={16} height={16} /><Text style={styles.homeNoticeText}>پیش‌نمایش مستقل MOCK: ارقام مثال C3 هستند، نه وضعیت حساب یا پرداخت واقعی شما.</Text></View>
     </>;
   }
-  return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>{body}<View style={styles.disclaimer}><Text style={styles.disclaimerText}>{mockDisclaimer}</Text></View></ScrollView>{screen !== "contract-lookup" && screen !== "owner-contract" && <BottomNav active={active} />}</SafeAreaView>;
+  return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>{body}<View style={styles.disclaimer}><Text style={styles.disclaimerText}>{mockDisclaimer}</Text></View></ScrollView>{actions}{!actions && screen !== "contract-lookup" && screen !== "owner-contract" && <BottomNav active={active} />}</SafeAreaView>;
 }
 
 const text = { textAlign: "right" as const, writingDirection: "rtl" as const };
@@ -391,6 +458,46 @@ const styles = StyleSheet.create({
   roleNotice: { padding: 12, backgroundColor: colors.successSoft, borderRadius: 8, alignItems: "flex-end" },
   roleNoticeText: { color: colors.primary, fontFamily: fonts.regular, fontSize: 11, lineHeight: 18, ...text },
   roleContinue: { backgroundColor: colors.page, minHeight: 48 },
+  resultGaugeSection: { alignItems: "center", paddingTop: 12, paddingBottom: 20 },
+  resultGauge: { width: 280, height: 160, justifyContent: "flex-end", alignItems: "center" },
+  resultGaugeText: { position: "absolute", top: 75, alignItems: "center", gap: 4 },
+  resultGaugeCaption: { color: colors.page, fontFamily: fonts.medium, fontSize: 13, textAlign: "center" },
+  resultGaugeAmount: { color: colors.page, fontFamily: fonts.bold, fontSize: 20, textAlign: "center", writingDirection: "rtl" },
+  resultGrid: { gap: 12 },
+  resultGridRow: { flexDirection: "row", gap: 12 },
+  resultMetric: { flex: 1, minWidth: 0, padding: 16, borderWidth: 1, borderColor: colors.border, borderRadius: 12, backgroundColor: colors.surface, alignItems: "flex-end", gap: 4 },
+  resultMetricLabel: { width: "100%", color: colors.muted, fontFamily: fonts.regular, fontSize: 12, ...text },
+  resultMetricValue: { width: "100%", color: colors.text, fontFamily: fonts.semibold, fontSize: 14, ...text },
+  resultMetricAccent: { color: colors.primary, fontFamily: fonts.bold, fontSize: 16 },
+  resultBenefit: { borderRadius: 16, padding: 20, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, gap: 12 },
+  resultBenefitTitle: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 16, ...text },
+  resultBenefitNotice: { borderRadius: 8, backgroundColor: colors.accentSoft, padding: 12 },
+  resultBenefitNoticeText: { color: colors.primary, fontFamily: fonts.regular, fontSize: 11, lineHeight: 18, ...text },
+  resultFinePrint: { color: colors.page, fontFamily: fonts.regular, fontSize: 11, lineHeight: 19, ...text },
+  resultActions: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 24, gap: 12, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border },
+  planIntro: { gap: 8, paddingTop: 12, paddingBottom: 4 },
+  planIntroHeading: { color: colors.page, fontFamily: fonts.semibold, fontSize: 20, lineHeight: 28, ...text },
+  planIntroText: { color: colors.muted, fontFamily: fonts.regular, fontSize: 14, lineHeight: 22, ...text },
+  planCard: { padding: 16, borderRadius: 16, gap: 12, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  planCardSelected: { backgroundColor: colors.infoSoft, borderWidth: 2, borderColor: colors.primary },
+  planTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 8 },
+  planBadge: { backgroundColor: colors.page, borderRadius: 8, paddingVertical: 6, paddingHorizontal: 10 },
+  planBadgeSelected: { backgroundColor: colors.successSoft },
+  planBadgeText: { color: colors.primary, fontFamily: fonts.medium, fontSize: 11, ...text },
+  planTitle: { flex: 1, color: colors.text, fontFamily: fonts.semibold, fontSize: 14, ...text },
+  planSample: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, ...text },
+  planData: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
+  planDataLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, ...text },
+  planDataValue: { flexShrink: 1, color: colors.text, fontFamily: fonts.semibold, fontSize: 13, textAlign: "left" },
+  planDivider: { backgroundColor: colors.border, height: 1 },
+  planHighlight: { borderRadius: 8, padding: 12, backgroundColor: colors.accentSoft },
+  planHighlightText: { color: colors.primary, fontFamily: fonts.regular, fontSize: 11, lineHeight: 18, ...text },
+  planOther: { color: colors.page, fontFamily: fonts.medium, fontSize: 14, ...text },
+  planFinePrint: { color: colors.page, fontFamily: fonts.regular, fontSize: 11, lineHeight: 19, ...text },
+  planActions: { backgroundColor: colors.primary, paddingHorizontal: 16, paddingTop: 12, paddingBottom: 30 },
+  brand: { backgroundColor: colors.primary },
+  light: { backgroundColor: colors.page },
+  buttonTextWhite: { color: colors.surface },
   homeLogo: { height: 60, alignItems: "flex-end" },
   homeHeader: { height: 56, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 4 },
   homeBell: { width: 40, height: 40, borderRadius: 12, justifyContent: "center", alignItems: "center" },
@@ -422,5 +529,5 @@ const styles = StyleSheet.create({
   figmaHeading: { color: colors.page, fontFamily: fonts.bold, fontSize: 18, ...text },
   figmaIntro: { color: colors.page, fontFamily: fonts.regular, fontSize: 12, lineHeight: 21, ...text },
   errorText: { color: "#B91C1C", fontFamily: fonts.medium, fontSize: 12, ...text },
-  safe: { flex: 1, backgroundColor: colors.primary }, scroll: { padding: 16, gap: 14, paddingBottom: 24 }, titleRow: { minHeight: 56, paddingHorizontal: 16, flexDirection: "row", backgroundColor: colors.surface, gap: 12, alignItems: "center" }, titleGroup: { flex: 1, alignItems: "flex-end" }, mock: { color: colors.accent, fontFamily: fonts.bold, fontSize: 10, paddingHorizontal: 16, paddingTop: 8, ...text }, title: { color: colors.text, fontFamily: fonts.semibold, fontSize: 18, ...text }, card: { backgroundColor: colors.surface, borderRadius: radii.lg, padding: 16, gap: 12 }, successCard: { backgroundColor: colors.successSoft, borderRadius: radii.lg, padding: 16, gap: 12 }, errorCard: { backgroundColor: "#FEE2E2", borderRadius: radii.lg, padding: 16, gap: 12 }, hero: { backgroundColor: "#174D46", borderRadius: radii.xl, padding: 20, gap: 8 }, heroTitle: { color: colors.surface, fontFamily: fonts.bold, fontSize: 20, ...text }, heroText: { color: "#D1E7E2", fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, ...text }, cardTitle: { color: colors.primary, fontFamily: fonts.bold, fontSize: 16, ...text }, body: { color: colors.text, fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, ...text }, note: { color: "#56616C", fontFamily: fonts.regular, fontSize: 11, lineHeight: 19, ...text }, row: { flexDirection: "row", justifyContent: "space-between", gap: 12, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 8 }, label: { color: "#56616C", flex: 1, fontFamily: fonts.regular, fontSize: 12, ...text }, value: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 12, textAlign: "left" }, button: { minHeight: 46, borderRadius: radii.md, paddingHorizontal: 14, alignItems: "center", justifyContent: "center" }, linkButton: { display: "flex", textAlign: "center", textAlignVertical: "center", fontFamily: fonts.semibold, fontSize: 13, lineHeight: 46, color: colors.primary, textDecorationLine: "none" }, primary: { backgroundColor: colors.accent }, outline: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.primary }, danger: { backgroundColor: "#FEE2E2", borderWidth: 1, borderColor: "#B91C1C" }, buttonText: { fontFamily: fonts.semibold, fontSize: 13, ...text }, buttonTextLight: { color: colors.primary }, buttonTextDark: { color: colors.primary }, choice: { minHeight: 48, padding: 12, flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md }, choiceSelected: { borderColor: colors.accent, backgroundColor: colors.accentSoft }, choiceText: { color: colors.text, flex: 1, fontFamily: fonts.medium, fontSize: 12, ...text }, radio: { width: 18, height: 18, borderWidth: 2, borderRadius: 9, borderColor: colors.muted }, radioSelected: { borderColor: colors.accent, backgroundColor: colors.accent }, disclaimer: { padding: 12, backgroundColor: "#FFF7ED", borderRadius: radii.md }, disclaimerText: { color: "#9A4F00", fontFamily: fonts.medium, fontSize: 11, lineHeight: 18, ...text }, bottomNav: { height: 80, flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, backgroundColor: colors.page, borderTopWidth: 1, borderColor: colors.border }, bottomItem: { flex: 1, minHeight: 48, alignItems: "center", justifyContent: "center", gap: 4 }, bottomLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "center", writingDirection: "rtl" }, bottomLabelActive: { color: colors.accent, fontFamily: fonts.medium },
+  safe: { flex: 1, backgroundColor: colors.primary }, scroll: { padding: 16, gap: 14, paddingBottom: 24 }, titleRow: { minHeight: 56, marginHorizontal: -16, paddingHorizontal: 16, flexDirection: "row", backgroundColor: colors.surface, gap: 12, alignItems: "center" }, titleGroup: { flex: 1, alignItems: "flex-end" }, mock: { color: colors.accent, fontFamily: fonts.bold, fontSize: 10, paddingHorizontal: 16, paddingTop: 8, ...text }, title: { color: colors.text, fontFamily: fonts.semibold, fontSize: 18, ...text }, card: { backgroundColor: colors.surface, borderRadius: radii.lg, padding: 16, gap: 12 }, successCard: { backgroundColor: colors.successSoft, borderRadius: radii.lg, padding: 16, gap: 12 }, errorCard: { backgroundColor: "#FEE2E2", borderRadius: radii.lg, padding: 16, gap: 12 }, hero: { backgroundColor: "#174D46", borderRadius: radii.xl, padding: 20, gap: 8 }, heroTitle: { color: colors.surface, fontFamily: fonts.bold, fontSize: 20, ...text }, heroText: { color: "#D1E7E2", fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, ...text }, cardTitle: { color: colors.primary, fontFamily: fonts.bold, fontSize: 16, ...text }, body: { color: colors.text, fontFamily: fonts.regular, fontSize: 13, lineHeight: 22, ...text }, note: { color: "#56616C", fontFamily: fonts.regular, fontSize: 11, lineHeight: 19, ...text }, row: { flexDirection: "row", justifyContent: "space-between", gap: 12, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: 8 }, label: { color: "#56616C", flex: 1, fontFamily: fonts.regular, fontSize: 12, ...text }, value: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 12, textAlign: "left" }, button: { minHeight: 46, borderRadius: radii.md, paddingHorizontal: 14, alignItems: "center", justifyContent: "center" }, linkButton: { display: "flex", textAlign: "center", textAlignVertical: "center", fontFamily: fonts.semibold, fontSize: 13, lineHeight: 46, color: colors.primary, textDecorationLine: "none" }, primary: { backgroundColor: colors.accent }, outline: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.primary }, danger: { backgroundColor: "#FEE2E2", borderWidth: 1, borderColor: "#B91C1C" }, buttonText: { fontFamily: fonts.semibold, fontSize: 13, ...text }, buttonTextLight: { color: colors.primary }, buttonTextDark: { color: colors.primary }, choice: { minHeight: 48, padding: 12, flexDirection: "row", alignItems: "center", gap: 10, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md }, choiceSelected: { borderColor: colors.accent, backgroundColor: colors.accentSoft }, choiceText: { color: colors.text, flex: 1, fontFamily: fonts.medium, fontSize: 12, ...text }, radio: { width: 18, height: 18, borderWidth: 2, borderRadius: 9, borderColor: colors.muted }, radioSelected: { borderColor: colors.accent, backgroundColor: colors.accent }, disclaimer: { padding: 12, backgroundColor: "#FFF7ED", borderRadius: radii.md }, disclaimerText: { color: "#9A4F00", fontFamily: fonts.medium, fontSize: 11, lineHeight: 18, ...text }, bottomNav: { height: 80, flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, backgroundColor: colors.page, borderTopWidth: 1, borderColor: colors.border }, bottomItem: { flex: 1, minHeight: 48, alignItems: "center", justifyContent: "center", gap: 4 }, bottomLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "center", writingDirection: "rtl" }, bottomLabelActive: { color: colors.accent, fontFamily: fonts.medium },
 });
