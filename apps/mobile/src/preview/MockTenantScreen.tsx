@@ -291,13 +291,13 @@ export function MockTenantScreen({ screen }: Props) {
       <View style={styles.roleNotice}>
         <Text style={styles.roleNoticeText}>{contractRole === "Tenant"
           ? "در مرحله بعد، طرح‌های تأمین مالی سناریوی مستأجر نمایش داده می‌شوند."
-          : "در مرحله بعد، خلاصه قرارداد نمونه مالک نمایش داده می‌شود؛ طرح و تعهد سود مستأجر به مالک نسبت داده نمی‌شود."}</Text>
+          : "در مرحله بعد، صفحه «قرارداد به حساب شما متصل شد» در مسیر مستقل مالک باز می‌شود؛ تعهد سود مستأجر درآمد مالک نیست."}</Text>
       </View>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`تأیید نقش ${contractRole === "Tenant" ? "مستأجر" : "مالک"} و ادامه`}
         style={[styles.button, styles.roleContinue]}
-        onPress={() => router.push(contractRole === "Tenant" ? "/preview/financing-plans" : "/preview/owner-contract")}
+        onPress={() => router.push(contractRole === "Tenant" ? "/preview/financing-plans" : "/preview/owner-connected")}
       >
         <Text style={styles.buttonText}>تأیید نقش {contractRole === "Tenant" ? "مستأجر" : "مالک"} و ادامه</Text>
       </Pressable>
@@ -313,6 +313,7 @@ export function MockTenantScreen({ screen }: Props) {
         <Text style={styles.note}>این فقط نمای مالک برای مرور انتخاب نقش است. اجاره قرارداد مالک با سود وام مستأجر یکی نیست؛ هیچ دریافتی، سرمایه‌گذاری، تسویه یا پرداخت بانکی در این صفحه انجام نمی‌شود.</Text>
       </View>
       <View style={styles.roleNotice}><Text style={styles.roleNoticeText}>برای مشاهده طرح‌های تأمین مالی مستأجر، به انتخاب نقش برگردید و «مستأجر» را انتخاب کنید. مسیر عملیاتی مالک در این پیش‌نمایش متصل نشده است.</Text></View>
+      <Button label="شروع مسیر کامل مالک" to="owner-connected" />
       <Button label="بازگشت به انتخاب نقش" to="contract-lookup" />
       <Button label="بازگشت به خانه پیش‌نمایش" to="home" tone="outline" />
     </>; break;
@@ -442,7 +443,7 @@ export function MockTenantScreen({ screen }: Props) {
   <View style={styles.contractHeader}><View style={styles.contractBadge}><Text style={styles.contractBadgeText}>نمونه مالک</Text></View><Text style={styles.contractHeaderText}>مالک</Text></View>
   <Text style={styles.contractAddress}>تهران، پونک</Text>
   <Text style={styles.note}>سناریوی مستقل مالک: اجاره و دریافتی مالک با سود بانکی مستأجر یکسان نیستند.</Text>
-  <Pressable accessibilityRole="button" accessibilityLabel="مشاهده قرارداد نمونه مالک" style={[styles.button, styles.outline]} onPress={() => { setContractRole("Owner"); router.push("/preview/owner-contract"); }}><Text style={styles.buttonText}>مشاهده قرارداد نمونه مالک</Text></Pressable>
+  <Pressable accessibilityRole="button" accessibilityLabel="مشاهده قرارداد نمونه مالک" style={[styles.button, styles.outline]} onPress={() => { setContractRole("Owner"); router.push("/preview/owner-connected"); }}><Text style={styles.buttonText}>مشاهده قرارداد نمونه مالک</Text></Pressable>
 </View>
 <View style={styles.contractOverviewCard}>
   <View style={styles.contractHeader}><View style={styles.contractBadgePending}><Text style={styles.contractBadgePendingText}>در حال بررسی MOCK</Text></View><Text style={styles.contractHeaderText}>درخواست تأمین مالی</Text></View>
