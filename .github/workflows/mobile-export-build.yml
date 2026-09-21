@@ -39,17 +39,25 @@ jobs:
         env:
           CI: "1"
         run: npx expo export --platform ios --output-dir dist/ios
+      - name: Export opt-in web MOCK preview bundle
+        env:
+          CI: "1"
+          EXPO_PUBLIC_CHARKHOONE_MOCK_PREVIEW: "1"
+        run: npx expo export --platform web --output-dir dist/web
       - name: Write SHA-bound mobile export evidence
         shell: bash
         run: |
           set -euo pipefail
           test -d dist/android
           test -d dist/ios
+          test -d dist/web
           mkdir -p ../../artifacts/mobile-export
           android_files="$(find dist/android -type f | wc -l | tr -d ' ')"
           ios_files="$(find dist/ios -type f | wc -l | tr -d ' ')"
+          web_files="$(find dist/web -type f | wc -l | tr -d ' ')"
           test "$android_files" -gt 0
           test "$ios_files" -gt 0
+          test "$web_files" -gt 0
           (
             cd dist/android
             find . -type f -print0 | sort -z | xargs -0 sha256sum
@@ -58,6 +66,10 @@ jobs:
             cd dist/ios
             find . -type f -print0 | sort -z | xargs -0 sha256sum
           ) > ../../artifacts/mobile-export/ios-files.sha256
+          (
+            cd dist/web
+            find . -type f -print0 | sort -z | xargs -0 sha256sum
+          ) > ../../artifacts/mobile-export/web-files.sha256
           {
             printf 'environment=ci\n'
             printf 'git_sha=%s\n' "$GITHUB_SHA"
@@ -68,8 +80,10 @@ jobs:
             printf 'mobile_typecheck=success\n'
             printf 'android_production_export=success\n'
             printf 'ios_production_export=success\n'
+            printf 'web_mock_preview_export=success\\n'
             printf 'android_export_file_count=%s\n' "$android_files"
             printf 'ios_export_file_count=%s\n' "$ios_files"
+            printf 'web_export_file_count=%s\\n' "$web_files"
             printf 'native_apk_build=not-claimed\n'
             printf 'native_ipa_build=not-claimed\n'
             printf 'signed_mobile_artifact=not-claimed\n'
