@@ -95,6 +95,42 @@ require('["حساب من", "profile",' in screen, "bottom navigation must open F
 require('["خانه", "home",' in screen, "bottom navigation must open Figma Tenant Home")
 require('to="contract-tracking"' in screen and 'router.push("/preview/contract-lookup")' in screen and 'to="financing-plans"' in screen, "calculator result must pass through the two Figma contract screens")
 # Figma 66:382: two actual selectable role cards, both continued into distinct MOCK flows.
+# Figma 04 - Owner Mobile: six complete click-through MOCK screens, not real owner routes.
+owner_screen = read("apps/mobile/src/preview/MockOwnerScreen.tsx")
+owner_frames = {
+    "owner-connected": ('connected', "112:16"),
+    "owner-settlement-preference": ('settlement-preference', "136:150"),
+    "owner-final-confirmation": ('final-confirmation', "116:140"),
+    "owner-active": ('active', "118:154"),
+    "owner-receive-pay": ('receive-pay', "118:251"),
+    "owner-terminated": ('terminated', "204:345"),
+    "owner-account": ('account', "auxiliary MOCK account"),
+}
+for route, (state, frame) in owner_frames.items():
+    content = read(f"apps/mobile/app/preview/{route}.tsx")
+    require(f'<MockOwnerScreen screen="{state}" />' in content, f"owner Figma {frame} needs explicit route {route}")
+for token in (
+    'ownerSettlement', 'setOwnerSettlement', 'type MockOwnerSettlement = "monthly" | "fund"',
+):
+    require(token in provider, f"owner settlement preference continuity missing: {token}")
+for token in (
+    'case "connected"', 'case "settlement-preference"', 'case "final-confirmation"',
+    'case "active"', 'case "receive-pay"', 'case "terminated"',
+    'ownerAssets.settlementRadioSelected', 'onSelect={setOwnerSettlement}',
+    'Math.round(monthlyRent * 0.005)', 'const net = monthlyRent - fee',
+    'financialModel.financing', 'financialModel.monthlyRent',
+    'consent', 'to="owner-final-confirmation"', 'to="owner-receive-pay"',
+    'to="owner-terminated"', 'تجمیع دریافتی در صندوق',
+    'هیچ پولی وارد صندوق نمی‌شود',
+):
+    require(token in owner_screen, f"owner MOCK / Figma 04 missing: {token}")
+require('financialModel.monthlyInterest' not in owner_screen, "owner flow must not display tenant monthly bank interest as owner income")
+for word in ("۵۵٬۵۰۰٬۰۰۰", "۳۹۴٬۵۰۰٬۰۰۰", "۴۵۰٬۰۰۰٬۰۰۰ تومان"):
+    require(word not in owner_screen, f"unapproved old Figma owner financial sample must not be a live amount: {word}")
+for forbidden in ("@/api/", "useMobileAuth", "getMobileBootstrap"):
+    require(forbidden not in owner_screen, f"owner preview must not access live auth/bank/contract/payment: {forbidden}")
+require('router.push(contractRole === "Tenant" ? "/preview/financing-plans" : "/preview/owner-connected")' in screen,
+    "role selection must branch to the full MOCK owner-connected flow")
 owner_route = read("apps/mobile/app/preview/owner-contract.tsx")
 require('screen="owner-contract"' in owner_route, "owner role requires its own explicit MOCK route")
 require('type MockContractRole = "Tenant" | "Owner"' in provider, "role selection type must distinguish tenant and owner")
@@ -105,7 +141,7 @@ for token in (
     'selected={contractRole === "Owner"}', 'selected={contractRole === "Tenant"}',
     'onPress={setContractRole}', 'accessibilityRole="radio"',
     'figmaAssets.roleSelected', 'figmaAssets.roleUnselected',
-    'router.push(contractRole === "Tenant" ? "/preview/financing-plans" : "/preview/owner-contract")',
+    'router.push(contractRole === "Tenant" ? "/preview/financing-plans" : "/preview/owner-connected")',
     'case "owner-contract"', 'back="contract-lookup"',
 ):
     require(token in screen, f"Figma 66:382 role selection missing: {token}")
