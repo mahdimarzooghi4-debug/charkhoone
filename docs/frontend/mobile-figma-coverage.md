@@ -123,3 +123,11 @@ The Owner Mobile code passed the mobile TypeScript CI check on the implementatio
 ## Open implementation boundary
 
 No bank, credit, fund, organization, payment-gateway or Khodnevis API is called by the mobile app yet. Navigation and screen state are frontend-only placeholders until the backend phase begins. Owner bottom-navigation items reuse the existing shared profile/contracts surfaces where those destinations are already represented; no additional owner-only home/account/contracts screens were invented beyond the supplied `04 - Owner Mobile` source page.
+
+## Isolated tenant MOCK preview
+
+`/preview` is a separate, clearly labelled tenant walkthrough for product review. It is deliberately outside the authenticated `(tenant)` and `(shared)` routes and does not call OIDC, the mobile API, or PostgreSQL. It covers calculator, finance-plan selection/review outcomes, membership, tenant contribution, final confirmation, contract, payment receipt, pending/failed and terminated examples. Every displayed result is labelled `MOCK`; no result represents a real payment, bank approval, membership or contract.
+
+The fixed C3 presentation fixture uses: cash deposit `۵۰۰٬۰۰۰٬۰۰۰ تومان`, monthly rent `۲۰٬۰۰۰٬۰۰۰ تومان`, full-deposit equivalent `۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان`, 30% financing `۳۵۰٬۰۰۰٬۰۰۰ تومان`, tenant contribution `۸۱۶٬۶۶۶٬۶۶۷ تومان`, illustrative annual bank rate `۲۳٪`, and tenant monthly interest-only payment `۶٬۷۰۸٬۳۳۳ تومان`. Repayment of loan principal remains subject to the final bank contract. The preview keeps financing-plan selection and membership choice in independent local state.
+
+Run it with `npm start` in `apps/mobile`, then open `/preview` (or `/preview/home`) in Expo Router. Regression coverage is in `scripts/release/verify-mobile-mock-preview.py`; it checks route coverage, fixed financial values, MOCK labelling and that this surface has no authenticated API imports.
