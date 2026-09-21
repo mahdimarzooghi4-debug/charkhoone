@@ -452,11 +452,11 @@ require('"use client";' in membership_page and
         '.planCard:focus-within {' in membership_css and
         '.planInput {' in membership_css,
         "all three membership plan cards must be single-choice, interactive and keyboard accessible")
-require('membership/result?plan=${selectedPlan}' in membership_page and
+require('membership/result?plan=${financingPlan}&membership=${selectedPlan}' in membership_page and
         'پرداخت (نمونه)' in membership_page and
-        'searchParams: Promise<{ plan?: string }>' in membership_result and
+        'searchParams: Promise<{ plan?: string; membership?: string }>' in membership_result and
         'const choice = membershipChoices[chosenId];' in membership_result and
-        'plan === "twice" || plan === "twice-high"' in membership_result and
+        'membership === "twice" || membership === "twice-high"' in membership_result and
         '["مبلغ نمونه", choice.amount, true]' in membership_result and
         '["سقف تأمین مالی", choice.cap, false]' in membership_result and
         'سهمیه انتخابی: {choice.uses}' in membership_result,
@@ -467,7 +467,7 @@ require('هیچ پرداخت یا فعال‌سازی واقعی عضویت ان
         'src="/brand/financing-review-check.svg"' in membership_result and
         '.previewNote {' in membership_result_css and
         '.checkCircle img { width: 14px; height: 14px; display: block; }' in membership_result_css and
-        'href="/user/contracts/register/plans/contribution"' in membership_page,
+        'contribution?plan=${financingPlan}' in membership_page,
         "membership buttons must keep the existing illustrative contribution route without claiming a real payment")
 
 contribution_page = read(USER_ROOT / "contracts/register/plans/contribution/page.tsx")
@@ -505,14 +505,14 @@ require('className={styles.successIcon}><img src="/brand/financing-review-check.
         '.successIcon { width: 48px; height: 48px; flex: 0 0 48px; display: inline-flex; align-items: center; justify-content: center; background: var(--ch-color-primary);' in final_css and
         '.successIcon img { width: 14px; height: 14px; display: block; }' in final_css,
         "final confirmation banner icon must be permanent, branded and on the left")
-require('<FinalConfirmationConsent />' in final_confirmation and
+require('<FinalConfirmationConsent plan={plan} />' in final_confirmation and
         'styles.checkbox' not in final_confirmation and
         final_consent.count('type="checkbox"') == 1 and
         'useState(false)' in final_consent and
         'checked={confirmed}' in final_consent and
         'onChange={(event) => setConfirmed(event.target.checked)}' in final_consent and
         'disabled={!confirmed}' in final_consent and
-        'router.push("/user/contracts/register/plans/waiting-owner")' in final_consent and
+        'router.push(`/user/contracts/register/plans/waiting-owner?plan=${plan}`)' in final_consent and
         '.confirmationRow { width: 100%; display: grid; grid-template-columns: 20px minmax(0, 1fr);' in final_css and
         'direction: rtl; cursor: pointer; }' in final_css and
         '.confirmationCheckbox:checked::after { content: "✓";' in final_css,
