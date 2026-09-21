@@ -168,7 +168,7 @@ require("<UserPanelSidebar" in contracts_text and "alertBadge" not in sidebar_co
 require(bool(re.search(r"\.contractHeader,\s*\.contractBottom\s*\{[^}]*direction:\s*rtl\s*;", contracts_css)),
         "contracts card layout must align to right")
 
-require(contracts_text.count('action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/settlement-preference"') == 1 and
+require(contracts_text.count('action: "مشاهده وضعیت (نمونه)", href: "/user/contracts/demo/vanak"') == 1 and
         'nodeId: "149:223"' in contracts_text and
         'statusTone: "attention" as const' in contracts_text and
         '<Link href={contract.href} className={contract.statusTone === "attention" ? styles.reviewButton : styles.detailButton}>{contract.action}</Link>' in contracts_text and
@@ -177,7 +177,7 @@ require(contracts_text.count('action: "بررسی و تأیید", href: "/user/c
         'href: null' not in contracts_text and
         '/user/contracts/demo/pounak' in contracts_text and
         '/user/contracts/demo/jordan' in contracts_text,
-        "contracts review-and-confirm action must navigate to owner final-confirmation sample without changing other cards")
+        "Vanak owner sample must open its own demo detail without changing other contract cards")
 
 contracts_assets = {
     "logo": "dashboard-logo.png",
@@ -661,10 +661,10 @@ require('<section id="owner-property-info" className={styles.card} data-node-id=
         "owner active preview must have working property anchor, three receipt-history/payment links and shared sidebar destinations")
 
 
-require('action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/settlement-preference"' in contracts_text and
-        'action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/final-confirmation"' not in contracts_text and
+require('action: "مشاهده وضعیت (نمونه)", href: "/user/contracts/demo/vanak"' in contracts_text and
+        'action: "بررسی و تأیید", href: "/user/contracts/123456789012/owner/settlement-preference"' not in contracts_text and
         'href="/user/contracts/123456789012/owner/settlement-preference"' in owner_final,
-        "owner review CTA must visit receipt model selection before final confirmation")
+        "Vanak preview must not open unrelated Saadatabad owner approval; Saadatabad owner flow retains settlement selection")
 require(owner_settlement.startswith('"use client";') and
         'const [method, setMethod] = useState<ReceiptMethod>("monthly");' in owner_settlement and
         'onClick={() => setMethod("monthly")}' in owner_settlement and
