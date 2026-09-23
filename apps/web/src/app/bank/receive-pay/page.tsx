@@ -3,8 +3,8 @@ import shell from "../panel.module.css";
 import styles from "./page.module.css";
 
 const assets = {
-  avatar: "https://www.figma.com/api/mcp/asset/8e3f549b-f7c8-4436-9937-b0cb9529b9dd.png",
-  logo: "https://www.figma.com/api/mcp/asset/454e63bc-5f88-4568-a48c-91ef356ba432.png",
+  avatar: "/brand/bank-mark.svg",
+  logo: "/brand/dashboard-logo.png",
   home: "https://www.figma.com/api/mcp/asset/9be3427a-afb5-4767-95d7-fc6d37e57a0f.svg",
   requests: "https://www.figma.com/api/mcp/asset/f09d802f-8728-4145-a045-e03fd7b8ad19.svg",
   plans: "https://www.figma.com/api/mcp/asset/a6ebd73f-9292-4ecb-8541-38a71ca17e02.svg",
