@@ -53,21 +53,27 @@ export default function BrokerageSettingsSyncErrorsPage() {
         </header>
 
         <div className="brokerage-sync-errors__summary">
-          <p>تا زمان تطبیق، این رکوردها وارد محاسبات مالی قطعی نمی‌شوند.</p>
           <strong>۳ رکورد نیازمند بررسی</strong>
+          <p>تا زمان تطبیق، این رکوردها وارد محاسبات مالی قطعی نمی‌شوند.</p>
         </div>
 
         <div className="brokerage-sync-errors-table" role="table" aria-label="خطاهای همگام‌سازی کارگزاری">
           <div className="brokerage-sync-errors-table__row brokerage-sync-errors-table__head" role="row">
-            <span role="columnheader">اقدام</span>
-            <span role="columnheader">وضعیت</span>
-            <span role="columnheader">مشکل</span>
-            <span role="columnheader">نوع داده</span>
             <span role="columnheader">شناسه</span>
+            <span role="columnheader">نوع داده</span>
+            <span role="columnheader">مشکل</span>
+            <span role="columnheader">وضعیت</span>
+            <span role="columnheader">اقدام</span>
           </div>
 
           {syncErrors.map((error) => (
             <div className="brokerage-sync-errors-table__row" role="row" key={error.id}>
+              <strong role="cell" dir="ltr">{error.id}</strong>
+              <span role="cell">{error.type}</span>
+              <span role="cell">{error.issue}</span>
+              <span role="cell">
+                <span className="brokerage-sync-errors-table__status">نیازمند بررسی</span>
+              </span>
               <span role="cell">
                 <Link
                   className="brokerage-sync-errors-table__review"
@@ -76,12 +82,6 @@ export default function BrokerageSettingsSyncErrorsPage() {
                   بررسی
                 </Link>
               </span>
-              <span role="cell">
-                <span className="brokerage-sync-errors-table__status">نیازمند بررسی</span>
-              </span>
-              <span role="cell">{error.issue}</span>
-              <span role="cell">{error.type}</span>
-              <strong role="cell">{error.id}</strong>
             </div>
           ))}
         </div>
