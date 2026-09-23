@@ -36,6 +36,14 @@
   text-align: right;
 }
 
+/* Masked applicant identifiers read left-to-right without moving their column. */
+.rows .row:nth-child(2) > strong,
+.rows .row:nth-child(3) > strong {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: left;
+}
+
 .row { min-height: 32px; display: grid; grid-template-columns: minmax(100px, 42%) minmax(0, 1fr); align-items: center; gap: 12px; padding: 4px 0; direction: rtl; text-align: right; }
 .row span { grid-column: 1; grid-row: 1; color: #6b7280; font-size: 13px; direction: rtl; text-align: right; }
 .row strong { grid-column: 2; grid-row: 1; min-width: 0; color: var(--ch-color-text); font-size: 14px; font-weight: 500; direction: rtl; text-align: right; overflow-wrap: anywhere; }
