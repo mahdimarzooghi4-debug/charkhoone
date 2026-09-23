@@ -31,7 +31,7 @@ export function BrokerageSidebar() {
   return (
     <aside className="brokerage-sidebar" aria-label="ناوبری پنل کارگزاری">
       <div className="brokerage-sidebar__brand">
-        <BrandLogo className="brokerage-sidebar__logo" />
+        <BrandLogo className="brokerage-sidebar__logo" source="hub" />
         <div className="brokerage-sidebar__identity">
           <strong>کارگزاری نمونه</strong>
           <span>تیم مدیریت منابع چارخونه</span>
