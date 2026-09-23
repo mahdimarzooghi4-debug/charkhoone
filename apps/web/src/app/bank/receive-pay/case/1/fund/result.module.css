@@ -10,6 +10,10 @@
 .failedBox { background:#fff5f3; border-color:#ffd5cf; }
 .resultTop { display:flex; align-items:center; justify-content:space-between; gap:16px; direction:ltr; }
 .resultTop strong { font-size:14px; font-weight:600; direction:rtl; }
+/* Keep success tick immediately to the right of its Persian title. */
+.successBox .resultTop { direction:rtl; justify-content:flex-start; gap:8px; text-align:right; }
+.successBox .resultTop strong { text-align:right; }
+.successBox .symbol { flex:0 0 auto; }
 .successBox .resultTop strong,.successBox .symbol { color:#219659; }
 .failedBox .resultTop strong,.failedBox .symbol { color:#cc261a; }
 .symbol { font-size:18px; font-weight:700; }
