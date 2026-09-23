@@ -1,14 +1,16 @@
-.org-payments,
+.org-payments:not(.org-panel),
 .org-payment-detail,
 .org-payment-result {
-  width: min(1220px, 100%);
-  min-height: 100vh;
-  margin-inline: auto;
+  /* Figma's 1220px is the parent content column beside the sidebar. */
+  width: 100%;
+  min-width: 0;
+  min-height: max(1041px, 100vh);
+  margin: 0;
   padding: 28px 32px;
   color: var(--ch-color-text);
 }
 
-.org-payments { display: flex; flex-direction: column; gap: 14px; }
+.org-payments:not(.org-panel) { display: flex; flex-direction: column; gap: 14px; }
 .org-payment-detail { display: flex; flex-direction: column; gap: 24px; }
 .org-payment-result { display: flex; flex-direction: column; align-items: stretch; gap: 18px; padding: 32px; }
 
@@ -280,7 +282,7 @@
 }
 
 @media (max-width: 760px) {
-  .org-payments,
+  .org-payments:not(.org-panel),
   .org-payment-detail,
   .org-payment-result { padding: 20px 16px; }
   .org-payments__header,
