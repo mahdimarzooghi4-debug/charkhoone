@@ -41,6 +41,23 @@
   text-align: right;
 }
 
+/* Figma 503:29 case detail: back action at left; page title and subtitle
+   at the right. Keep the remaining detail panels and index page unchanged. */
+.org-case-detail__header {
+  direction: ltr;
+}
+
+.org-case-detail__header > div {
+  direction: rtl;
+  text-align: right;
+}
+
+.org-case-detail__header h1,
+.org-case-detail__header p {
+  width: 100%;
+  text-align: right;
+}
+
 .org-cases__header > div,
 .org-case-detail__header > div {
   min-width: 0;
