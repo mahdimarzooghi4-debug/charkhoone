@@ -1,7 +1,11 @@
 .brokerage-resources {
-  width: min(1220px, 100%);
-  min-height: 100vh;
-  margin-inline: auto;
+  /* 1220px in Figma is the full main grid track, not an inner max-width. */
+  width: 100%;
+  min-width: 0;
+  min-height: max(1041px, 100vh);
+  margin: 0;
+  direction: rtl;
+  text-align: right;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -12,6 +16,7 @@
 .brokerage-resources__header {
   min-height: 64px;
   display: flex;
+  direction: ltr;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
@@ -21,6 +26,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  direction: rtl;
   align-items: flex-start;
   gap: 8px;
   text-align: right;
