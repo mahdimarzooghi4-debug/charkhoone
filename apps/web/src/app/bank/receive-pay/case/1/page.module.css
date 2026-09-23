@@ -1,7 +1,7 @@
 .main { min-width:0; flex:1 1 auto; display:flex; flex-direction:column; gap:16px; padding:28px 32px; direction:rtl; }
-.header { width:100%; display:flex; flex-direction:column; align-items:flex-end; gap:6px; padding-bottom:4px; text-align:right; }
+.header { width:100%; display:flex; flex-direction:column; align-items:flex-start; direction:rtl; gap:6px; padding-bottom:4px; text-align:right; }
 .back { color:var(--ch-color-accent); font-size:12px; text-decoration:none; }
-.titleRow { display:flex; align-items:center; gap:12px; }
+.titleRow { display:flex; align-items:center; gap:12px; direction:ltr; }
 .titleRow h1,.header p,.panel h2 { margin:0; }
 .titleRow h1 { color:var(--ch-color-text); font-size:20px; font-weight:700; }
 .activeBadge { padding:4px 10px; color:#166534; font-size:11px; font-weight:600; background:#e2f4e5; border-radius:8px; }
@@ -52,10 +52,17 @@
 .event { min-height:48px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:4px 0; direction:ltr; }
 .eventDetails { display:flex; align-items:center; gap:20px; color:#6b7280; font-size:11px; direction:ltr; }
 .eventDetails strong { color:var(--ch-color-text); font-size:12px; font-weight:500; direction:rtl; }
-.eventLabel { display:flex; flex:0 1 auto; align-items:center; justify-content:flex-end; gap:8px; direction:ltr; text-align:right; }
+.eventLabel { display:flex; flex:0 1 auto; align-items:center; justify-content:flex-start; gap:8px; direction:rtl; text-align:right; }
 .eventLabel span { color:var(--ch-color-text); font-size:13px; font-weight:500; direction:rtl; text-align:right; }
 .eventLabel b { color:#219659; flex:0 0 auto; min-width:12px; text-align:center; }
 .eventPending span { color:#6b7280; font-weight:400; }
 .eventPending b { color:#bfbfbf; }
 @media (max-width:1050px) { .topGrid,.bottomGrid { grid-template-columns:1fr; } }
 @media (max-width:650px) { .main { padding:22px 16px; } .statusGrid,.summaryRow { grid-template-columns:1fr; } .event { align-items:flex-end; flex-direction:column-reverse; } .eventDetails { flex-wrap:wrap; gap:10px; } }
+
+/* Keep financial-case transactions pinned to the right edge on large screens. */
+.transactions .table { margin-inline-start:0; margin-inline-end:0; }
+.transactions .tableHeader > *, .transactions .tableRow > * { justify-self:stretch; text-align:right; }
+.transactions .tableRow > .txBadge { justify-self:start; }
+.transactions .tableRow > .txLink { text-align:right; }
+@media (max-width:650px) { .header { align-items:flex-start; } }
