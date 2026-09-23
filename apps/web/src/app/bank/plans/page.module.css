@@ -1,7 +1,7 @@
 .headerLeft { display: flex; align-items: center; gap: 12px; direction: ltr; }
 .createButton { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0 20px; color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; background: var(--ch-color-primary); border-radius: 12px; }
 .kpis { width: 100%; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
-.kpi { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; padding: 16px 20px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 8px; }
+.kpi { display: flex; flex-direction: column; direction: rtl; align-items: flex-start; gap: 8px; padding: 16px 20px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 8px; text-align: right; }
 .kpi span { color: #6b7280; font-size: 12px; }
 .kpi strong { color: var(--ch-color-text); font-size: 22px; font-weight: 700; }
 .toolbar { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
@@ -24,7 +24,7 @@
 .active { color: #166534; background: #e2f4e5; }
 .draft { color: #926012; background: #fff6de; }
 .inactive { color: #6b7280; background: #f2f2f2; }
-.nameCell { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; overflow: hidden; }
+.nameCell { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; overflow: hidden; direction: rtl; text-align: right; }
 .nameCell strong { font-size: 14px; font-weight: 600; white-space: nowrap; }
 .nameCell small { color: #6b7280; font-size: 11px; white-space: nowrap; }
 .detailHeader { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right; }
@@ -71,3 +71,8 @@
 @media (max-width: 1080px) { .kpis { grid-template-columns: 1fr; } .fieldGrid3 { grid-template-columns: 1fr; } .fieldGrid2 { grid-template-columns: 1fr; } .fieldGrid2,.fieldGrid3 { justify-items: stretch; } .field { width: 100%; } }
 @media (max-width: 820px) { .toolbar { align-items: stretch; flex-direction: column; } .search { width: 100%; } .payerTitle { align-items: flex-end; flex-direction: column-reverse; } }
 @media (max-width: 560px) { .headerLeft { align-items: flex-start; flex-direction: column-reverse; } .actions { flex-direction: column; align-items: stretch; } .action { width: 100%; } }
+
+/* Plans list: preserve Figma column positions, align each Persian cell to its right edge. */
+.tableHeader > span, .tableRow > span { min-width: 0; text-align: right; }
+.tableRow > .nameCell { justify-self: stretch; }
+.tableRow > .nameCell strong, .tableRow > .nameCell small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
