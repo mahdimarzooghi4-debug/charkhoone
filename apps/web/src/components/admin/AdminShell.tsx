@@ -8,12 +8,12 @@ export function AdminShell({ children }: Readonly<{ children: React.ReactNode }>
   const isAuthRoute = pathname === "/admin/login" || pathname.startsWith("/admin/login/");
 
   if (isAuthRoute) {
-    return <main className="admin-auth-shell">{children}</main>;
+    return <main className="admin-auth-shell" lang="fa" dir="rtl">{children}</main>;
   }
 
   return (
-    <div className="admin-shell">
-      <main className="admin-shell__main" lang="fa" dir="rtl">{children}</main>
+    <div className="admin-shell" lang="fa" dir="rtl">
+      <main className="admin-shell__main">{children}</main>
       <AdminSidebar />
     </div>
   );
