@@ -3,7 +3,7 @@ import shell from "../../../panel.module.css";
 import styles from "./page.module.css";
 
 const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/ebdd505d-86b9-4ed2-9edf-f30027e6b6db.png",
+  logo: "/brand/dashboard-logo.png",
   home: "https://www.figma.com/api/mcp/asset/21a5d668-cb1b-41f8-a6c6-030c1623955c.svg",
   requests: "https://www.figma.com/api/mcp/asset/efe0afa7-b6fa-4a4c-ba72-6db194b9bc68.svg",
   plans: "https://www.figma.com/api/mcp/asset/4465354a-d1b5-4bab-a0c3-eccbd9e34267.svg",
