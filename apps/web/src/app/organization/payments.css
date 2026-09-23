@@ -41,6 +41,29 @@
   text-align: right;
 }
 
+/* Shared payment detail/result headers (Figma 517:31, 523:185, 526:31):
+   render back button to the left and the heading/subtitle to the right.
+   Confirmation reuses OrganizationPaymentDetail, and success/failed
+   share OrganizationPaymentResult, so this covers every child route. */
+.org-payment-detail__header,
+.org-payment-result__header {
+  direction: ltr;
+}
+
+.org-payment-detail__header > div,
+.org-payment-result__header > div {
+  direction: rtl;
+  text-align: right;
+}
+
+.org-payment-detail__header h1,
+.org-payment-detail__header p,
+.org-payment-result__header h1,
+.org-payment-result__header p {
+  width: 100%;
+  text-align: right;
+}
+
 .org-payment-detail__header { min-height: 72px; }
 .org-payment-result__header { min-height: 72px; }
 
