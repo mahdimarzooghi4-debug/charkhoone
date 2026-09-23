@@ -276,10 +276,12 @@
 .org-payment-modal h1 { margin: 0; font-size: 22px; font-weight: 700; }
 .org-payment-modal > p { margin: 0; color: #6b737d; font-size: 13px; }
 .org-payment-modal__summary { overflow: hidden; padding: 0 16px; background: #f6f8f7; border-radius: 12px; }
-.org-payment-modal__summary > div { min-height: 38px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid #e5e8e5; }
+/* Figma 522:190–208: Persian field labels on the right and values on the left.
+   The JSX deliberately renders value first, so isolate only these rows as LTR. */
+.org-payment-modal__summary > div { min-height: 38px; display: flex; align-items: center; justify-content: space-between; gap: 20px; direction: ltr; border-bottom: 1px solid #e5e8e5; }
 .org-payment-modal__summary > div:last-child { border-bottom: 0; }
-.org-payment-modal__summary strong { color: #1f2938; font-size: 14px; font-weight: 600; }
-.org-payment-modal__summary span { color: #6b737d; font-size: 13px; }
+.org-payment-modal__summary strong { min-width: 0; direction: rtl; text-align: left; unicode-bidi: isolate; color: #1f2938; font-size: 14px; font-weight: 600; }
+.org-payment-modal__summary span { flex: 0 0 auto; direction: rtl; text-align: right; color: #6b737d; font-size: 13px; }
 .org-payment-modal__note { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #edf7f2; border-radius: 10px; }
 .org-payment-modal__note strong { color: #1f2938; font-size: 13px; font-weight: 600; }
 .org-payment-modal__note span { color: #596e66; font-size: 12px; }
