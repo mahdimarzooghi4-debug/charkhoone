@@ -530,6 +530,17 @@
   font-weight: 600;
 }
 
+/* The amount cells live inside LTR flex rows for Figma positioning.
+   Isolate their Persian number + تومان text in RTL so the currency unit
+   follows the digits in natural Persian reading order. */
+.brokerage-resource-line > strong,
+.brokerage-resource-total > strong,
+.brokerage-event-row > strong {
+  direction: rtl;
+  unicode-bidi: isolate;
+  text-align: left;
+}
+
 .brokerage-resource-total span {
   font-size: 13px;
   font-weight: 500;
