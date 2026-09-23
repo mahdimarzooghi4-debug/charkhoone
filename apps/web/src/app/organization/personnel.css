@@ -34,8 +34,22 @@
   gap: 24px;
 }
 
+/* Figma 443:4: actions on the LEFT, personnel title on the RIGHT.
+   Keep each group's own text direction and do not flip the table or filters. */
 .org-personnel__header {
   min-height: 64px;
+  direction: ltr;
+}
+
+.org-personnel__header .org-personnel__title {
+  direction: rtl;
+  text-align: right;
+}
+
+.org-personnel__header .org-personnel__title h1,
+.org-personnel__header .org-personnel__title p {
+  width: 100%;
+  text-align: right;
 }
 
 .org-personnel__title,
