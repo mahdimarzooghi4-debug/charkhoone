@@ -33,6 +33,24 @@
   gap: 24px;
 }
 
+/* Figma 453:12: primary/actions at the left and the heading/description
+   aligned to the right of the available main column. Scope this to
+   the bank-plans index; do not rearrange nested plan/activation pages. */
+.org-bank-plans__header {
+  direction: ltr;
+}
+
+.org-bank-plans__header .org-bank-plans__title {
+  direction: rtl;
+  text-align: right;
+}
+
+.org-bank-plans__header .org-bank-plans__title h1,
+.org-bank-plans__header .org-bank-plans__title p {
+  width: 100%;
+  text-align: right;
+}
+
 .org-bank-plans__title,
 .org-plan-detail__header > div,
 .org-plan-flow__header > div,
