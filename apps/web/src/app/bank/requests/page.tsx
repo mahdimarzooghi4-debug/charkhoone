@@ -2,8 +2,8 @@ import Link from "next/link";
 import styles from "../panel.module.css";
 
 const assets = {
-  avatar: "https://www.figma.com/api/mcp/asset/c59fd359-0b0d-4259-81de-18a712641ca0.png",
-  logo: "https://www.figma.com/api/mcp/asset/2b13ea63-9ace-44fe-a45f-2d0ebae0da35.png",
+  avatar: "/brand/bank-mark.svg",
+  logo: "/brand/dashboard-logo.png",
   chevron: "https://www.figma.com/api/mcp/asset/43f84162-f1d6-4130-9cd0-187ddc70d979.svg",
   search: "https://www.figma.com/api/mcp/asset/ffacea3d-2b80-4000-93f9-26bc8aaec75e.svg",
   home: "https://www.figma.com/api/mcp/asset/829b1b9f-6254-47c3-8c0f-c48fd86859b8.svg",
