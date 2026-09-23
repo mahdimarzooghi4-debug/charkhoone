@@ -13,7 +13,7 @@ export function AdminShell({ children }: Readonly<{ children: React.ReactNode }>
 
   return (
     <div className="admin-shell">
-      <main className="admin-shell__main">{children}</main>
+      <main className="admin-shell__main" lang="fa" dir="rtl">{children}</main>
       <AdminSidebar />
     </div>
   );
