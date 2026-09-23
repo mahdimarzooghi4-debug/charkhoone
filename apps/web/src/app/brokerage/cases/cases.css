@@ -316,19 +316,22 @@
 }
 
 .brokerage-case-detail {
-  width: min(1220px, 100%);
-  min-height: 1041px;
-  margin-inline: auto;
+  width: 100%;
+  min-height: max(1041px, 100vh);
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
   padding: 28px 32px;
+  direction: rtl;
+  text-align: right;
   color: var(--ch-color-text);
 }
 
 .brokerage-case-detail__header {
   min-height: 64px;
   display: flex;
+  direction: ltr;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
@@ -337,6 +340,7 @@
 .brokerage-case-detail__header > div {
   display: flex;
   flex-direction: column;
+  direction: rtl;
   align-items: flex-start;
   gap: 5px;
   text-align: right;
@@ -416,6 +420,7 @@
 
 .brokerage-case-summary__identity > div {
   display: flex;
+  direction: ltr;
   align-items: center;
   gap: 10px;
 }
@@ -470,6 +475,7 @@
 .brokerage-resource-line {
   min-height: 52px;
   display: flex;
+  direction: ltr;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
@@ -487,6 +493,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  direction: rtl;
   align-items: flex-start;
   gap: 3px;
   text-align: right;
@@ -507,6 +514,7 @@
 .brokerage-resource-total {
   min-height: 47px;
   display: flex;
+  direction: ltr;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -614,6 +622,7 @@
 .brokerage-event-row {
   min-height: 39px;
   display: flex;
+  direction: ltr;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
@@ -633,8 +642,11 @@
 
 .brokerage-event-row > div {
   display: flex;
+  direction: rtl;
+  flex-direction: row-reverse;
   align-items: center;
   gap: 12px;
+  text-align: right;
 }
 
 .brokerage-event-row b {
