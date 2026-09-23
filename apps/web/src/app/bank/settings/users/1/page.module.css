@@ -3,7 +3,7 @@
 .modal { position:fixed; z-index:30; top:50%; left:50%; width:min(560px,calc(100vw - 32px)); display:flex; flex-direction:column; gap:16px; padding:20px 24px; direction:rtl; transform:translate(-50%,-50%); background:#fff; border:1px solid var(--ch-color-border); border-radius:12px; box-shadow:0 8px 24px rgb(0 0 0 / 12%); }
 .header { display:flex; align-items:center; justify-content:space-between; gap:16px; direction:ltr; }
 .close { color:#6b7280; font-size:20px; text-decoration:none; }
-.headerCopy { flex:1; display:flex; flex-direction:column; align-items:flex-end; gap:3px; direction:rtl; text-align:right; }
+.headerCopy { flex:1; display:flex; flex-direction:column; align-items:flex-start; gap:3px; direction:rtl; text-align:right; }
 .headerCopy h1,.headerCopy p,.modal p { margin:0; }
 .headerCopy h1 { color:var(--ch-color-text); font-size:17px; font-weight:700; }
 .headerCopy p { color:#6b7280; font-size:11px; }
@@ -14,9 +14,9 @@
 .row span { color:var(--ch-color-text); font-size:13px; font-weight:500; direction:rtl; }
 .field { display:flex; flex-direction:column; gap:8px; }
 .field > label { color:#6b7280; font-size:12px; text-align:right; }
-.selectLike { min-height:44px; display:flex; align-items:center; justify-content:flex-end; padding:0 12px; color:var(--ch-color-text); font-size:13px; font-weight:500; border:1px solid var(--ch-color-border); border-radius:8px; }
+.selectLike { min-height:44px; display:flex; align-items:center; justify-content:flex-start; direction:rtl; text-align:right; padding:0 12px; color:var(--ch-color-text); font-size:13px; font-weight:500; border:1px solid var(--ch-color-border); border-radius:8px; }
 .helper { color:#6b7280; font-size:11px; text-align:right; }
-.statusOptions { display:flex; justify-content:flex-end; gap:8px; }
+.statusOptions { display:flex; direction:rtl; justify-content:flex-start; gap:8px; }
 .statusInactive,.statusActive { padding:8px 14px; font-size:12px; font-weight:600; border-radius:8px; }
 .statusInactive { color:#6b7280; border:1px solid var(--ch-color-border); }
 .statusActive { color:#15803d; background:#d9f2e0; border:1px solid #b7e4c7; }
