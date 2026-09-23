@@ -13,6 +13,29 @@
 .cardTitle { margin: 0; color: var(--ch-color-text); font-size: 15px; font-weight: 600; text-align: right; }
 .divider { width: 100%; height: 1px; background: var(--ch-color-border); }
 .rows { display: flex; flex-direction: column; gap: 4px; }
+/* Applicant values at the physical LEFT edge; Persian field labels at the RIGHT edge.
+   Keep this scoped to .rows so the adjacent contract card is unaffected. */
+.rows .row {
+  display: flex;
+  direction: ltr;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 36px;
+}
+.rows .row > strong {
+  grid-column: auto;
+  grid-row: auto;
+  flex: 0 1 auto;
+  text-align: left;
+}
+.rows .row > span {
+  grid-column: auto;
+  grid-row: auto;
+  flex: 0 0 auto;
+  text-align: right;
+}
+
 .row { min-height: 32px; display: grid; grid-template-columns: minmax(100px, 42%) minmax(0, 1fr); align-items: center; gap: 12px; padding: 4px 0; direction: rtl; text-align: right; }
 .row span { grid-column: 1; grid-row: 1; color: #6b7280; font-size: 13px; direction: rtl; text-align: right; }
 .row strong { grid-column: 2; grid-row: 1; min-width: 0; color: var(--ch-color-text); font-size: 14px; font-weight: 500; direction: rtl; text-align: right; overflow-wrap: anywhere; }
