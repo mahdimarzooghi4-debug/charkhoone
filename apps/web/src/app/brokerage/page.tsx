@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-const brokerageAvatar =
-  "https://www.figma.com/api/mcp/asset/0338039d-5cd3-4d2c-b6e5-38e6a7607ba2.png";
+// Use the committed Figma export: temporary MCP image links expire and leave a broken header icon.
+const brokerageAvatar = "/brand/dashboard-avatar.png";
 
 const kpis = [
   {
