@@ -1,8 +1,10 @@
 .org-cases,
 .org-case-detail {
-  width: min(1220px, 100%);
-  min-height: 100vh;
-  margin-inline: auto;
+  /* Figma's 1220px is the parent content column beside the sidebar. */
+  width: 100%;
+  min-width: 0;
+  min-height: max(1041px, 100vh);
+  margin: 0;
   padding: 28px 32px;
   color: var(--ch-color-text);
 }
@@ -20,6 +22,40 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
+}
+
+/* Index only: title on the right, export on the left (without
+   rearranging the nested case-detail heading). */
+.org-cases__header {
+  direction: ltr;
+}
+
+.org-cases__header > div {
+  direction: rtl;
+  text-align: right;
+}
+
+.org-cases__header h1,
+.org-cases__header p {
+  width: 100%;
+  text-align: right;
+}
+
+/* Figma 503:29 case detail: back action at left; page title and subtitle
+   at the right. Keep the remaining detail panels and index page unchanged. */
+.org-case-detail__header {
+  direction: ltr;
+}
+
+.org-case-detail__header > div {
+  direction: rtl;
+  text-align: right;
+}
+
+.org-case-detail__header h1,
+.org-case-detail__header p {
+  width: 100%;
+  text-align: right;
 }
 
 .org-cases__header > div,
@@ -282,19 +318,21 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  direction: ltr;
+  /* Pagination on the right; record count on the left. */
+  direction: rtl;
 }
 
 .org-cases__footer > span {
   width: 230px;
+  flex: 0 0 auto;
   color: var(--ch-color-text-subtle);
   font-size: 12px;
   direction: rtl;
-  text-align: right;
+  text-align: left;
 }
 
 .org-cases__footer .org-pagination {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   justify-content: flex-start;
 }
 

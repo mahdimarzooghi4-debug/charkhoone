@@ -1,14 +1,16 @@
-.org-payments,
+.org-payments:not(.org-panel),
 .org-payment-detail,
 .org-payment-result {
-  width: min(1220px, 100%);
-  min-height: 100vh;
-  margin-inline: auto;
+  /* Figma's 1220px is the parent content column beside the sidebar. */
+  width: 100%;
+  min-width: 0;
+  min-height: max(1041px, 100vh);
+  margin: 0;
   padding: 28px 32px;
   color: var(--ch-color-text);
 }
 
-.org-payments { display: flex; flex-direction: column; gap: 14px; }
+.org-payments:not(.org-panel) { display: flex; flex-direction: column; gap: 14px; }
 .org-payment-detail { display: flex; flex-direction: column; gap: 24px; }
 .org-payment-result { display: flex; flex-direction: column; align-items: stretch; gap: 18px; padding: 32px; }
 
@@ -20,6 +22,46 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
+}
+
+/* Organization payments index: title/subtitle on the right and export on
+   the left, matching the rest of the Figma organization panel. */
+.org-payments__header {
+  direction: ltr;
+}
+
+.org-payments__header > div {
+  direction: rtl;
+  text-align: right;
+}
+
+.org-payments__header h1,
+.org-payments__header p {
+  width: 100%;
+  text-align: right;
+}
+
+/* Shared payment detail/result headers (Figma 517:31, 523:185, 526:31):
+   render back button to the left and the heading/subtitle to the right.
+   Confirmation reuses OrganizationPaymentDetail, and success/failed
+   share OrganizationPaymentResult, so this covers every child route. */
+.org-payment-detail__header,
+.org-payment-result__header {
+  direction: ltr;
+}
+
+.org-payment-detail__header > div,
+.org-payment-result__header > div {
+  direction: rtl;
+  text-align: right;
+}
+
+.org-payment-detail__header h1,
+.org-payment-detail__header p,
+.org-payment-result__header h1,
+.org-payment-result__header p {
+  width: 100%;
+  text-align: right;
 }
 
 .org-payment-detail__header { min-height: 72px; }
@@ -234,10 +276,12 @@
 .org-payment-modal h1 { margin: 0; font-size: 22px; font-weight: 700; }
 .org-payment-modal > p { margin: 0; color: #6b737d; font-size: 13px; }
 .org-payment-modal__summary { overflow: hidden; padding: 0 16px; background: #f6f8f7; border-radius: 12px; }
-.org-payment-modal__summary > div { min-height: 38px; display: flex; align-items: center; justify-content: space-between; gap: 20px; border-bottom: 1px solid #e5e8e5; }
+/* Figma 522:190–208: Persian field labels on the right and values on the left.
+   The JSX deliberately renders value first, so isolate only these rows as LTR. */
+.org-payment-modal__summary > div { min-height: 38px; display: flex; align-items: center; justify-content: space-between; gap: 20px; direction: ltr; border-bottom: 1px solid #e5e8e5; }
 .org-payment-modal__summary > div:last-child { border-bottom: 0; }
-.org-payment-modal__summary strong { color: #1f2938; font-size: 14px; font-weight: 600; }
-.org-payment-modal__summary span { color: #6b737d; font-size: 13px; }
+.org-payment-modal__summary strong { min-width: 0; direction: rtl; text-align: left; unicode-bidi: isolate; color: #1f2938; font-size: 14px; font-weight: 600; }
+.org-payment-modal__summary span { flex: 0 0 auto; direction: rtl; text-align: right; color: #6b737d; font-size: 13px; }
 .org-payment-modal__note { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; background: #edf7f2; border-radius: 10px; }
 .org-payment-modal__note strong { color: #1f2938; font-size: 13px; font-weight: 600; }
 .org-payment-modal__note span { color: #596e66; font-size: 12px; }
@@ -280,7 +324,7 @@
 }
 
 @media (max-width: 760px) {
-  .org-payments,
+  .org-payments:not(.org-panel),
   .org-payment-detail,
   .org-payment-result { padding: 20px 16px; }
   .org-payments__header,

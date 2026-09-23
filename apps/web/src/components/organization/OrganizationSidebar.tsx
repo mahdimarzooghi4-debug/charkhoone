@@ -103,7 +103,7 @@ export function OrganizationSidebar() {
   return (
     <aside className="org-sidebar" aria-label="ناوبری پنل سازمان">
       <div className="org-sidebar__brand">
-        <BrandLogo className="org-sidebar__logo" />
+        <BrandLogo className="org-sidebar__logo" source="hub" />
         <div className="org-sidebar__identity">
           <strong>سازمان نمونه</strong>
           <span>پنل سازمانی چارخونه</span>

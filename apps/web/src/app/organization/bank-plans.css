@@ -3,9 +3,11 @@
 .org-plan-activation,
 .org-plan-review,
 .org-plan-success {
-  width: min(1220px, 100%);
-  min-height: 100vh;
-  margin-inline: auto;
+  /* Figma's 1220px is the parent content column beside the sidebar. */
+  width: 100%;
+  min-width: 0;
+  min-height: max(1041px, 100vh);
+  margin: 0;
   padding: 28px 32px;
   color: var(--ch-color-text);
 }
@@ -29,6 +31,24 @@
   align-items: center;
   justify-content: space-between;
   gap: 24px;
+}
+
+/* Figma 453:12: primary/actions at the left and the heading/description
+   aligned to the right of the available main column. Scope this to
+   the bank-plans index; do not rearrange nested plan/activation pages. */
+.org-bank-plans__header {
+  direction: ltr;
+}
+
+.org-bank-plans__header .org-bank-plans__title {
+  direction: rtl;
+  text-align: right;
+}
+
+.org-bank-plans__header .org-bank-plans__title h1,
+.org-bank-plans__header .org-bank-plans__title p {
+  width: 100%;
+  text-align: right;
 }
 
 .org-bank-plans__title,
