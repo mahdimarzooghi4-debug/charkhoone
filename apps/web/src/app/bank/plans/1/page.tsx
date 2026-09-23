@@ -4,8 +4,8 @@ import styles from "../page.module.css";
 import local from "./page.module.css";
 
 const assets = {
-  avatar: "https://www.figma.com/api/mcp/asset/cdae9e76-e3e6-4c67-8e73-ca56af86a8cf.png",
-  logo: "https://www.figma.com/api/mcp/asset/b2968172-d81a-4e9b-bd6e-f42615608924.png",
+  avatar: "/brand/bank-mark.svg",
+  logo: "/brand/dashboard-logo.png",
   check: "https://www.figma.com/api/mcp/asset/007bdf5b-d44c-46d7-a090-e0b316523822.svg",
   lock: "https://www.figma.com/api/mcp/asset/4619370a-f0d4-4a00-b41f-de77c937af1c.svg",
   home: "https://www.figma.com/api/mcp/asset/9228b566-1a67-45af-904e-ce860a8d97a9.svg",

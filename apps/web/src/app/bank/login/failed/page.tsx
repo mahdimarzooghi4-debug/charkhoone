@@ -1,7 +1,7 @@
 import Link from "next/link";
 import styles from "../page.module.css";
 
-const logo = "https://www.figma.com/api/mcp/asset/7665e923-039b-492d-8a14-0a0e874c03ef.png";
+const logo = "/brand/dashboard-logo.png";
 const divider = "https://www.figma.com/api/mcp/asset/8ecb5a35-0086-46c6-958d-5ad684c4988d.svg";
 
 export default function BankLoginFailedPage() {

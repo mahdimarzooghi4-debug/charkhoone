@@ -3,7 +3,7 @@ import shell from "../../../panel.module.css";
 import styles from "./page.module.css";
 
 const assets = {
-  logo: "https://www.figma.com/api/mcp/asset/ebdd505d-86b9-4ed2-9edf-f30027e6b6db.png",
+  logo: "/brand/dashboard-logo.png",
   home: "https://www.figma.com/api/mcp/asset/21a5d668-cb1b-41f8-a6c6-030c1623955c.svg",
   requests: "https://www.figma.com/api/mcp/asset/efe0afa7-b6fa-4a4c-ba72-6db194b9bc68.svg",
   plans: "https://www.figma.com/api/mcp/asset/4465354a-d1b5-4bab-a0c3-eccbd9e34267.svg",
@@ -54,10 +54,10 @@ export default function BankFinancialCasePage() {
         </div>
         <div className={styles.bottomGrid}>
           <div className={styles.stack}>
-            <section className={`${styles.panel} ${styles.transactions}`}><h2>تراکنش‌های پرونده</h2><div className={styles.smallTable}><div className={styles.table}><div className={styles.tableHeader}><span>اقدام</span><span>وضعیت</span><span>شناسه تراکنش</span><span>تاریخ و زمان</span><span>مبلغ</span><span>نوع عملیات</span></div>{txRows.map((row) => <div className={styles.tableRow} key={row[2]}><Link className={styles.txLink} href="/bank/receive-pay/transaction/1">{row[0]}</Link><span className={styles.txBadge}>{row[1]}</span><span className={styles.txMuted}>{row[2]}</span><span className={styles.txMuted}>{row[3]}</span><span className={styles.txValue}>{row[4]}</span><span className={styles.txValue}>{row[5]}</span></div>)}</div></div></section>
+            <section className={`${styles.panel} ${styles.transactions}`}><h2>تراکنش‌های پرونده</h2><div className={styles.smallTable}><div className={styles.table}><div className={styles.tableHeader}><span>نوع عملیات</span><span>مبلغ</span><span>تاریخ و زمان</span><span>شناسه تراکنش</span><span>وضعیت</span><span>اقدام</span></div>{txRows.map((row) => <div className={styles.tableRow} key={row[2]}><span className={styles.txValue}>{row[5]}</span><span className={styles.txValue}>{row[4]}</span><span className={styles.txMuted}>{row[3]}</span><span className={styles.txMuted}>{row[2]}</span><span className={styles.txBadge}>{row[1]}</span><Link className={styles.txLink} href="/bank/receive-pay/transaction/1">{row[0]}</Link></div>)}</div></div></section>
             <section className={`${styles.panel} ${styles.current}`}><h2>وضعیت فعلی</h2><div className={styles.divider} /><div className={styles.currentTop}><span className={styles.activeBadge}>فعال</span><div className={styles.currentCopy}><strong>اصل تسهیلات تأمین شده</strong><span>پرونده ۱۴۰۵-۸۳۲۱ — ۵۰۰٬۰۰۰٬۰۰۰ تومان — TXN-۹۸۴۵۱۲</span></div></div><div className={styles.currentChecks}><span>✓ اصل تسهیلات در کارگزاری تأمین شده</span><span>✓ ۳ دوره سود دریافت شده</span><span className={styles.pending}>○ دوره بعدی سود: ۱۴۰۵/۰۷/۰۱</span></div><Link href="/bank/receive-pay/transaction/1" className={styles.txButton}>مشاهده تراکنش</Link></section>
           </div>
-          <section className={`${styles.panel} ${styles.timeline}`}><h2>گردش مالی پرونده</h2><div className={styles.divider} />{events.map(([id,date,amount,label,done], i) => <div className={styles.event} key={`${date}-${label}`}><div className={styles.eventDetails}>{id ? <span>{id}</span> : null}<span>{date}</span><strong>{amount}</strong></div><div className={`${styles.eventLabel} ${done ? "" : styles.eventPending}`}><span>{label}</span><b>{done ? "✓" : "○"}</b></div></div>)}</section>
+          <section className={`${styles.panel} ${styles.timeline}`}><h2>گردش مالی پرونده</h2><div className={styles.divider} />{events.map(([id,date,amount,label,done], i) => <div className={styles.event} key={`${date}-${label}`}><div className={styles.eventDetails}>{id ? <span>{id}</span> : null}<span>{date}</span><strong>{amount}</strong></div><div className={`${styles.eventLabel} ${done ? "" : styles.eventPending}`}><b aria-hidden="true">{done ? "✓" : "○"}</b><span>{label}</span></div></div>)}</section>
         </div>
       </section>
       <Sidebar />

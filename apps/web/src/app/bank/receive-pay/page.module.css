@@ -1,8 +1,8 @@
 .kpis { width:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
-.kpi { display:flex; flex-direction:column; align-items:flex-end; gap:8px; padding:16px 20px; background:#fff; border:1px solid var(--ch-color-border); border-radius:8px; text-align:right; }
+.kpi { display:flex; flex-direction:column; direction:rtl; align-items:flex-start; gap:8px; padding:16px 20px; background:#fff; border:1px solid var(--ch-color-border); border-radius:8px; text-align:right; }
 .kpi span { color:#6b7280; font-size:12px; }
 .kpi strong { color:var(--ch-color-text); font-size:18px; font-weight:700; }
-.card { width:100%; display:flex; flex-direction:column; gap:14px; padding:18px 20px; background:#fff; border:1px solid var(--ch-color-border); border-radius:8px; }
+.card { width:100%; display:flex; flex-direction:column; direction:rtl; text-align:right; gap:14px; padding:18px 20px; background:#fff; border:1px solid var(--ch-color-border); border-radius:8px; }
 .card h2,.historyTitle { margin:0; width:100%; color:var(--ch-color-text); font-size:15px; font-weight:600; text-align:right; }
 .divider { width:100%; height:1px; background:var(--ch-color-border); }
 .actionRow { width:100%; display:flex; flex-direction:column; gap:8px; padding:12px 16px; background:#f9fafb; border-radius:8px; }
@@ -11,11 +11,11 @@
 .primaryButton { display:inline-flex; align-items:center; justify-content:center; padding:8px 16px; color:#fff; font-size:13px; font-weight:600; text-decoration:none; background:var(--ch-color-primary); border-radius:10px; white-space:nowrap; }
 .readyBadge { justify-self:center; padding:4px 10px; color:#926012; font-size:11px; font-weight:600; background:#fff6de; border-radius:8px; white-space:nowrap; }
 .actionAmount { color:var(--ch-color-text); font-size:14px; font-weight:600; text-align:right; }
-.caseInfo { display:flex; flex-direction:column; align-items:flex-end; gap:2px; text-align:right; }
+.caseInfo { display:flex; flex-direction:column; direction:rtl; align-items:flex-start; gap:2px; text-align:right; }
 .caseInfo strong { color:var(--ch-color-text); font-size:13px; font-weight:500; }
 .caseInfo small { color:#6b7280; font-size:11px; }
 .actionType { color:var(--ch-color-text); font-size:14px; font-weight:600; white-space:nowrap; }
-.checks { width:100%; display:flex; align-items:center; justify-content:flex-end; gap:18px; flex-wrap:wrap; color:#166534; font-size:11px; }
+.checks { width:100%; display:flex; direction:rtl; align-items:center; justify-content:flex-start; gap:18px; flex-wrap:wrap; color:#166534; font-size:11px; text-align:right; }
 .check { display:flex; align-items:center; gap:6px; }
 .check b { font-size:12px; }
 .operation { width:100%; min-height:64px; display:flex; align-items:center; justify-content:space-between; gap:24px; padding:10px 0; direction:ltr; }
@@ -25,13 +25,13 @@
 .badgeSuccess { color:#166534; background:#e2f4e5; }
 .badgeProcessing { color:#264d99; background:#d9e5fa; }
 .badgeFailed { color:#b91c1c; background:#fee2e2; }
-.opRight { min-width:0; flex:1; display:flex; flex-direction:column; align-items:flex-end; gap:2px; direction:rtl; text-align:right; }
+.opRight { min-width:0; flex:1; display:flex; flex-direction:column; align-items:flex-start; gap:2px; direction:rtl; text-align:right; }
 .opRight strong { color:var(--ch-color-text); font-size:13px; font-weight:600; }
 .opRight span { color:#6b7280; font-size:11px; }
 .revenueCard { gap:9px; }
 .revenueLead { margin:0; width:100%; color:#6b7280; font-size:11px; text-align:right; }
 .revenueGrid { width:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
-.revenueItem { display:flex; flex-direction:column; align-items:flex-end; justify-content:center; gap:5px; min-height:66px; padding:10px 12px; background:#f9fafb; border:1px solid var(--ch-color-border); border-radius:8px; }
+.revenueItem { display:flex; flex-direction:column; direction:rtl; text-align:right; align-items:flex-start; justify-content:center; gap:5px; min-height:66px; padding:10px 12px; background:#f9fafb; border:1px solid var(--ch-color-border); border-radius:8px; }
 .revenueItem span { color:#6b7280; font-size:11px; }
 .revenueItem strong { color:var(--ch-color-text); font-size:13px; font-weight:600; }
 .revenueNote { padding:10px 12px; color:#6b7280; font-size:11px; text-align:right; background:#f7f8f8; border-radius:8px; }
@@ -58,3 +58,9 @@
 @media (max-width:1050px) { .kpis,.revenueGrid { grid-template-columns:1fr; } .actionTop { grid-template-columns:1fr 1fr; } .actionType,.caseInfo { grid-column:1 / -1; } }
 @media (max-width:820px) { .historyToolbar { align-items:stretch; flex-direction:column; } .searchField { width:100%; } }
 @media (max-width:620px) { .actionTop { grid-template-columns:1fr; } .actionTop > * { justify-self:stretch; } .primaryButton { width:100%; } .readyBadge { justify-self:start; } .operation { align-items:flex-start; flex-direction:column-reverse; } .opLeft { width:auto; } }
+
+/* Preserve the Figma left-to-right column order, but right-align each Persian field. */
+.actionAmount { justify-self: end; direction: rtl; }
+.actionType { direction: rtl; text-align: right; }
+.opLeft { direction: ltr; flex: 0 0 170px; }
+@media (max-width: 620px) { .opLeft { flex-basis: auto; } }

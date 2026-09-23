@@ -1,8 +1,8 @@
 import { BankRequestResultDetail } from "../request-detail-state";
 
 const assets = {
-  avatar: "https://www.figma.com/api/mcp/asset/c8da81f6-e3a8-4654-bfb5-8a6c169e9762.png",
-  logo: "https://www.figma.com/api/mcp/asset/78920320-b2ad-4232-b64e-b71fafebfb48.png",
+  avatar: "/brand/bank-mark.svg",
+  logo: "/brand/dashboard-logo.png",
   dot: "https://www.figma.com/api/mcp/asset/e4cdc405-62f7-461e-8a44-cc3088b47dc9.svg",
   check: "https://www.figma.com/api/mcp/asset/d5630b1b-05e6-4e15-9def-2b14e157b0a1.svg",
   home: "https://www.figma.com/api/mcp/asset/b457dfe3-6743-48c7-a5de-aa7aaccce8df.svg",

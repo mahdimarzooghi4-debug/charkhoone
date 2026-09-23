@@ -21,7 +21,9 @@
 .arrow { color:var(--ch-color-primary); font-size:16px; font-weight:700; text-align:center; }
 .caseLink { color:var(--ch-color-accent); font-size:13px; font-weight:700; text-decoration:none; }
 .successBox { display:flex; flex-direction:column; gap:8px; padding:14px; color:#219659; background:#d9f2e0; border-radius:8px; }
-.successTop { display:flex; align-items:center; justify-content:flex-end; gap:8px; font-size:13px; font-weight:700; }
+.successTop { display:flex; align-items:center; justify-content:flex-end; direction:ltr; gap:8px; font-size:13px; font-weight:700; text-align:right; }
+.successTop span:first-child { direction:rtl; text-align:right; }
+.successTop span:last-child { flex:0 0 auto; }
 .successBox p { margin:0; font-size:11px; line-height:18px; text-align:right; }
 .footer { padding:24px; border-top:1px solid var(--ch-color-border); }
 .closeButton { width:100%; min-height:44px; display:inline-flex; align-items:center; justify-content:center; color:#fff; font-size:14px; font-weight:700; text-decoration:none; background:var(--ch-color-primary); border-radius:8px; }
