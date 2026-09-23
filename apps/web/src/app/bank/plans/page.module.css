@@ -51,11 +51,12 @@
 .option,.chip { padding: 10px 16px; color: var(--ch-color-text); font-size: 14px; font-weight: 500; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 10px; }
 .optionActive { color: var(--ch-color-primary); font-weight: 700; background: #e8f3ef; border-color: var(--ch-color-primary); }
 .subheading { width: 100%; color: var(--ch-color-text); font-size: 13px; font-weight: 600; text-align: right; }
-.checkRow { width: 100%; min-height: 42px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 0; border-bottom: 1px solid var(--ch-color-border); }
+.checkRow { width: 100%; min-height: 42px; display: flex; direction: ltr; align-items: center; justify-content: space-between; gap: 16px; padding: 8px 0; border-bottom: 1px solid var(--ch-color-border); }
 .checkRow:last-child { border-bottom: 0; }
-.checkLabel { display: flex; align-items: center; gap: 8px; color: var(--ch-color-text); font-size: 13px; }
-.checkIcon { width: 20px; height: 20px; display: inline-flex; align-items: center; justify-content: center; background: #dcfce7; border-radius: 10px; }
-.checkIcon img { width: 12px; height: 12px; }
+.checkLabel { display: flex; flex-direction: row-reverse; direction: ltr; align-items: center; gap: 8px; color: var(--ch-color-text); font-size: 13px; text-align: right; }
+.checkIcon { width: 20px; height: 20px; flex: 0 0 20px; display: inline-flex; align-items: center; justify-content: center; background: #dcfce7; border-radius: 10px; }
+.checkIcon img { display: none; }
+.checkIcon::after { content: "✓"; color: #15803d; font-size: 13px; font-weight: 700; line-height: 1; }
 .checkStatus { color: #166534; font-size: 13px; font-weight: 500; }
 .infoBox { padding: 12px; color: #6b7280; font-size: 11px; text-align: right; background: #f9fafb; border-radius: 8px; }
 .lockRow { display: flex; direction: rtl; align-items: center; gap: 8px; align-self: flex-start; color: #6b7280; font-size: 11px; }
