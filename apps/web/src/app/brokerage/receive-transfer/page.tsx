@@ -147,31 +147,31 @@ export default function BrokerageReceiveTransferPage() {
       <div className="brokerage-transfer__table-wrap">
         <div className="brokerage-transfer-table" role="table" aria-label="گردش‌های مالی">
           <div className="brokerage-transfer-table__row brokerage-transfer-table__head" role="row">
-            <span role="columnheader">اقدام</span>
-            <span role="columnheader">وضعیت</span>
-            <span role="columnheader">تاریخ</span>
-            <span role="columnheader">مبلغ</span>
-            <span role="columnheader">مبدأ / مقصد</span>
-            <span role="columnheader">پرونده</span>
-            <span role="columnheader">نوع جریان</span>
             <span role="columnheader">شناسه تراکنش</span>
+            <span role="columnheader">نوع جریان</span>
+            <span role="columnheader">پرونده</span>
+            <span role="columnheader">مبدأ / مقصد</span>
+            <span role="columnheader">مبلغ</span>
+            <span role="columnheader">تاریخ</span>
+            <span role="columnheader">وضعیت</span>
+            <span role="columnheader">اقدام</span>
           </div>
           {transactions.map((transaction) => (
             <div className="brokerage-transfer-table__row" role="row" key={transaction.id}>
-              <span className="brokerage-transfer-table__action" role="cell">
-                <Link href={`/brokerage/receive-transfer/${transaction.slug}`}>مشاهده</Link>
-              </span>
+              <strong role="cell" dir="ltr">{transaction.id}</strong>
+              <span role="cell">{transaction.flow}</span>
+              <span role="cell">{transaction.caseRef}</span>
+              <span role="cell">{transaction.route}</span>
+              <span role="cell">{transaction.amount}</span>
+              <span role="cell">{transaction.date}</span>
               <span role="cell">
                 <span className={`brokerage-transfer__status brokerage-transfer__status--${transaction.tone}`}>
                   {transaction.status}
                 </span>
               </span>
-              <span role="cell">{transaction.date}</span>
-              <span role="cell">{transaction.amount}</span>
-              <span role="cell">{transaction.route}</span>
-              <span role="cell">{transaction.caseRef}</span>
-              <span role="cell">{transaction.flow}</span>
-              <strong role="cell">{transaction.id}</strong>
+              <span className="brokerage-transfer-table__action" role="cell">
+                <Link href={`/brokerage/receive-transfer/${transaction.slug}`}>مشاهده</Link>
+              </span>
             </div>
           ))}
         </div>
