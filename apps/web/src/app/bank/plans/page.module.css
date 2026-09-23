@@ -1,7 +1,7 @@
 .headerLeft { display: flex; align-items: center; gap: 12px; direction: ltr; }
 .createButton { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; padding: 0 20px; color: #fff; font-size: 14px; font-weight: 600; text-decoration: none; background: var(--ch-color-primary); border-radius: 12px; }
 .kpis { width: 100%; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
-.kpi { display: flex; flex-direction: column; direction: rtl; align-items: flex-start; gap: 8px; padding: 16px 20px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 8px; text-align: right; }
+.kpi { display: flex; flex-direction: column; direction: rtl; align-items: flex-end; gap: 8px; padding: 16px 20px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 8px; text-align: right; }
 .kpi span { color: #6b7280; font-size: 12px; }
 .kpi strong { color: var(--ch-color-text); font-size: 22px; font-weight: 700; }
 .toolbar { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; direction: ltr; }
@@ -17,14 +17,14 @@
 .tableHeader { min-height: 46px; color: var(--ch-color-text); font-size: 13px; font-weight: 600; background: #f9fafb; border-bottom: 1px solid var(--ch-color-border); }
 .tableRow { min-height: 76px; color: var(--ch-color-text); font-size: 13px; border-bottom: 1px solid var(--ch-color-border); }
 .tableRow:last-child { border-bottom: 0; }
-.tableHeader > span,.tableRow > span,.nameCell { direction: rtl; text-align: right; }
+.tableHeader > span,.tableRow > span,.nameCell { min-width:0; direction: rtl; text-align: right; justify-self: stretch; }
 .tableHeader > span:first-child { text-align: center; }
 .viewButton { justify-self: start; display: inline-flex; align-items: center; justify-content: center; padding: 6px 14px; color: var(--ch-color-accent); font-size: 12px; font-weight: 600; text-decoration: none; border: 1px solid var(--ch-color-accent); border-radius: 8px; }
-.status { justify-self: end; padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 8px; }
+.status { justify-self: end; display:inline-flex; align-items:center; justify-content:center; width:max-content; padding: 4px 10px; font-size: 11px; font-weight: 600; border-radius: 8px; }
 .active { color: #166534; background: #e2f4e5; }
 .draft { color: #926012; background: #fff6de; }
 .inactive { color: #6b7280; background: #f2f2f2; }
-.nameCell { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; overflow: hidden; direction: rtl; text-align: right; }
+.nameCell { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-width: 0; overflow: hidden; direction: rtl; text-align: right; }
 .nameCell strong { font-size: 14px; font-weight: 600; white-space: nowrap; }
 .nameCell small { color: #6b7280; font-size: 11px; white-space: nowrap; }
 .detailHeader { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right; }
@@ -76,3 +76,8 @@
 .tableHeader > span, .tableRow > span { min-width: 0; text-align: right; }
 .tableRow > .nameCell { justify-self: stretch; }
 .tableRow > .nameCell strong, .tableRow > .nameCell small { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+
+/* Plans list RTL polish: keep Figma column positions, but pin Persian content to each cell's right edge. */
+.kpi > span, .kpi > strong { width:100%; text-align:right; }
+.tableRow > span:not(.status), .tableHeader > span { text-align:right; }
+.nameCell strong, .nameCell small { width:100%; text-align:right; }
