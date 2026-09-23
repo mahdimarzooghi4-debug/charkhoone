@@ -9,6 +9,7 @@
 .admin-shell__main {
   min-width: 0;
   direction: rtl;
+  text-align: right;
 }
 
 .admin-auth-shell {
@@ -78,6 +79,7 @@
 .admin-sidebar__link {
   width: 100%;
   min-height: 46px;
+  direction: ltr;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -91,13 +93,16 @@
 .admin-sidebar__link span {
   min-width: 0;
   flex: 1 1 auto;
+  direction: rtl;
   text-align: right;
 }
 
 .admin-sidebar__link svg {
-  width: 18px;
-  height: 18px;
-  flex: 0 0 auto;
+  display: block;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  stroke-width: 2;
 }
 
 .admin-sidebar__link:hover,
@@ -123,14 +128,19 @@
 
 .admin-sidebar__logout {
   flex: 0 0 auto;
-  margin-top: 24px;
+  margin-top: auto;
   font-weight: 600;
 }
 
+/* Figma 675:43: 1220px is the ENTIRE content track beside the 220px sidebar,
+   not an additional centered max-width. */
 .admin-dashboard {
-  width: min(1220px, 100%);
-  min-height: 100vh;
-  margin-inline: auto;
+  width: 100%;
+  min-width: 0;
+  min-height: max(1041px, 100vh);
+  margin: 0;
+  direction: rtl;
+  text-align: right;
   display: flex;
   flex-direction: column;
   gap: 14px;
