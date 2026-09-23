@@ -1,9 +1,11 @@
 .org-settings,
 .org-settings-edit,
 .org-hr-api {
-  width: min(1220px, 100%);
-  min-height: 100vh;
-  margin-inline: auto;
+  /* Figma's 1220px is the parent content column beside the sidebar. */
+  width: 100%;
+  min-width: 0;
+  min-height: max(1041px, 100vh);
+  margin: 0;
   color: var(--ch-color-text);
 }
 
