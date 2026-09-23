@@ -1,7 +1,7 @@
 import Link from "next/link";
 
-const brokerageAvatar =
-  "https://www.figma.com/api/mcp/asset/75d842ad-f81f-46ef-8765-358bce57896f.png";
+// Use the bundled image: Figma MCP asset links are temporary.
+const brokerageAvatar = "/brand/dashboard-avatar.png";
 
 const caseRows = [
   { id: "1405-8321", displayId: "۱۴۰۵-۸۳۲۱", owner: "رضا کاظمی", principal: "۶۵۰٬۰۰۰٬۰۰۰ تومان", model: "ماهانه — سررسید قرارداد", due: "۱۴۰۵/۰۶/۱۸", minYield: "۲۰٪", attributedYield: "۱۸٬۴۰۰٬۰۰۰ تومان", status: "فعال", tone: "success" },

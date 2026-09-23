@@ -9,6 +9,7 @@
 .brokerage-shell__main {
   min-width: 0;
   direction: rtl;
+  text-align: right;
 }
 
 .brokerage-sidebar {
@@ -68,7 +69,8 @@
 
 .brokerage-sidebar__link {
   width: 100%;
-  min-height: 44px;
+  min-height: 46px;
+  direction: ltr;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -83,11 +85,18 @@
 .brokerage-sidebar__link span {
   min-width: 0;
   flex: 1 1 auto;
+  direction: rtl;
   text-align: right;
 }
 
+/* Match the perceived icon scale and weight of the other Charkhoone panels.
+   Keep glyphs consistently sized on all brokerage routes, including logout. */
 .brokerage-sidebar__link svg {
-  flex: 0 0 auto;
+  display: block;
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  stroke-width: 2;
 }
 
 .brokerage-sidebar__link:hover,
@@ -113,14 +122,17 @@
 
 .brokerage-sidebar__logout {
   flex: 0 0 auto;
-  margin-top: 24px;
+  margin-top: auto;
   font-weight: 600;
 }
 
+/* Figma's 1220px is the main grid column at a 1440px viewport,
+   not a max-width on the page within that column. Fill the available
+   space beside the 220px sidebar at wider browser sizes. */
 .brokerage-dashboard {
-  width: min(1220px, 100%);
-  min-height: 100vh;
-  margin-inline: auto;
+  width: 100%;
+  min-height: max(1041px, 100vh);
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -129,8 +141,9 @@
 }
 
 .brokerage-dashboard__header {
-  min-height: 62px;
+  min-height: 78px;
   display: flex;
+  direction: ltr;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
@@ -142,6 +155,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
+  direction: rtl;
   align-items: flex-start;
   gap: 4px;
   text-align: right;
@@ -213,6 +227,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  text-align: right;
   gap: 12px;
   padding: 20px;
   direction: rtl;
@@ -224,6 +239,7 @@
 .brokerage-kpi__top {
   width: 100%;
   display: flex;
+  direction: ltr;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -231,6 +247,8 @@
 
 .brokerage-kpi__top > span:last-child {
   min-width: 0;
+  direction: rtl;
+  text-align: right;
   color: var(--ch-color-text-subtle);
   font-size: 13px;
   white-space: nowrap;
@@ -292,12 +310,13 @@
 }
 
 .brokerage-action-table {
-  min-width: 1090px;
+  min-width: 1138px;
+  width: 100%;
   overflow: hidden;
 }
 
 .brokerage-action-table__row {
-  min-height: 58px;
+  min-height: 67px;
   display: grid;
   grid-template-columns: 150px 150px 150px 220px 250px minmax(170px, 1fr);
   align-items: center;
@@ -330,7 +349,7 @@
 }
 
 .brokerage-action-table__head {
-  min-height: 52px;
+  min-height: 48px;
   background: #f9fafb;
 }
 
@@ -349,12 +368,25 @@
   justify-content: center;
 }
 
+/* Figma: status pills sit centered in a 150px column at 31px high. */
+.brokerage-action-table__row > span:nth-child(2) .brokerage-badge {
+  min-height: 31px;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+.brokerage-kpi__top .brokerage-badge {
+  min-height: 25px;
+}
+
+
 .brokerage-action-table__action {
-  justify-content: flex-start;
+  justify-content: center;
+  text-align: center;
 }
 
 .brokerage-action-table__action a {
-  min-height: 34px;
+  min-height: 35px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -372,7 +404,7 @@
 }
 
 .brokerage-view-all {
-  align-self: flex-end;
+  align-self: flex-start;
   padding-top: 4px;
   color: var(--ch-color-primary);
   font-size: 13px;
@@ -388,7 +420,7 @@
 
 .brokerage-financial-card {
   min-width: 0;
-  min-height: 142px;
+  min-height: 143px;
   display: flex;
   flex-direction: column;
   align-items: flex-start;

@@ -1,8 +1,9 @@
 .brokerage-transfer,
 .brokerage-transaction-detail {
-  width: min(1220px, 100%);
-  min-height: 100vh;
-  margin-inline: auto;
+  width: 100%;
+  min-width: 0;
+  min-height: max(1041px, 100vh);
+  margin: 0;
   padding: 28px 32px;
   color: var(--ch-color-text);
   background: var(--ch-color-page);
@@ -128,6 +129,53 @@
   border-color: var(--ch-color-primary);
 }
 
+/* Export stays alongside the four filter buttons; its menu does not shift
+   the table, metrics, or Figma controls when opened. */
+.brokerage-transfer__export {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.brokerage-transfer__export-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  min-width: 205px;
+  padding: 5px;
+  direction: rtl;
+  background: var(--ch-color-surface);
+  border: 1px solid var(--ch-color-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(13 59 54 / 12%);
+}
+
+.brokerage-transfer__filters .brokerage-transfer__export-menu button {
+  width: 100%;
+  min-height: 36px;
+  text-align: right;
+  border: 0;
+  background: transparent;
+}
+
+.brokerage-transfer__filters .brokerage-transfer__export-menu button:hover:not(:disabled),
+.brokerage-transfer__filters .brokerage-transfer__export-menu button:focus-visible:not(:disabled) {
+  background: #f3f5f4;
+  border: 0;
+}
+
+.brokerage-transfer-table__empty {
+  min-height: 64px;
+}
+
+.brokerage-transfer-table__row.brokerage-transfer-table__empty > span {
+  grid-column: 1 / -1;
+  justify-content: center;
+  text-align: center;
+  white-space: normal;
+  color: var(--ch-color-text-subtle);
+}
+
 .brokerage-transfer__search {
   width: 350px;
   flex: 0 0 auto;
@@ -167,17 +215,20 @@
 }
 
 .brokerage-transfer-table {
-  min-width: 1154px;
+  /* The Figma 1156px table is a minimum, not a fixed-width grid inside a wider card. */
+  width: 100%;
+  min-width: 1156px;
   overflow: hidden;
 }
 
 .brokerage-transfer-table__row {
   min-height: 52px;
   display: grid;
-  grid-template-columns: 80px 110px 110px 165px 180px 120px 155px 204px;
+  /* RTL order: شناسه، نوع جریان، پرونده، مبدأ/مقصد، مبلغ، تاریخ، وضعیت، اقدام. */
+  grid-template-columns: minmax(204px, 1.65fr) minmax(155px, 1.25fr) minmax(120px, 1fr) minmax(180px, 1.48fr) minmax(165px, 1.35fr) minmax(110px, .9fr) minmax(110px, .9fr) minmax(80px, .65fr);
   align-items: center;
   padding-inline: 16px;
-  direction: ltr;
+  direction: rtl;
   border-top: 1px solid var(--ch-color-border);
 }
 
@@ -191,7 +242,7 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   padding-inline: 4px;
   direction: rtl;
   color: var(--ch-color-text);
@@ -206,6 +257,9 @@
 
 .brokerage-transfer-table__row > strong {
   font-weight: 500;
+  direction: ltr;
+  justify-content: flex-end;
+  unicode-bidi: isolate;
 }
 
 .brokerage-transfer-table__head > span {
@@ -213,13 +267,16 @@
   font-size: 11px;
 }
 
-.brokerage-transfer-table__head > span:first-child,
-.brokerage-transfer-table__row > span:first-child {
+.brokerage-transfer-table__head > span:last-child,
+.brokerage-transfer-table__row > .brokerage-transfer-table__action,
+.brokerage-transfer-table__head > span:nth-child(7),
+.brokerage-transfer-table__row > span:nth-child(7) {
   justify-content: center;
+  text-align: center;
 }
 
-.brokerage-transfer-table__row > span:nth-child(2) {
-  justify-content: flex-end;
+.brokerage-transfer-table__row > span:nth-child(7) .brokerage-transfer__status {
+  width: min(110px, 100%);
 }
 
 .brokerage-transfer-table__action a {

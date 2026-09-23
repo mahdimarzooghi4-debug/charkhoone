@@ -96,6 +96,8 @@
 
 .brokerage-sync-errors__summary p {
   width: min(297px, 100%);
+  direction: rtl;
+  text-align: right;
   font-size: 12px;
   line-height: 1.8;
 }
@@ -117,8 +119,9 @@
 .brokerage-sync-errors-table__row {
   min-height: 90px;
   display: grid;
-  grid-template-columns: 110px 110px 180px 135px minmax(177px, 1fr);
-  direction: ltr;
+  /* Figma, from right to left: identifier, data type, issue, status, action. */
+  grid-template-columns: minmax(177px, 1fr) 135px 180px 110px 110px;
+  direction: rtl;
   border-top: 1px solid #ecedec;
 }
 
@@ -139,6 +142,9 @@
 
 .brokerage-sync-errors-table__row > strong {
   font-weight: 500;
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: center;
 }
 
 .brokerage-sync-errors-table__head {
