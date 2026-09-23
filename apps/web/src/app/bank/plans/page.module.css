@@ -27,27 +27,27 @@
 .nameCell { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-width: 0; overflow: hidden; direction: rtl; text-align: right; }
 .nameCell strong { font-size: 14px; font-weight: 600; white-space: nowrap; }
 .nameCell small { color: #6b7280; font-size: 11px; white-space: nowrap; }
-.detailHeader { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; text-align: right; }
+.detailHeader { display: flex; flex-direction: column; align-items: flex-start; direction: rtl; gap: 6px; text-align: right; }
 .backLink { color: var(--ch-color-accent); font-size: 13px; font-weight: 500; text-decoration: none; }
 .detailHeader h1,.detailHeader p,.card h2,.note,.subheading { margin: 0; }
 .detailHeader h1 { color: var(--ch-color-text); font-size: 22px; font-weight: 700; }
 .detailHeader p { color: #6b7280; font-size: 12px; }
-.card { width: 100%; display: flex; flex-direction: column; gap: 16px; padding: 20px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 8px; }
+.card { width: 100%; display: flex; flex-direction: column; direction: rtl; text-align: right; gap: 16px; padding: 20px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 8px; }
 .card h2 { color: var(--ch-color-text); font-size: 15px; font-weight: 600; text-align: right; }
 .divider { width: 100%; height: 1px; background: var(--ch-color-border); }
-.fieldGrid2 { width: 100%; display: grid; grid-template-columns: repeat(2,minmax(0,320px)); justify-content: end; gap: 16px; }
-.fieldGrid3 { width: 100%; display: grid; grid-template-columns: repeat(3,minmax(0,320px)); justify-content: end; gap: 16px; }
-.field { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+.fieldGrid2 { width: 100%; display: grid; direction: rtl; grid-template-columns: repeat(2,minmax(0,320px)); justify-content: start; gap: 16px; }
+.fieldGrid3 { width: 100%; display: grid; direction: rtl; grid-template-columns: repeat(3,minmax(0,320px)); justify-content: start; gap: 16px; }
+.field { display: flex; flex-direction: column; direction: rtl; align-items: flex-start; gap: 8px; text-align: right; }
 .field label { width: 100%; color: #6b7280; font-size: 13px; text-align: right; }
-.inputLike { width: 100%; min-height: 48px; display: flex; align-items: center; justify-content: flex-end; padding: 0 16px; color: var(--ch-color-text); font-size: 14px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 8px; }
+.inputLike { width: 100%; min-height: 48px; display: flex; direction: rtl; align-items: center; justify-content: flex-start; text-align: right; padding: 0 16px; color: var(--ch-color-text); font-size: 14px; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 8px; }
 .inputDisabled { color: #9ca3af; background: var(--ch-color-page); }
 .helper { color: #6b7280; font-size: 11px; text-align: right; }
-.fullField { width: 320px; max-width: 100%; align-self: flex-end; }
-.payerBlock { width: 100%; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
-.payerTitle { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.fullField { width: 320px; max-width: 100%; align-self: flex-start; text-align: right; }
+.payerBlock { width: 100%; display: flex; flex-direction: column; direction: rtl; align-items: flex-start; gap: 8px; }
+.payerTitle { width: 100%; display: flex; direction: ltr; align-items: center; justify-content: space-between; gap: 16px; text-align: right; }
 .payerTitle span:first-child { color: #6b7280; font-size: 12px; }
 .payerTitle strong { color: #6b7280; font-size: 13px; font-weight: 500; }
-.options,.statusChips { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.options,.statusChips { display: flex; direction: rtl; align-items: center; gap: 8px; flex-wrap: wrap; }
 .option,.chip { padding: 10px 16px; color: var(--ch-color-text); font-size: 14px; font-weight: 500; background: #fff; border: 1px solid var(--ch-color-border); border-radius: 10px; }
 .optionActive { color: var(--ch-color-primary); font-weight: 700; background: #e8f3ef; border-color: var(--ch-color-primary); }
 .subheading { width: 100%; color: var(--ch-color-text); font-size: 13px; font-weight: 600; text-align: right; }
@@ -58,9 +58,9 @@
 .checkIcon img { width: 12px; height: 12px; }
 .checkStatus { color: #166534; font-size: 13px; font-weight: 500; }
 .infoBox { padding: 12px; color: #6b7280; font-size: 11px; text-align: right; background: #f9fafb; border-radius: 8px; }
-.lockRow { display: flex; align-items: center; gap: 8px; align-self: flex-end; color: #6b7280; font-size: 11px; }
+.lockRow { display: flex; direction: rtl; align-items: center; gap: 8px; align-self: flex-start; color: #6b7280; font-size: 11px; }
 .lockRow img { width: 16px; height: 16px; }
-.statusChips { justify-content: flex-end; width: 100%; }
+.statusChips { justify-content: flex-start; width: 100%; }
 .chip { padding: 8px 14px; font-size: 13px; font-weight: 600; }
 .chipActive { color: #166534; font-weight: 700; background: rgb(33 150 89 / 12%); border-color: transparent; }
 .actions { width: 100%; display: flex; align-items: center; gap: 12px; padding-top: 8px; direction: ltr; }
