@@ -81,3 +81,7 @@
 .kpi > span, .kpi > strong { width:100%; text-align:right; }
 .tableRow > span:not(.status), .tableHeader > span { text-align:right; }
 .nameCell strong, .nameCell small { width:100%; text-align:right; }
+
+/* Center each plan status badge directly beneath the status header. */
+.tableHeader > span:nth-child(2) { text-align: center; }
+.tableRow > .status { justify-self: center; width: 86px; max-width: 100%; text-align: center; }
