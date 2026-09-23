@@ -1,7 +1,8 @@
 .brokerage-settings {
-  width: min(1220px, 100%);
-  min-height: 100vh;
-  margin-inline: auto;
+  width: 100%;
+  min-width: 0;
+  min-height: max(1041px, 100vh);
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
