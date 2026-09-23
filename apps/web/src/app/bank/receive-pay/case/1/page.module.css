@@ -12,7 +12,7 @@
 .panel h2 { width:100%; color:var(--ch-color-text); font-size:15px; font-weight:600; text-align:right; }
 .divider { width:100%; height:1px; background:var(--ch-color-border); }
 .statusGrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.statusCard { min-height:120px; display:flex; flex-direction:column; align-items:flex-end; gap:6px; padding:12px; background:#f9fafa; border:1px solid var(--ch-color-border); border-radius:8px; text-align:right; }
+.statusCard { min-height:120px; display:flex; flex-direction:column; direction:rtl; align-items:flex-start; gap:6px; padding:12px; background:#f9fafa; border:1px solid var(--ch-color-border); border-radius:8px; text-align:right; }
 .statusCard h3,.statusCard p { margin:0; }
 .statusCard h3 { color:var(--ch-color-text); font-size:13px; font-weight:600; }
 .statusCard strong { color:var(--ch-color-text); font-size:16px; font-weight:700; }
@@ -22,8 +22,8 @@
 .badgeBlue { color:#264d99; background:#d9e5fa; }
 .badgeWarn { color:#926012; background:#fff6de; }
 .summaryRows { display:flex; flex-direction:column; gap:10px; }
-.summaryRow { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.summaryField { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+.summaryRow { display:grid; grid-template-columns:1fr 1fr; gap:12px; direction:ltr; }
+.summaryField { display:flex; flex-direction:column; direction:rtl; align-items:flex-start; gap:4px; text-align:right; }
 .summaryField span { color:#6b7280; font-size:12px; }
 .summaryField strong { color:var(--ch-color-text); font-size:14px; font-weight:500; }
 .stack { display:flex; flex-direction:column; gap:16px; }
@@ -42,12 +42,12 @@
 .txValue { color:var(--ch-color-text); font-size:13px; font-weight:500; }
 .current { gap:6px; }
 .currentTop { min-height:46px; display:flex; align-items:center; justify-content:space-between; gap:16px; direction:ltr; }
-.currentCopy { display:flex; flex-direction:column; align-items:flex-end; gap:4px; direction:rtl; text-align:right; }
+.currentCopy { display:flex; flex-direction:column; align-items:flex-start; gap:4px; direction:rtl; text-align:right; }
 .currentCopy strong { color:var(--ch-color-text); font-size:14px; font-weight:600; }
 .currentCopy span { color:#6b7280; font-size:12px; }
-.currentChecks { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; color:#166534; font-size:11px; }
+.currentChecks { display:flex; direction:rtl; text-align:right; align-items:center; justify-content:flex-start; gap:10px; flex-wrap:wrap; color:#166534; font-size:11px; }
 .currentChecks .pending { color:#6b7280; }
-.txButton { align-self:flex-end; display:inline-flex; align-items:center; justify-content:center; padding:10px 24px; color:#fff; font-size:13px; font-weight:600; text-decoration:none; background:var(--ch-color-primary); border-radius:8px; }
+.txButton { align-self:flex-start; display:inline-flex; align-items:center; justify-content:center; padding:10px 24px; color:#fff; font-size:13px; font-weight:600; text-decoration:none; background:var(--ch-color-primary); border-radius:8px; }
 .timeline { gap:4px; }
 .event { min-height:48px; display:flex; align-items:center; justify-content:space-between; gap:16px; padding:4px 0; direction:ltr; }
 .eventDetails { display:flex; align-items:center; gap:20px; color:#6b7280; font-size:11px; direction:ltr; }
