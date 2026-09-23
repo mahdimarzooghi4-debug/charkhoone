@@ -1,5 +1,5 @@
 .page { min-height: 100svh; display: flex; align-items: stretch; direction: ltr; background: var(--ch-color-page); }
-.mainContent { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 24px; padding: 32px; direction: rtl; }
+.mainContent { min-width: 0; flex: 1 1 auto; display: flex; flex-direction: column; gap: 24px; padding: 32px; direction: rtl; text-align: right; }
 .header { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-bottom: 16px; direction: ltr; border-bottom: 1px solid var(--ch-color-border); }
 .userInfo { display: flex; align-items: center; gap: 12px; direction: ltr; }
 .userCopy { display: flex; flex-direction: column; gap: 2px; text-align: right; direction: rtl; }
