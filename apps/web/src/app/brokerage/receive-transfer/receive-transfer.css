@@ -1,8 +1,9 @@
 .brokerage-transfer,
 .brokerage-transaction-detail {
-  width: min(1220px, 100%);
-  min-height: 100vh;
-  margin-inline: auto;
+  width: 100%;
+  min-width: 0;
+  min-height: max(1041px, 100vh);
+  margin: 0;
   padding: 28px 32px;
   color: var(--ch-color-text);
   background: var(--ch-color-page);
