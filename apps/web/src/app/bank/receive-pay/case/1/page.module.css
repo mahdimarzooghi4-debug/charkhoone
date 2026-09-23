@@ -11,7 +11,7 @@
 .panel { display:flex; flex-direction:column; gap:10px; padding:16px; background:#fff; border:1px solid var(--ch-color-border); border-radius:8px; }
 .panel h2 { width:100%; color:var(--ch-color-text); font-size:15px; font-weight:600; text-align:right; }
 .divider { width:100%; height:1px; background:var(--ch-color-border); }
-.statusGrid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.statusGrid { display:grid; direction:ltr; grid-template-columns:1fr 1fr; gap:10px; }
 .statusCard { min-height:120px; display:flex; flex-direction:column; direction:rtl; align-items:flex-start; gap:6px; padding:12px; background:#f9fafa; border:1px solid var(--ch-color-border); border-radius:8px; text-align:right; }
 .statusCard h3,.statusCard p { margin:0; }
 .statusCard h3 { color:var(--ch-color-text); font-size:13px; font-weight:600; }
