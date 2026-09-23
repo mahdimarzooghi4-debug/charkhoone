@@ -53,7 +53,7 @@ export function OrganizationPaymentResult({ status }: PaymentResultProps) {
         <h2>{successful ? "بعد از پرداخت چه می‌شود؟" : "حالا چه کاری انجام دهید؟"}</h2>
         <p>{successful ? "پرداخت در سوابق سازمان و پرونده این پرسنل ثبت شده است." : "می‌توانید دوباره تلاش کنید؛ تا زمان پرداخت موفق، این تعهد همچنان نیازمند پرداخت باقی می‌ماند."}</p>
         <div className="org-payment-result__steps">
-          {steps.map(([title, note], index) => <div className="org-payment-result__step" key={title}><div><strong>{title}</strong><small>{note}</small></div><span>{index + 1}</span></div>)}
+          {steps.map(([title, note], index) => <div className="org-payment-result__step" key={title}><span aria-label={`مرحله ${(index + 1).toLocaleString("fa-IR")}`}>{(index + 1).toLocaleString("fa-IR")}</span><div><strong>{title}</strong><small>{note}</small></div></div>)}
         </div>
       </section>
 
