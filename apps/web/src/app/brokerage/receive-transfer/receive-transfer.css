@@ -168,14 +168,16 @@
 }
 
 .brokerage-transfer-table {
-  min-width: 1154px;
+  /* The Figma 1156px table is a minimum, not a fixed-width grid inside a wider card. */
+  width: 100%;
+  min-width: 1156px;
   overflow: hidden;
 }
 
 .brokerage-transfer-table__row {
   min-height: 52px;
   display: grid;
-  grid-template-columns: 80px 110px 110px 165px 180px 120px 155px 204px;
+  grid-template-columns: minmax(80px, .65fr) minmax(110px, .9fr) minmax(110px, .9fr) minmax(165px, 1.35fr) minmax(180px, 1.48fr) minmax(120px, 1fr) minmax(155px, 1.25fr) minmax(204px, 1.65fr);
   align-items: center;
   padding-inline: 16px;
   direction: ltr;
@@ -220,7 +222,11 @@
 }
 
 .brokerage-transfer-table__row > span:nth-child(2) {
-  justify-content: flex-end;
+  justify-content: center;
+}
+
+.brokerage-transfer-table__row > span:nth-child(2) .brokerage-transfer__status {
+  width: min(110px, 100%);
 }
 
 .brokerage-transfer-table__action a {
