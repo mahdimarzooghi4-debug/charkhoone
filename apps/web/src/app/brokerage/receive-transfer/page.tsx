@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 
 const metrics = [
@@ -112,7 +115,86 @@ const transactions: Transaction[] = [
   },
 ];
 
+type TransferFilter = "all" | "received" | "transferred" | "review";
+
+const transferFilters: { value: TransferFilter; label: string }[] = [
+  { value: "review", label: "نیازمند بررسی" },
+  { value: "transferred", label: "انتقالی" },
+  { value: "received", label: "دریافتی" },
+  { value: "all", label: "همه" },
+];
+
+function normalizeSearch(value: string) {
+  const digits = "۰۱۲۳۴۵۶۷۸۹٠١٢٣٤٥٦٧٨٩";
+  return value
+    .toLocaleLowerCase("fa")
+    .replace(/[۰-۹٠-٩]/g, (digit) => String(digits.indexOf(digit) % 10))
+    .replace(/ي/g, "ی")
+    .replace(/ك/g, "ک")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function matchesTransferFilter(transaction: Transaction, filter: TransferFilter) {
+  switch (filter) {
+    case "received":
+      return transaction.route.endsWith("→ کارگزاری");
+    case "transferred":
+      return transaction.route.startsWith("کارگزاری →");
+    case "review":
+      return transaction.status === "نیازمند تطبیق" || transaction.tone === "danger";
+    default:
+      return true;
+  }
+}
+
+function quoteCsvCell(value: string) {
+  // Escape CSV and prevent a spreadsheet from treating user-facing text as a formula.
+  const safe = /^[=+@\-\t\r]/.test(value) ? "'" + value : value;
+  return '"' + safe.replace(/"/g, '""') + '"';
+}
+
 export default function BrokerageReceiveTransferPage() {
+  const [filter, setFilter] = useState<TransferFilter>("all");
+  const [query, setQuery] = useState("");
+  const [exportOpen, setExportOpen] = useState(false);
+  const normalizedQuery = normalizeSearch(query);
+  const visibleTransactions = transactions.filter((transaction) => {
+    if (!matchesTransferFilter(transaction, filter)) return false;
+    if (!normalizedQuery) return true;
+    return normalizeSearch([
+      transaction.id,
+      transaction.slug,
+      transaction.flow,
+      transaction.caseRef,
+      transaction.route,
+      transaction.amount,
+      transaction.date,
+      transaction.status,
+    ].join(" ")).includes(normalizedQuery);
+  });
+
+  function exportCsv() {
+    if (visibleTransactions.length === 0) return;
+    const header = ["شناسه تراکنش", "نوع جریان", "پرونده", "مبدأ / مقصد", "مبلغ", "تاریخ", "وضعیت"];
+    const rows = visibleTransactions.map((transaction) => [
+      transaction.id, transaction.flow, transaction.caseRef, transaction.route,
+      transaction.amount, transaction.date, transaction.status,
+    ]);
+    const csv = "\uFEFF" + [header, ...rows]
+      .map((row) => row.map(quoteCsvCell).join(","))
+      .join("\r\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "brokerage-transactions.csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    setExportOpen(false);
+  }
+
   return (
     <section className="brokerage-transfer" data-node-id="392:2" data-name="Brokerage / Receive & Transfer">
       <header className="brokerage-transfer__header">
@@ -131,16 +213,48 @@ export default function BrokerageReceiveTransferPage() {
       </div>
 
       <div className="brokerage-transfer__controls">
-        <div className="brokerage-transfer__filters" aria-label="فیلتر تراکنش‌ها">
-          <button type="button">خروجی ▾</button>
-          <button type="button">نیازمند بررسی</button>
-          <button type="button">انتقالی</button>
-          <button type="button">دریافتی</button>
-          <button type="button" className="brokerage-transfer__filter--active">همه</button>
+        <div className="brokerage-transfer__filters" role="group" aria-label="فیلتر تراکنش‌ها">
+          <div
+            className="brokerage-transfer__export"
+            onKeyDown={(event) => { if (event.key === "Escape") setExportOpen(false); }}
+          >
+            <button
+              type="button"
+              aria-expanded={exportOpen}
+              aria-controls="brokerage-transfer-export-menu"
+              aria-haspopup="true"
+              onClick={() => setExportOpen((open) => !open)}
+            >
+              خروجی ▾
+            </button>
+            {exportOpen && (
+              <div className="brokerage-transfer__export-menu" id="brokerage-transfer-export-menu">
+                <button type="button" onClick={exportCsv} disabled={visibleTransactions.length === 0}>
+                  دانلود CSV نتایج فعلی
+                </button>
+              </div>
+            )}
+          </div>
+          {transferFilters.map((item) => (
+            <button
+              type="button"
+              key={item.value}
+              className={filter === item.value ? "brokerage-transfer__filter--active" : undefined}
+              aria-pressed={filter === item.value}
+              onClick={() => { setFilter(item.value); setExportOpen(false); }}
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
         <label className="brokerage-transfer__search">
           <span className="sr-only">جستجو در تراکنش‌ها</span>
-          <input type="search" placeholder="جستجو با شناسه تراکنش یا پرونده" />
+          <input
+            type="search"
+            placeholder="جستجو با شناسه تراکنش یا پرونده"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
         </label>
       </div>
 
@@ -156,7 +270,7 @@ export default function BrokerageReceiveTransferPage() {
             <span role="columnheader">وضعیت</span>
             <span role="columnheader">اقدام</span>
           </div>
-          {transactions.map((transaction) => (
+          {visibleTransactions.map((transaction) => (
             <div className="brokerage-transfer-table__row" role="row" key={transaction.id}>
               <strong role="cell" dir="ltr">{transaction.id}</strong>
               <span role="cell">{transaction.flow}</span>
@@ -174,6 +288,11 @@ export default function BrokerageReceiveTransferPage() {
               </span>
             </div>
           ))}
+          {visibleTransactions.length === 0 && (
+            <div className="brokerage-transfer-table__row brokerage-transfer-table__empty" role="row">
+              <span role="cell">تراکنشی مطابق فیلتر یا جستجوی شما پیدا نشد.</span>
+            </div>
+          )}
         </div>
       </div>
 
