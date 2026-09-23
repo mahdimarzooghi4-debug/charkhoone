@@ -122,10 +122,13 @@
   font-weight: 600;
 }
 
+/* Figma's 1220px is the main grid column at a 1440px viewport,
+   not a max-width on the page within that column. Fill the available
+   space beside the 220px sidebar at wider browser sizes. */
 .brokerage-dashboard {
-  width: min(1220px, 100%);
-  min-height: 100vh;
-  margin-inline: auto;
+  width: 100%;
+  min-height: max(1041px, 100vh);
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 24px;
