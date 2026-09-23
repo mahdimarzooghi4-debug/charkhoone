@@ -11,11 +11,15 @@
 }
 
 .brokerage-cases {
-  width: min(1220px, 100%);
-  min-height: 1041px;
-  margin-inline: auto;
+  /* The 1220px Figma measurement is the entire main column, not a
+     nested max-width: fill the space beside the 220px sidebar. */
+  width: 100%;
+  min-height: max(1041px, 100vh);
+  margin: 0;
   display: flex;
   flex-direction: column;
+  direction: rtl;
+  text-align: right;
   gap: 24px;
   padding: 32px;
   color: var(--ch-color-text);
@@ -24,6 +28,7 @@
 .brokerage-cases__header {
   min-height: 70px;
   display: flex;
+  direction: ltr;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
@@ -32,6 +37,7 @@
 .brokerage-cases__copy {
   display: flex;
   flex-direction: column;
+  direction: rtl;
   align-items: flex-start;
   gap: 5px;
   text-align: right;
@@ -89,12 +95,15 @@
   width: 100%;
   min-height: 26px;
   display: flex;
+  direction: ltr;
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
 }
 
 .brokerage-case-kpi__top > span:last-child {
+  direction: rtl;
+  text-align: right;
   color: var(--ch-color-text-subtle);
   font-size: 13px;
   white-space: nowrap;
@@ -193,7 +202,9 @@
 .brokerage-cases-table__row {
   min-height: 52px;
   display: grid;
-  grid-template-columns: 110px 110px 140px 140px 140px 170px 180px 166px;
+  /* At 1440px this resolves to Figma's original 1156px table; when the
+     browser is wider, the flexible columns fill its full card width. */
+  grid-template-columns: 110px 110px minmax(140px, 1fr) 140px 140px minmax(170px, 1.25fr) minmax(180px, 1.3fr) minmax(166px, 1.2fr);
   align-items: center;
   direction: ltr;
   border-top: 1px solid var(--ch-color-border);
