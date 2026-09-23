@@ -24,6 +24,23 @@
   gap: 24px;
 }
 
+/* Organization payments index: title/subtitle on the right and export on
+   the left, matching the rest of the Figma organization panel. */
+.org-payments__header {
+  direction: ltr;
+}
+
+.org-payments__header > div {
+  direction: rtl;
+  text-align: right;
+}
+
+.org-payments__header h1,
+.org-payments__header p {
+  width: 100%;
+  text-align: right;
+}
+
 .org-payment-detail__header { min-height: 72px; }
 .org-payment-result__header { min-height: 72px; }
 
