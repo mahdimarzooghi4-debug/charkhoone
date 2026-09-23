@@ -24,6 +24,23 @@
   gap: 24px;
 }
 
+/* Index only: title on the right, export on the left (without
+   rearranging the nested case-detail heading). */
+.org-cases__header {
+  direction: ltr;
+}
+
+.org-cases__header > div {
+  direction: rtl;
+  text-align: right;
+}
+
+.org-cases__header h1,
+.org-cases__header p {
+  width: 100%;
+  text-align: right;
+}
+
 .org-cases__header > div,
 .org-case-detail__header > div {
   min-width: 0;
@@ -284,19 +301,21 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  direction: ltr;
+  /* Pagination on the right; record count on the left. */
+  direction: rtl;
 }
 
 .org-cases__footer > span {
   width: 230px;
+  flex: 0 0 auto;
   color: var(--ch-color-text-subtle);
   font-size: 12px;
   direction: rtl;
-  text-align: right;
+  text-align: left;
 }
 
 .org-cases__footer .org-pagination {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   justify-content: flex-start;
 }
 
