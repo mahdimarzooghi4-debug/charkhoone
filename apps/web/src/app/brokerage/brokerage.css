@@ -374,7 +374,8 @@
 
 
 .brokerage-action-table__action {
-  justify-content: flex-start;
+  justify-content: center;
+  text-align: center;
 }
 
 .brokerage-action-table__action a {
