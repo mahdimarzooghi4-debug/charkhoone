@@ -13,11 +13,10 @@
 }
 
 .admin-shell__frame {
-  width: min(1220px, 100%);
-  max-width: 1220px;
+  width: 100%;
+  max-width: none;
   min-height: 100vh;
-  margin-left: auto;
-  margin-right: 0;
+  margin: 0;
   box-sizing: border-box;
   direction: rtl;
 }
