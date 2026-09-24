@@ -226,6 +226,28 @@ export function MockTenantScreen({ screen }: Props) {
             <ResultMetricCard label="آورده موردنیاز شما" value={mockFinancialModel.contribution} />
           </View>
           <ResultMetricCard label="پرداخت ماهانه تأمین مالی (فقط سود)" value={mockFinancialModel.monthlyInterest} accent />
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>مقایسه پرداختی ماهانه مستأجر با اجاره</Text>
+            <Row label="اجاره ماهانه قرارداد" value={mockFinancialModel.monthlyRent} />
+            <Row label="پرداختی ماهانه مستأجر (فقط سود)" value={mockFinancialModel.monthlyInterest} />
+            <Text style={styles.note}>{mockFinancialModel.rentDifference === null
+              ? "نرخ سود سالانه اسمی اعلامی بانک را وارد کنید تا امکان مقایسه فراهم شود."
+              : mockFinancialModel.belowRent
+                ? `در این برآورد، پرداختی ماهانه مستأجر ${mockFinancialModel.rentDifference} کمتر از اجاره است.`
+                : "با این ورودی‌ها، پرداختی ماهانه مستأجر از اجاره کمتر نیست؛ شرایط را با بانک بررسی کنید."}</Text>
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>جزئیات محاسبه وام و تبدیل اجاره به رهن</Text>
+            <Row label="رهن نقدی قرارداد" value={mockFinancialModel.cashDeposit} />
+            <Row label="اجاره ماهانه قرارداد" value={mockFinancialModel.monthlyRent} />
+            <Row label="معادل رهن اجاره ماهانه (نسبت ۳٪)" value={mockFinancialModel.rentEquivalentDeposit} />
+            <Row label="رهن کامل معادل قرارداد" value={mockFinancialModel.fullDeposit} />
+            <Row label="حداقل تأمین مالی (۳۰٪)" value={mockFinancialModel.minimumFinancing} />
+            <Row label="حداکثر تأمین مالی (۵۵٪)" value={mockFinancialModel.maximumFinancing} />
+            <Row label="تأمین مالی براساس رتبه نمونه C3" value={mockFinancialModel.financing} />
+            <Row label="آورده مستأجر از رهن کامل معادل" value={mockFinancialModel.contribution} />
+            <Text style={styles.note}>رهن کامل معادل = رهن نقدی + (اجاره ماهانه ÷ ۰٫۰۳). سپس درصد رتبه اعتباری روی کل رهن معادل اعمال می‌شود.</Text>
+          </View>
           <View style={styles.resultBenefit}>
             <Text style={styles.resultBenefitTitle}>خلاصه شرایط مالی شما</Text>
             <Row label="نرخ اسمی سالانه نمونه" value={mockFinancialModel.annualRate} />
@@ -235,7 +257,7 @@ export function MockTenantScreen({ screen }: Props) {
               <Text style={styles.resultBenefitNoticeText}>مقایسه صرفه‌جویی فیگما صرفاً یک مثال طراحی است و مبنای قراردادی ندارد؛ تا روشن شدن شرایط بانک، عدد ساختگی مزیت نمایش داده نمی‌شود.</Text>
             </View>
           </View>
-          <Text style={styles.resultFinePrint}>برآورد C3: تأمین مالی ۳۰٪ معادل ودیعه کامل و نرخ اسمی نمونه ۲۳٪. پرداخت ماهانه فقط سود است؛ نحوه بازپرداخت اصل، تابع قرارداد نهایی بانک خواهد بود. هیچ تأیید یا پرداخت واقعی رخ نمی‌دهد.</Text>
+          <Text style={styles.resultFinePrint}>C3 و نرخ پیش‌فرض ۲۳٪ فقط نمونه‌اند؛ رتبه واقعی و نرخ قطعی از سامانه بیرونی و بانک دریافت می‌شوند. پرداخت ماهانه فقط سود است؛ بازپرداخت اصل تابع قرارداد نهایی بانک است. هیچ درخواست یا پرداختی ثبت نمی‌شود.</Text>
         </View>
       </>;
       actions = <View style={styles.resultActions}>
