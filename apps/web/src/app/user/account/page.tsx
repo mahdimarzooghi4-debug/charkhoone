@@ -13,10 +13,14 @@ function VerifiedBadge() {
   return <span className={styles.verifiedBadge}>تأیید شده</span>;
 }
 
+function toPersianDigits(value: string) {
+  return value.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
+}
+
 function maskIban(value: string) {
   const clean = value.replace(/\s+/g, "").toUpperCase();
-  if (clean.length < 8) return clean;
-  return `${clean.slice(0, 4)} •••• •••• •••• •••• ${clean.slice(-4)}`;
+  if (clean.length < 8) return toPersianDigits(clean);
+  return toPersianDigits(`${clean.slice(0, 4)} •••• •••• •••• •••• ${clean.slice(-4)}`);
 }
 
 export default function AccountPage() {
