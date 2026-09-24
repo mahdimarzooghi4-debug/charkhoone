@@ -62,7 +62,7 @@ export function OrganizationLoginView({ failed = false }: OrganizationLoginViewP
       </div>
 
       <aside className="org-login__identity" aria-label="معرفی پنل سازمان">
-        <BrandLogo className="org-login__logo" />
+        <BrandLogo source="login" className="org-login__logo" />
         <h2>پنل سازمان چارخونه</h2>
         <strong>مدیریت پرونده‌ها، کارکنان و عملیات سازمان</strong>
         <p>دسترسی این بخش فقط برای کاربران مجاز سازمان فعال است.</p>
