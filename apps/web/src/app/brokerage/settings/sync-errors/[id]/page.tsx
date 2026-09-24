@@ -1,7 +1,6 @@
 import Link from "next/link";
 import BrokerageSettingsPage from "../../page";
 import { ResyncButton } from "../ResyncButton";
-import { ResyncButton } from "../ResyncButton";
 
 const syncErrorDetails = {
   "TRX-A4196": {
