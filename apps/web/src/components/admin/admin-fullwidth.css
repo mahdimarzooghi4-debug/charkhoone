@@ -1,0 +1,33 @@
+/* Admin page width is owned by the shared shell, not individual routes.
+   Keep the sidebar fixed and let page content fill the remaining track. */
+.admin-shell {
+  width: 100%;
+  max-width: none;
+}
+
+.admin-shell__main {
+  min-width: 0;
+}
+
+/* Extra specificity keeps route styles and their import order from capping pages.
+   Auth pages use admin-auth-shell and are intentionally outside this rule. */
+.admin-shell__main > :is(
+  .admin-dashboard,
+  .admin-users,
+  .admin-user-detail,
+  .admin-cases,
+  .admin-case-detail,
+  .admin-payments,
+  .admin-payment-detail,
+  .admin-manual-payment,
+  .admin-partners,
+  .admin-partner-form,
+  .admin-partner-manage,
+  .admin-settings
+) {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  margin-inline: 0;
+}
