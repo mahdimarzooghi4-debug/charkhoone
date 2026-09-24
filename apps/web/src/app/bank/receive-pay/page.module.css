@@ -16,7 +16,7 @@
 .caseInfo small { color:#6b7280; font-size:11px; }
 .actionType { justify-self:start; color:var(--ch-color-text); font-size:14px; font-weight:600; white-space:nowrap; }
 .checks { width:100%; display:flex; direction:rtl; align-items:center; justify-content:flex-start; gap:18px; flex-wrap:wrap; color:#166534; font-size:11px; text-align:right; }
-.check { display:flex; align-items:center; gap:6px; }
+.check { display:flex; align-items:center; gap:6px; direction:rtl; }
 .check b { font-size:12px; }
 .operation { width:100%; min-height:64px; display:flex; align-items:center; justify-content:space-between; gap:24px; padding:10px 0; direction:ltr; }
 .opLeft { width:170px; display:flex; align-items:center; gap:12px; }
