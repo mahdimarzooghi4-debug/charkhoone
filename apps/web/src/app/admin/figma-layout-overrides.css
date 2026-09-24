@@ -1,0 +1,42 @@
+.admin-shell {
+  grid-template-columns: minmax(0, 1fr) 240px;
+}
+
+.admin-shell__main {
+  width: 100%;
+}
+
+.admin-dashboard {
+  width: min(1280px, 100%);
+  padding: 32px 40px;
+  gap: 16px;
+}
+
+.admin-dashboard__heading h1 {
+  font-size: 30px;
+}
+
+.admin-dashboard__metrics {
+  gap: 16px;
+}
+
+.admin-dashboard__metric {
+  min-height: 112px;
+  padding: 20px;
+  border-radius: 16px;
+}
+
+.admin-dashboard__table-wrap,
+.admin-users__table-wrap {
+  border-radius: 16px;
+}
+
+@media (max-width: 1180px) {
+  .admin-shell {
+    grid-template-columns: minmax(0, 1fr) 220px;
+  }
+
+  .admin-dashboard {
+    padding-inline: 24px;
+  }
+}
