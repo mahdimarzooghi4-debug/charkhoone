@@ -44,8 +44,18 @@ function CheckRow({ children }: { children: string }) {
   return <div className={styles.checkRow}><span className={styles.checkStatus}>تأیید شده</span><span className={styles.checkLabel}>{children}<span className={styles.checkIcon} /></span></div>;
 }
 
+function toLatinDigits(value: string) {
+  return value
+    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)));
+}
+
+function numericValue(value: string) {
+  return toLatinDigits(value).replace(/[^0-9.]/g, "");
+}
+
 function formatToman(raw: string) {
-  const digits = raw.replace(/\D/g, "");
+  const digits = numericValue(raw).replace(/\D/g, "");
   if (!digits) return "۰ تومان";
   return `${Number(digits).toLocaleString("fa-IR")} تومان`;
 }
@@ -81,8 +91,8 @@ export default function BankPlanNewPage() {
       type,
       max: formatToman(maxAmount),
       credit: credit.trim().toUpperCase() || "A",
-      duration: `${Number(duration || 0).toLocaleString("fa-IR")} ماه`,
-      rate: `${Number(rate || 0).toLocaleString("fa-IR")}٪`,
+      duration: `${Number(numericValue(duration) || 0).toLocaleString("fa-IR")} ماه`,
+      rate: `${Number(numericValue(rate) || 0).toLocaleString("fa-IR")}٪`,
       status: finalStatus,
       tone: finalStatus === "فعال" ? "active" : finalStatus === "پیش‌نویس" ? "draft" : "inactive",
       payer,
