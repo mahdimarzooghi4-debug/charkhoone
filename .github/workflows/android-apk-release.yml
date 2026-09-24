@@ -1,0 +1,100 @@
+name: android-apk-release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - ".github/workflows/android-apk-release.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-android-apk:
+    name: build-and-publish-android-apk
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mobile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22.13.1
+
+      - name: Set up Java
+        uses: actions/setup-java@cf277c60eb25467037889841efdb72551f06f6c3 # v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Install mobile dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Typecheck mobile app
+        run: npm run typecheck
+
+      - name: Generate Android native project
+        env:
+          CI: "1"
+        run: npx expo prebuild --platform android --clean --non-interactive
+
+      - name: Build installable Android APK
+        run: |
+          set -euo pipefail
+          cd android
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Prepare downloadable APK
+        run: |
+          set -euo pipefail
+          mkdir -p ../../artifacts/android
+          cp android/app/build/outputs/apk/debug/app-debug.apk ../../artifacts/android/charkhoone-android.apk
+          test -s ../../artifacts/android/charkhoone-android.apk
+          sha256sum ../../artifacts/android/charkhoone-android.apk | tee ../../artifacts/android/charkhoone-android.apk.sha256
+
+      - name: Upload APK as workflow artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: charkhoone-android-${{ github.sha }}
+          path: |
+            artifacts/android/charkhoone-android.apk
+            artifacts/android/charkhoone-android.apk.sha256
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Publish stable Android download release
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          APK_PATH: artifacts/android/charkhoone-android.apk
+          SHA_PATH: artifacts/android/charkhoone-android.apk.sha256
+          TAG: android-latest
+        run: |
+          set -euo pipefail
+
+          git tag -f "$TAG" "$GITHUB_SHA"
+          git push origin "refs/tags/$TAG" --force
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$APK_PATH" "$SHA_PATH" --clobber
+            gh release edit "$TAG" \
+              --title "چارخونه Android" \
+              --notes "نسخه قابل نصب مستقیم اندروید چارخونه. Build: $GITHUB_SHA" \
+              --prerelease
+          else
+            gh release create "$TAG" "$APK_PATH" "$SHA_PATH" \
+              --target "$GITHUB_SHA" \
+              --title "چارخونه Android" \
+              --notes "نسخه قابل نصب مستقیم اندروید چارخونه. Build: $GITHUB_SHA" \
+              --prerelease
+          fi

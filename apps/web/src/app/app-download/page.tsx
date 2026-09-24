@@ -24,9 +24,14 @@ export default function AppDownloadPage() {
               <strong data-node-id="1002:32">نسخه اندروید</strong>
               <span data-node-id="1002:33">آماده نصب روی گوشی‌های اندرویدی</span>
             </div>
-            <button className="ch-download-option__button" type="button" data-node-id="1002:29">
+            <a
+              className="ch-download-option__button"
+              href="https://github.com/mahdimarzooghi4-debug/charkhoone/releases/download/android-latest/charkhoone-android.apk"
+              data-node-id="1002:29"
+              aria-label="دانلود مستقیم اپلیکیشن اندروید چارخونه"
+            >
               دانلود نسخه اندروید
-            </button>
+            </a>
           </div>
 
           <div className="ch-download-option" data-node-id="1002:34">

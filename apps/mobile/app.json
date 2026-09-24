@@ -13,6 +13,9 @@
     ],
     "experiments": {
       "typedRoutes": false
+    },
+    "android": {
+      "package": "ir.charkhoone.app"
     }
   }
 }
