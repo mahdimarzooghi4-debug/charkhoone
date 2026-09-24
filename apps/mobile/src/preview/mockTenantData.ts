@@ -1,3 +1,4 @@
+import { calculateFinancing } from "../../../../packages/finance/calculator";
 export const mockFinancialModel = {
   cashDeposit: "۵۰۰٬۰۰۰٬۰۰۰ تومان",
   monthlyRent: "۲۰٬۰۰۰٬۰۰۰ تومان",
@@ -41,10 +42,7 @@ export function parseMockAmount(input: string): number {
 export function calculateMockFinancialModel(cashDeposit: number, monthlyRent: number) {
   const deposit = clampMockAmount(cashDeposit, MOCK_CASH_DEPOSIT_MAX);
   const rent = clampMockAmount(monthlyRent, MOCK_MONTHLY_RENT_MAX);
-  const fullDeposit = Math.round(deposit + rent / 0.03);
-  const financing = Math.round(fullDeposit * 0.3); // illustrative C3 30%
-  const contribution = fullDeposit - financing;
-  const monthlyInterest = Math.round(financing * 0.23 / 12); // interest only
+  const { fullDeposit, financing, contribution, monthlyInterest } = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent });
   const toman = (value: number) => `${formatMockNumber(value)} تومان`;
 
   return {
@@ -55,6 +53,6 @@ export function calculateMockFinancialModel(cashDeposit: number, monthlyRent: nu
     financing: toman(financing),
     contribution: toman(contribution),
     annualRate: "۲۳٪",
-    monthlyInterest: toman(monthlyInterest),
+    monthlyInterest: toman(monthlyInterest ?? 0),
   };
 }
