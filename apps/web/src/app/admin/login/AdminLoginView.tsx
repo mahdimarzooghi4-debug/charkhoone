@@ -57,7 +57,7 @@ export function AdminLoginView({ failed = false }: { failed?: boolean }) {
         <section className="admin-login__card" aria-label="ورود OIDC اپراتور">
           <header>
             <h2>ورود اپراتور</h2>
-            <p>احراز هویت باید توسط provider واقعی OIDC انجام شود؛ فرم password محلی وجود ندارد.</p>
+            <p>{previewMode ? "برای QA این محیط، ورود مستقیم به پیش‌نمایش ادمین فعال است." : "احراز هویت باید توسط provider واقعی OIDC انجام شود؛ فرم password محلی وجود ندارد."}</p>
           </header>
 
           <div className="admin-login__form admin-login__form--oidc">
@@ -67,7 +67,7 @@ export function AdminLoginView({ failed = false }: { failed?: boolean }) {
               </p>
             ) : (
               <p className="admin-login__hint">
-                پس از ورود موفق، reverse proxy یا OIDC gateway باید Authorization: Bearer را برای درخواست پنل حفظ کند.
+                {previewMode ? "این مسیر فقط داده نمایشی Stage را نمایش می‌دهد و هیچ دسترسی واقعی backend ایجاد نمی‌کند." : "پس از ورود موفق، reverse proxy یا OIDC gateway باید Authorization: Bearer را برای درخواست پنل حفظ کند."}
               </p>
             )}
 
