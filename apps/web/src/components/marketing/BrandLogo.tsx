@@ -1,12 +1,13 @@
 type BrandLogoProps = {
   className?: string;
-  source?: "landing" | "hub" | "footer" | "download" | "download-phone";
+  source?: "landing" | "hub" | "footer" | "login" | "download" | "download-phone";
 };
 
 const sources = {
   landing: { src: "/brand/landing-header.png", width: 88, height: 38 },
   hub: { src: "/brand/landing-hub.png", width: 152, height: 66 },
   footer: { src: "/brand/landing-footer.png", width: 175, height: 76 },
+  login: { src: "/brand/dashboard-logo.png", width: 220, height: 95 },
   download: { src: "/brand/landing-header.png", width: 88, height: 38 },
   "download-phone": { src: "/brand/landing-header.png", width: 88, height: 38 },
 } as const;
