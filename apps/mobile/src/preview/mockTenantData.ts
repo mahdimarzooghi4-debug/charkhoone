@@ -51,5 +51,8 @@ export function calculateMockFinancialModel(cashDeposit: number, monthlyRent: nu
     monthlyInterest: result.monthlyInterest === null ? "نرخ سود بانک را وارد کنید" : toman(result.monthlyInterest),
     rentDifference: rentDifference === null ? null : toman(rentDifference),
     belowRent: rentDifference !== null && rentDifference > 0,
+    ownerGrossReceipt: toman(result.ownerGrossReceipt),
+    ownerServiceFeeExample: toman(result.ownerServiceFeeExample),
+    ownerNetReceiptExample: toman(result.ownerNetReceiptExample),
   };
 }
