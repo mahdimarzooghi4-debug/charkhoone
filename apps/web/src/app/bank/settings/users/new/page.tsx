@@ -22,8 +22,14 @@ function Sidebar() {
   return <aside className={shell.sidebar}><div className={shell.brand}><img className={shell.logo} src={assets.logo} alt="چارخونه" width={127} height={55} /><div className={shell.bankIdentity}><strong>بانک نمونه</strong><span>تیم مدیریت تسهیلات</span></div></div><nav className={shell.nav}><Link href="/bank" className={shell.navItem}><span>خانه</span><img src={assets.home} alt="" /></Link><Link href="/bank/requests" className={shell.navItem}><span>درخواست‌ها</span><img src={assets.requests} alt="" /></Link><Link href="/bank/plans" className={shell.navItem}><span>طرح‌ها</span><img src={assets.plans} alt="" /></Link><Link href="/bank/receive-pay" className={shell.navItem}><span>دریافت و پرداخت</span><img src={assets.payments} alt="" /></Link><Link href="/bank/settings" className={`${shell.navItem} ${shell.navActive}`}><span>تنظیمات</span><img src={assets.settings} alt="" /></Link><Link href="/bank/login" className={`${shell.navItem} ${shell.logout}`}><span>خروج از حساب</span><img src={assets.logout} alt="" /></Link></nav></aside>;
 }
 
+function toLatinDigits(value: string) {
+  return value
+    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)));
+}
+
 function maskMobile(value: string) {
-  const digits = value.replace(/\D/g, "");
+  const digits = toLatinDigits(value).replace(/\D/g, "");
   if (digits.length < 8) return value;
   const fa = digits.replace(/\d/g, (d) => "۰۱۲۳۴۵۶۷۸۹"[Number(d)]);
   return `${fa.slice(0,4)}•••${fa.slice(-4)}`;
@@ -40,7 +46,7 @@ export default function BankAddUserPage() {
     ? ["تنظیمات","دریافت و پرداخت","بررسی درخواست‌ها","مدیریت طرح‌ها","مدیریت کاربران"]
     : ["دریافت و پرداخت","بررسی درخواست‌ها","مشاهده طرح‌ها"];
 
-  const canSubmit = name.trim().length >= 3 && mobile.replace(/\D/g,"").length >= 10;
+  const canSubmit = name.trim().length >= 3 && toLatinDigits(mobile).replace(/\D/g,"").length >= 10;
 
   function submit() {
     if (!canSubmit) {
