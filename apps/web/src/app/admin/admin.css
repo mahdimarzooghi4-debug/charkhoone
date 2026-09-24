@@ -605,6 +605,19 @@
 }
 
 /* BEGIN admin layout consistency */
+.admin-shell {
+  grid-template-columns: minmax(0, 1220px) 220px;
+  justify-content: center;
+}
+
+.admin-shell__main {
+  width: 100%;
+  min-width: 0;
+  max-width: 1220px;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
 .admin-dashboard,
 .admin-cases,
 .admin-partners,
@@ -612,9 +625,9 @@
 .admin-settings,
 .admin-partner-form,
 .admin-manual-payment {
-  width: min(1220px, 100%);
-  max-width: 1220px;
-  margin-inline: auto;
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
   box-sizing: border-box;
 }
 
