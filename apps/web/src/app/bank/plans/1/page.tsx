@@ -47,7 +47,7 @@ export default function BankExistingPlanPage() {
 
         <section className={styles.card}><h2>وضعیت طرح</h2><div className={styles.divider} /><div className={styles.statusChips}><span className={`${styles.chip} ${styles.chipActive}`}>فعال</span><span className={styles.chip}>پیش‌نویس</span><span className={styles.chip}>غیرفعال</span></div><span className={styles.helper}>این طرح فعال است. تغییرات فقط برای پرونده‌های جدید اعمال می‌شود و شرایط قراردادهای فعال بدون تغییر باقی می‌ماند.</span></section>
 
-        <div className={styles.actions}><Link href="/bank/plans" className={`${styles.action} ${styles.cancel}`}>بازگشت</Link><Link href="/bank/plans/1/deactivate" className={`${styles.action} ${local.danger}`}>غیرفعال کردن طرح</Link><Link href="/bank/plans/1" className={`${styles.action} ${styles.primary}`}>ذخیره تغییرات</Link></div>
+        <div className={styles.actions}><Link href="/bank/plans" className={`${styles.action} ${styles.cancel}`}>بازگشت</Link><Link href="/bank/plans/1/deactivate" className={`${styles.action} ${local.danger}`}>غیرفعال کردن طرح</Link><Link href="/bank/plans" className={`${styles.action} ${styles.primary}`}>ثبت و بازگشت به فهرست</Link></div>
       </section>
       <Sidebar />
     </main>
