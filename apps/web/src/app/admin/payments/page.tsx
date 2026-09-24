@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   getPilotPayments,
+  isAdminPreviewMode,
   PilotApiError,
   type PilotPaymentQueueItem,
 } from "@/lib/pilotOperations";
@@ -123,6 +124,7 @@ function FailureState({ error }: { error: unknown }) {
 
 export default async function AdminPaymentsPage({ searchParams }: { searchParams: SearchParams }) {
   const query = await searchParams;
+  const previewMode = isAdminPreviewMode();
   const page = parsePage(firstValue(query.page));
   const status = parseStatus(firstValue(query.status));
 
@@ -133,10 +135,10 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
     return (
       <section className="admin-payments" data-name="Admin / Pilot Payments">
         <header className="admin-payments__header">
-          <span className="admin-payments__live">Pilot API • PostgreSQL</span>
+          <span className="admin-payments__live">{previewMode ? "Stage Preview • QA" : "Pilot API • PostgreSQL"}</span>
           <div className="admin-payments__heading">
             <h1>پرداخت‌ها</h1>
-            <p>صف read-only پرداخت‌های persist‌شده؛ بدون داده نمونه و بدون تغییر مستقیم مالی.</p>
+            <p>{previewMode ? "پیش‌نمایش Stage با داده کنترل‌شده برای QA رابط کاربری." : "صف read-only پرداخت‌های persist‌شده؛ بدون داده نمونه و بدون تغییر مستقیم مالی."}</p>
           </div>
         </header>
         <FailureState error={error} />
@@ -155,10 +157,10 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
   return (
     <section className="admin-payments" data-name="Admin / Pilot Payments">
       <header className="admin-payments__header">
-        <span className="admin-payments__live">Pilot API • PostgreSQL</span>
+        <span className="admin-payments__live">{previewMode ? "Stage Preview • QA" : "Pilot API • PostgreSQL"}</span>
         <div className="admin-payments__heading">
           <h1>پرداخت‌ها</h1>
-          <p>Payment instruction و آخرین evidence بیرونی مستقیماً از PostgreSQL خوانده می‌شوند.</p>
+          <p>{previewMode ? "پرداخت‌های نمایشی کنترل‌شده برای تکمیل و بررسی تجربه ادمین." : "Payment instruction و آخرین evidence بیرونی مستقیماً از PostgreSQL خوانده می‌شوند."}</p>
         </div>
       </header>
 
@@ -202,7 +204,7 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
           })}
         </nav>
         <p className="admin-payments__source-note">
-          {status ? `فیلتر API: ${status}` : "بدون فیلتر وضعیت"}
+          {previewMode ? (status ? `فیلتر Preview: ${status}` : "داده نمایشی Stage") : (status ? `فیلتر API: ${status}` : "بدون فیلتر وضعیت")}
         </p>
       </section>
 
@@ -271,7 +273,7 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
         {items.length === 0 ? (
           <div className="admin-payments__empty-state admin-payments__empty-state--compact">
             <h2>پرداختی برای این فیلتر وجود ندارد</h2>
-            <p>صف مستقیماً از PostgreSQL خوانده شده و داده fallback تولید نشده است.</p>
+            <p>{previewMode ? "برای این فیلتر، پرداخت نمایشی وجود ندارد." : "صف مستقیماً از PostgreSQL خوانده شده و داده fallback تولید نشده است."}</p>
           </div>
         ) : null}
 
