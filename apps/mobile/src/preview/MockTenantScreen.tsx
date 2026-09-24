@@ -1,5 +1,5 @@
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { Link, useRouter } from "expo-router";
+import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useState, type ReactNode } from "react";
 import { colors, fonts, radii } from "@/theme";
 import { FigmaSvg } from "@/components/FigmaSvg";
@@ -182,10 +182,12 @@ function ScreenTitle({ title, back = "home" }: { title: string; back?: string })
 }
 
 export function MockTenantScreen({ screen }: Props) {
-  const { hasLoan, setHasLoan, financingPlan, membership, contractRole, setContractRole, setFinancingPlan, setMembership, financialModel: mockFinancialModel } = useMockPreview();
+  const { hasLoan, financingPlan, membership, contractRole, setContractRole, setFinancingPlan, setMembership, financialModel: mockFinancialModel } = useMockPreview();
   const [trackingCode, setTrackingCode] = useState("۱۲۳۴۵۶۷۸۹۰۱۲");
   const [trackingError, setTrackingError] = useState(false);
   const router = useRouter();
+  const { loan } = useLocalSearchParams<{ loan?: string }>();
+  const showLoanPreview = hasLoan || loan === "sample";
   const financeRows = [
   ["ودیعهٔ نقدی", mockFinancialModel.cashDeposit],
   ["اجارهٔ ماهانه", mockFinancialModel.monthlyRent],
@@ -500,8 +502,8 @@ export function MockTenantScreen({ screen }: Props) {
         <View style={styles.homeBell}><FigmaSvg uri={figmaAssets.bell} width={20} height={20} /></View>
         <View style={styles.homeGreeting}><Text style={styles.homeGreetingTitle}>سلام، کاربر پیش‌نمایش</Text><Text style={styles.homeGreetingCaption}>به چارخونه خوش آمدید • MOCK</Text></View>
       </View>
-      {hasLoan ? <>
-        <View style={styles.homeGrid}>
+      <View style={styles.homeGrid}>
+        {showLoanPreview ? <>
           <View style={styles.homeSummaryRow}>
             <PreviewSummaryCard label="میزان قابل تأمین" value={mockFinancialModel.financing} caption="سناریوی نمونه C3 • نه تأیید بانک" />
             <PreviewSummaryCard label="اعتبار شما" value="رتبه C3 (نمونه)" caption="استعلام اعتبار واقعی انجام نشده" />
@@ -510,15 +512,25 @@ export function MockTenantScreen({ screen }: Props) {
             <PreviewSummaryCard label="وضعیت قرارداد" value="قرارداد نمونه" caption="هیچ قرارداد خودنویسی ثبت نشده" />
             <PreviewSummaryCard label="پرداخت ماهانه" value={mockFinancialModel.monthlyInterest} caption="فقط سود نمونه • نه بدهی واقعی" />
           </View>
+        </> : <>
+          <View style={styles.homeSummaryRow}>
+            <PreviewSummaryCard label="میزان قابل تأمین" value="هنوز محاسبه نشده" caption="از ماشین حساب استفاده کنید" />
+            <PreviewSummaryCard label="اعتبار شما" value="در حال ارزیابی" caption="بر اساس سابقه شما" />
+          </View>
+          <View style={styles.homeSummaryRow}>
+            <PreviewSummaryCard label="وضعیت قرارداد" value="ثبت نشده" caption="هنوز قرارداد خودنویس ثبت نشده است" />
+            <PreviewSummaryCard label="پرداخت بعدی" value="در حال حاضر پرداختی ندارید" caption="پس از فعال شدن قرارداد نمایش داده می‌شود" />
+          </View>
+        </>}
+      </View>
+      <View style={styles.homeAction}>
+        <Text style={styles.homeActionTitle}>اقدام بعدی شما</Text>
+        <Text style={styles.homeActionCopy}>{showLoanPreview ? "شرایط نمونه تأمین مالی را بررسی کنید یا به سناریوی نمایشی قرارداد بروید. هیچ درخواستی برای بانک ارسال نمی‌شود." : "برای شروع، شرایط تأمین مالی را محاسبه کنید یا در صورت داشتن قرارداد خودنویس، کد رهگیری آن را ثبت کنید."}</Text>
+        <View style={styles.homeActionButtons}>
+          <View style={styles.homeHalfButton}><Button label="ثبت کد رهگیری" to="contract-tracking" tone="outline" /></View>
+          <View style={styles.homeHalfButton}><Link href="/preview/calculator" style={StyleSheet.flatten([styles.button, styles.primary, styles.linkButton])}>محاسبه شرایط</Link></View>
         </View>
-        <Pressable accessibilityRole="button" onPress={() => setHasLoan(false)}><Text style={styles.note}>بازگشت به وضعیت بدون وام (پیش‌نمایش)</Text></Pressable>
-      </> : <View style={styles.homeAction}>
-        <Text style={styles.homeActionTitle}>هنوز وامی ندارید</Text>
-        <Text style={styles.homeActionCopy}>برای شروع، شرایط تأمین مالی مسکن را محاسبه کنید و سپس درخواست خود را ثبت کنید.</Text>
-        <Link href="/preview/calculator" style={StyleSheet.flatten([styles.button, styles.primary, styles.linkButton])}>محاسبه شرایط</Link>
-        <Button label="ثبت کد رهگیری قرارداد" to="contract-tracking" tone="outline" />
-        <Pressable accessibilityRole="button" onPress={() => setHasLoan(true)}><Text style={styles.note}>نمایش سناریوی دارای وام (فقط پیش‌نمایش)</Text></Pressable>
-      </View>}
+      </View>
       <Text style={styles.homeSectionTitle}>دسترسی سریع</Text>
       <View style={styles.homeQuickRow}>
         <PreviewShortcut label="ماشین‌حساب" to="calculator" icon={figmaAssets.calculator} />
@@ -526,7 +538,7 @@ export function MockTenantScreen({ screen }: Props) {
         <PreviewShortcut label="قراردادها" to="contracts" icon={figmaAssets.file} />
         <PreviewShortcut label="املاک من" to="contracts" icon={figmaAssets.home} />
       </View>
-      <View style={styles.homeNotice}><FigmaSvg uri={figmaAssets.info} width={16} height={16} /><Text style={styles.homeNoticeText}>پیش‌نمایش مستقل MOCK: وضعیت وام واقعی به سرویس متصل نیست.</Text></View>
+      <View style={styles.homeNotice}><FigmaSvg uri={figmaAssets.info} width={16} height={16} /><Text style={styles.homeNoticeText}>درخواست شما پس از تکمیل مراحل برای بررسی به بانک ارسال می‌شود.</Text></View>
     </>;
   }
   return <SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>{body}<View style={styles.disclaimer}><Text style={styles.disclaimerText}>{mockDisclaimer}</Text></View></ScrollView>{actions}{!actions && screen !== "contract-lookup" && screen !== "owner-contract" && <BottomNav active={active} />}</SafeAreaView>;
