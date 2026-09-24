@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   getPilotCases,
+  isAdminPreviewMode,
   PilotApiError,
   type PilotCaseQueueItem,
 } from "@/lib/pilotOperations";
@@ -147,6 +148,7 @@ function FailureState({ error }: { error: unknown }) {
 
 export default async function AdminCasesPage({ searchParams }: { searchParams: SearchParams }) {
   const query = await searchParams;
+  const previewMode = isAdminPreviewMode();
   const page = parsePage(firstValue(query.page));
   const status = parseStatus(firstValue(query.status));
 
@@ -160,7 +162,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams: S
           <div />
           <div className="admin-cases__heading">
             <h1>پرونده‌های پایلوت</h1>
-            <p>صف عملیاتی واقعی از PostgreSQL؛ بدون داده نمونه و بدون امکان تغییر مستقیم state.</p>
+            <p>{previewMode ? "پیش‌نمایش Stage با داده کنترل‌شده برای QA رابط کاربری." : "صف عملیاتی واقعی از PostgreSQL؛ بدون داده نمونه و بدون امکان تغییر مستقیم state."}</p>
           </div>
         </header>
         <FailureState error={error} />
@@ -183,10 +185,10 @@ export default async function AdminCasesPage({ searchParams }: { searchParams: S
   return (
     <section className="admin-cases" data-name="Admin / Pilot Cases">
       <header className="admin-cases__header">
-        <span className="admin-cases__live">Pilot API • PostgreSQL</span>
+        <span className="admin-cases__live">{previewMode ? "Stage Preview • QA" : "Pilot API • PostgreSQL"}</span>
         <div className="admin-cases__heading">
           <h1>پرونده‌های پایلوت</h1>
-          <p>صف واقعی عملیات؛ شناسه‌ها و وضعیت‌ها مستقیماً از backend محافظت‌شده خوانده می‌شوند.</p>
+          <p>{previewMode ? "داده‌های نمایشی کنترل‌شده برای تکمیل و بررسی تجربه ادمین." : "صف واقعی عملیات؛ شناسه‌ها و وضعیت‌ها مستقیماً از backend محافظت‌شده خوانده می‌شوند."}</p>
         </div>
       </header>
 
@@ -230,7 +232,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams: S
           })}
         </nav>
         <p className="admin-cases__source-note">
-          {status ? `فیلتر API: ${status}` : "بدون فیلتر وضعیت"}
+          {previewMode ? (status ? `فیلتر Preview: ${status}` : "داده نمایشی Stage") : (status ? `فیلتر API: ${status}` : "بدون فیلتر وضعیت")}
         </p>
       </section>
 
@@ -298,7 +300,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams: S
         </div>
 
         {items.length === 0 ? (
-          <div className="admin-cases__empty">برای این page و فیلتر، پرونده‌ای در PostgreSQL ثبت نشده است.</div>
+          <div className="admin-cases__empty">{previewMode ? "برای این فیلتر، پرونده نمایشی وجود ندارد." : "برای این page و فیلتر، پرونده‌ای در PostgreSQL ثبت نشده است."}</div>
         ) : null}
 
         <footer className="admin-cases__footer">
