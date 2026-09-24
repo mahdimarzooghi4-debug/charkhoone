@@ -17,6 +17,7 @@ const assets = {
 } as const;
 
 const PLAN_STORAGE_KEY = "charkhoone.bank.preview.plans";
+const PLAN_OVERRIDE_KEY = "charkhoone.bank.preview.plan1";
 
 type PlanRow = {
   name: string;
@@ -56,6 +57,7 @@ function Sidebar() {
 
 export default function BankPlansPage() {
   const [savedRows, setSavedRows] = useState<PlanRow[]>([]);
+  const [baseOverride, setBaseOverride] = useState<PlanRow | null>(null);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<"همه" | PlanRow["status"]>("همه");
 
@@ -64,12 +66,17 @@ export default function BankPlansPage() {
       const raw = window.localStorage.getItem(PLAN_STORAGE_KEY);
       const parsed = raw ? JSON.parse(raw) : [];
       if (Array.isArray(parsed)) setSavedRows(parsed as PlanRow[]);
+      const overrideRaw = window.localStorage.getItem(PLAN_OVERRIDE_KEY);
+      if (overrideRaw) {
+        const override = JSON.parse(overrideRaw);
+        if (override && typeof override === "object") setBaseOverride(override as PlanRow);
+      }
     } catch {
       setSavedRows([]);
     }
   }, []);
 
-  const rows = useMemo(() => [...savedRows, ...baseRows], [savedRows]);
+  const rows = useMemo(() => [...savedRows, baseOverride ?? baseRows[0], ...baseRows.slice(1)], [savedRows, baseOverride]);
   const visibleRows = useMemo(() => rows.filter((row) => {
     const matchesQuery = !query.trim() || row.name.includes(query.trim()) || row.org.includes(query.trim());
     const matchesFilter = filter === "همه" || row.status === filter;
