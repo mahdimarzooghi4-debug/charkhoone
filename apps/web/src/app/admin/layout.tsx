@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AdminShell } from "@/components/admin/AdminShell";
 import "./admin.css";
 import "./users.css";
+import "./figma-layout-overrides.css";
 
 export const metadata: Metadata = {
   title: "پنل مدیریت | چارخونه",
