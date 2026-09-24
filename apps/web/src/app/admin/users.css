@@ -487,3 +487,10 @@
 .admin-users__person {
   padding-right: 18px;
 }
+
+
+/* Header cell is a row-flex item with RTL direction; flex-start keeps «کاربر» on the visual right edge above user names. */
+.admin-users__table-head > :last-child {
+  justify-content: flex-start;
+  text-align: right;
+}
