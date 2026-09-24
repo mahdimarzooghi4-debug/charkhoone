@@ -29,7 +29,7 @@ const transactions: Transaction[] = [
     id: "TRX-۸۴۲۷۱",
     flow: "وجه مستأجر",
     caseRef: "۱۴۰۵-۸۳۲۱",
-    route: "چارخونه → کارگزاری",
+    route: "چارخونه ← کارگزاری",
     amount: "۱۵۰٬۰۰۰٬۰۰۰ تومان",
     date: "۱۴۰۵/۰۶/۰۸",
     status: "ثبت‌شده",
@@ -40,7 +40,7 @@ const transactions: Transaction[] = [
     id: "TRX-۸۴۲۶۴",
     flow: "اصل تأمین مالی",
     caseRef: "۱۴۰۵-۸۳۲۱",
-    route: "بانک نمونه → کارگزاری",
+    route: "بانک نمونه ← کارگزاری",
     amount: "۵۰۰٬۰۰۰٬۰۰۰ تومان",
     date: "۱۴۰۵/۰۶/۰۸",
     status: "ثبت‌شده",
@@ -51,7 +51,7 @@ const transactions: Transaction[] = [
     id: "TRX-۸۴۲۳۸",
     flow: "سود تجمیعی",
     caseRef: "دوره شهریور",
-    route: "کارگزاری → چارخونه",
+    route: "کارگزاری ← چارخونه",
     amount: "۲٬۴۶۰٬۰۰۰٬۰۰۰ تومان",
     date: "۱۴۰۵/۰۶/۰۸",
     status: "آماده انتقال",
@@ -62,7 +62,7 @@ const transactions: Transaction[] = [
     id: "TRX-۸۴۱۹۶",
     flow: "وجه مستأجر",
     caseRef: "—",
-    route: "چارخونه → کارگزاری",
+    route: "چارخونه ← کارگزاری",
     amount: "۲۲۰٬۰۰۰٬۰۰۰ تومان",
     date: "۱۴۰۵/۰۶/۰۷",
     status: "نیازمند تطبیق",
@@ -73,7 +73,7 @@ const transactions: Transaction[] = [
     id: "TRX-۸۴۱۶۳",
     flow: "اصل منبع صندوق",
     caseRef: "۱۴۰۵-۸۱۹۴",
-    route: "صندوق نمونه → کارگزاری",
+    route: "صندوق نمونه ← کارگزاری",
     amount: "۷۵۰٬۰۰۰٬۰۰۰ تومان",
     date: "۱۴۰۵/۰۶/۰۷",
     status: "ثبت‌شده",
@@ -84,7 +84,7 @@ const transactions: Transaction[] = [
     id: "TRX-۸۴۰۸۸",
     flow: "سهم چارخونه از درآمد",
     caseRef: "تسویه همکاری",
-    route: "کارگزاری → چارخونه",
+    route: "کارگزاری ← چارخونه",
     amount: "۳۵٬۵۰۰٬۰۰۰ تومان",
     date: "۱۴۰۵/۰۶/۰۶",
     status: "ناموفق",
@@ -95,7 +95,7 @@ const transactions: Transaction[] = [
     id: "TRX-۸۴۰۵۱",
     flow: "وجه مستأجر",
     caseRef: "۱۴۰۵-۸۰۷۷",
-    route: "چارخونه → کارگزاری",
+    route: "چارخونه ← کارگزاری",
     amount: "۱۸۰٬۰۰۰٬۰۰۰ تومان",
     date: "۱۴۰۵/۰۶/۰۶",
     status: "ثبت‌شده",
@@ -106,7 +106,7 @@ const transactions: Transaction[] = [
     id: "TRX-۸۳۹۷۴",
     flow: "اصل تأمین مالی",
     caseRef: "۱۴۰۵-۷۹۶۳",
-    route: "بانک نمونه → کارگزاری",
+    route: "بانک نمونه ← کارگزاری",
     amount: "۶۲۰٬۰۰۰٬۰۰۰ تومان",
     date: "۱۴۰۵/۰۶/۰۵",
     status: "ثبت‌شده",
@@ -138,9 +138,9 @@ function normalizeSearch(value: string) {
 function matchesTransferFilter(transaction: Transaction, filter: TransferFilter) {
   switch (filter) {
     case "received":
-      return transaction.route.endsWith("→ کارگزاری");
+      return transaction.route.endsWith("← کارگزاری");
     case "transferred":
-      return transaction.route.startsWith("کارگزاری →");
+      return transaction.route.startsWith("کارگزاری ←");
     case "review":
       return transaction.status === "نیازمند تطبیق" || transaction.tone === "danger";
     default:
@@ -275,7 +275,7 @@ export default function BrokerageReceiveTransferPage() {
               <strong role="cell" dir="ltr">{transaction.id}</strong>
               <span role="cell">{transaction.flow}</span>
               <span role="cell">{transaction.caseRef}</span>
-              <span role="cell">{transaction.route}</span>
+              <span className="brokerage-transfer-table__route" role="cell">{transaction.route}</span>
               <span role="cell">{transaction.amount}</span>
               <span role="cell">{transaction.date}</span>
               <span role="cell">

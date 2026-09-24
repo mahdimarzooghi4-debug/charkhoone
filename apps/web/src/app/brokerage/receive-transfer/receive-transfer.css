@@ -766,3 +766,10 @@
     direction: rtl;
   }
 }
+
+
+/* Keep Persian source/destination order stable while the visual arrow points from right to left. */
+.brokerage-transfer-table__route {
+  direction: rtl !important;
+  unicode-bidi: isolate;
+}
