@@ -13,7 +13,9 @@ export function AdminShell({ children }: Readonly<{ children: React.ReactNode }>
 
   return (
     <div className="admin-shell">
-      <main className="admin-shell__main">{children}</main>
+      <main className="admin-shell__main">
+        <div className="admin-shell__frame">{children}</div>
+      </main>
       <AdminSidebar />
     </div>
   );
