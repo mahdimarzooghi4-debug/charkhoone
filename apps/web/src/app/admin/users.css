@@ -247,14 +247,16 @@
 }
 
 .admin-users__table {
+  width: 100%;
   min-width: 1156px;
   min-height: 618px;
 }
 
 .admin-users__row {
+  width: 100%;
   min-height: 54px;
   display: grid;
-  grid-template-columns: 90px 150px 180px 120px 170px 130px 316px;
+  grid-template-columns: 90px 140px 170px 130px 140px 130px minmax(356px, 1fr);
   align-items: stretch;
   direction: ltr;
   border-top: 1px solid var(--ch-color-border);
@@ -472,4 +474,16 @@
     max-width: 100%;
     overflow-x: auto;
   }
+}
+
+
+/* Keep the first RTL table column (کاربر) vertically aligned at the table's right edge. */
+.admin-users__row > :last-child {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.admin-users__table-head > :last-child,
+.admin-users__person {
+  padding-right: 18px;
 }
