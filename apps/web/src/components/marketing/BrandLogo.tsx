@@ -4,21 +4,23 @@ type BrandLogoProps = {
 };
 
 const sources = {
-  landing: "/brand/landing-header.svg",
-  hub: "/brand/landing-hub.svg",
-  footer: "/brand/landing-footer.svg",
-  download: "/brand/landing-header.svg",
-  "download-phone": "/brand/landing-header.svg",
+  landing: { src: "/brand/landing-header.png", width: 88, height: 38 },
+  hub: { src: "/brand/landing-hub.png", width: 152, height: 66 },
+  footer: { src: "/brand/landing-footer.png", width: 175, height: 76 },
+  download: { src: "/brand/landing-header.png", width: 88, height: 38 },
+  "download-phone": { src: "/brand/landing-header.png", width: 88, height: 38 },
 } as const;
 
 export function BrandLogo({ className = "", source = "landing" }: BrandLogoProps) {
+  const logo = sources[source];
+
   return (
     <img
       className={["ch-brand-logo", className].filter(Boolean).join(" ")}
-      src={sources[source]}
+      src={logo.src}
       alt="چارخونه"
-      width={175}
-      height={76}
+      width={logo.width}
+      height={logo.height}
       loading="eager"
     />
   );
