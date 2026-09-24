@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
+  isAdminPreviewMode,
   isPilotReconcileOperation,
   pilotApiRequest,
   PilotApiError,
@@ -29,11 +30,6 @@ export async function POST(
     return redirectResult(request, id, "error", "pilot_reconcile_origin_rejected");
   }
 
-  const authorization = request.headers.get("authorization");
-  if (!authorization) {
-    return redirectResult(request, id, "error", "pilot_operator_authentication_required");
-  }
-
   const form = await request.formData();
   const operationValue = form.get("operation");
   const reasonValue = form.get("reason");
@@ -46,6 +42,15 @@ export async function POST(
 
   if (!reason || reason.length > 1000) {
     return redirectResult(request, id, "error", "pilot_reconcile_reason_invalid");
+  }
+
+  if (isAdminPreviewMode()) {
+    return redirectResult(request, id, "ok");
+  }
+
+  const authorization = request.headers.get("authorization");
+  if (!authorization) {
+    return redirectResult(request, id, "error", "pilot_operator_authentication_required");
   }
 
   try {
