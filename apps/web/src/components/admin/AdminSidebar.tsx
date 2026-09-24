@@ -49,8 +49,8 @@ export function AdminSidebar() {
               className={["admin-sidebar__link", active ? "admin-sidebar__link--active" : ""].filter(Boolean).join(" ")}
               aria-current={active ? "page" : undefined}
             >
-              <span>{item.label}</span>
               <SidebarIcon name={item.icon} />
+              <span>{item.label}</span>
             </Link>
           );
         })}
