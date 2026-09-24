@@ -17,7 +17,6 @@ type OwnerMockScreen = "connected" | "settlement-preference" | "final-confirmati
 
 const property = "تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴، واحد ۳";
 const disclaimer = "پیش‌نمایش MOCK مالک؛ هیچ قرارداد، استعلام خودنویس، تأمین مالی بانک، صندوق، تسویه یا تراکنش واقعی ایجاد نمی‌شود.";
-const toman = (value: number) => `${formatMockNumber(value)} تومان`;
 
 // Local MOCK presentation only: route IDs, API payloads and numeric calculations
 // stay untouched. Visual text uses Persian numerals, including mixed C3 labels.
@@ -134,10 +133,8 @@ function SettlementOption({ method, selected, title, children, onSelect }: {
 }
 
 export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
-  const { financialModel, monthlyRent, ownerSettlement, setOwnerSettlement } = useMockPreview();
+  const { financialModel, ownerSettlement, setOwnerSettlement } = useMockPreview();
   const [consent, setConsent] = useState(false);
-  const fee = Math.round(monthlyRent * 0.005); // only Figma's illustrative service fee, NOT bank interest.
-  const net = monthlyRent - fee;
   const ownerMethod = ownerSettlement === "monthly" ? "دریافت ماهانه" : "تجمیع دریافتی در صندوق";
   let body: ReactNode;
   let activeNav: OwnerNavTab | undefined;
@@ -175,23 +172,23 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
           <OwnerRow label="مدت قرارداد" value="۱۵ مهر ۱۴۰۵ تا ۱۵ مهر ۱۴۰۶" />
         </OwnerCard>
         <SettlementOption method="monthly" title="دریافت ماهانه" selected={ownerSettlement === "monthly"} onSelect={setOwnerSettlement}>
-          <OwnerText style={styles.body}>خالص دریافتی ماهانه بر پایه اجاره قرارداد و کارمزد نمونه محاسبه می‌شود.</OwnerText>
+          <OwnerText style={styles.body}>خالص دریافتی ماهانه بر پایه ۳٪ رهن کامل معادل قرارداد و کارمزد نمونه محاسبه می‌شود.</OwnerText>
           <View style={styles.soft}>
-            <OwnerRow label="مبلغ ناخالص دریافتی" value={financialModel.monthlyRent} />
-            <OwnerRow label="کارمزد خدمات نمونه (۰٫۵٪)" value={`−${toman(fee)}`} />
-            <OwnerRow label="خالص قابل تسویه نمونه" value={toman(net)} />
+            <OwnerRow label="مبلغ ناخالص دریافتی (۳٪ رهن کامل)" value={financialModel.ownerGrossReceipt} />
+            <OwnerRow label="کارمزد خدمات نمونه (۰٫۵٪)" value={`−${financialModel.ownerServiceFeeExample}`} />
+            <OwnerRow label="خالص قابل تسویه نمونه" value={financialModel.ownerNetReceiptExample} />
           </View>
           <OwnerText style={styles.hint}>دسترسی منظم به دریافتی ماهانه • تسویه طبق شرایط قرارداد</OwnerText>
         </SettlementOption>
         <SettlementOption method="fund" title="تجمیع دریافتی در صندوق" selected={ownerSettlement === "fund"} onSelect={setOwnerSettlement}>
           <OwnerText style={styles.body}>انتخاب نمایشی؛ هیچ پولی وارد صندوق نمی‌شود و بازده یا مبلغ پایان دوره محاسبه نمی‌گردد.</OwnerText>
           <View style={styles.soft}>
-            <OwnerRow label="دریافتی ماهانه قرارداد" value={financialModel.monthlyRent} />
+            <OwnerRow label="دریافتی ناخالص ماهانه (۳٪ رهن کامل)" value={financialModel.ownerGrossReceipt} />
             <OwnerRow label="بازده و ارزش پایان دوره" value="منوط به شرایط واقعی صندوق" />
           </View>
           <OwnerText style={styles.hint}>شرایط سرمایه‌گذاری واقعی هنوز تعریف و تأیید نشده‌اند.</OwnerText>
         </SettlementOption>
-        <OwnerNotice>کارمزد ۰٫۵٪ صرفاً مثال فیگماست؛ سود وام ماهانه مستأجر، درآمد مالک یا بازده صندوق نیست.</OwnerNotice>
+        <OwnerNotice>کارمزد ۰٫۵٪ صرفاً مثال فیگماست؛ دریافتی مالک از ۳٪ رهن کامل معادل محاسبه می‌شود و سود وام ماهانه مستأجر یا بازده صندوق نیست.</OwnerNotice>
         <OwnerAction label="انتخاب و ادامه" to="owner-final-confirmation" />
       </>;
       break;
@@ -210,7 +207,7 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
         <OwnerCard title="روش دریافت انتخاب‌شده">
           <OwnerRow label="روش انتخابی" value={ownerMethod} />
           {ownerSettlement === "monthly"
-            ? <><OwnerRow label="ناخالص ماهانه" value={financialModel.monthlyRent} /><OwnerRow label="کارمزد نمونه" value={`−${toman(fee)}`} /><OwnerRow label="خالص نمونه" value={toman(net)} /></>
+            ? <><OwnerRow label="ناخالص ماهانه" value={financialModel.ownerGrossReceipt} /><OwnerRow label="کارمزد نمونه" value={`−${financialModel.ownerServiceFeeExample}`} /><OwnerRow label="خالص نمونه" value={financialModel.ownerNetReceiptExample} /></>
             : <OwnerText style={styles.hint}>سود، ارزش پایان دوره و زمان برداشت صندوق هنوز مشخص نیست.</OwnerText>}
           <OwnerAction label="تغییر روش دریافت" to="owner-settlement-preference" outline />
         </OwnerCard>
@@ -240,7 +237,7 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
         <OwnerCard title="دریافتی بعدی">
           <View style={styles.badgeRight}><OwnerBadge tone="warning">در انتظار تسویه نمونه</OwnerBadge></View>
           {ownerSettlement === "monthly"
-            ? <><OwnerText style={styles.heroAmount}>{toman(net)}</OwnerText><OwnerRow label="مبلغ ناخالص" value={financialModel.monthlyRent} /><OwnerRow label="کارمزد خدمات نمونه" value={`−${toman(fee)}`} /><OwnerRow label="خالص قابل تسویه" value={toman(net)} /></>
+            ? <><OwnerText style={styles.heroAmount}>{financialModel.ownerNetReceiptExample}</OwnerText><OwnerRow label="مبلغ ناخالص" value={financialModel.ownerGrossReceipt} /><OwnerRow label="کارمزد خدمات نمونه" value={`−${financialModel.ownerServiceFeeExample}`} /><OwnerRow label="خالص قابل تسویه" value={financialModel.ownerNetReceiptExample} /></>
             : <OwnerText style={styles.body}>دریافتی‌ها طبق انتخاب نمایشی شما تجمیع می‌شوند؛ بازده صندوق و مبلغ قابل برداشت مشخص نیست.</OwnerText>}
           <OwnerRow label="زمان نمونه" value="۱۵ آبان ۱۴۰۵" />
           <OwnerAction label="مشاهده دریافت و پرداخت" to="owner-receive-pay" />
@@ -259,7 +256,7 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
       body = <>
         <OwnerHeader title="دریافت و پرداخت" back="owner-active" />
         <View style={styles.summaryRow}>
-          <View style={styles.summaryTile}><OwnerText style={styles.summaryCaption}>دریافتی بعدی نمونه</OwnerText><OwnerText style={styles.summaryAmount}>{ownerSettlement === "monthly" ? toman(net) : "تجمیعی"}</OwnerText></View>
+          <View style={styles.summaryTile}><OwnerText style={styles.summaryCaption}>دریافتی بعدی نمونه</OwnerText><OwnerText style={styles.summaryAmount}>{ownerSettlement === "monthly" ? financialModel.ownerNetReceiptExample : "تجمیعی"}</OwnerText></View>
           <View style={styles.summaryTile}><OwnerText style={styles.summaryCaption}>تسویه واقعی این ماه</OwnerText><OwnerText style={styles.summaryAmount}>۰ مورد ثبت‌شده</OwnerText></View>
         </View>
         <OwnerCard title="دریافتی بعدی شما">
@@ -268,7 +265,7 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
           <OwnerRow label="ملک" value="سعادت‌آباد" />
           <OwnerRow label="مستأجر" value="علی رضایی" />
           {ownerSettlement === "monthly"
-            ? <><OwnerRow label="ناخالص قرارداد" value={financialModel.monthlyRent} /><OwnerRow label="کارمزد ۰٫۵٪ نمونه" value={`−${toman(fee)}`} /><OwnerRow label="خالص قابل تسویه نمونه" value={toman(net)} /></>
+            ? <><OwnerRow label="ناخالص ماهانه (۳٪ رهن کامل)" value={financialModel.ownerGrossReceipt} /><OwnerRow label="کارمزد ۰٫۵٪ نمونه" value={`−${financialModel.ownerServiceFeeExample}`} /><OwnerRow label="خالص قابل تسویه نمونه" value={financialModel.ownerNetReceiptExample} /></>
             : <OwnerText style={styles.body}>روش انتخابی: تجمیع نمونه. بازده صندوق و زمان برداشت هنوز تعیین نشده‌اند.</OwnerText>}
         </OwnerCard>
         <OwnerText style={styles.sectionHeading}>دریافتی‌های پیش رو</OwnerText>

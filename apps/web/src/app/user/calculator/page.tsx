@@ -165,13 +165,13 @@ export default function CalculatorPage() {
               </p>
             </section>
             <section className={styles.comparison} aria-label="دریافتی ماهانه مالک، نمونه">
-              <h3>دریافتی ماهانه مالک از اجاره قرارداد</h3>
+              <h3>دریافتی ماهانه مالک بر پایه رهن کامل معادل</h3>
               <div className={styles.comparisonRows}>
-                <div className={styles.generalRow}><strong>{money(ownerGrossReceipt)}</strong><span>اجاره ناخالص ماهانه:</span></div>
+                <div className={styles.generalRow}><strong>{money(ownerGrossReceipt)}</strong><span>ناخالص ماهانه (۳٪ رهن کامل معادل):</span></div>
                 <div className={styles.generalRow}><strong>{money(ownerServiceFeeExample)}</strong><span>کارمزد خدمات نمونه (۰٫۵٪):</span></div>
                 <div className={styles.userRow}><strong>{money(ownerNetReceiptExample)}</strong><span>خالص دریافتی ماهانه نمونه:</span></div>
               </div>
-              <p className={styles.comparisonNotice}>این کارمزد صرفاً مثال پیش‌نمایش است و باید در قرارداد تأیید شود. دریافتی مالک از اجاره مستقل از پرداخت سود بانکی مستأجر است؛ برای روش تجمیع در صندوق، بازده و مبلغ تسویه محاسبه نشده است.</p>
+              <p className={styles.comparisonNotice}>مبنای دریافتی مالک رهن کامل معادل قرارداد است. کارمزد صرفاً مثال پیش‌نمایش است و باید در قرارداد تأیید شود. این دریافتی مستقل از سود بانکی مستأجر است؛ بازده صندوق محاسبه نشده است.</p>
             </section>
             <details className={styles.calculationDetails} data-node-id="150:613">
               <summary>جزئیات محاسبه وام و تبدیل اجاره به رهن</summary>
