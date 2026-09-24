@@ -29,8 +29,11 @@ full = deposit + (rent / Decimal("0.03")).quantize(0, rounding=ROUND_HALF_UP)
 loan = (full * Decimal("0.30")).quantize(0, rounding=ROUND_HALF_UP)
 tenant = full - loan
 monthly_interest = (loan * Decimal("0.23") / 12).quantize(0, rounding=ROUND_HALF_UP)
-demand((full, loan, tenant, monthly_interest) == (
-    1_166_666_667, 350_000_000, 816_666_667, 6_708_333
+owner_gross = ((deposit + rent / Decimal("0.03")) * Decimal("0.03")).quantize(0, rounding=ROUND_HALF_UP)
+owner_fee = (owner_gross * Decimal("0.005")).quantize(0, rounding=ROUND_HALF_UP)
+owner_net = owner_gross - owner_fee
+demand((full, loan, tenant, monthly_interest, owner_gross, owner_fee, owner_net) == (
+    1_166_666_667, 350_000_000, 816_666_667, 6_708_333, 35_000_000, 175_000, 34_825_000
 ), "C3 fixture arithmetic mismatch")
 
 sample = {
@@ -38,6 +41,9 @@ sample = {
     "loan": "۳۵۰٬۰۰۰٬۰۰۰",
     "tenant": "۸۱۶٬۶۶۶٬۶۶۷",
     "monthly": "۶٬۷۰۸٬۳۳۳",
+    "owner_gross": "۳۵٬۰۰۰٬۰۰۰",
+    "owner_fee": "۱۷۵٬۰۰۰",
+    "owner_net": "۳۴٬۸۲۵٬۰۰۰",
 }
 pages = {
     "contracts/register/plans/page.tsx": ("full", "loan", "tenant", "monthly"),
@@ -97,10 +103,17 @@ demand("financingPlan}&membership=${selectedPlan}" in membership and
 owner_active = (PAGES / "contracts/123456789012/owner/page.tsx").read_text(encoding="utf-8")
 owner_final = (PAGES / "contracts/123456789012/owner/final-confirmation/page.tsx").read_text(encoding="utf-8")
 payments = (PAGES / "receive-pay/page.tsx").read_text(encoding="utf-8")
+owner_choice = (PAGES / "contracts/123456789012/owner/settlement-preference/page.tsx").read_text(encoding="utf-8")
+home = (PAGES / "home/page.tsx").read_text(encoding="utf-8")
 demand(sample["loan"] in owner_active and "۴۵۰٬۰۰۰٬۰۰۰" not in owner_active and
+       sample["owner_net"] in owner_active and
+       all(sample[key] in owner_choice for key in ("owner_gross", "owner_fee", "owner_net")) and
+       all(sample[key] in owner_final for key in ("owner_gross", "owner_fee", "owner_net")) and
+       sample["owner_net"] in payments and sample["owner_net"] in home and
        "با پرداخت سود وام مستأجر یکی نیست" in owner_final and
-       "برآورد مستقل مالک سعادت‌آباد" in payments,
-       "owner payout preview must not be represented as tenant bank interest")
+       "رهن کامل معادل" in owner_active and "رهن کامل معادل" in owner_choice and
+       "رهن کامل معادل" in payments,
+       "owner payout preview must use the full-deposit equivalent and remain separate from tenant bank interest")
 
 # Legacy membership result routes remain directly navigable. Make their status
 # unambiguously illustrative even though the primary flow uses membership/result.
