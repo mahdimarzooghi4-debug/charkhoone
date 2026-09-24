@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
+import { calculateFinancing } from "../../../../../../packages/finance/calculator";
 
 // Preview only: use the backend's contractual 3% rent-to-full-deposit
 // equivalence BEFORE applying the external credit sub-grade percentage.
@@ -11,7 +12,6 @@ import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
 // C3 is a conspicuously labeled MOCK response only (C1/C2 = 40%; C3 = 30%).
 const EXAMPLE_DEPOSIT = 500_000_000;
 const EXAMPLE_RENT = 20_000_000;
-const MONTHLY_RENT_TO_FULL_DEPOSIT_RATIO = 0.03;
 const MIN_FINANCING_PERCENT = 30;
 const MAX_FINANCING_PERCENT = 55;
 const MAX_DEPOSIT = 1_000_000_000;
@@ -108,15 +108,9 @@ export default function CalculatorPage() {
   // Convert monthly rent to the equivalent full deposit before applying grade.
   // E.g. 500m cash + 20m rent / 0.03 = 1,166,666,667 toman equivalent.
   // For accounting the backend uses whole rials and floors only at boundaries.
-  const rentEquivalentDeposit = Math.round(rent / MONTHLY_RENT_TO_FULL_DEPOSIT_RATIO);
-  const fullDepositEquivalent = deposit + rentEquivalentDeposit;
-  const minFinancing = Math.round(fullDepositEquivalent * MIN_FINANCING_PERCENT / 100);
-  const maxFinancing = Math.round(fullDepositEquivalent * MAX_FINANCING_PERCENT / 100);
-  const selectedFinancing = Math.round(fullDepositEquivalent * financingPercent / 100);
-  const contribution = fullDepositEquivalent - selectedFinancing;
-  // Annual nominal simple interest divided into 12 monthly payments. The
-  // bank must confirm its quote and calculation convention; do not add principal.
-  const monthlyInterest = rateValid && bankAnnualRate !== null ? Math.round(selectedFinancing * bankAnnualRate / 100 / 12) : null;
+  const { rentEquivalentDeposit, fullDeposit: fullDepositEquivalent, financing: selectedFinancing, contribution, monthlyInterest } = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent, bankAnnualRate: rateValid ? bankAnnualRate : null });
+  const minFinancing = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: MIN_FINANCING_PERCENT }).financing;
+  const maxFinancing = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: MAX_FINANCING_PERCENT }).financing;
   const rentDifference = monthlyInterest === null ? null : rent - monthlyInterest;
   const belowRent = rentDifference !== null && rentDifference > 0;
   const financingMillion = Math.round(selectedFinancing / 1_000_000).toLocaleString("fa-IR");

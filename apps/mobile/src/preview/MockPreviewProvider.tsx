@@ -5,6 +5,8 @@ export type MockContractRole = "Tenant" | "Owner";
 export type MockOwnerSettlement = "monthly" | "fund";
 
 type MockPreviewState = {
+  hasLoan: boolean;
+  setHasLoan: (value: boolean) => void;
   financingPlan: MockFinancingPlan;
   membership: MockMembership;
   contractRole: MockContractRole;
@@ -23,6 +25,7 @@ type MockPreviewState = {
 const PreviewContext = createContext<MockPreviewState | null>(null);
 
 export function MockPreviewProvider({ children }: PropsWithChildren) {
+  const [hasLoan, setHasLoan] = useState(false);
   const [financingPlan, setFinancingPlan] = useState<MockFinancingPlan>("عمومی");
   const [membership, setMembership] = useState<MockMembership>("۱ بار استفاده");
   const [contractRole, setContractRole] = useState<MockContractRole>("Tenant");
@@ -30,7 +33,7 @@ export function MockPreviewProvider({ children }: PropsWithChildren) {
   const [cashDeposit, setCashDeposit] = useState(500_000_000);
   const [monthlyRent, setMonthlyRent] = useState(20_000_000);
   const financialModel = useMemo(() => calculateMockFinancialModel(cashDeposit, monthlyRent), [cashDeposit, monthlyRent]);
-  const value = useMemo(() => ({ financingPlan, membership, contractRole, setContractRole, ownerSettlement, setOwnerSettlement, setFinancingPlan, setMembership, cashDeposit, monthlyRent, setCashDeposit, setMonthlyRent, financialModel }), [financingPlan, membership, contractRole, ownerSettlement, cashDeposit, monthlyRent, financialModel]);
+  const value = useMemo(() => ({ hasLoan, setHasLoan, financingPlan, membership, contractRole, setContractRole, ownerSettlement, setOwnerSettlement, setFinancingPlan, setMembership, cashDeposit, monthlyRent, setCashDeposit, setMonthlyRent, financialModel }), [hasLoan, financingPlan, membership, contractRole, ownerSettlement, cashDeposit, monthlyRent, financialModel]);
   return <PreviewContext.Provider value={value}>{children}</PreviewContext.Provider>;
 }
 
