@@ -34,6 +34,7 @@ export default function BankAddUserPage() {
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
   const [role, setRole] = useState<"کارشناس" | "مدیر تیم">("مدیر تیم");
+  const [error, setError] = useState("");
 
   const permissions = role === "مدیر تیم"
     ? ["تنظیمات","دریافت و پرداخت","بررسی درخواست‌ها","مدیریت طرح‌ها","مدیریت کاربران"]
@@ -42,7 +43,11 @@ export default function BankAddUserPage() {
   const canSubmit = name.trim().length >= 3 && mobile.replace(/\D/g,"").length >= 10;
 
   function submit() {
-    if (!canSubmit) return;
+    if (!canSubmit) {
+      setError("نام و شماره موبایل معتبر را وارد کنید.");
+      return;
+    }
+    setError("");
     const user = {
       name: name.trim(),
       role,
@@ -84,7 +89,8 @@ export default function BankAddUserPage() {
             <span className={styles.helper}>سطح دسترسی براساس نقش انتخاب‌شده تعیین می‌شود.</span>
           </div>
           <div className={styles.preview}><h3>دسترسی‌های این نقش</h3><div className={styles.chips}>{permissions.map((permission) => <span className={styles.chip} key={permission}>{permission}</span>)}</div></div>
-          <div className={styles.actions}><Link href="/bank/settings" className={styles.cancel}>انصراف</Link><button type="button" className={styles.submit} onClick={submit} disabled={!canSubmit}>افزودن کاربر</button></div>
+          {error && <div className={styles.formError} role="alert">{error}</div>}
+          <div className={styles.actions}><Link href="/bank/settings" className={styles.cancel}>انصراف</Link><button type="button" className={styles.submit} onClick={submit}>افزودن کاربر</button></div>
         </section>
       </section>
       <Sidebar />
