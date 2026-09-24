@@ -603,3 +603,28 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* BEGIN admin layout consistency */
+.admin-dashboard,
+.admin-cases,
+.admin-partners,
+.admin-payments,
+.admin-settings,
+.admin-partner-form,
+.admin-manual-payment {
+  width: 100%;
+  max-width: none;
+  margin-inline: 0;
+  box-sizing: border-box;
+}
+
+.admin-dashboard *,
+.admin-cases *,
+.admin-partners *,
+.admin-payments *,
+.admin-settings *,
+.admin-partner-form *,
+.admin-manual-payment * {
+  box-sizing: border-box;
+}
+/* END admin layout consistency */
