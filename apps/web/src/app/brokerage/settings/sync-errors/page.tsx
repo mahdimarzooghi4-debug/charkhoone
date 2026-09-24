@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BrokerageSettingsPage from "../page";
+import { ResyncButton } from "./ResyncButton";
 
 const syncErrors = [
   {
@@ -94,9 +95,7 @@ export default function BrokerageSettingsSyncErrorsPage() {
           <Link className="brokerage-sync-errors__button brokerage-sync-errors__button--secondary" href="/brokerage/settings">
             بستن
           </Link>
-          <button className="brokerage-sync-errors__button brokerage-sync-errors__button--primary" type="button">
-            همگام‌سازی مجدد
-          </button>
+          <ResyncButton variant="list" />
         </div>
       </section>
     </div>
