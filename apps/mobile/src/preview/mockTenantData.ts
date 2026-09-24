@@ -1,4 +1,4 @@
-import { calculateFinancing } from "../../../../packages/finance/calculator";
+import { calculateFinancing } from "../../../web/src/lib/sharedFinanceCalculator";
 export const mockFinancialModel = {
   cashDeposit: "۵۰۰٬۰۰۰٬۰۰۰ تومان",
   monthlyRent: "۲۰٬۰۰۰٬۰۰۰ تومان",

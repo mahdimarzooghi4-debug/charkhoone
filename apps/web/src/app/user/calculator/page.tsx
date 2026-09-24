@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
-import { calculateFinancing } from "../../../../../../packages/finance/calculator";
+import { calculateFinancing } from "@/lib/sharedFinanceCalculator";
 
 // Preview only: use the backend's contractual 3% rent-to-full-deposit
 // equivalence BEFORE applying the external credit sub-grade percentage.
