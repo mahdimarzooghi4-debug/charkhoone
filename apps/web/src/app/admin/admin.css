@@ -290,7 +290,7 @@
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
-  direction: ltr;
+  direction: rtl;
 }
 
 .admin-dashboard__metric {
@@ -335,8 +335,9 @@
 .admin-dashboard__two-column {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
   gap: 16px;
-  direction: ltr;
+  direction: rtl;
 }
 
 .admin-dashboard__panel {
@@ -455,7 +456,7 @@
 
 .admin-dashboard__mini-grid {
   display: grid;
-  direction: ltr;
+  direction: rtl;
 }
 
 .admin-dashboard__mini-grid--four {
