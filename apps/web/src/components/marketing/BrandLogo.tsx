@@ -19,6 +19,7 @@ export function BrandLogo({ className = "", source = "landing" }: BrandLogoProps
       alt="چارخونه"
       width={175}
       height={76}
+      loading="eager"
     />
   );
 }
