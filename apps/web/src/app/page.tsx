@@ -103,6 +103,9 @@ export default function HomePage() {
         </nav>
 
         <div className="ch-site-header__actions" data-node-id="631:476">
+          <a className="ch-site-header__partner-link" href="#partners" data-node-id="631:480">
+            همکاران
+          </a>
           <ButtonLink variant="surface" href="/login" data-node-id="631:477">
             ورود / ثبت‌نام
           </ButtonLink>
