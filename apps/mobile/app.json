@@ -16,6 +16,9 @@
     },
     "android": {
       "package": "ir.charkhoone.app"
+    },
+    "web": {
+      "output": "static"
     }
   }
 }
