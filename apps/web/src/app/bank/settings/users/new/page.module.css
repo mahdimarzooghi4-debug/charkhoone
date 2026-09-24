@@ -9,12 +9,14 @@
 .divider { width:100%; height:1px; background:var(--ch-color-border); }
 .formGrid { display:grid; direction:ltr; grid-template-columns:1fr 1fr; gap:16px; }
 .field { display:flex; flex-direction:column; direction:rtl; align-items:flex-start; text-align:right; gap:6px; }
-.field label { color:#6b7280; font-size:13px; font-weight:500; }
-.input { width:100%; min-height:48px; display:flex; direction:rtl; align-items:center; justify-content:flex-start; text-align:right; padding:10px 14px; color:#9ca3af; font-size:13px; background:#f7f8f8; border:1px solid var(--ch-color-border); border-radius:8px; }
+.field span { color:#6b7280; font-size:13px; font-weight:500; }
+.input { width:100%; min-height:48px; direction:rtl; text-align:right; padding:10px 14px; color:var(--ch-color-text); font:inherit; font-size:13px; background:#fff; border:1px solid var(--ch-color-border); border-radius:8px; outline:0; }
+.input::placeholder { color:#9ca3af; }
+.input:focus { border-color:var(--ch-color-primary); box-shadow:0 0 0 3px rgb(13 59 54 / 10%); }
 .roleGroup { display:flex; flex-direction:column; direction:rtl; align-items:flex-start; gap:12px; text-align:right; }
 .roleLabel { color:#6b7280; font-size:13px; font-weight:500; }
 .roles { width:100%; display:grid; direction:ltr; grid-template-columns:1fr 1fr; gap:16px; }
-.role { min-height:80px; display:flex; align-items:center; justify-content:flex-end; gap:12px; padding:14px; background:#f7f8f8; border:1px solid var(--ch-color-border); border-radius:8px; }
+.role { min-height:80px; display:flex; align-items:center; justify-content:flex-end; gap:12px; padding:14px; font-family:inherit; text-align:inherit; background:#f7f8f8; border:1px solid var(--ch-color-border); border-radius:8px; cursor:pointer; }
 .roleSelected { background:#fff; border:1.5px solid var(--ch-color-primary); }
 .roleCopy { min-width:0; flex:1; display:flex; flex-direction:column; direction:rtl; align-items:flex-start; gap:2px; text-align:right; }
 .role h3 { color:var(--ch-color-text); font-size:14px; font-weight:600; }
@@ -28,8 +30,10 @@
 .chips { display:flex; direction:rtl; justify-content:flex-start; gap:8px; flex-wrap:wrap; }
 .chip { padding:6px 12px; color:var(--ch-color-primary); font-size:12px; font-weight:600; background:rgb(13 59 54 / 7%); border-radius:6px; }
 .actions { width:100%; display:flex; align-items:center; gap:12px; direction:ltr; }
-.cancel,.submit { min-height:42px; display:inline-flex; align-items:center; justify-content:center; padding:0 24px; font-size:13px; font-weight:600; text-decoration:none; border-radius:8px; }
+.cancel,.submit { min-height:42px; display:inline-flex; align-items:center; justify-content:center; padding:0 24px; font-family:inherit; font-size:13px; font-weight:600; text-decoration:none; border-radius:8px; }
 .cancel { color:#6b7280; border:1px solid var(--ch-color-border); }
-.submit { color:#fff; background:var(--ch-color-primary); }
+.submit { color:#fff; background:var(--ch-color-primary); border:0; cursor:pointer; }
 @media (max-width:820px) { .formGrid,.roles { grid-template-columns:1fr; } }
 @media (max-width:560px) { .main { padding:22px 16px; } .actions { flex-direction:column; align-items:stretch; } .cancel,.submit { width:100%; } }
+
+.formError { width:100%; padding:10px 12px; color:#b42318; font-size:12px; text-align:right; background:#fff1f0; border:1px solid #ffd5d2; border-radius:8px; }

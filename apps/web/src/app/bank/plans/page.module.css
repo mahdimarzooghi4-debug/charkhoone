@@ -86,3 +86,49 @@
 /* Center each plan status badge directly beneath the status header. */
 .tableHeader > span:nth-child(2) { text-align: center; }
 .tableRow > .status { justify-self: center; width: 86px; max-width: 100%; text-align: center; }
+
+
+/* Interactive plans controls */
+.searchInput {
+  min-width: 0;
+  flex: 1 1 auto;
+  min-height: 22px;
+  padding: 0;
+  color: var(--ch-color-text);
+  font: inherit;
+  text-align: right;
+  background: transparent;
+  border: 0;
+  outline: 0;
+}
+.searchInput::placeholder { color: #9ca3af; }
+.filter { cursor: pointer; font-family: inherit; }
+.filterActive { color: #fff; background: var(--ch-color-primary); border-color: var(--ch-color-primary); }
+.filterActive .filterBadge { color: #fff; background: rgb(255 255 255 / 13%); }
+.emptyState { padding: 28px 24px; color: #6b7280; text-align: center; }
+
+.inputLike {
+  font-family: inherit;
+  outline: none;
+}
+input.inputLike,
+select.inputLike {
+  appearance: none;
+}
+input.inputLike:focus,
+select.inputLike:focus {
+  border-color: var(--ch-color-primary);
+  box-shadow: 0 0 0 3px rgb(13 59 54 / 10%);
+}
+.option,
+.chip {
+  cursor: pointer;
+  font-family: inherit;
+}
+.action[type="button"] {
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.formError { width:100%; padding:10px 12px; color:#b42318; font-size:12px; text-align:right; background:#fff1f0; border:1px solid #ffd5d2; border-radius:8px; }

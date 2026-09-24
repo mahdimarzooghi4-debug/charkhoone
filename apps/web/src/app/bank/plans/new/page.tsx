@@ -1,19 +1,28 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import shell from "../../panel.module.css";
 import styles from "../page.module.css";
 
 const assets = {
   avatar: "/brand/bank-mark.svg",
   logo: "/brand/dashboard-logo.png",
-  check: "https://www.figma.com/api/mcp/asset/ea94cb13-ad0f-4828-a2c9-ed5dfb300b3b.svg",
-  lock: "https://www.figma.com/api/mcp/asset/43a64c9b-8c57-41c6-9a28-05523704b352.svg",
-  home: "https://www.figma.com/api/mcp/asset/032d3c67-43e4-4ba3-a066-8586ff377d36.svg",
-  requests: "https://www.figma.com/api/mcp/asset/1459d1dc-e2c3-4758-869d-f2ec562af870.svg",
-  plans: "https://www.figma.com/api/mcp/asset/fb3d0072-189f-4cb3-a862-668d0d2da3fd.svg",
-  payments: "https://www.figma.com/api/mcp/asset/3e143b96-7d7c-464e-a6f9-0574716c463d.svg",
-  settings: "https://www.figma.com/api/mcp/asset/9922acd1-63ca-4602-a59c-ec57a1acbbfb.svg",
-  logout: "https://www.figma.com/api/mcp/asset/c3a09eca-c1a7-4373-bf9d-ad9599551453.svg",
+  check: "",
+  lock: "",
+  home: "",
+  requests: "",
+  plans: "",
+  payments: "",
+  settings: "",
+  logout: "",
 } as const;
+
+const PLAN_STORAGE_KEY = "charkhoone.bank.preview.plans";
+
+type PlanStatus = "فعال" | "پیش‌نویس" | "غیرفعال";
+type Payer = "مستأجر" | "سازمان" | "مشترک";
 
 function Sidebar() {
   return (
@@ -31,15 +40,76 @@ function Sidebar() {
   );
 }
 
-function Field({ label, value, disabled = false }: { label: string; value: string; disabled?: boolean }) {
-  return <div className={styles.field}><label>{label}</label><div className={`${styles.inputLike} ${disabled ? styles.inputDisabled : ""}`}>{value}</div></div>;
+function CheckRow({ children }: { children: string }) {
+  return <div className={styles.checkRow}><span className={styles.checkStatus}>تأیید شده</span><span className={styles.checkLabel}>{children}<span className={styles.checkIcon} /></span></div>;
 }
 
-function CheckRow({ children }: { children: string }) {
-  return <div className={styles.checkRow}><span className={styles.checkStatus}>تأیید شده</span><span className={styles.checkLabel}>{children}<span className={styles.checkIcon}><img src={assets.check} alt="" /></span></span></div>;
+function toLatinDigits(value: string) {
+  return value
+    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)));
+}
+
+function numericValue(value: string) {
+  return toLatinDigits(value).replace(/[^0-9.]/g, "");
+}
+
+function formatToman(raw: string) {
+  const digits = numericValue(raw).replace(/\D/g, "");
+  if (!digits) return "۰ تومان";
+  return `${Number(digits).toLocaleString("fa-IR")} تومان`;
 }
 
 export default function BankPlanNewPage() {
+  const router = useRouter();
+  const [name, setName] = useState("");
+  const [type, setType] = useState<"عمومی" | "سازمانی">("عمومی");
+  const [organization, setOrganization] = useState("");
+  const [maxAmount, setMaxAmount] = useState("500000000");
+  const [duration, setDuration] = useState("12");
+  const [rate, setRate] = useState("23");
+  const [credit, setCredit] = useState("A");
+  const [payer, setPayer] = useState<Payer>("مستأجر");
+  const [status, setStatus] = useState<PlanStatus>("فعال");
+  const [error, setError] = useState("");
+
+  function savePlan(forcedStatus?: PlanStatus) {
+    const finalStatus = forcedStatus ?? status;
+    if (!name.trim()) {
+      setError("نام طرح را وارد کنید.");
+      return;
+    }
+    if (type === "سازمانی" && !organization.trim()) {
+      setError("برای طرح سازمانی، نام سازمان را وارد کنید.");
+      return;
+    }
+    setError("");
+
+    const row = {
+      name: name.trim(),
+      org: type === "سازمانی" ? organization.trim() : "",
+      type,
+      max: formatToman(maxAmount),
+      credit: credit.trim().toUpperCase() || "A",
+      duration: `${Number(numericValue(duration) || 0).toLocaleString("fa-IR")} ماه`,
+      rate: `${Number(numericValue(rate) || 0).toLocaleString("fa-IR")}٪`,
+      status: finalStatus,
+      tone: finalStatus === "فعال" ? "active" : finalStatus === "پیش‌نویس" ? "draft" : "inactive",
+      payer,
+    };
+
+    try {
+      const raw = window.localStorage.getItem(PLAN_STORAGE_KEY);
+      const current = raw ? JSON.parse(raw) : [];
+      const next = Array.isArray(current) ? [row, ...current] : [row];
+      window.localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      window.localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify([row]));
+    }
+
+    router.push("/bank/plans");
+  }
+
   return (
     <main className={shell.page} data-node-id="270:2" data-name="Bank / Plan Detail">
       <section className={shell.mainContent}>
@@ -48,17 +118,44 @@ export default function BankPlanNewPage() {
           <div className={styles.detailHeader}><Link href="/bank/plans" className={styles.backLink}>← بازگشت به طرح‌ها</Link><h1>ایجاد طرح تأمین مالی</h1><p>شرایط طرح را مشخص کنید؛ چارخونه پیش از ارسال پرونده، این شرایط را بررسی می‌کند.</p></div>
         </header>
 
-        <section className={styles.card}><h2>اطلاعات طرح</h2><div className={styles.divider} /><div className={styles.fieldGrid2}><Field label="نام طرح" value="طرح مسکن ویژه" /><Field label="نوع طرح" value="عمومی" /></div><div className={styles.fullField}><Field label="سازمان" value="سازمان نمونه" disabled /><span className={styles.helper}>در صورت انتخاب نوع سازمانی نمایش داده می‌شود</span></div></section>
+        <section className={styles.card}><h2>اطلاعات طرح</h2><div className={styles.divider} />
+          <div className={styles.fieldGrid2}>
+            <label className={styles.field}><span>نام طرح</span><input className={styles.inputLike} value={name} onChange={(e) => setName(e.target.value)} placeholder="نام طرح جدید" /></label>
+            <label className={styles.field}><span>نوع طرح</span><select className={styles.inputLike} value={type} onChange={(e) => setType(e.target.value as "عمومی" | "سازمانی")}><option value="عمومی">عمومی</option><option value="سازمانی">سازمانی</option></select></label>
+          </div>
+          {type === "سازمانی" && <div className={styles.fullField}><label className={styles.field}><span>سازمان</span><input className={styles.inputLike} value={organization} onChange={(e) => setOrganization(e.target.value)} placeholder="نام سازمان" /></label></div>}
+        </section>
 
-        <section className={styles.card}><h2>شرایط مالی</h2><div className={styles.divider} /><div className={styles.fieldGrid3}><Field label="حداکثر مبلغ تأمین مالی" value="۵۰۰٬۰۰۰٬۰۰۰ تومان" /><Field label="مدت تأمین مالی" value="۱۲ ماه" /><Field label="نرخ سود تسهیلات" value="۲۳٪" /></div><div className={styles.payerBlock}><div className={styles.payerTitle}><span>برای «سازمان» یا «مشترک»، نوع طرح باید سازمانی و سازمان مشخص باشد.</span><strong>پرداخت‌کننده پرداخت ماهانه</strong></div><div className={styles.options}><span className={styles.option}>مشترک</span><span className={styles.option}>سازمان</span><span className={`${styles.option} ${styles.optionActive}`}>مستأجر</span></div></div><span className={styles.helper}>پرداخت ماهانه طبق پرداخت‌کننده انتخاب‌شده انجام می‌شود و سهم بانک به‌صورت ماهانه تسویه می‌شود.</span></section>
+        <section className={styles.card}><h2>شرایط مالی</h2><div className={styles.divider} />
+          <div className={styles.fieldGrid3}>
+            <label className={styles.field}><span>حداکثر مبلغ تأمین مالی</span><input className={styles.inputLike} inputMode="numeric" value={maxAmount} onChange={(e) => setMaxAmount(e.target.value)} /></label>
+            <label className={styles.field}><span>مدت تأمین مالی (ماه)</span><input className={styles.inputLike} inputMode="numeric" value={duration} onChange={(e) => setDuration(e.target.value)} /></label>
+            <label className={styles.field}><span>نرخ سود تسهیلات (%)</span><input className={styles.inputLike} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} /></label>
+          </div>
+          <div className={styles.payerBlock}><div className={styles.payerTitle}><span>برای «سازمان» یا «مشترک»، نوع طرح باید سازمانی و سازمان مشخص باشد.</span><strong>پرداخت‌کننده پرداخت ماهانه</strong></div>
+            <div className={styles.options}>{(["مشترک","سازمان","مستأجر"] as Payer[]).map((item) => <button key={item} type="button" className={`${styles.option} ${payer === item ? styles.optionActive : ""}`} onClick={() => setPayer(item)}>{item}</button>)}</div>
+          </div>
+          <span className={styles.helper}>پرداخت ماهانه طبق پرداخت‌کننده انتخاب‌شده انجام می‌شود و سهم بانک به‌صورت ماهانه تسویه می‌شود.</span>
+        </section>
 
-        <section className={styles.card}><h2>شرایط پذیرش متقاضی</h2><div className={styles.divider} /><div className={styles.fieldGrid2}><Field label="حداقل رتبه اعتباری" value="A" /><Field label="حداکثر مبلغ قابل تأمین براساس رتبه اعتباری" value="۵۰۰٬۰۰۰٬۰۰۰ تومان" /></div><span className={styles.helper}>چارخونه رتبه اعتباری متقاضی را پیش از نمایش و انتخاب این طرح بررسی می‌کند.</span><h3 className={styles.subheading}>شرایط تکمیلی</h3><CheckRow>سابقه اعتباری مثبت</CheckRow><div className={styles.infoBox}>فقط پرونده‌هایی که شرایط این طرح را با موفقیت گذرانده‌اند برای بانک ارسال می‌شوند.</div></section>
+        <section className={styles.card}><h2>شرایط پذیرش متقاضی</h2><div className={styles.divider} />
+          <div className={styles.fieldGrid2}>
+            <label className={styles.field}><span>حداقل رتبه اعتباری</span><select className={styles.inputLike} value={credit} onChange={(e) => setCredit(e.target.value)}><option>A</option><option>B</option><option>C</option></select></label>
+            <label className={styles.field}><span>حداکثر مبلغ قابل تأمین براساس رتبه اعتباری</span><input className={styles.inputLike} inputMode="numeric" value={maxAmount} onChange={(e) => setMaxAmount(e.target.value)} /></label>
+          </div>
+          <span className={styles.helper}>چارخونه رتبه اعتباری متقاضی را پیش از نمایش و انتخاب این طرح بررسی می‌کند.</span><h3 className={styles.subheading}>شرایط تکمیلی</h3><CheckRow>سابقه اعتباری مثبت</CheckRow><div className={styles.infoBox}>فقط پرونده‌هایی که شرایط این طرح را با موفقیت گذرانده‌اند برای بانک ارسال می‌شوند.</div>
+        </section>
 
-        <section className={styles.card}><h2>پیش‌شرط تأمین وجه</h2><div className={styles.divider} /><div className={styles.lockRow}><img src={assets.lock} alt="" /><span>قاعده ثابت چارخونه - غیرقابل ویرایش</span></div><CheckRow>وجه موردنیاز مستأجر واریز شده باشد.</CheckRow><CheckRow>انتقال وجه مستأجر به حساب کارگزاری همین بانک تأیید شده باشد.</CheckRow><span className={styles.helper}>پس از تأیید این دو مرحله، پرونده برای تصمیم نهایی بانک آماده می‌شود.</span></section>
+        <section className={styles.card}><h2>پیش‌شرط تأمین وجه</h2><div className={styles.divider} /><div className={styles.lockRow}><span>🔒</span><span>قاعده ثابت چارخونه - غیرقابل ویرایش</span></div><CheckRow>وجه موردنیاز مستأجر واریز شده باشد.</CheckRow><CheckRow>انتقال وجه مستأجر به حساب کارگزاری همین بانک تأیید شده باشد.</CheckRow><span className={styles.helper}>پس از تأیید این دو مرحله، پرونده برای تصمیم نهایی بانک آماده می‌شود.</span></section>
 
-        <section className={styles.card}><h2>وضعیت طرح</h2><div className={styles.divider} /><div className={styles.statusChips}><span className={`${styles.chip} ${styles.chipActive}`}>فعال</span><span className={styles.chip}>پیش‌نویس</span><span className={styles.chip}>غیرفعال</span></div><span className={styles.helper}>طرح فعال در محاسبات و بررسی واجد شرایط بودن متقاضیان چارخونه استفاده می‌شود.</span></section>
+        <section className={styles.card}><h2>وضعیت طرح</h2><div className={styles.divider} /><div className={styles.statusChips}>{(["فعال","پیش‌نویس","غیرفعال"] as PlanStatus[]).map((item) => <button key={item} type="button" className={`${styles.chip} ${status === item ? styles.chipActive : ""}`} onClick={() => setStatus(item)}>{item}</button>)}</div><span className={styles.helper}>طرح فعال در محاسبات و بررسی واجد شرایط بودن متقاضیان چارخونه استفاده می‌شود.</span></section>
 
-        <div className={styles.actions}><Link href="/bank/plans" className={`${styles.action} ${styles.cancel}`}>انصراف</Link><Link href="/bank/plans" className={`${styles.action} ${styles.draftAction}`}>ذخیره پیش‌نویس</Link><Link href="/bank/plans/1" className={`${styles.action} ${styles.primary}`}>ذخیره و فعال‌سازی</Link></div>
+        {error && <div className={styles.formError} role="alert">{error}</div>}
+        <div className={styles.actions}>
+          <Link href="/bank/plans" className={`${styles.action} ${styles.cancel}`}>انصراف</Link>
+          <button type="button" className={`${styles.action} ${styles.draftAction}`} onClick={() => savePlan("پیش‌نویس")}>ذخیره پیش‌نویس</button>
+          <button type="button" className={`${styles.action} ${styles.primary}`} onClick={() => savePlan("فعال")}>ذخیره و فعال‌سازی</button>
+        </div>
       </section>
       <Sidebar />
     </main>
