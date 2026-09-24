@@ -62,7 +62,7 @@ export function BrokerageLoginView({ failed = false }: BrokerageLoginViewProps) 
       </div>
 
       <aside className="brokerage-login__identity" aria-label="معرفی پنل کارگزاری">
-        <BrandLogo className="brokerage-login__logo" />
+        <BrandLogo source="login" className="brokerage-login__logo" />
         <h2>پنل کارگزاری چارخونه</h2>
         <strong>مدیریت منابع، سود و عملیات کارگزاری</strong>
         <p>دسترسی این بخش فقط برای کاربران مجاز کارگزاری فعال است.</p>
