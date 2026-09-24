@@ -376,7 +376,8 @@
   direction: rtl;
 }
 
-.org-pagination button {
+.org-pagination button,
+.org-pagination a {
   min-width: 30px;
   min-height: 30px;
   height: 30px;
@@ -386,6 +387,8 @@
   background: var(--ch-color-surface);
   border: 1px solid var(--ch-color-border);
   border-radius: 8px;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .org-pagination__active {
@@ -720,4 +723,13 @@
     max-width: 100%;
     overflow-x: auto;
   }
+}
+
+
+/* Interactive links added during final Organization QA keep the approved button appearance. */
+.org-filter,
+.org-case-filter,
+.org-payment-filter,
+.org-detail-card__button {
+  text-decoration: none;
 }
