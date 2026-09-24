@@ -618,6 +618,14 @@
   box-sizing: border-box;
 }
 
+/* Every admin page must use the same 1220px content frame. */
+.admin-shell__main > * {
+  width: 100%;
+  max-width: 1220px;
+  margin-inline: auto;
+  box-sizing: border-box;
+}
+
 .admin-dashboard,
 .admin-cases,
 .admin-partners,
