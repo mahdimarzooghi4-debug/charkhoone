@@ -1,15 +1,42 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
-import { PreviewAction } from "@/components/user/PreviewAction";
 
 const chevron = "/brand/dashboard-nav-file.svg";
+const NOTIFICATION_KEY = "charkhoone.preview.notifications";
+const IBAN_KEY = "charkhoone.preview.iban";
 
 function VerifiedBadge() {
   return <span className={styles.verifiedBadge}>تأیید شده</span>;
 }
 
+function maskIban(value: string) {
+  const clean = value.replace(/\s+/g, "").toUpperCase();
+  if (clean.length < 8) return clean;
+  return `${clean.slice(0, 4)} •••• •••• •••• •••• ${clean.slice(-4)}`;
+}
+
 export default function AccountPage() {
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [iban, setIban] = useState("");
+
+  useEffect(() => {
+    const storedNotifications = window.localStorage.getItem(NOTIFICATION_KEY);
+    if (storedNotifications !== null) setNotificationsEnabled(storedNotifications !== "false");
+    setIban(window.localStorage.getItem(IBAN_KEY) ?? "");
+  }, []);
+
+  function toggleNotifications() {
+    setNotificationsEnabled((current) => {
+      const next = !current;
+      window.localStorage.setItem(NOTIFICATION_KEY, String(next));
+      return next;
+    });
+  }
+
   return (
     <main className={styles.page} data-node-id="161:424" data-name="Web App / Account">
       <section className={styles.mainContent} data-node-id="161:425">
@@ -20,11 +47,21 @@ export default function AccountPage() {
             <section className={styles.settingsCard} data-node-id="163:198">
               <h2 data-node-id="163:199">تنظیمات</h2>
               <div className={styles.settingsList} data-node-id="163:200">
-                <div className={styles.settingsRow} data-node-id="163:201"><span className={styles.toggle} aria-hidden="true"><i /></span><span>اعلان‌ها</span></div>
+                <button
+                  type="button"
+                  className={styles.settingsRow}
+                  onClick={toggleNotifications}
+                  role="switch"
+                  aria-checked={notificationsEnabled}
+                  aria-label={notificationsEnabled ? "غیرفعال کردن اعلان‌ها" : "فعال کردن اعلان‌ها"}
+                >
+                  <span className={`${styles.toggle} ${notificationsEnabled ? "" : styles.toggleOff}`} aria-hidden="true"><i /></span>
+                  <span>اعلان‌ها</span>
+                </button>
                 <div className={styles.divider} />
-                <PreviewAction className={styles.settingsRow} label="قوانین و مقررات" title="قوانین و مقررات" message="متن حقوقی نهایی هنوز منتشر نشده است. تا تأیید نسخه نهایی، این بخش صرفاً مسیر طراحی را نمایش می‌دهد."><img src={chevron} alt="" width={20} height={20} /><span>قوانین و مقررات</span></PreviewAction>
+                <Link className={styles.settingsRow} href="/terms"><img src={chevron} alt="" width={20} height={20} /><span>قوانین و مقررات</span></Link>
                 <div className={styles.divider} />
-                <PreviewAction className={styles.settingsRow} label="حریم خصوصی" title="حریم خصوصی" message="سیاست حریم خصوصی باید پیش از سرویس واقعی تأیید و منتشر شود. متن حقوقی ساختگی نمایش نمی‌دهیم."><img src={chevron} alt="" width={20} height={20} /><span>حریم خصوصی</span></PreviewAction>
+                <Link className={styles.settingsRow} href="/privacy"><img src={chevron} alt="" width={20} height={20} /><span>حریم خصوصی</span></Link>
               </div>
             </section>
           </aside>
@@ -45,8 +82,16 @@ export default function AccountPage() {
             </section>
 
             <section className={styles.card} data-node-id="671:220">
-              <div className={styles.cardHeader}><PreviewAction className={styles.outlineButton} label="افزودن شماره شبا" title="ثبت شماره شبا" message="ثبت شبای واقعی به حساب احراز هویت‌شده و اعتبارسنجی بانکی نیاز دارد؛ در پیش‌نمایش شماره بانکی دریافت نمی‌کنیم.">افزودن شماره شبا (پیش‌نمایش)</PreviewAction><h2 data-node-id="671:223">شماره شبا</h2></div>
-              <div className={styles.valueRow}><strong data-node-id="671:225">ثبت نشده</strong><span className={styles.neutralBadge}>ثبت نشده</span></div>
+              <div className={styles.cardHeader}>
+                <Link className={styles.outlineButton} href="/user/account/iban">
+                  {iban ? "ویرایش شماره شبا" : "افزودن شماره شبا"}
+                </Link>
+                <h2 data-node-id="671:223">شماره شبا</h2>
+              </div>
+              <div className={styles.valueRow}>
+                <strong className={styles.ibanValue} dir="ltr" data-node-id="671:225">{iban ? maskIban(iban) : "ثبت نشده"}</strong>
+                <span className={iban ? styles.verifiedBadge : styles.neutralBadge}>{iban ? "ثبت شده" : "ثبت نشده"}</span>
+              </div>
               <p className={styles.hint} data-node-id="671:227">شماره شبای بانکی خود را برای دریافت و تسویه ثبت کنید.</p>
             </section>
 
