@@ -7,8 +7,18 @@ import styles from "./page.module.css";
 
 const IBAN_KEY = "charkhoone.preview.iban";
 
+function toLatinDigits(value: string) {
+  return value
+    .replace(/[۰-۹]/g, (digit) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(digit)))
+    .replace(/[٠-٩]/g, (digit) => String("٠١٢٣٤٥٦٧٨٩".indexOf(digit)));
+}
+
+function toPersianDigits(value: string) {
+  return value.replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
+}
+
 function normalizeIban(value: string) {
-  return value.toUpperCase().replace(/\s+/g, "").replace(/[^A-Z0-9]/g, "");
+  return toLatinDigits(value).toUpperCase().replace(/\s+/g, "").replace(/[^A-Z0-9]/g, "");
 }
 
 function isIranIban(value: string) {
@@ -17,7 +27,7 @@ function isIranIban(value: string) {
 
 function formatIban(value: string) {
   const clean = normalizeIban(value).slice(0, 26);
-  return clean.replace(/(.{4})/g, "$1 ").trim();
+  return toPersianDigits(clean.replace(/(.{4})/g, "$1 ").trim());
 }
 
 export function IbanForm() {
@@ -55,7 +65,7 @@ export function IbanForm() {
             autoComplete="off"
             value={iban}
             onChange={(event) => setIban(formatIban(event.target.value))}
-            placeholder="IR00 0000 0000 0000 0000 0000 00"
+            placeholder="IR۰۰ ۰۰۰۰ ۰۰۰۰ ۰۰۰۰ ۰۰۰۰ ۰۰۰۰ ۰۰"
             aria-invalid={normalized.length > 2 && !valid}
           />
         </label>
