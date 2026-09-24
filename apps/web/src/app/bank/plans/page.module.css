@@ -130,3 +130,5 @@ select.inputLike:focus {
   cursor: pointer;
   font-family: inherit;
 }
+
+.formError { width:100%; padding:10px 12px; color:#b42318; font-size:12px; text-align:right; background:#fff1f0; border:1px solid #ffd5d2; border-radius:8px; }
