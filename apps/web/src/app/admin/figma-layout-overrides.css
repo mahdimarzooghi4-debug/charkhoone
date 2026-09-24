@@ -1,42 +1,71 @@
 .admin-shell {
-  grid-template-columns: minmax(0, 1fr) 240px;
+  grid-template-columns: minmax(0, 1fr) 232px;
 }
 
 .admin-shell__main {
   width: 100%;
 }
 
-.admin-dashboard {
-  width: min(1280px, 100%);
-  padding: 32px 40px;
+.admin-dashboard,
+.admin-users,
+.admin-payments,
+.admin-cases,
+.admin-partners,
+.admin-settings {
+  width: min(1240px, 100%);
+  margin-inline: auto;
+  padding: 28px 36px;
   gap: 16px;
 }
 
-.admin-dashboard__heading h1 {
-  font-size: 30px;
+.admin-dashboard__heading h1,
+.admin-users__heading h1 {
+  font-size: 28px;
+  line-height: 1.5;
 }
 
-.admin-dashboard__metrics {
-  gap: 16px;
+.admin-dashboard__metrics,
+.admin-users__metrics {
+  gap: 14px;
 }
 
-.admin-dashboard__metric {
-  min-height: 112px;
-  padding: 20px;
-  border-radius: 16px;
+.admin-dashboard__metric,
+.admin-users__metric {
+  min-height: 104px;
+  padding: 18px;
+  border-radius: 14px;
 }
 
-.admin-dashboard__table-wrap,
+.admin-dashboard__panel,
+.admin-users__registration-strip,
 .admin-users__table-wrap {
-  border-radius: 16px;
+  border-radius: 14px;
+}
+
+.admin-users__row {
+  min-height: 54px;
+}
+
+.admin-sidebar {
+  padding: 36px 18px;
+}
+
+.admin-sidebar__logo,
+.admin-sidebar__identity {
+  width: 176px;
 }
 
 @media (max-width: 1180px) {
   .admin-shell {
-    grid-template-columns: minmax(0, 1fr) 220px;
+    grid-template-columns: minmax(0, 1fr) 216px;
   }
 
-  .admin-dashboard {
+  .admin-dashboard,
+  .admin-users,
+  .admin-payments,
+  .admin-cases,
+  .admin-partners,
+  .admin-settings {
     padding-inline: 24px;
   }
 }
