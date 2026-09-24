@@ -203,7 +203,7 @@ export function MockTenantScreen({ screen }: Props) {
   let body: ReactNode;
   let actions: ReactNode = null;
   switch (screen) {
-    case "calculator": body = <><ScreenTitle title="ماشین‌حساب مستأجر" /><View style={styles.card}><Text style={styles.cardTitle}>مدل نمونه C3</Text><Text style={styles.body}>ضریب تبدیل اجاره به رهن: {mockFinancialModel.conversionRate}</Text>{financeRows.slice(0, 3).map(([label, value]) => <Row key={label} label={label} value={value} />)}<Text style={styles.note}>این محاسبه صندوق ۳٪ یا دریافتی مالک ۳٫۵٪ را نمایش نمی‌دهد.</Text></View><Button label="مشاهدهٔ نتیجهٔ نمونه" to="calculator-result" /></>; break;
+    case "calculator": body = <><ScreenTitle title="ماشین‌حساب مستأجر" /><View style={styles.card}><Text style={styles.cardTitle}>مدل نمونه C۳</Text><Text style={styles.body}>ضریب تبدیل اجاره به رهن: {mockFinancialModel.conversionRate}</Text>{financeRows.slice(0, 3).map(([label, value]) => <Row key={label} label={label} value={value} />)}<Text style={styles.note}>دریافتی مالک از اجاره قرارداد مستقل از سود بانکی مستأجر است؛ بازده صندوق در این برآورد محاسبه نمی‌شود.</Text></View><Button label="مشاهدهٔ نتیجهٔ نمونه" to="calculator-result" /></>; break;
     case "calculator-result": {
       body = <>
         <ScreenTitle title="نتیجه محاسبه" back="calculator" />
@@ -235,6 +235,13 @@ export function MockTenantScreen({ screen }: Props) {
               : mockFinancialModel.belowRent
                 ? `در این برآورد، پرداختی ماهانه مستأجر ${mockFinancialModel.rentDifference} کمتر از اجاره است.`
                 : "با این ورودی‌ها، پرداختی ماهانه مستأجر از اجاره کمتر نیست؛ شرایط را با بانک بررسی کنید."}</Text>
+          </View>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>دریافتی ماهانه مالک از اجاره قرارداد</Text>
+            <Row label="اجاره ناخالص ماهانه" value={mockFinancialModel.ownerGrossReceipt} />
+            <Row label="کارمزد خدمات نمونه (۰٫۵٪)" value={mockFinancialModel.ownerServiceFeeExample} />
+            <Row label="خالص دریافتی ماهانه نمونه" value={mockFinancialModel.ownerNetReceiptExample} />
+            <Text style={styles.note}>کارمزد تنها مثال پیش‌نمایش است و باید در قرارداد تأیید شود. دریافتی مالک از اجاره مستقل از سود بانکی مستأجر است؛ بازده و مبلغ تسویه در روش صندوق محاسبه نمی‌شود.</Text>
           </View>
           <View style={styles.card}>
             <Text style={styles.cardTitle}>جزئیات محاسبه وام و تبدیل اجاره به رهن</Text>

@@ -111,6 +111,7 @@ export default function CalculatorPage() {
   const { rentEquivalentDeposit, fullDeposit: fullDepositEquivalent, financing: selectedFinancing, contribution, monthlyInterest } = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent, bankAnnualRate: rateValid ? bankAnnualRate : null });
   const minFinancing = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: MIN_FINANCING_PERCENT }).financing;
   const maxFinancing = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: MAX_FINANCING_PERCENT }).financing;
+  const { ownerGrossReceipt, ownerServiceFeeExample, ownerNetReceiptExample } = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent });
   const rentDifference = monthlyInterest === null ? null : rent - monthlyInterest;
   const belowRent = rentDifference !== null && rentDifference > 0;
   const financingMillion = Math.round(selectedFinancing / 1_000_000).toLocaleString("fa-IR");
@@ -162,6 +163,15 @@ export default function CalculatorPage() {
                     ? "در این برآورد، پرداختی ماهانه مستأجر " + money(rentDifference) + " کمتر از اجاره است."
                     : "با این ورودی‌ها، پرداختی ماهانه مستأجر از اجاره کمتر نیست؛ شرایط را با بانک بررسی کنید."}
               </p>
+            </section>
+            <section className={styles.comparison} aria-label="دریافتی ماهانه مالک، نمونه">
+              <h3>دریافتی ماهانه مالک از اجاره قرارداد</h3>
+              <div className={styles.comparisonRows}>
+                <div className={styles.generalRow}><strong>{money(ownerGrossReceipt)}</strong><span>اجاره ناخالص ماهانه:</span></div>
+                <div className={styles.generalRow}><strong>{money(ownerServiceFeeExample)}</strong><span>کارمزد خدمات نمونه (۰٫۵٪):</span></div>
+                <div className={styles.userRow}><strong>{money(ownerNetReceiptExample)}</strong><span>خالص دریافتی ماهانه نمونه:</span></div>
+              </div>
+              <p className={styles.comparisonNotice}>این کارمزد صرفاً مثال پیش‌نمایش است و باید در قرارداد تأیید شود. دریافتی مالک از اجاره مستقل از پرداخت سود بانکی مستأجر است؛ برای روش تجمیع در صندوق، بازده و مبلغ تسویه محاسبه نشده است.</p>
             </section>
             <details className={styles.calculationDetails} data-node-id="150:613">
               <summary>جزئیات محاسبه وام و تبدیل اجاره به رهن</summary>

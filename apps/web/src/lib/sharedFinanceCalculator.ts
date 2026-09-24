@@ -15,5 +15,10 @@ export function calculateFinancing({ cashDeposit, monthlyRent, financingPercent 
   const contribution = fullDeposit - financing;
   const monthlyInterest = bankAnnualRate !== null && Number.isFinite(bankAnnualRate)
     ? Math.round(financing * bankAnnualRate / 100 / 12) : null;
-  return { rentEquivalentDeposit, fullDeposit, financing, contribution, annualRate: bankAnnualRate, monthlyInterest };
+  // Owner preview only: contract rent less the existing illustrative 0.5% service fee.
+  // This is independent of tenant bank interest and is not a confirmed settlement term.
+  const ownerServiceFeeExample = Math.round(rent * 0.005);
+  const ownerNetReceiptExample = rent - ownerServiceFeeExample;
+  return { rentEquivalentDeposit, fullDeposit, financing, contribution, annualRate: bankAnnualRate, monthlyInterest,
+    ownerGrossReceipt: rent, ownerServiceFeeExample, ownerNetReceiptExample };
 }

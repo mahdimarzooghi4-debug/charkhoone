@@ -32,7 +32,7 @@ function PreviewAmount({ label, value, maximum, step, limit, onChange }: {
   };
   const moveTo = (locationX: number) => {
     if (!Number.isFinite(locationX) || trackWidth <= 0) return;
-    const ratio = Math.max(0, Math.min(1, locationX / trackWidth));
+    const ratio = Math.max(0, Math.min(1, 1 - locationX / trackWidth));
     const next = Math.round(ratio * maximum / step) * step;
     onChange(clampMockAmount(next, maximum));
   };
@@ -47,8 +47,8 @@ function PreviewAmount({ label, value, maximum, step, limit, onChange }: {
           keyboardType="number-pad"
           selectTextOnFocus
           value={editing === null ? formatMockNumber(value) : editing}
-          onFocus={() => setEditing(String(value))}
-          onChangeText={setEditing}
+          onFocus={() => setEditing(formatMockNumber(value))}
+          onChangeText={input => setEditing(input.replace(/[0-9]/g, digit => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]))}
           onBlur={commit}
           onSubmitEditing={commit}
           style={styles.amountValue}
@@ -71,11 +71,11 @@ function PreviewAmount({ label, value, maximum, step, limit, onChange }: {
         {/* Keep the base, fill and thumb on the same 19px center line. */}
         <View pointerEvents="none" style={styles.sliderBase} />
         <View pointerEvents="none" style={[styles.sliderFill, { width: percentage }]} />
-        <View pointerEvents="none" style={[styles.sliderThumb, { left: `${progress * 100}%` as `${number}%` }]} />
+        <View pointerEvents="none" style={[styles.sliderThumb, { right: `${progress * 100}%` as `${number}%` }]} />
       </View>
       <View style={styles.sliderLabels}>
-        <Text style={styles.sliderLimit}>۰</Text>
         <Text style={styles.sliderLimit}>{limit}</Text>
+        <Text style={styles.sliderLimit}>۰</Text>
       </View>
       <View style={styles.adjustRow}>
         <Pressable accessibilityRole="button" accessibilityLabel={`افزایش ${label}`} onPress={() => onChange(clampMockAmount(value + step, maximum))} style={styles.adjustButton}><Text style={styles.adjustText}>+ افزایش</Text></Pressable>
@@ -107,7 +107,7 @@ export function MockTenantCalculatorScreen() {
           <Text style={styles.amountLabel}>سناریوی نمونه اعتبارسنجی: رتبه C3</Text>
           <Text style={styles.estimateCaption}>درصد تأمین مالی این نمونه: ۳۰٪ رهن کامل معادل قرارداد. رتبه واقعی تنها از سامانه بیرونی دریافت می‌شود و در این پیش‌نمایش قابل انتخاب نیست.</Text>
           <Text style={styles.amountLabel}>نرخ سود سالانه اسمی بانک (نمونه: ۲۳٪)</Text>
-          <TextInput accessibilityLabel="نرخ سود سالانه اسمی بانک" keyboardType="decimal-pad" value={bankRateInput} onChangeText={value => {
+          <TextInput accessibilityLabel="نرخ سود سالانه اسمی بانک" keyboardType="decimal-pad" value={bankRateInput.replace(/[0-9]/g, digit => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]).replace(".", "٫")} onChangeText={value => {
             const normalized = value.replace(/[۰-۹]/g, digit => String(digit.charCodeAt(0) - 1776)).replace(/[٠-٩]/g, digit => String(digit.charCodeAt(0) - 1632)).replace("٫", ".");
             if (/^\d{0,3}(\.\d{0,2})?$/.test(normalized)) setBankRateInput(normalized);
           }} placeholder="۲۳" style={styles.rateInput} />
@@ -118,6 +118,11 @@ export function MockTenantCalculatorScreen() {
           <Text style={styles.estimateTitle}>پرداخت ماهانه تقریبی شما (فقط سود)</Text>
           <Text style={styles.estimateValue}>{financialModel.monthlyInterest}</Text>
           <Text style={styles.estimateCaption}>برآورد C3 با نرخ اسمی سالانه {financialModel.annualRate}؛ بازپرداخت اصل، مطابق قرارداد نهایی بانک خواهد بود.</Text>
+        </View>
+        <View style={styles.estimate}>
+          <Text style={styles.estimateTitle}>خالص دریافتی ماهانه مالک (نمونه)</Text>
+          <Text style={styles.estimateValue}>{financialModel.ownerNetReceiptExample}</Text>
+          <Text style={styles.estimateCaption}>اجاره {financialModel.ownerGrossReceipt}، پس از کارمزد خدمات نمونه ۰٫۵٪. این مبلغ مستقل از سود بانکی مستأجر است و شرایط قطعی تسویه باید تأیید شود.</Text>
         </View>
         <View style={styles.info}>
           <Text style={styles.infoTitle}>برآورد اولیه</Text>
@@ -150,8 +155,8 @@ const styles = StyleSheet.create({
   amountValue: { minWidth: 155, color: colors.primary, fontFamily: fonts.bold, fontSize: 25, padding: 0, ...rtl },
   sliderTrack: { position: "relative", height: 38, width: "100%", overflow: "visible" },
   sliderBase: { position: "absolute", top: 17, left: 0, right: 0, height: 4, backgroundColor: colors.border, borderRadius: 2 },
-  sliderFill: { position: "absolute", top: 17, left: 0, height: 4, backgroundColor: colors.primary, borderRadius: 2 },
-  sliderThumb: { position: "absolute", top: 10, height: 18, width: 18, marginLeft: -9, borderRadius: 9, borderWidth: 3, borderColor: colors.primary, backgroundColor: colors.surface },
+  sliderFill: { position: "absolute", top: 17, right: 0, height: 4, backgroundColor: colors.primary, borderRadius: 2 },
+  sliderThumb: { position: "absolute", top: 10, height: 18, width: 18, marginRight: -9, borderRadius: 9, borderWidth: 3, borderColor: colors.primary, backgroundColor: colors.surface },
   sliderLabels: { width: "100%", flexDirection: "row", justifyContent: "space-between" },
   sliderLimit: { color: colors.muted, fontFamily: fonts.regular, fontSize: 10, ...rtl },
   adjustRow: { width: "100%", flexDirection: "row", gap: 8 },
