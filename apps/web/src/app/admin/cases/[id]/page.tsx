@@ -251,7 +251,7 @@ function FinancialEvidence({ item }: { item: PilotCaseDetail }) {
           <Badge value={item.fundFreeze?.status}>{formatStatus(item.fundFreeze?.status)}</Badge>
           <div>
             <span>تثبیت اصل سرمایه</span>
-            <strong>{item.fundFreeze?.fundReference ?? "—"}</strong>
+            <strong>{formatIdentifier(item.fundFreeze?.fundReference)}</strong>
           </div>
         </div>
         <div className="admin-case-detail__detail-row">
@@ -262,7 +262,7 @@ function FinancialEvidence({ item }: { item: PilotCaseDetail }) {
             <span>سهم مستأجر</span>
             <strong>
               {item.tenantContributionFunding
-                ? `${formatRial(item.tenantContributionFunding.amountRial)} • ${item.tenantContributionFunding.currency}`
+                ? `${formatRial(item.tenantContributionFunding.amountRial)} • ریال`
                 : "—"}
             </strong>
           </div>
