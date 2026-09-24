@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { OrganizationCsvButton } from "@/components/organization/OrganizationCsvButton";
 
 const results = [
   { label: "تکراری", value: "۳ نفر", note: "اطلاعات در سامانه موجود است", tone: "warning" },
@@ -37,7 +38,17 @@ export default function OrganizationPersonnelImportSuccessPage() {
       <article className="org-import-success__card org-import-success__error-card">
         <h2>۱۲ ردیف ثبت نشد</h2>
         <div>
-          <button type="button" className="org-form-button org-form-button--secondary org-form-button--small">دانلود گزارش خطاها</button>
+          <OrganizationCsvButton
+  className="org-form-button org-form-button--secondary org-form-button--small"
+  filename="organization-personnel-import-errors.csv"
+  rows={[
+    ["نوع", "تعداد", "توضیح"],
+    ["دارای خطا", "۹", "نیازمند اصلاح در فایل اصلی"],
+    ["تکراری", "۳", "اطلاعات در سامانه موجود است"],
+  ]}
+>
+  دانلود گزارش خطاها
+</OrganizationCsvButton>
           <p><strong>۹ ردیف دارای خطا و ۳ ردیف تکراری بودند و در سیستم ثبت نشدند.</strong><span>پس از اصلاح فایل می‌توانید فقط موارد ثبت‌نشده را دوباره وارد کنید.</span></p>
         </div>
       </article>
