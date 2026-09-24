@@ -250,7 +250,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams: S
           })}
         </nav>
         <p className="admin-cases__source-note">
-          {previewMode ? (status ? `فیلتر پیش‌نمایش: ${status}` : "داده نمایشی Stage") : (status ? `فیلتر سرویس: ${status}` : "بدون فیلتر وضعیت")}
+          {previewMode ? (status ? `فیلتر پیش‌نمایش: ${formatStatus(status)}` : "داده نمایشی مرحله آزمایش") : (status ? `فیلتر سرویس: ${formatStatus(status)}` : "بدون فیلتر وضعیت")}
         </p>
       </section>
 
