@@ -1,62 +1,15 @@
-import Link from "next/link";
-import { OrganizationUsersOverview } from "@/components/organization/OrganizationUsersOverview";
+import { OrganizationManageUserForm } from "./OrganizationManageUserForm";
+import type { OrganizationUser } from "@/components/organization/OrganizationUsersOverview";
 
-export default function OrganizationManageUserPage() {
-  return (
-    <div className="org-user-manage-page" data-node-id="548:33">
-      <OrganizationUsersOverview />
-      <div className="org-user-manage__backdrop" />
-      <section className="org-user-manage" role="dialog" aria-modal="true" aria-labelledby="manage-user-title">
-        <header className="org-user-manage__header">
-          <Link href="/organization/users" aria-label="بستن">×</Link>
-          <div>
-            <h2 id="manage-user-title">مدیریت کاربر سازمان</h2>
-            <p>نقش، سطح دسترسی و وضعیت این کاربر را مدیریت کنید.</p>
-          </div>
-        </header>
+const users: Record<string, OrganizationUser> = {
+  maryam: { id: "maryam", name: "مریم محمدی", email: "maryam@org.ir", role: "مدیر پنل", access: "دسترسی کامل", lastLogin: "امروز، ۱۶:۴۲", twoFactor: "فعال", active: true },
+  ali: { id: "ali", name: "علی رضایی", email: "ali@org.ir", role: "مالی", access: "پرداخت‌ها و پرونده‌ها", lastLogin: "امروز، ۱۱:۰۵", twoFactor: "فعال", active: true },
+  sara: { id: "sara", name: "سارا کریمی", email: "sara@org.ir", role: "منابع انسانی", access: "پرسنل و پرونده‌ها", lastLogin: "۱۴۰۵/۰۶/۰۷", twoFactor: "فعال", active: true },
+  reza: { id: "reza", name: "رضا حسینی", email: "reza@org.ir", role: "مشاهده‌گر", access: "فقط مشاهده", lastLogin: "۱۴۰۵/۰۶/۰۵", twoFactor: "غیرفعال", active: true },
+};
 
-        <div className="org-user-manage__divider" />
-
-        <div className="org-user-manage__summary">
-          <div><strong>علی رضایی</strong><span>نام و نام خانوادگی</span></div>
-          <div><strong>ali@org.ir</strong><span>ایمیل سازمانی</span></div>
-        </div>
-
-        <label className="org-user-manage__field">
-          <span>نقش</span>
-          <select defaultValue="finance">
-            <option value="admin">مدیر پنل</option>
-            <option value="finance">مالی</option>
-            <option value="hr">منابع انسانی</option>
-            <option value="viewer">مشاهده‌گر</option>
-          </select>
-          <small>سطح دسترسی براساس نقش انتخاب‌شده تعیین می‌شود.</small>
-        </label>
-
-        <div className="org-user-manage__field">
-          <span>وضعیت دسترسی</span>
-          <div className="org-user-manage__status-actions">
-            <button className="is-active" type="button">فعال</button>
-            <button type="button">غیرفعال</button>
-          </div>
-        </div>
-
-        <div className="org-user-manage__access">
-          <strong>دسترسی‌های نقش مالی</strong>
-          <span>پرداخت‌ها • پرونده‌ها • مشاهده طرح‌های بانکی مرتبط</span>
-        </div>
-
-        <div className="org-user-manage__note">
-          غیرفعال‌کردن دسترسی، سوابق فعالیت و اقدامات ثبت‌شده این کاربر را حذف نمی‌کند.
-        </div>
-
-        <div className="org-user-manage__divider" />
-
-        <footer className="org-user-manage__footer">
-          <Link className="org-user-form__button" href="/organization/users">انصراف</Link>
-          <Link className="org-user-form__button org-user-form__button--primary" href="/organization/users">ذخیره تغییرات</Link>
-        </footer>
-      </section>
-    </div>
-  );
+export default async function OrganizationManageUserPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const user = users[id] ?? { id, name: "کاربر جدید", email: "preview@org.ir", role: "مشاهده‌گر", access: "فقط مشاهده", lastLogin: "هنوز وارد نشده", twoFactor: "غیرفعال", active: true };
+  return <OrganizationManageUserForm id={id} initial={user} />;
 }
