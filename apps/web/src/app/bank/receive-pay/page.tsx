@@ -27,7 +27,7 @@ function Sidebar() {
 }
 
 function FundingAction({ request, name, amount, href }: { request:string; name:string; amount:string; href:string }) {
-  return <div className={styles.actionRow}><div className={styles.actionTop}><Link href={href} className={styles.primaryButton}>تأمین وجه</Link><span className={styles.readyBadge}>آماده تأمین</span><span className={styles.actionAmount}>{amount}</span><span className={styles.caseInfo}><strong>{request}</strong><small>{name}</small></span><span className={styles.actionType}>تأمین اصل تسهیلات</span></div><div className={styles.checks}><span className={styles.check}>وجه در کارگزاری همین بانک تأیید شده <b>✓</b></span><span className={styles.check}>درخواست بانک تأیید شده <b>✓</b></span><span className={styles.check}>وجه مستأجر واریز شده <b>✓</b></span></div></div>;
+  return <div className={styles.actionRow}><div className={styles.actionTop}><span className={styles.actionType}>تأمین اصل تسهیلات</span><span className={styles.caseInfo}><strong>{request}</strong><small>{name}</small></span><span className={styles.actionAmount}>{amount}</span><span className={styles.readyBadge}>آماده تأمین</span><Link href={href} className={styles.primaryButton}>تأمین وجه</Link></div><div className={styles.checks}><span className={styles.check}>وجه در کارگزاری همین بانک تأیید شده <b>✓</b></span><span className={styles.check}>درخواست بانک تأیید شده <b>✓</b></span><span className={styles.check}>وجه مستأجر واریز شده <b>✓</b></span></div></div>;
 }
 
 export default function BankReceivePayPage() {
