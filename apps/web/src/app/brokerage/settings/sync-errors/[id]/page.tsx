@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BrokerageSettingsPage from "../../page";
+import { ResyncButton } from "../ResyncButton";
 
 const syncErrorDetails = {
   "TRX-A4196": {
@@ -129,9 +130,7 @@ export default async function BrokerageSettingsSyncErrorDetailPage({ params }: P
           <Link className="brokerage-sync-error-detail__button brokerage-sync-error-detail__button--secondary" href="/brokerage/settings/sync-errors">
             بازگشت به خطاها
           </Link>
-          <button className="brokerage-sync-error-detail__button brokerage-sync-error-detail__button--primary" type="button">
-            همگام‌سازی مجدد
-          </button>
+          <ResyncButton variant="detail" />
         </footer>
       </section>
     </div>

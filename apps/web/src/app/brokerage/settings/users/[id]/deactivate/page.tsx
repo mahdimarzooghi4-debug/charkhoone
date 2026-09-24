@@ -1,5 +1,6 @@
 import Link from "next/link";
 import BrokerageSettingsManageUserPage from "../page";
+import { DeactivateUserButton } from "./DeactivateUserButton";
 
 const userNames: Record<string, string> = {
   "ali-rezaei": "علی رضایی",
@@ -14,7 +15,7 @@ type PageProps = {
 
 export default async function BrokerageDeactivateUserPage({ params }: PageProps) {
   const { id } = await params;
-  const userName = userNames[id] ?? userNames["ali-rezaei"];
+  const userName = userNames[id] ?? "کاربر انتخاب‌شده";
 
   return (
     <div
@@ -51,12 +52,7 @@ export default async function BrokerageDeactivateUserPage({ params }: PageProps)
           >
             انصراف
           </Link>
-          <button
-            className="brokerage-deactivate-user__button brokerage-deactivate-user__button--danger"
-            type="button"
-          >
-            غیرفعال کردن
-          </button>
+          <DeactivateUserButton id={id} />
         </div>
       </section>
     </div>

@@ -1,3 +1,5 @@
+"use client";
+
 const metrics = [
   {
     label: "کل اصل منابع تحت مدیریت",
@@ -32,12 +34,37 @@ const profitPeriods = [
   { period: "خرداد ۱۴۰۵", minimum: "۱٬۷۴۰٬۰۰۰٬۰۰۰", actual: "۱٬۸۹۰٬۰۰۰٬۰۰۰", surplus: "۱۵۰٬۰۰۰٬۰۰۰", transfer: "۱٬۸۹۰٬۰۰۰٬۰۰۰", status: "انجام‌شده" },
 ] as const;
 
+function csvCell(value: string) {
+  const safe = /^[=+@\-\t\r]/.test(value) ? "'" + value : value;
+  return '"' + safe.replace(/"/g, '""') + '"';
+}
+
+function downloadCsv(filename: string, rows: string[][]) {
+  const csv = "\uFEFF" + rows.map((row) => row.map(csvCell).join(",")).join("\r\n");
+  const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
 export default function BrokerageResourcesProfitPage() {
   return (
     <section className="brokerage-resources" data-node-id="379:2" data-name="Brokerage / Resources & Profit">
       <header className="brokerage-resources__header">
-        <button type="button" className="brokerage-export-button" aria-label="دریافت خروجی منابع و سود">
-          خروجی&nbsp;&nbsp;⌄
+        <button
+          type="button"
+          className="brokerage-export-button"
+          aria-label="دریافت خروجی منابع و سود"
+          onClick={() => downloadCsv("brokerage-resources-summary.csv", [
+            ["شاخص", "مقدار", "توضیح"],
+            ...metrics.map((item) => [item.label, item.value, item.note]),
+          ])}
+        >
+          خروجی CSV
         </button>
         <div>
           <h1>منابع و سود</h1>
@@ -107,8 +134,16 @@ export default function BrokerageResourcesProfitPage() {
 
       <section className="brokerage-periods">
         <div className="brokerage-periods__header">
-          <button type="button" className="brokerage-export-button" aria-label="دریافت خروجی دوره‌های سود">
-            خروجی&nbsp;&nbsp;⌄
+          <button
+            type="button"
+            className="brokerage-export-button"
+            aria-label="دریافت خروجی دوره‌های سود"
+            onClick={() => downloadCsv("brokerage-profit-periods.csv", [
+              ["دوره", "حداقل سود", "سود واقعی", "مازاد", "انتقال به چارخونه", "وضعیت"],
+              ...profitPeriods.map((item) => [item.period, item.minimum, item.actual, item.surplus, item.transfer, item.status]),
+            ])}
+          >
+            خروجی CSV
           </button>
           <div className="brokerage-resources__section-heading">
             <h2>دوره‌های سود و انتقال</h2>
