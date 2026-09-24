@@ -41,7 +41,7 @@ function Sidebar() {
 }
 
 function CheckRow({ children }: { children: string }) {
-  return <div className={styles.checkRow}><span className={styles.checkStatus}>تأیید شده</span><span className={styles.checkLabel}>{children}<span className={styles.checkIcon}>✓</span></span></div>;
+  return <div className={styles.checkRow}><span className={styles.checkStatus}>تأیید شده</span><span className={styles.checkLabel}>{children}<span className={styles.checkIcon} /></span></div>;
 }
 
 function formatToman(raw: string) {
@@ -61,10 +61,19 @@ export default function BankPlanNewPage() {
   const [credit, setCredit] = useState("A");
   const [payer, setPayer] = useState<Payer>("مستأجر");
   const [status, setStatus] = useState<PlanStatus>("فعال");
+  const [error, setError] = useState("");
 
   function savePlan(forcedStatus?: PlanStatus) {
     const finalStatus = forcedStatus ?? status;
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      setError("نام طرح را وارد کنید.");
+      return;
+    }
+    if (type === "سازمانی" && !organization.trim()) {
+      setError("برای طرح سازمانی، نام سازمان را وارد کنید.");
+      return;
+    }
+    setError("");
 
     const row = {
       name: name.trim(),
@@ -131,10 +140,11 @@ export default function BankPlanNewPage() {
 
         <section className={styles.card}><h2>وضعیت طرح</h2><div className={styles.divider} /><div className={styles.statusChips}>{(["فعال","پیش‌نویس","غیرفعال"] as PlanStatus[]).map((item) => <button key={item} type="button" className={`${styles.chip} ${status === item ? styles.chipActive : ""}`} onClick={() => setStatus(item)}>{item}</button>)}</div><span className={styles.helper}>طرح فعال در محاسبات و بررسی واجد شرایط بودن متقاضیان چارخونه استفاده می‌شود.</span></section>
 
+        {error && <div className={styles.formError} role="alert">{error}</div>}
         <div className={styles.actions}>
           <Link href="/bank/plans" className={`${styles.action} ${styles.cancel}`}>انصراف</Link>
-          <button type="button" className={`${styles.action} ${styles.draftAction}`} onClick={() => savePlan("پیش‌نویس")} disabled={!name.trim()}>ذخیره پیش‌نویس</button>
-          <button type="button" className={`${styles.action} ${styles.primary}`} onClick={() => savePlan("فعال")} disabled={!name.trim()}>ذخیره و فعال‌سازی</button>
+          <button type="button" className={`${styles.action} ${styles.draftAction}`} onClick={() => savePlan("پیش‌نویس")}>ذخیره پیش‌نویس</button>
+          <button type="button" className={`${styles.action} ${styles.primary}`} onClick={() => savePlan("فعال")}>ذخیره و فعال‌سازی</button>
         </div>
       </section>
       <Sidebar />
