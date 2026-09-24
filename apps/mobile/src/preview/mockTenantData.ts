@@ -1,15 +1,4 @@
 import { calculateFinancing } from "../../../web/src/lib/sharedFinanceCalculator";
-export const mockFinancialModel = {
-  cashDeposit: "۵۰۰٬۰۰۰٬۰۰۰ تومان",
-  monthlyRent: "۲۰٬۰۰۰٬۰۰۰ تومان",
-  conversionRate: "۳٪ ماهانه",
-  fullDeposit: "۱٬۱۶۶٬۶۶۶٬۶۶۷ تومان",
-  financing: "۳۵۰٬۰۰۰٬۰۰۰ تومان",
-  contribution: "۸۱۶٬۶۶۶٬۶۶۷ تومان",
-  annualRate: "۲۳٪",
-  monthlyInterest: "۶٬۷۰۸٬۳۳۳ تومان",
-} as const;
-
 export type MockFinancingPlan = "عمومی" | "ویژهٔ نمونه";
 export type MockMembership = "۱ بار استفاده" | "۲ بار استفاده" | "۳ بار استفاده";
 
@@ -17,10 +6,10 @@ export const mockDisclaimer = "این یک پیش‌نمایش MOCK است. هی
 
 // The public calculator is still MOCK, but its controls calculate instead of
 // merely imitating a slider. Keep the C3 example above as the default fixture.
-export const MOCK_CASH_DEPOSIT_MAX = 2_000_000_000;
-export const MOCK_MONTHLY_RENT_MAX = 100_000_000;
-export const MOCK_CASH_DEPOSIT_STEP = 5_000_000;
-export const MOCK_MONTHLY_RENT_STEP = 1_000_000;
+export const MOCK_CASH_DEPOSIT_MAX = 1_000_000_000;
+export const MOCK_MONTHLY_RENT_MAX = 50_000_000;
+export const MOCK_CASH_DEPOSIT_STEP = 1_000_000;
+export const MOCK_MONTHLY_RENT_STEP = 500_000;
 
 const persianNumber = new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 0 });
 
@@ -39,20 +28,28 @@ export function parseMockAmount(input: string): number {
   return Number(ascii || "0");
 }
 
-export function calculateMockFinancialModel(cashDeposit: number, monthlyRent: number) {
+export function calculateMockFinancialModel(cashDeposit: number, monthlyRent: number, bankAnnualRate: number | null = 23) {
   const deposit = clampMockAmount(cashDeposit, MOCK_CASH_DEPOSIT_MAX);
   const rent = clampMockAmount(monthlyRent, MOCK_MONTHLY_RENT_MAX);
-  const { fullDeposit, financing, contribution, monthlyInterest } = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent });
+  const result = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: 30, bankAnnualRate });
+  const minimum = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: 30 }).financing;
+  const maximum = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: 55 }).financing;
+  const rentDifference = result.monthlyInterest === null ? null : rent - result.monthlyInterest;
   const toman = (value: number) => `${formatMockNumber(value)} تومان`;
 
   return {
     cashDeposit: toman(deposit),
     monthlyRent: toman(rent),
+    rentEquivalentDeposit: toman(result.rentEquivalentDeposit),
     conversionRate: "۳٪ ماهانه",
-    fullDeposit: toman(fullDeposit),
-    financing: toman(financing),
-    contribution: toman(contribution),
-    annualRate: "۲۳٪",
-    monthlyInterest: toman(monthlyInterest ?? 0),
+    fullDeposit: toman(result.fullDeposit),
+    minimumFinancing: toman(minimum),
+    maximumFinancing: toman(maximum),
+    financing: toman(result.financing),
+    contribution: toman(result.contribution),
+    annualRate: bankAnnualRate === null ? "وارد نشده" : `${new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 2 }).format(bankAnnualRate)}٪`,
+    monthlyInterest: result.monthlyInterest === null ? "نرخ سود بانک را وارد کنید" : toman(result.monthlyInterest),
+    rentDifference: rentDifference === null ? null : toman(rentDifference),
+    belowRent: rentDifference !== null && rentDifference > 0,
   };
 }

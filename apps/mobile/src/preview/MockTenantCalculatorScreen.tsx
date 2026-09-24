@@ -87,7 +87,7 @@ function PreviewAmount({ label, value, maximum, step, limit, onChange }: {
 
 export function MockTenantCalculatorScreen() {
   const router = useRouter();
-  const { cashDeposit, monthlyRent, setCashDeposit, setMonthlyRent, financialModel } = useMockPreview();
+  const { cashDeposit, monthlyRent, bankRateInput, setBankRateInput, setCashDeposit, setMonthlyRent, financialModel } = useMockPreview();
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.brand}><BrandLogo /></View>
@@ -99,9 +99,20 @@ export function MockTenantCalculatorScreen() {
         <Text style={styles.heading}>شرایط قرارداد را وارد کنید</Text>
         <Text style={styles.intro}>با وارد کردن مبلغ رهن و اجاره، محدوده تقریبی قابل تأمین را مشاهده کنید.</Text>
         <View style={styles.card}>
-          <PreviewAmount label="مبلغ رهن" value={cashDeposit} maximum={MOCK_CASH_DEPOSIT_MAX} step={MOCK_CASH_DEPOSIT_STEP} limit="۲ میلیارد" onChange={setCashDeposit} />
+          <PreviewAmount label="مبلغ رهن" value={cashDeposit} maximum={MOCK_CASH_DEPOSIT_MAX} step={MOCK_CASH_DEPOSIT_STEP} limit="۱ میلیارد" onChange={setCashDeposit} />
           <View style={styles.divider} />
-          <PreviewAmount label="اجاره ماهانه" value={monthlyRent} maximum={MOCK_MONTHLY_RENT_MAX} step={MOCK_MONTHLY_RENT_STEP} limit="۱۰۰ میلیون" onChange={setMonthlyRent} />
+          <PreviewAmount label="اجاره ماهانه" value={monthlyRent} maximum={MOCK_MONTHLY_RENT_MAX} step={MOCK_MONTHLY_RENT_STEP} limit="۵۰ میلیون" onChange={setMonthlyRent} />
+        </View>
+        <View style={styles.card}>
+          <Text style={styles.amountLabel}>سناریوی نمونه اعتبارسنجی: رتبه C3</Text>
+          <Text style={styles.estimateCaption}>درصد تأمین مالی این نمونه: ۳۰٪ رهن کامل معادل قرارداد. رتبه واقعی تنها از سامانه بیرونی دریافت می‌شود و در این پیش‌نمایش قابل انتخاب نیست.</Text>
+          <Text style={styles.amountLabel}>نرخ سود سالانه اسمی بانک (نمونه: ۲۳٪)</Text>
+          <TextInput accessibilityLabel="نرخ سود سالانه اسمی بانک" keyboardType="decimal-pad" value={bankRateInput} onChangeText={value => {
+            const normalized = value.replace(/[۰-۹]/g, digit => String(digit.charCodeAt(0) - 1776)).replace(/[٠-٩]/g, digit => String(digit.charCodeAt(0) - 1632)).replace("٫", ".");
+            if (/^\d{0,3}(\.\d{0,2})?$/.test(normalized)) setBankRateInput(normalized);
+          }} placeholder="۲۳" style={styles.rateInput} />
+          <Text style={styles.estimateCaption}>نرخ واقعی باید از بانک دریافت و تأیید شود. پرداخت ماهانه فقط سود است، نه اصل وام.</Text>
+          {bankRateInput.trim() !== "" && Number(bankRateInput) > 100 && <Text style={styles.rateError}>نرخ باید بین صفر تا صد درصد باشد.</Text>}
         </View>
         <View style={styles.estimate}>
           <Text style={styles.estimateTitle}>پرداخت ماهانه تقریبی شما (فقط سود)</Text>
@@ -147,6 +158,8 @@ const styles = StyleSheet.create({
   adjustButton: { flex: 1, minHeight: 42, borderRadius: 8, backgroundColor: colors.page, alignItems: "center", justifyContent: "center" },
   adjustText: { color: colors.primary, fontFamily: fonts.medium, fontSize: 12, textAlign: "center" },
   divider: { height: 1, backgroundColor: colors.border },
+  rateInput: { width: "100%", borderWidth: 1, borderColor: colors.border, borderRadius: 8, minHeight: 44, paddingHorizontal: 12, color: colors.primary, fontFamily: fonts.medium, fontSize: 16, ...rtl },
+  rateError: { color: "#B91C1C", fontFamily: fonts.medium, fontSize: 12, ...rtl },
   estimate: { borderRadius: radii.md, borderColor: colors.border, borderWidth: 1, backgroundColor: colors.surface, padding: 14, gap: 6, alignItems: "flex-end" },
   estimateTitle: { width: "100%", color: colors.primary, fontFamily: fonts.semibold, fontSize: 13, ...rtl },
   estimateValue: { width: "100%", color: colors.primary, fontFamily: fonts.bold, fontSize: 20, ...rtl },
