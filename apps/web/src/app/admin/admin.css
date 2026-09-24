@@ -12,12 +12,22 @@
   text-align: right;
 }
 
-.admin-shell__main > * {
+.admin-shell__frame {
   width: min(1220px, 100%);
   max-width: 1220px;
-  margin-inline: auto;
+  min-height: 100vh;
+  margin-left: auto;
+  margin-right: 0;
   box-sizing: border-box;
   direction: rtl;
+}
+
+.admin-shell__frame > * {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  box-sizing: border-box;
 }
 
 .admin-auth-shell {
@@ -626,6 +636,12 @@
 
   .admin-sidebar__logout::before {
     display: none;
+  }
+
+  .admin-shell__frame {
+    width: 100%;
+    max-width: none;
+    margin: 0;
   }
 
   .admin-dashboard {
