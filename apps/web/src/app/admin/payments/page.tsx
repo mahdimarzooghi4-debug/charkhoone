@@ -251,7 +251,7 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
           })}
         </nav>
         <p className="admin-payments__source-note">
-          {previewMode ? (status ? `فیلتر پیش‌نمایش: ${status}` : "داده نمایشی Stage") : (status ? `فیلتر سرویس: ${status}` : "بدون فیلتر وضعیت")}
+          {previewMode ? (status ? `فیلتر پیش‌نمایش: ${formatPaymentStatus(status)}` : "داده نمایشی مرحله آزمایش") : (status ? `فیلتر سرویس: ${formatPaymentStatus(status)}` : "بدون فیلتر وضعیت")}
         </p>
       </section>
 
