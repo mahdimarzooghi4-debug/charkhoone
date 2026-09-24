@@ -1,26 +1,42 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import shell from "../panel.module.css";
 import styles from "./page.module.css";
 
 const assets = {
   avatar: "/brand/bank-mark.svg",
   logo: "/brand/dashboard-logo.png",
-  search: "https://www.figma.com/api/mcp/asset/6bf8fee2-be79-4844-b80e-6ef9dae90861.svg",
-  home: "https://www.figma.com/api/mcp/asset/5ed128bf-94ea-4e44-887f-c8375148f0a8.svg",
-  requests: "https://www.figma.com/api/mcp/asset/9e949382-e1df-42b2-92a6-b0efd96cbe97.svg",
-  plans: "https://www.figma.com/api/mcp/asset/fa65a64a-8d4e-4366-8f6a-af62fb8a58af.svg",
-  payments: "https://www.figma.com/api/mcp/asset/0aa3dc97-b2e9-47e0-bd98-687012010c5c.svg",
-  settings: "https://www.figma.com/api/mcp/asset/5273575a-de26-441a-9e2f-ce7316a91bbc.svg",
-  logout: "https://www.figma.com/api/mcp/asset/8673b6db-a368-4ebf-b6f1-3500f33bb10c.svg",
+  home: "",
+  requests: "",
+  plans: "",
+  payments: "",
+  settings: "",
+  logout: "",
 } as const;
 
-const rows = [
+const PLAN_STORAGE_KEY = "charkhoone.bank.preview.plans";
+
+type PlanRow = {
+  name: string;
+  org: string;
+  type: string;
+  max: string;
+  credit: string;
+  duration: string;
+  rate: string;
+  status: "فعال" | "پیش‌نویس" | "غیرفعال";
+  tone: "active" | "draft" | "inactive";
+};
+
+const baseRows: PlanRow[] = [
   { name: "طرح مسکن ویژه", org: "", type: "عمومی", max: "۵۰۰٬۰۰۰٬۰۰۰ تومان", credit: "A", duration: "۱۲ ماه", rate: "۲۳٪", status: "فعال", tone: "active" },
   { name: "طرح اجاره به شرط تملیک", org: "سازمان نمونه", type: "سازمانی", max: "۳۵۰٬۰۰۰٬۰۰۰ تومان", credit: "B", duration: "۱۲ ماه", rate: "۲۱٪", status: "فعال", tone: "active" },
   { name: "طرح مسکن جوانان", org: "", type: "عمومی", max: "۲۸۰٬۰۰۰٬۰۰۰ تومان", credit: "A", duration: "۱۲ ماه", rate: "۲۰٪", status: "فعال", tone: "active" },
   { name: "طرح حمایت کارمندان", org: "بانک مرکزی", type: "سازمانی", max: "۶۰۰٬۰۰۰٬۰۰۰ تومان", credit: "B", duration: "۱۲ ماه", rate: "۱۸٪", status: "پیش‌نویس", tone: "draft" },
   { name: "طرح ویژه بازنشستگان", org: "صندوق بازنشستگی", type: "سازمانی", max: "۴۰۰٬۰۰۰٬۰۰۰ تومان", credit: "C", duration: "۱۲ ماه", rate: "۲۲٪", status: "غیرفعال", tone: "inactive" },
-] as const;
+];
 
 function Sidebar() {
   return (
@@ -39,6 +55,34 @@ function Sidebar() {
 }
 
 export default function BankPlansPage() {
+  const [savedRows, setSavedRows] = useState<PlanRow[]>([]);
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<"همه" | PlanRow["status"]>("همه");
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(PLAN_STORAGE_KEY);
+      const parsed = raw ? JSON.parse(raw) : [];
+      if (Array.isArray(parsed)) setSavedRows(parsed as PlanRow[]);
+    } catch {
+      setSavedRows([]);
+    }
+  }, []);
+
+  const rows = useMemo(() => [...savedRows, ...baseRows], [savedRows]);
+  const visibleRows = useMemo(() => rows.filter((row) => {
+    const matchesQuery = !query.trim() || row.name.includes(query.trim()) || row.org.includes(query.trim());
+    const matchesFilter = filter === "همه" || row.status === filter;
+    return matchesQuery && matchesFilter;
+  }), [rows, query, filter]);
+
+  const counts = {
+    همه: rows.length,
+    فعال: rows.filter((row) => row.status === "فعال").length,
+    "پیش‌نویس": rows.filter((row) => row.status === "پیش‌نویس").length,
+    غیرفعال: rows.filter((row) => row.status === "غیرفعال").length,
+  };
+
   return (
     <main className={shell.page} data-node-id="274:2" data-name="Bank / Plans">
       <section className={shell.mainContent}>
@@ -51,32 +95,49 @@ export default function BankPlansPage() {
         </header>
 
         <section className={styles.kpis}>
-          <div className={styles.kpi}><span>طرح‌های سازمانی</span><strong>۴ طرح</strong></div>
-          <div className={styles.kpi}><span>طرح عمومی</span><strong>۱ طرح</strong></div>
-          <div className={styles.kpi}><span>طرح‌های فعال</span><strong>۵ طرح</strong></div>
+          <div className={styles.kpi}><span>طرح‌های سازمانی</span><strong>{rows.filter((row) => row.type === "سازمانی").length.toLocaleString("fa-IR")} طرح</strong></div>
+          <div className={styles.kpi}><span>طرح عمومی</span><strong>{rows.filter((row) => row.type === "عمومی").length.toLocaleString("fa-IR")} طرح</strong></div>
+          <div className={styles.kpi}><span>طرح‌های فعال</span><strong>{counts["فعال"].toLocaleString("fa-IR")} طرح</strong></div>
         </section>
 
         <div className={styles.toolbar}>
-          <div className={styles.search}><span>جستجوی نام طرح</span><img src={assets.search} alt="" /></div>
-          <div className={styles.filters}>
-            <span className={styles.filter}><span className={styles.filterBadge}>همه</span>۵</span>
-            <span className={styles.filter}><span className={styles.filterBadge}>فعال</span>۳</span>
-            <span className={styles.filter}><span className={styles.filterBadge}>پیش‌نویس</span>۱</span>
-            <span className={styles.filter}><span className={styles.filterBadge}>غیرفعال</span>۱</span>
+          <label className={styles.search}>
+            <input
+              className={styles.searchInput}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="جستجوی نام طرح یا سازمان"
+              aria-label="جستجوی نام طرح یا سازمان"
+            />
+            <span aria-hidden="true">⌕</span>
+          </label>
+          <div className={styles.filters} aria-label="فیلتر وضعیت طرح‌ها">
+            {(["همه", "فعال", "پیش‌نویس", "غیرفعال"] as const).map((item) => (
+              <button
+                key={item}
+                type="button"
+                className={`${styles.filter} ${filter === item ? styles.filterActive : ""}`}
+                onClick={() => setFilter(item)}
+                aria-pressed={filter === item}
+              >
+                <span className={styles.filterBadge}>{item}</span>{counts[item].toLocaleString("fa-IR")}
+              </button>
+            ))}
           </div>
         </div>
 
         <section className={styles.tableWrap}>
           <div className={styles.table}>
             <div className={styles.tableHeader}><span>اقدام</span><span>وضعیت</span><span>نرخ سود</span><span>مدت</span><span>حداقل رتبه اعتباری</span><span>سقف تأمین مالی</span><span>نوع</span><span>نام طرح</span></div>
-            {rows.map((row, index) => (
-              <div className={styles.tableRow} key={row.name}>
-                <Link href={index === 0 ? "/bank/plans/1" : "/bank/plans/1"} className={styles.viewButton}>مشاهده</Link>
+            {visibleRows.map((row) => (
+              <div className={styles.tableRow} key={`${row.name}-${row.org}-${row.rate}`}>
+                <Link href="/bank/plans/1" className={styles.viewButton}>مشاهده</Link>
                 <span className={`${styles.status} ${styles[row.tone]}`}>{row.status}</span>
                 <span>{row.rate}</span><span>{row.duration}</span><span>{row.credit}</span><span>{row.max}</span><span>{row.type}</span>
                 <span className={styles.nameCell}><strong>{row.name}</strong>{row.org ? <small>{row.org}</small> : null}</span>
               </div>
             ))}
+            {visibleRows.length === 0 && <div className={styles.emptyState}>طرحی با این فیلتر پیدا نشد.</div>}
           </div>
         </section>
       </section>
