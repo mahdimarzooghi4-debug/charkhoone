@@ -31,6 +31,24 @@ const statusLabels: Record<string, string> = {
   BankApprovalPending: "در انتظار بانک",
   FundingPending: "در انتظار تأمین مالی",
   ApprovedFunded: "تأمین مالی تکمیل",
+  Active: "فعال",
+  Draft: "پیش‌نویس",
+  Pending: "در انتظار",
+  Verified: "تأییدشده",
+  Approved: "تأییدشده",
+  Confirmed: "تأییدشده",
+  Succeeded: "موفق",
+  Unknown: "نامشخص",
+  Indeterminate: "نامعین",
+  NeedsDocuments: "نیازمند مدارک",
+};
+
+const operationLabels: Record<string, string> = {
+  Identity: "احراز هویت",
+  PropertyContract: "قرارداد ملک",
+  CreditEligibility: "اعتبارسنجی",
+  BankFunding: "تأمین مالی بانکی",
+  TenantContributionFunding: "تأمین سهم مستأجر",
 };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
@@ -102,19 +120,19 @@ function formatUpdatedAt(value: string) {
 
 function fundingState(item: PilotCaseQueueItem) {
   if (item.tenantContributionStatus) {
-    return `سهم مستأجر: ${item.tenantContributionStatus}`;
+    return `سهم مستأجر: ${formatStatus(item.tenantContributionStatus)}`;
   }
 
   if (item.fundFreezeStatus) {
-    return `فریز اصل: ${item.fundFreezeStatus}`;
+    return `فریز اصل: ${formatStatus(item.fundFreezeStatus)}`;
   }
 
   if (item.bankApprovalStatus) {
-    return `بانک: ${item.bankApprovalStatus}`;
+    return `بانک: ${formatStatus(item.bankApprovalStatus)}`;
   }
 
   if (item.creditEligibilityStatus) {
-    return `اعتبار: ${item.creditEligibilityStatus}`;
+    return `اعتبار: ${formatStatus(item.creditEligibilityStatus)}`;
   }
 
   return "—";
@@ -185,7 +203,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams: S
   return (
     <section className="admin-cases" data-name="Admin / Pilot Cases">
       <header className="admin-cases__header">
-        <span className="admin-cases__live">{previewMode ? "Stage Preview • QA" : "Pilot API • PostgreSQL"}</span>
+        <span className="admin-cases__live">{previewMode ? "پیش‌نمایش آزمایشی • کنترل کیفیت" : "Pilot API • PostgreSQL"}</span>
         <div className="admin-cases__heading">
           <h1>پرونده‌های پایلوت</h1>
           <p>{previewMode ? "داده‌های نمایشی کنترل‌شده برای تکمیل و بررسی تجربه ادمین." : "صف واقعی عملیات؛ شناسه‌ها و وضعیت‌ها مستقیماً از backend محافظت‌شده خوانده می‌شوند."}</p>
@@ -196,12 +214,12 @@ export default async function AdminCasesPage({ searchParams }: { searchParams: S
         <article className="admin-cases__metric">
           <span>پرونده در این صفحه</span>
           <strong>{items.length.toLocaleString("fa-IR")}</strong>
-          <small>فقط page جاری، نه آمار ساختگی کل سامانه</small>
+          <small>فقط صفحه جاری، نه آمار ساختگی کل سامانه</small>
         </article>
         <article className="admin-cases__metric">
-          <span>پیشنهاد reconcile</span>
+          <span>پیشنهاد پیگیری</span>
           <strong>{reconcileCount.toLocaleString("fa-IR")}</strong>
-          <small>عملیات پیشنهادی backend برای state فعلی</small>
+          <small>عملیات پیشنهادی سامانه برای وضعیت فعلی</small>
         </article>
         <article className="admin-cases__metric">
           <span>دارای قرارداد</span>
@@ -232,7 +250,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams: S
           })}
         </nav>
         <p className="admin-cases__source-note">
-          {previewMode ? (status ? `فیلتر Preview: ${status}` : "داده نمایشی Stage") : (status ? `فیلتر API: ${status}` : "بدون فیلتر وضعیت")}
+          {previewMode ? (status ? `فیلتر پیش‌نمایش: ${formatStatus(status)}` : "داده نمایشی مرحله آزمایش") : (status ? `فیلتر سرویس: ${formatStatus(status)}` : "بدون فیلتر وضعیت")}
         </p>
       </section>
 
@@ -242,11 +260,11 @@ export default async function AdminCasesPage({ searchParams }: { searchParams: S
             <div className="admin-cases__row admin-cases__row--head" role="row">
               <span role="columnheader">اقدام</span>
               <span role="columnheader">به‌روزرسانی</span>
-              <span role="columnheader">Reconcile</span>
-              <span role="columnheader">Evidence مالی</span>
+              <span role="columnheader">پیگیری</span>
+              <span role="columnheader">شواهد مالی</span>
               <span role="columnheader">قرارداد</span>
               <span role="columnheader">وضعیت پرونده</span>
-              <span role="columnheader">Applicant</span>
+              <span role="columnheader">متقاضی</span>
             </div>
 
             {items.map((item) => (
@@ -266,7 +284,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams: S
                   <span
                     className={`admin-cases__badge admin-cases__badge--${item.suggestedOperation ? "warning" : "neutral"}`}
                   >
-                    {item.suggestedOperation ?? "—"}
+                    {item.suggestedOperation ? operationLabels[item.suggestedOperation] ?? item.suggestedOperation : "—"}
                   </span>
                 </span>
                 <span role="cell">
@@ -285,7 +303,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams: S
                   <span
                     className={`admin-cases__badge admin-cases__badge--${statusTone(item.contractStatus)}`}
                   >
-                    {item.contractStatus ?? "—"}
+                    {formatStatus(item.contractStatus)}
                   </span>
                 </span>
                 <strong role="cell" title={item.creditApplicationId}>
@@ -310,7 +328,7 @@ export default async function AdminCasesPage({ searchParams }: { searchParams: S
             {hasNextPage ? <Link href={pageHref(page + 1, status)}>بعدی</Link> : <span>بعدی</span>}
           </nav>
           <p>
-            page {response.page.toLocaleString("fa-IR")} • حداکثر {response.pageSize.toLocaleString("fa-IR")} پرونده
+            صفحه {response.page.toLocaleString("fa-IR")} • حداکثر {response.pageSize.toLocaleString("fa-IR")} پرونده
           </p>
         </footer>
       </section>

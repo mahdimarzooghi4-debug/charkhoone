@@ -15,6 +15,79 @@ function firstValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+const statusLabels: Record<string, string> = {
+  IdentityPending: "در انتظار احراز هویت",
+  PlanSelectionPending: "در انتظار انتخاب طرح",
+  PropertyContractPending: "در انتظار قرارداد ملک",
+  ExternalChecksPending: "در انتظار بررسی بیرونی",
+  ExternalCheckIndeterminate: "بررسی بیرونی نامعین",
+  DecisionReady: "آماده تصمیم",
+  BankApprovalPending: "در انتظار بانک",
+  FundingPending: "در انتظار تأمین مالی",
+  ApprovedFunded: "تأمین مالی تکمیل",
+  Active: "فعال",
+  Draft: "پیش‌نویس",
+  Pending: "در انتظار",
+  Verified: "تأییدشده",
+  Approved: "تأییدشده",
+  Confirmed: "تأییدشده",
+  Succeeded: "موفق",
+  Unknown: "نامشخص",
+  Indeterminate: "نامعین",
+  NeedsDocuments: "نیازمند مدارک",
+};
+
+const operationLabels: Record<string, string> = {
+  Identity: "احراز هویت",
+  PropertyContract: "قرارداد ملک",
+  CreditEligibility: "اعتبارسنجی",
+  BankFunding: "تأمین مالی بانکی",
+  TenantContributionFunding: "تأمین سهم مستأجر",
+};
+
+const verificationTypeLabels: Record<string, string> = {
+  Identity: "احراز هویت",
+  PropertyContract: "قرارداد ملک",
+  CreditEligibility: "اعتبارسنجی",
+  BankFunding: "تأمین مالی بانکی",
+  TenantContributionFunding: "تأمین سهم مستأجر",
+};
+
+const auditActionLabels: Record<string, string> = {
+  CaseViewed: "مشاهده پرونده",
+  StateUpdated: "به‌روزرسانی وضعیت",
+};
+
+function toFaDigits(value: string) {
+  return value
+    .replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)])
+    .replaceAll(",", "٬")
+    .replaceAll(".", "٫");
+}
+
+function formatStatus(value: string | null | undefined) {
+  if (!value) return "—";
+  return statusLabels[value] ?? value;
+}
+
+function formatOperation(value: string | null | undefined) {
+  if (!value) return "—";
+  return operationLabels[value] ?? value;
+}
+
+function formatIdentifier(value: string | null | undefined) {
+  if (!value) return "—";
+  return toFaDigits(
+    value
+      .replace(/^contract-/, "قرارداد ")
+      .replace(/^property-/, "ملک ")
+      .replace(/^owner-/, "مالک ")
+      .replace(/^plan-/, "طرح ")
+      .replace(/^fund-/, "صندوق ")
+      .replace(/^preview-/, "آزمایشی "),
+  );
+}
+
 function formatDateTime(value: string | null | undefined) {
   if (!value) return "—";
   const parsed = new Date(value);
@@ -29,10 +102,10 @@ function formatDateTime(value: string | null | undefined) {
 
 function formatRial(value: string | number | null | undefined) {
   if (value === null || value === undefined) return "—";
-  const rendered =
-    typeof value === "number"
-      ? value.toLocaleString("fa-IR", { maximumFractionDigits: 20 })
-      : value;
+  const numeric = typeof value === "number" ? value : Number(value);
+  const rendered = Number.isFinite(numeric)
+    ? numeric.toLocaleString("fa-IR", { maximumFractionDigits: 20 })
+    : toFaDigits(String(value));
   return `${rendered} ریال`;
 }
 
@@ -98,13 +171,13 @@ function ReconcileForm({
     >
       <input type="hidden" name="operation" value={operation} />
       <div>
-        <strong>عملیات پیشنهادی backend: {operation}</strong>
+        <strong>عملیات پیشنهادی سامانه: {formatOperation(operation)}</strong>
         <p>
-          این فرم فقط retry همان service authoritative را درخواست می‌کند؛ status، مبلغ، grade یا provider result قابل ورود نیست.
+          این فرم فقط تلاش مجدد همان سرویس اصلی را درخواست می‌کند؛ وضعیت، مبلغ، رتبه یا نتیجه سرویس قابل ورود نیست.
         </p>
       </div>
       <label>
-        <span>دلیل انسانی retry</span>
+        <span>دلیل پیگیری</span>
         <textarea
           name="reason"
           required
@@ -114,7 +187,7 @@ function ReconcileForm({
         />
       </label>
       <button className="admin-case-detail__action admin-case-detail__action--primary" type="submit">
-        ثبت درخواست reconcile
+        ثبت درخواست پیگیری
       </button>
     </form>
   );
@@ -146,16 +219,16 @@ function FinancialEvidence({ item }: { item: PilotCaseDetail }) {
   return (
     <section className="admin-case-detail__panel admin-case-detail__detail-panel">
       <div className="admin-case-detail__section-heading">
-        <h2>Evidence مالی</h2>
+        <h2>شواهد مالی</h2>
         <p>فقط داده persist‌شده backend؛ وب هیچ مبلغ یا نتیجه‌ای را محاسبه یا تولید نمی‌کند.</p>
       </div>
       <div className="admin-case-detail__detail-list">
         <div className="admin-case-detail__detail-row">
           <Badge value={item.creditEligibility?.status}>
-            {item.creditEligibility?.status ?? "—"}
+            {formatStatus(item.creditEligibility?.status)}
           </Badge>
           <div>
-            <span>Credit eligibility</span>
+            <span>اعتبارسنجی</span>
             <strong>
               {item.creditEligibility
                 ? `${formatRial(item.creditEligibility.maximumEligibleLoanRial)} • ${item.creditEligibility.provider}`
@@ -164,9 +237,9 @@ function FinancialEvidence({ item }: { item: PilotCaseDetail }) {
           </div>
         </div>
         <div className="admin-case-detail__detail-row">
-          <Badge value={item.bankApproval?.status}>{item.bankApproval?.status ?? "—"}</Badge>
+          <Badge value={item.bankApproval?.status}>{formatStatus(item.bankApproval?.status)}</Badge>
           <div>
-            <span>Bank approval</span>
+            <span>تأیید بانک</span>
             <strong>
               {item.bankApproval
                 ? `${formatRial(item.bankApproval.approvedLoanRial)} • ${item.bankApproval.provider}`
@@ -175,21 +248,21 @@ function FinancialEvidence({ item }: { item: PilotCaseDetail }) {
           </div>
         </div>
         <div className="admin-case-detail__detail-row">
-          <Badge value={item.fundFreeze?.status}>{item.fundFreeze?.status ?? "—"}</Badge>
+          <Badge value={item.fundFreeze?.status}>{formatStatus(item.fundFreeze?.status)}</Badge>
           <div>
-            <span>Fund principal freeze</span>
-            <strong>{item.fundFreeze?.fundReference ?? "—"}</strong>
+            <span>تثبیت اصل سرمایه</span>
+            <strong>{formatIdentifier(item.fundFreeze?.fundReference)}</strong>
           </div>
         </div>
         <div className="admin-case-detail__detail-row">
           <Badge value={item.tenantContributionFunding?.status}>
-            {item.tenantContributionFunding?.status ?? "—"}
+            {formatStatus(item.tenantContributionFunding?.status)}
           </Badge>
           <div>
-            <span>Tenant contribution</span>
+            <span>سهم مستأجر</span>
             <strong>
               {item.tenantContributionFunding
-                ? `${formatRial(item.tenantContributionFunding.amountRial)} • ${item.tenantContributionFunding.currency}`
+                ? `${formatRial(item.tenantContributionFunding.amountRial)} • ریال`
                 : "—"}
             </strong>
           </div>
@@ -215,7 +288,7 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
           </Link>
           <div className="admin-case-detail__heading">
             <h1>جزئیات پرونده پایلوت</h1>
-            <p>{id}</p>
+            <p>{toFaDigits(id)}</p>
           </div>
         </header>
         <FailureState error={error} />
@@ -234,7 +307,7 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
         </Link>
         <div className="admin-case-detail__heading">
           <h1>جزئیات پرونده پایلوت</h1>
-          <p>{item.creditApplicationId}</p>
+          <p>{toFaDigits(item.creditApplicationId)}</p>
         </div>
       </header>
 
@@ -244,8 +317,8 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
           role="status"
         >
           {reconcileResult === "ok"
-            ? "درخواست reconcile توسط API پذیرفته شد و داده صفحه دوباره از backend خوانده شده است."
-            : `درخواست reconcile انجام نشد. کد: ${reconcileCode ?? "pilot_reconcile_failed"}`}
+            ? "درخواست پیگیری توسط API پذیرفته شد و داده صفحه دوباره از backend خوانده شده است."
+            : `درخواست پیگیری انجام نشد. کد: ${reconcileCode ?? "pilot_reconcile_failed"}`}
         </div>
       ) : null}
 
@@ -256,23 +329,23 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
         </div>
         <div className="admin-case-detail__summary-grid">
           <article>
-            <span>Application status</span>
-            <strong>{item.applicationStatus}</strong>
+            <span>وضعیت پرونده</span>
+            <strong>{formatStatus(item.applicationStatus)}</strong>
             <small>{formatDateTime(item.updatedAtUtc)}</small>
           </article>
           <article>
-            <span>Contract status</span>
-            <strong>{item.contractStatus ?? "—"}</strong>
-            <small>{item.contractId ?? "بدون قرارداد"}</small>
+            <span>وضعیت قرارداد</span>
+            <strong>{formatStatus(item.contractStatus)}</strong>
+            <small>{item.contractId ? formatIdentifier(item.contractId) : "بدون قرارداد"}</small>
           </article>
           <article>
-            <span>Applicant user</span>
+            <span>متقاضی</span>
             <strong title={item.applicantUserId}>{item.applicantUserId}</strong>
             <small>OIDC subject کاربر عمداً expose نمی‌شود</small>
           </article>
           <article>
-            <span>Suggested operation</span>
-            <strong>{item.suggestedOperation ?? "—"}</strong>
+            <span>عملیات پیشنهادی</span>
+            <strong>{formatOperation(item.suggestedOperation)}</strong>
             <small>پیشنهاد backend؛ نه تغییر مستقیم state</small>
           </article>
         </div>
@@ -283,29 +356,29 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
 
         <section className="admin-case-detail__panel admin-case-detail__detail-panel">
           <div className="admin-case-detail__section-heading">
-            <h2>Binding پرونده</h2>
+            <h2>شناسه‌های مرتبط پرونده</h2>
             <p>شناسه‌های trusted persisted برای application، plan، contract، owner و property.</p>
           </div>
           <dl className="admin-case-detail__facts">
             <div>
-              <dt>Plan</dt>
+              <dt>طرح</dt>
               <dd>
                 {item.bankLoanPlanId
-                  ? `${item.bankLoanPlanId} @ ${item.bankLoanPlanVersion ?? "—"}`
+                  ? `${formatIdentifier(item.bankLoanPlanId)} • نسخه ${toFaDigits(item.bankLoanPlanVersion ?? "—")}`
                   : "—"}
               </dd>
             </div>
             <div>
-              <dt>Contract</dt>
-              <dd>{item.contractId ?? "—"}</dd>
+              <dt>قرارداد</dt>
+              <dd>{formatIdentifier(item.contractId)}</dd>
             </div>
             <div>
-              <dt>Owner user</dt>
-              <dd>{item.ownerUserId ?? "—"}</dd>
+              <dt>مالک</dt>
+              <dd>{formatIdentifier(item.ownerUserId)}</dd>
             </div>
             <div>
-              <dt>Property</dt>
-              <dd>{item.propertyId ?? "—"}</dd>
+              <dt>ملک</dt>
+              <dd>{formatIdentifier(item.propertyId)}</dd>
             </div>
           </dl>
         </section>
@@ -314,24 +387,24 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
       {item.fundingAllocation ? (
         <section className="admin-case-detail__panel">
           <div className="admin-case-detail__section-heading">
-            <h2>Funding allocation</h2>
+            <h2>تخصیص تأمین مالی</h2>
             <p>نمایش read-only از allocation persisted؛ واحد همه مبالغ ریال است.</p>
           </div>
           <dl className="admin-case-detail__facts admin-case-detail__facts--grid">
             <div>
-              <dt>Full deposit equivalent</dt>
+              <dt>معادل رهن کامل</dt>
               <dd>{formatRial(item.fundingAllocation.fullDepositEquivalentRial)}</dd>
             </div>
             <div>
-              <dt>Maximum eligible loan</dt>
+              <dt>حداکثر تسهیلات مجاز</dt>
               <dd>{formatRial(item.fundingAllocation.maximumEligibleLoanRial)}</dd>
             </div>
             <div>
-              <dt>Bank approved loan</dt>
+              <dt>تسهیلات تأییدشده بانک</dt>
               <dd>{formatRial(item.fundingAllocation.bankApprovedLoanRial)}</dd>
             </div>
             <div>
-              <dt>Tenant contribution</dt>
+              <dt>سهم مستأجر</dt>
               <dd>{formatRial(item.fundingAllocation.tenantContributionRial)}</dd>
             </div>
           </dl>
@@ -341,7 +414,7 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
       <div className="admin-case-detail__columns admin-case-detail__columns--lower">
         <section className="admin-case-detail__panel">
           <div className="admin-case-detail__section-heading">
-            <h2>Verification requests</h2>
+            <h2>بررسی‌های بیرونی</h2>
             <p>provider evidence واقعی به ترتیب backend.</p>
           </div>
           {item.verificationRequests.length ? (
@@ -351,7 +424,7 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
                   <time>{formatDateTime(verification.updatedAtUtc)}</time>
                   <p>
                     <strong>
-                      {verification.type} • {verification.status}
+                      {verificationTypeLabels[verification.type] ?? verification.type} • {formatStatus(verification.status)}
                     </strong>
                     <span>
                       {verification.provider}
@@ -373,7 +446,7 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
 
         <section className="admin-case-detail__panel">
           <div className="admin-case-detail__section-heading">
-            <h2>آخرین audit eventها</h2>
+            <h2>آخرین رویدادهای سیستمی</h2>
             <p>رویدادهای persist‌شده CreditApplication؛ جدیدترین‌ها در این نما.</p>
           </div>
           {item.recentAuditEvents.length ? (
@@ -382,7 +455,7 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
                 <div key={event.id}>
                   <time>{formatDateTime(event.occurredAtUtc)}</time>
                   <p>
-                    <strong>{event.action}</strong>
+                    <strong>{auditActionLabels[event.action] ?? event.action}</strong>
                     <span>
                       {event.actorId} • {event.reason}
                     </span>
@@ -411,7 +484,7 @@ export default async function AdminCaseDetailPage({ params, searchParams }: Page
             operation={item.suggestedOperation}
           />
         ) : (
-          <Badge value={item.applicationStatus}>در state فعلی عملیات پیشنهادی وجود ندارد</Badge>
+          <Badge value={item.applicationStatus}>در وضعیت فعلی عملیات پیشنهادی وجود ندارد</Badge>
         )}
       </section>
     </section>

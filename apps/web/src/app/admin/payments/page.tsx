@@ -22,6 +22,53 @@ const statusFilters = [
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
+const paymentStatusLabels: Record<string, string> = {
+  Created: "ایجادشده",
+  Pending: "در انتظار",
+  Unknown: "نامشخص",
+  ReconciliationRequired: "نیازمند تطبیق",
+  Succeeded: "موفق",
+  Failed: "ناموفق",
+  ArrearsBlocked: "مسدود به‌دلیل بدهی",
+  Reversed: "برگشت‌خورده",
+};
+
+const paymentKindLabels: Record<string, string> = {
+  OwnerSettlement: "تسویه مالک",
+  TenantPayment: "پرداخت مستأجر",
+  BankFunding: "تأمین مالی بانکی",
+};
+
+const providerLabels: Record<string, string> = {
+  "بانک نمونه": "بانک نمونه",
+  "کارگزاری نمونه": "کارگزاری نمونه",
+};
+
+function toFaDigits(value: string) {
+  return value
+    .replace(/\d/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)])
+    .replaceAll(",", "٬")
+    .replaceAll(".", "٫");
+}
+
+function formatPaymentStatus(value: string | null) {
+  if (!value) return "—";
+  return paymentStatusLabels[value] ?? value;
+}
+
+function formatPaymentKind(value: string) {
+  return paymentKindLabels[value] ?? value;
+}
+
+function formatProvider(value: string | null) {
+  if (!value) return "ارائه‌دهنده";
+  return providerLabels[value] ?? value;
+}
+
+function formatPaymentId(value: string) {
+  return toFaDigits(value.replace(/^PAY-/, "پرداخت "));
+}
+
 function firstValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
@@ -72,7 +119,7 @@ function formatRial(value: string) {
   const digits = sign ? integerPart.slice(1) : integerPart;
   const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   const exact = fractionPart === undefined ? `${sign}${grouped}` : `${sign}${grouped}.${fractionPart}`;
-  return `${exact} ریال`;
+  return `${toFaDigits(exact)} ریال`;
 }
 
 function formatDateTime(value: string) {
@@ -135,7 +182,7 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
     return (
       <section className="admin-payments" data-name="Admin / Pilot Payments">
         <header className="admin-payments__header">
-          <span className="admin-payments__live">{previewMode ? "Stage Preview • QA" : "Pilot API • PostgreSQL"}</span>
+          <span className="admin-payments__live">{previewMode ? "پیش‌نمایش آزمایشی • کنترل کیفیت" : "Pilot API • PostgreSQL"}</span>
           <div className="admin-payments__heading">
             <h1>پرداخت‌ها</h1>
             <p>{previewMode ? "پیش‌نمایش Stage با داده کنترل‌شده برای QA رابط کاربری." : "صف read-only پرداخت‌های persist‌شده؛ بدون داده نمونه و بدون تغییر مستقیم مالی."}</p>
@@ -157,7 +204,7 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
   return (
     <section className="admin-payments" data-name="Admin / Pilot Payments">
       <header className="admin-payments__header">
-        <span className="admin-payments__live">{previewMode ? "Stage Preview • QA" : "Pilot API • PostgreSQL"}</span>
+        <span className="admin-payments__live">{previewMode ? "پیش‌نمایش آزمایشی • کنترل کیفیت" : "Pilot API • PostgreSQL"}</span>
         <div className="admin-payments__heading">
           <h1>پرداخت‌ها</h1>
           <p>{previewMode ? "پرداخت‌های نمایشی کنترل‌شده برای تکمیل و بررسی تجربه ادمین." : "Payment instruction و آخرین evidence بیرونی مستقیماً از PostgreSQL خوانده می‌شوند."}</p>
@@ -168,22 +215,22 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
         <article className="admin-payments__metric">
           <span>پرداخت در این صفحه</span>
           <strong>{items.length.toLocaleString("fa-IR")}</strong>
-          <small>فقط page جاری؛ بدون total ساختگی</small>
+          <small>فقط صفحه جاری؛ بدون total ساختگی</small>
         </article>
         <article className="admin-payments__metric">
           <span>نیازمند توجه</span>
           <strong>{attentionCount.toLocaleString("fa-IR")}</strong>
-          <small>Pending / Unknown / ReconciliationRequired</small>
+          <small>در انتظار / نامشخص / نیازمند تطبیق</small>
         </article>
         <article className="admin-payments__metric">
           <span>موفق</span>
           <strong>{succeededCount.toLocaleString("fa-IR")}</strong>
-          <small>PaymentInstruction persisted با status=Succeeded</small>
+          <small>پرداخت‌های ثبت‌شده با وضعیت موفق</small>
         </article>
         <article className="admin-payments__metric">
           <span>ناموفق یا مسدود</span>
           <strong>{blockedOrFailedCount.toLocaleString("fa-IR")}</strong>
-          <small>Failed / ArrearsBlocked در همین page</small>
+          <small>ناموفق یا مسدود در همین صفحه</small>
         </article>
       </section>
 
@@ -204,7 +251,7 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
           })}
         </nav>
         <p className="admin-payments__source-note">
-          {previewMode ? (status ? `فیلتر Preview: ${status}` : "داده نمایشی Stage") : (status ? `فیلتر API: ${status}` : "بدون فیلتر وضعیت")}
+          {previewMode ? (status ? `فیلتر پیش‌نمایش: ${formatPaymentStatus(status)}` : "داده نمایشی مرحله آزمایش") : (status ? `فیلتر سرویس: ${formatPaymentStatus(status)}` : "بدون فیلتر وضعیت")}
         </p>
       </section>
 
@@ -214,11 +261,11 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
             <div className="admin-payments__row admin-payments__row--head" role="row">
               <span role="columnheader">پرونده</span>
               <span role="columnheader">به‌روزرسانی</span>
-              <span role="columnheader">Provider evidence</span>
+              <span role="columnheader">شواهد درگاه</span>
               <span role="columnheader">وضعیت</span>
               <span role="columnheader">مبلغ</span>
               <span role="columnheader">نوع / ماه</span>
-              <span role="columnheader">Payment instruction</span>
+              <span role="columnheader">شناسه پرداخت</span>
             </div>
 
             {items.map((item) => (
@@ -245,7 +292,7 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
                     )}`}
                   >
                     {item.externalTransactionStatus
-                      ? `${item.provider ?? "provider"} • ${item.externalTransactionStatus}`
+                      ? `${formatProvider(item.provider)} • ${formatPaymentStatus(item.externalTransactionStatus)}`
                       : "—"}
                   </span>
                 </span>
@@ -255,15 +302,15 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
                       item.paymentStatus,
                     )}`}
                   >
-                    {item.paymentStatus}
+                    {formatPaymentStatus(item.paymentStatus)}
                   </span>
                 </span>
                 <strong role="cell">{formatRial(item.amountRial)}</strong>
                 <span role="cell">
-                  {item.kind} • ماه {item.contractMonthNumber.toLocaleString("fa-IR")}
+                  {formatPaymentKind(item.kind)} • ماه {item.contractMonthNumber.toLocaleString("fa-IR")}
                 </span>
                 <strong role="cell" title={item.paymentInstructionId}>
-                  {item.paymentInstructionId}
+                  {formatPaymentId(item.paymentInstructionId)}
                 </strong>
               </div>
             ))}
@@ -284,7 +331,7 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
             {hasNextPage ? <Link href={pageHref(page + 1, status)}>بعدی</Link> : <span>بعدی</span>}
           </nav>
           <p>
-            page {response.page.toLocaleString("fa-IR")} • حداکثر {response.pageSize.toLocaleString("fa-IR")} پرداخت
+            صفحه {response.page.toLocaleString("fa-IR")} • حداکثر {response.pageSize.toLocaleString("fa-IR")} پرداخت
           </p>
         </footer>
       </section>
