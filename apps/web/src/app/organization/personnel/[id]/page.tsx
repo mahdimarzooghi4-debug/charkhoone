@@ -63,7 +63,7 @@ export default function OrganizationPersonnelDetailPage() {
             <DetailMetric label="تاریخ تخصیص" value="۱۴۰۵/۰۵/۱۲" />
             <DetailMetric label="وضعیت طرح" value="فعال برای این پرسنل" />
           </div>
-          <button className="org-detail-card__button" type="button">تغییر طرح</button>
+          <Link className="org-detail-card__button" href="/organization/bank-plans">تغییر طرح</Link>
         </article>
 
         <article className="org-detail-card">
@@ -77,7 +77,7 @@ export default function OrganizationPersonnelDetailPage() {
             <DetailMetric label="آخرین مرحله" value="تأمین مالی فعال" />
             <DetailMetric label="تاریخ دعوت" value="۱۴۰۵/۰۵/۱۰" />
           </div>
-          <button className="org-detail-card__button" type="button">مشاهده پرونده</button>
+          <Link className="org-detail-card__button" href="/organization/cases/1405-128">مشاهده پرونده</Link>
         </article>
       </div>
 
