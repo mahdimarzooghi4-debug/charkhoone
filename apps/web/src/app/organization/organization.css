@@ -122,9 +122,51 @@
 }
 
 .org-sidebar__logout {
+  position: relative;
+  width: 100%;
+  min-height: 46px;
   flex: 0 0 auto;
   margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  direction: rtl;
+  color: #ffffff;
   font-weight: 600;
+  text-align: center;
+  background: rgb(255 255 255 / 7%);
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 12px;
+}
+
+.org-sidebar__logout span {
+  flex: 0 1 auto;
+  text-align: center;
+}
+
+.org-sidebar__logout svg {
+  display: none;
+}
+
+.org-sidebar__logout::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -17px;
+  height: 1px;
+  background: rgb(255 255 255 / 18%);
+}
+
+.org-sidebar__logout:hover {
+  color: #ffffff;
+  background: rgb(255 255 255 / 13%);
+}
+
+.org-sidebar__logout:focus-visible {
+  outline: 3px solid var(--ch-color-accent);
+  outline-offset: 3px;
 }
 
 /* Figma's 1220px is the whole column to the LEFT of its 220px sidebar,
@@ -574,6 +616,10 @@
 
   .org-sidebar__logout {
     margin-top: 8px;
+  }
+
+  .org-sidebar__logout::before {
+    display: none;
   }
 
   .org-dashboard {
