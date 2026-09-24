@@ -15,7 +15,7 @@ type PageProps = {
 
 export default async function BrokerageDeactivateUserPage({ params }: PageProps) {
   const { id } = await params;
-  const userName = userNames[id] ?? userNames["ali-rezaei"];
+  const userName = userNames[id] ?? "کاربر انتخاب‌شده";
 
   return (
     <div
