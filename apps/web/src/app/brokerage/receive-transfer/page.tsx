@@ -138,9 +138,9 @@ function normalizeSearch(value: string) {
 function matchesTransferFilter(transaction: Transaction, filter: TransferFilter) {
   switch (filter) {
     case "received":
-      return transaction.route.endsWith("→ کارگزاری");
+      return transaction.route.endsWith("← کارگزاری");
     case "transferred":
-      return transaction.route.startsWith("کارگزاری →");
+      return transaction.route.startsWith("کارگزاری ←");
     case "review":
       return transaction.status === "نیازمند تطبیق" || transaction.tone === "danger";
     default:
