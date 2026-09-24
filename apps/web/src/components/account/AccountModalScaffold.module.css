@@ -11,7 +11,7 @@
 .settingsCard { display: flex; flex-direction: column; gap: 16px; padding: 20px; }
 .settingsCard h2, .card h2 { color: var(--ch-color-text); font-size: 16px; font-weight: 600; text-align: right; }
 .settingsList { display: flex; flex-direction: column; gap: 12px; }
-.settingsRow { min-height: 24px; display: flex; align-items: center; justify-content: space-between; color: var(--ch-color-text); font-size: 14px; }
+.settingsRow { min-height: 24px; display: flex; align-items: center; justify-content: space-between; color: var(--ch-color-text); font-size: 14px; text-decoration: none; }
 .settingsRow img { width: 20px; height: 20px; display: block; }
 .toggle { width: 40px; height: 24px; display: flex; align-items: center; justify-content: flex-end; padding: 2px; background: var(--ch-color-primary); border-radius: 12px; }
 .toggle i { width: 20px; height: 20px; background: #fff; border-radius: 10px; }

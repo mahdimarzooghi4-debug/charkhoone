@@ -68,6 +68,7 @@ modal_subpages = {
     "account/change-mobile/otp/page.tsx",
     "account/profile-image/page.tsx",
     "account/profile-image/preview/page.tsx",
+    "account/iban/page.tsx",
 }
 panel_count = 0
 styles_checked: set[Path] = set()
