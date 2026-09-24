@@ -121,9 +121,51 @@
 }
 
 .brokerage-sidebar__logout {
+  position: relative;
+  width: 100%;
+  min-height: 46px;
   flex: 0 0 auto;
   margin-top: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  direction: rtl;
+  color: #fff;
   font-weight: 600;
+  text-align: center;
+  background: rgb(255 255 255 / 7%);
+  border: 1px solid rgb(255 255 255 / 28%);
+  border-radius: 12px;
+}
+
+.brokerage-sidebar__logout span {
+  flex: 0 1 auto;
+  text-align: center;
+}
+
+.brokerage-sidebar__logout svg {
+  display: none;
+}
+
+.brokerage-sidebar__logout::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -17px;
+  height: 1px;
+  background: rgb(255 255 255 / 18%);
+}
+
+.brokerage-sidebar__logout:hover {
+  color: #fff;
+  background: rgb(255 255 255 / 13%);
+}
+
+.brokerage-sidebar__logout:focus-visible {
+  outline: 3px solid var(--ch-color-accent);
+  outline-offset: 3px;
 }
 
 /* Figma's 1220px is the main grid column at a 1440px viewport,
@@ -525,6 +567,10 @@
 
   .brokerage-sidebar__logout {
     margin-top: 8px;
+  }
+
+  .brokerage-sidebar__logout::before {
+    display: none;
   }
 
   .brokerage-dashboard {
