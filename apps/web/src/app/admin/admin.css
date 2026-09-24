@@ -612,9 +612,9 @@
 .admin-settings,
 .admin-partner-form,
 .admin-manual-payment {
-  width: 100%;
-  max-width: none;
-  margin-inline: 0;
+  width: min(1220px, 100%);
+  max-width: 1220px;
+  margin-inline: auto;
   box-sizing: border-box;
 }
 
