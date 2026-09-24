@@ -219,15 +219,15 @@ export default function HomePage() {
 
           <div className="ch-footer-column" data-node-id="643:20">
             <h3>چارخونه</h3>
-            <a href="#">قوانین و مقررات</a>
-            <a href="#">حریم خصوصی</a>
+            <a href="/terms">قوانین و مقررات</a>
+            <a href="/privacy">حریم خصوصی</a>
           </div>
 
           <div className="ch-footer-column" data-node-id="643:225">
             <h3>همکاران چارخونه</h3>
-            <a href="#partners">بانک‌ها و مؤسسات مالی</a>
-            <a href="#partners">کارگزاری‌ها و صندوق‌ها</a>
-            <a href="#partners">سازمان‌ها و نهادهای همکار</a>
+            <a href="/bank/login">بانک‌ها و مؤسسات مالی</a>
+            <a href="/brokerage/login">کارگزاری‌ها و صندوق‌ها</a>
+            <a href="/organization/login">سازمان‌ها و نهادهای همکار</a>
           </div>
 
           <div className="ch-footer-column" data-node-id="643:14">
@@ -239,9 +239,9 @@ export default function HomePage() {
 
           <div className="ch-footer-column ch-footer-contact" data-node-id="685:10">
             <h3>تماس با ما</h3>
-            <span><img src={footerIcons.map} alt="" width={16} height={16} />تهران، خیابان ولیعصر، پلاک ۱۲۳</span>
-            <span><img src={footerIcons.phone} alt="" width={16} height={16} />۰۲۱-۱۲۳۴۵۶۷۸</span>
-            <span><img src={footerIcons.mail} alt="" width={16} height={16} />info@charkhooneh.com</span>
+            <span><img src={footerIcons.map} alt="" width={16} height={16} />تهران، خیابان انقلاب، خیابان رازی، کوچه شهبازیان، پلاک ۲۲</span>
+            <span><img src={footerIcons.phone} alt="" width={16} height={16} /><a href="tel:+982166485374" dir="ltr">۰۲۱۶۶۴۸۵۳۷۴</a></span>
+            <span><img src={footerIcons.mail} alt="" width={16} height={16} /><a href="mailto:info@char-khoone.ir" dir="ltr">info@char-khoone.ir</a></span>
             <div className="ch-footer-social" aria-label="شبکه‌های اجتماعی">
               <a href="#" aria-label="لینکدین"><img src={footerIcons.linkedin} alt="" width={16} height={16} /></a>
               <a href="#" aria-label="اینستاگرام"><img src={footerIcons.instagram} alt="" width={16} height={16} /></a>
