@@ -30,9 +30,9 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="admin-sidebar" aria-label="ناوبری پنل مدیریت">
+    <aside className="admin-sidebar" lang="fa" dir="rtl" aria-label="ناوبری پنل مدیریت">
       <div className="admin-sidebar__brand">
-        <BrandLogo className="admin-sidebar__logo" />
+        <BrandLogo className="admin-sidebar__logo" source="hub" />
         <div className="admin-sidebar__identity">
           <strong>مدیریت چارخونه</strong>
           <span>پنل مدیریت پلتفرم</span>

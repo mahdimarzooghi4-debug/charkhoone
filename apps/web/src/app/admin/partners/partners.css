@@ -1,7 +1,11 @@
 .admin-partners {
-  width: min(1220px, 100%);
-  min-height: 100vh;
-  margin-inline: auto;
+  /* The Figma 1220px frame includes the whole main pane beside the sidebar. */
+  width: 100%;
+  min-width: 0;
+  min-height: max(1041px, 100vh);
+  margin: 0;
+  direction: rtl;
+  text-align: right;
   display: flex;
   flex-direction: column;
   gap: 14px;
