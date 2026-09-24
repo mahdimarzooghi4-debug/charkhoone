@@ -91,7 +91,7 @@ The `04 - Owner Mobile` page contains these six (390px-wide) frames. The isolate
 | `/preview/owner-terminated` | `204:345` | Sample termination; final settlement requires trusted bank/contract/arrears inputs and is **not fabricated** |
 | `/preview/owner-account` | Auxiliary, not a Figma owner frame | Safe target for owner bottom navigation; no fake real identity or bank data |
 
-Baseline monthly owner receipt **is distinct from the tenant's 6,708,333 monthly bank interest**: contract rent 20,000,000 gross, illustrative Figma service fee at 0.5% = 100,000, owner net receipt = 19,900,000 toman. If the tenant changes sample rent, the owner's mock fee and net follow the same sample rent rather than hard-coding stale values. This fee is a UI example, not an operationally agreed fee. The second fund preference is **selection only**: no 3%/3.5% investment calculation, guaranteed yield or fund transfer. Figma's older owner funding 450m and termination deductions 55.5m / 394.5m are not treated as authoritative C3/settlement rules.
+Baseline owner receipt in the MOCK follows the reviewed web owner flow: for 500,000,000 toman cash deposit and 20,000,000 toman monthly rent, full-deposit equivalent is 1,166,666,667 toman; 3% of it rounds to 35,000,000 toman monthly gross receipt. Illustrative 0.5% service fee on gross receipt is 175,000 toman, leaving 34,825,000 toman net. This is distinct from tenant bank interest. When inputs change, the shared financing calculator updates the owner's gross, fee and net together. The fee is a UI example, not an operationally agreed fee. Fund preference is selection only: no investment return, guaranteed yield, or real settlement is calculated.
 
 ### Owner RTL, Persian digits and bottom navigation (follow-up)
 

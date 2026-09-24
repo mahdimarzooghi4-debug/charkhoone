@@ -237,11 +237,11 @@ export function MockTenantScreen({ screen }: Props) {
                 : "با این ورودی‌ها، پرداختی ماهانه مستأجر از اجاره کمتر نیست؛ شرایط را با بانک بررسی کنید."}</Text>
           </View>
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>دریافتی ماهانه مالک از اجاره قرارداد</Text>
-            <Row label="اجاره ناخالص ماهانه" value={mockFinancialModel.ownerGrossReceipt} />
+            <Text style={styles.cardTitle}>دریافتی ماهانه مالک بر پایه رهن کامل معادل</Text>
+            <Row label="ناخالص ماهانه (۳٪ رهن کامل معادل)" value={mockFinancialModel.ownerGrossReceipt} />
             <Row label="کارمزد خدمات نمونه (۰٫۵٪)" value={mockFinancialModel.ownerServiceFeeExample} />
             <Row label="خالص دریافتی ماهانه نمونه" value={mockFinancialModel.ownerNetReceiptExample} />
-            <Text style={styles.note}>کارمزد تنها مثال پیش‌نمایش است و باید در قرارداد تأیید شود. دریافتی مالک از اجاره مستقل از سود بانکی مستأجر است؛ بازده و مبلغ تسویه در روش صندوق محاسبه نمی‌شود.</Text>
+            <Text style={styles.note}>کارمزد تنها مثال پیش‌نمایش است و باید در قرارداد تأیید شود. دریافتی مالک مستقل از سود بانکی مستأجر است؛ بازده صندوق محاسبه نمی‌شود.</Text>
           </View>
           <View style={styles.card}>
             <Text style={styles.cardTitle}>جزئیات محاسبه وام و تبدیل اجاره به رهن</Text>

@@ -122,7 +122,7 @@ export function MockTenantCalculatorScreen() {
         <View style={styles.estimate}>
           <Text style={styles.estimateTitle}>خالص دریافتی ماهانه مالک (نمونه)</Text>
           <Text style={styles.estimateValue}>{financialModel.ownerNetReceiptExample}</Text>
-          <Text style={styles.estimateCaption}>اجاره {financialModel.ownerGrossReceipt}، پس از کارمزد خدمات نمونه ۰٫۵٪. این مبلغ مستقل از سود بانکی مستأجر است و شرایط قطعی تسویه باید تأیید شود.</Text>
+          <Text style={styles.estimateCaption}>ناخالص {financialModel.ownerGrossReceipt}، معادل ۳٪ رهن کامل قرارداد؛ خالص پس از کارمزد خدمات نمونه ۰٫۵٪. مستقل از سود بانکی مستأجر است و شرایط تسویه باید تأیید شود.</Text>
         </View>
         <View style={styles.info}>
           <Text style={styles.infoTitle}>برآورد اولیه</Text>
