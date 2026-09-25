@@ -5,7 +5,6 @@ on:
     branches: [main]
     paths:
       - "apps/mobile/**"
-      - "apps/mobile-demo/**"
       - ".github/workflows/android-apk-release.yml"
   workflow_dispatch:
 
@@ -59,7 +58,8 @@ jobs:
           ./gradlew assembleRelease --no-daemon \
             -PreactNativeArchitectures=arm64-v8a \
             -Pandroid.enableMinifyInReleaseBuilds=true \
-            -Pandroid.enableShrinkResourcesInReleaseBuilds=true
+            -Pandroid.enableShrinkResourcesInReleaseBuilds=true \
+            -Pexpo.useLegacyPackaging=true
 
       - name: Prepare downloadable APK
         run: |
@@ -108,45 +108,3 @@ jobs:
               --prerelease
           fi
 
-      - name: Prepare lightweight Android project
-        run: |
-          set -euo pipefail
-          cp android/gradlew ../mobile-demo/gradlew
-          mkdir -p ../mobile-demo/gradle
-          cp -R android/gradle/wrapper ../mobile-demo/gradle/
-          chmod +x ../mobile-demo/gradlew
-
-      - name: Build compact web preview shell
-        working-directory: apps/mobile-demo
-        run: ./gradlew :app:assembleRelease --no-daemon
-      - name: Verify maximum 15 MB and prepare checksum
-        working-directory: .
-        run: |
-          set -euo pipefail
-          mkdir -p artifacts/android-demo
-          cp apps/mobile-demo/app/build/outputs/apk/release/app-release.apk artifacts/android-demo/charkhoone-demo-lite.apk
-          bytes=$(stat -c%s artifacts/android-demo/charkhoone-demo-lite.apk)
-          echo "Demo APK: ${bytes} bytes"
-          test "$bytes" -le 15000000
-          sha256sum artifacts/android-demo/charkhoone-demo-lite.apk > artifacts/android-demo/charkhoone-demo-lite.apk.sha256
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
-        with:
-          name: charkhoone-demo-lite-${{ github.sha }}
-          path: artifacts/android-demo/
-          if-no-files-found: error
-          retention-days: 30
-      - name: Publish separately from the full React Native APK
-        working-directory: .
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          tag=android-demo-lite
-          git tag -f "$tag" "$GITHUB_SHA"
-          git push origin "refs/tags/$tag" --force
-          if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" artifacts/android-demo/charkhoone-demo-lite.apk artifacts/android-demo/charkhoone-demo-lite.apk.sha256 --clobber
-            gh release edit "$tag" --title "چارخونه | پیش‌نمایش سبک اندروید" --notes "نسخهٔ نمایشی آنلاین؛ برای نمایش به اینترنت نیاز دارد. اپلیکیشن کامل React Native نیست. Build: $GITHUB_SHA" --prerelease
-          else
-            gh release create "$tag" artifacts/android-demo/charkhoone-demo-lite.apk artifacts/android-demo/charkhoone-demo-lite.apk.sha256 --target "$GITHUB_SHA" --title "چارخونه | پیش‌نمایش سبک اندروید" --notes "نسخهٔ نمایشی آنلاین؛ برای نمایش به اینترنت نیاز دارد. اپلیکیشن کامل React Native نیست. Build: $GITHUB_SHA" --prerelease
-          fi
