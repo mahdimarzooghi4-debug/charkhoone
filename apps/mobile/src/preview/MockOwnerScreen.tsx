@@ -105,7 +105,7 @@ function OwnerFooterNav({ active }: { active: OwnerNavTab }) {
     { tab: "profile", label: "حساب من", route: "owner-account", inactive: figmaAssets.user, activeIcon: figmaAssets.profileUser },
     { tab: "contracts", label: "قراردادها", route: "owner-connected", inactive: figmaAssets.fileText, activeIcon: figmaAssets.contractsFileText },
     { tab: "payments", label: "دریافت و پرداخت", route: "owner-receive-pay", inactive: figmaAssets.creditCard, activeIcon: figmaAssets.paymentsCreditCard },
-    { tab: "home", label: "خانه", route: "owner-active", inactive: figmaAssets.home, activeIcon: figmaAssets.homeActive },
+    { tab: "home", label: "خانه", route: "owner-active", inactive: figmaAssets.profileHome, activeIcon: figmaAssets.homeActive },
   ] as const;
   return <View style={styles.nav}>{links.map(({ tab, label, route, inactive, activeIcon }) => {
     const selected = active === tab;

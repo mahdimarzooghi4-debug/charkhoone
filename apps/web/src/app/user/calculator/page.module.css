@@ -89,6 +89,7 @@
 .inputsCard { align-items: stretch; }
 .gaugeTrack, .gaugeFill { position: absolute; bottom: 0; left: 10px; width: 220px; height: 110px; border: 17px solid var(--ch-color-border); border-bottom: 0; border-radius: 220px 220px 0 0; box-sizing: border-box; }
 .gaugeFill { border-color: var(--ch-color-primary); }
+.gaugeArc { position: absolute; inset: 0; width: 240px; height: 120px; }
 .gaugeText { top: 64px; }
 .sliderNumber { display: inline-flex; align-items: center; gap: 6px; direction: ltr; color: var(--ch-color-primary); font-weight: 700; }
 .sliderNumber span { white-space: nowrap; direction: rtl; }
