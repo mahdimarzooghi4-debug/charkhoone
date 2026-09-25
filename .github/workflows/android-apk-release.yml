@@ -108,3 +108,11 @@ jobs:
               --prerelease
           fi
 
+      - name: Remove the rejected WebView-only demo release if it exists
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view android-demo-lite >/dev/null 2>&1; then
+            gh release delete android-demo-lite --cleanup-tag --yes
+          fi
