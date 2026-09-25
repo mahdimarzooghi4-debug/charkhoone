@@ -3,6 +3,7 @@ import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "rea
 import { useRouter } from "expo-router";
 import { BrandLogo } from "@/components/BrandLogo";
 import { FigmaSvg } from "@/components/FigmaSvg";
+import { MobileNotifications } from "@/components/MobileNotifications";
 import { figmaAssets } from "@/figmaAssets";
 import { useMobileAuth } from "@/auth/MobileAuthProvider";
 import {
@@ -118,7 +119,7 @@ export default function TenantHomeScreen() {
     <SafeAreaView style={styles.safe}>
       <View style={styles.topLogo}><BrandLogo /></View>
       <View style={styles.header}>
-        <View style={styles.notification}><FigmaSvg uri={figmaAssets.bell} width={20} height={20} /></View>
+        <MobileNotifications data={bootstrap} />
         <View style={styles.greeting}>
           <Text style={styles.greetingTitle}>سلام</Text>
           <Text style={styles.greetingNote}>اطلاعات این صفحه از حساب احراز هویت‌شده خوانده می‌شود.</Text>

@@ -6,6 +6,7 @@ import { FigmaSvg } from "@/components/FigmaSvg";
 import Svg, { Path } from "react-native-svg";
 import { financingGaugeProgress } from "../../../web/src/lib/sharedFinanceCalculator";
 import { MOCK_CASH_DEPOSIT_MAX, MOCK_MONTHLY_RENT_MAX } from "./mockTenantData";
+import { MobileNotifications } from "@/components/MobileNotifications";
 import { BrandLogo } from "@/components/BrandLogo";
 import { figmaAssets } from "@/figmaAssets";
 import { mockDisclaimer, parseMockAmount, type MockFinancingPlan, type MockMembership } from "./mockTenantData";
@@ -457,7 +458,7 @@ export function MockTenantScreen({ screen }: Props) {
 <View style={styles.card}><Text style={styles.profileSectionTitle}>اطلاعات حساب</Text><Row label="نام و نام خانوادگی" value="کاربر نمونه" /><Row label="کد ملی" value="••••••••••" /><Text style={styles.note}>مشخصات صرفاً نمونه‌اند؛ اطلاعات هویتی استعلام نشده است.</Text></View>
 <View style={styles.card}><Text style={styles.profileSectionTitle}>عضویت چارخونه</Text><Row label="وضعیت" value="انتخاب نمایشی" /><Row label="طرح نمونه" value={membership} /><Row label="مبلغ تأمین مالی C3" value={mockFinancialModel.financing} /><Button label="مشاهده عضویت" to="membership" tone="outline" /></View>
 <View style={styles.card}><Row label="شماره موبایل" value="وارد نشده" /><Row label="شماره شبا" value="ثبت نشده" /><Text style={styles.note}>شماره واقعی و اطلاعات بانکی در پیش‌نمایش جمع‌آوری نمی‌شود.</Text></View>
-<View style={styles.card}><Text style={styles.profileSectionTitle}>اعلان‌ها</Text><Text style={styles.body}>اعلان‌های مهم قرارداد و پرداخت در نسخه عملیاتی نمایش داده می‌شوند.</Text><Text style={styles.note}>این نسخه اعلان واقعی ارسال نمی‌کند.</Text></View>
+<View style={styles.card}><Text style={styles.profileSectionTitle}>اعلان‌ها</Text><MobileNotifications data={null} preview /><Text style={styles.note}>زنگوله را بزنید تا وضعیت اعلان‌های این پیش‌نمایش را ببینید.</Text></View>
 <View style={styles.card}><Text style={styles.profileSectionTitle}>قوانین و شرایط استفاده</Text><Text style={styles.body}>حریم خصوصی</Text><Text style={styles.note}>گزینه‌های قانونی در این پیش‌نمایش صفحه عملیاتی ندارند.</Text></View>
 <Text style={styles.profileFooter}>خروج از حساب در نسخه نمایشی غیرفعال است</Text>
     </>; break;
@@ -532,7 +533,7 @@ export function MockTenantScreen({ screen }: Props) {
     default: body = <>
       <View style={styles.homeLogo}><BrandLogo /></View>
       <View style={styles.homeHeader}>
-        <View style={styles.homeBell}><FigmaSvg uri={figmaAssets.bell} width={20} height={20} /></View>
+        <MobileNotifications data={null} preview />
         <View style={styles.homeGreeting}><Text style={styles.homeGreetingTitle}>سلام، کاربر پیش‌نمایش</Text><Text style={styles.homeGreetingCaption}>به چارخونه خوش آمدید • MOCK</Text></View>
       </View>
       <View style={styles.homeGrid}>
