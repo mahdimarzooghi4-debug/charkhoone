@@ -3,6 +3,9 @@ import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { useState, type ReactNode } from "react";
 import { colors, fonts, radii } from "@/theme";
 import { FigmaSvg } from "@/components/FigmaSvg";
+import Svg, { Path } from "react-native-svg";
+import { financingGaugeProgress } from "../../../web/src/lib/sharedFinanceCalculator";
+import { MOCK_CASH_DEPOSIT_MAX, MOCK_MONTHLY_RENT_MAX } from "./mockTenantData";
 import { BrandLogo } from "@/components/BrandLogo";
 import { figmaAssets } from "@/figmaAssets";
 import { mockDisclaimer, parseMockAmount, type MockFinancingPlan, type MockMembership } from "./mockTenantData";
@@ -159,7 +162,7 @@ function BottomNav({ active }: { active: "home" | "payments" | "contracts" | "pr
     ["حساب من", "profile", figmaAssets.user],
     ["قراردادها", "contracts", figmaAssets.fileText],
     ["دریافت و پرداخت", "payments", figmaAssets.creditCard],
-    ["خانه", "home", figmaAssets.home],
+    ["خانه", "home", figmaAssets.profileHome],
   ] as const;
   return <View style={styles.bottomNav}>{items.map(([label, to, icon]) => {
     const selected = active === to;
@@ -182,7 +185,8 @@ function ScreenTitle({ title, back = "home" }: { title: string; back?: string })
 }
 
 export function MockTenantScreen({ screen }: Props) {
-  const { hasLoan, financingPlan, membership, contractRole, setContractRole, setFinancingPlan, setMembership, financialModel: mockFinancialModel } = useMockPreview();
+  const { hasLoan, financingPlan, membership, contractRole, setContractRole, setFinancingPlan, setMembership, cashDeposit, monthlyRent, financialModel: mockFinancialModel } = useMockPreview();
+  const gaugeProgress = financingGaugeProgress(Math.round((cashDeposit + Math.round(monthlyRent / 0.03)) * 0.30), MOCK_CASH_DEPOSIT_MAX, MOCK_MONTHLY_RENT_MAX);
   const [trackingCode, setTrackingCode] = useState("۱۲۳۴۵۶۷۸۹۰۱۲");
   const [trackingError, setTrackingError] = useState(false);
   const router = useRouter();
@@ -209,7 +213,7 @@ export function MockTenantScreen({ screen }: Props) {
         <ScreenTitle title="نتیجه محاسبه" back="calculator" />
         <View style={styles.resultGaugeSection}>
           <View style={styles.resultGauge}>
-            <View pointerEvents="none"><FigmaSvg uri={figmaAssets.gauge} width={240} height={120} /></View>
+            <View pointerEvents="none"><Svg width={240} height={120} viewBox="0 0 240 120"><Path d="M 220 110 A 100 100 0 0 0 20 110" fill="none" stroke={colors.border} strokeWidth={17} /><Path d="M 220 110 A 100 100 0 0 0 20 110" fill="none" stroke={colors.primary} strokeWidth={17} strokeDasharray={`${gaugeProgress * Math.PI * 100} ${Math.PI * 100}`} /></Svg></View>
             <View style={styles.resultGaugeText}>
               <Text style={styles.resultGaugeCaption}>محدوده قابل تأمین</Text>
               <Text style={styles.resultGaugeAmount}>تا {mockFinancialModel.financing}</Text>

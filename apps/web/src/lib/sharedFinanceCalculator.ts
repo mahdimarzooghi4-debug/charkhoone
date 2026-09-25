@@ -5,6 +5,12 @@ export type CalculatorInput = {
   bankAnnualRate?: number | null;
 };
 
+/** Fraction of the maximum illustrative financing reachable with the input controls. */
+export function financingGaugeProgress(financing: number, maxDeposit: number, maxRent: number, maxFinancingPercent = 55) {
+  const ceiling = calculateFinancing({ cashDeposit: maxDeposit, monthlyRent: maxRent, financingPercent: maxFinancingPercent }).financing;
+  return ceiling > 0 ? Math.min(1, Math.max(0, financing / ceiling)) : 0;
+}
+
 /** Illustrative only: external grade and bank terms require authoritative responses. */
 export function calculateFinancing({ cashDeposit, monthlyRent, financingPercent = 30, bankAnnualRate = 23 }: CalculatorInput) {
   const deposit = Math.max(0, Math.round(cashDeposit));
