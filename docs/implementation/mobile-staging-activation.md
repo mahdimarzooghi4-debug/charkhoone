@@ -1,0 +1,11 @@
+# Mobile authenticated staging activation
+
+The Render static mobile preview at `/preview/home` is an isolated MOCK walkthrough. It cannot authenticate, upload a profile image, receive server-side events, or validate a production account.
+
+`render.yaml` defines an **additional staging** API and PostgreSQL database. It does not modify the existing Render web or static preview services. It is intentionally not applied until an OIDC issuer and audience are available. Both `Authentication__Authority` and `Authentication__Audience` are required outside Development; leave them out of source control and set them in the Blueprint setup. Register a public mobile client and the native `charkhoone://auth/callback` redirect with the issuer, then configure the public `EXPO_PUBLIC_CHARKHOONE_*` settings when building an installable mobile app. Do not put OIDC client secrets into Expo public variables.
+
+The staging API uses `Database__AutoMigrate=true` and one instance to initialize its fresh database before it serves requests. Production database migrations remain a reviewed, separate release operation. The Render internal PostgreSQL URL is converted to the Npgsql connection-string format. RabbitMQ is disabled for this staging API; workflows and push delivery need their own separately configured infrastructure.
+
+On a valid first OIDC login, the mobile client POSTs `/api/v1/mobile/account/activate`. The API creates one internal user row for the token's `sub` with a unique constraint, then the client fetches bootstrap and profile data. A display name and profile image can then be updated for that account. Verified personal identity and phone-number changes are owned by the identity provider and need its approved verification contract. In-app notices reflect the latest persisted request, contract and payment states; historical inbox/push notifications require a dedicated delivery design.
+
+Before calling this path live, apply the Blueprint, fill OIDC values, check `/health/ready`, build the native app against the new API and issuer, sign in with two separate test users, verify profile ownership and image upload, and perform mobile QA. The public static preview continues to show MOCK content independently.

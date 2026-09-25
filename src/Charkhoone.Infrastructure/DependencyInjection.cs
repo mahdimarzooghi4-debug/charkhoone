@@ -52,7 +52,9 @@ public static class DependencyInjection
     {
         ValidateExternalAdapterModes(configuration, allowDevelopmentMocks);
 
-        var connectionString = configuration.GetConnectionString("Postgres");
+        var configuredConnectionString = configuration.GetConnectionString("Postgres");
+        var connectionString = string.IsNullOrWhiteSpace(configuredConnectionString)
+            ? configuredConnectionString : PostgresConnectionString.Normalize(configuredConnectionString);
         services.AddScoped<LostFundReturnTrackingInterceptor>();
 
         if (!string.IsNullOrWhiteSpace(connectionString))

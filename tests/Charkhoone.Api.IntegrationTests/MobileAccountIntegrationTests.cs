@@ -15,6 +15,23 @@ public sealed class MobileAccountIntegrationTests(CharkhooneApiFactory factory)
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task FirstAuthenticatedVisit_ActivatesOneOwnedAccount_WithoutAcceptingAnAnonymousRequest()
+    {
+        using var anonymous = factory.CreateClient();
+        Assert.Equal(HttpStatusCode.Unauthorized, (await anonymous.PostAsync("/api/v1/mobile/account/activate", null)).StatusCode);
+        var subject = $"new-mobile-{Guid.NewGuid():D}";
+        using var client = factory.CreateAuthenticatedClient(subject);
+        var results = await Task.WhenAll(
+            client.PostAsync("/api/v1/mobile/account/activate", null),
+            client.PostAsync("/api/v1/mobile/account/activate", null));
+        Assert.All(results, response => Assert.Equal(HttpStatusCode.NoContent, response.StatusCode));
+        await using var scope = factory.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+        Assert.Equal(1, await db.Users.CountAsync(user => user.OidcSubject == subject));
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/v1/mobile/account")).StatusCode);
+    }
+
+    [Fact]
     public async Task AccountChangesRequireAuthentication_StayScopedToTheOwner_AndRejectInvalidImages()
     {
         var ownerId = Guid.NewGuid();

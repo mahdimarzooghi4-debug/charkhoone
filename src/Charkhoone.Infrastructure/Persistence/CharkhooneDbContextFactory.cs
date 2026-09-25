@@ -14,7 +14,7 @@ public sealed class CharkhooneDbContextFactory : IDesignTimeDbContextFactory<Cha
         }
 
         var options = new DbContextOptionsBuilder<CharkhooneDbContext>()
-            .UseNpgsql(connectionString)
+            .UseNpgsql(PostgresConnectionString.Normalize(connectionString))
             .Options;
 
         return new CharkhooneDbContext(options);

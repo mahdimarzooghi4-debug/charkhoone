@@ -4,9 +4,11 @@ using Charkhoone.Api.Health;
 using Charkhoone.Api.Release;
 using Charkhoone.Api.Security;
 using Charkhoone.Infrastructure;
+using Charkhoone.Infrastructure.Persistence;
 using Charkhoone.Infrastructure.Observability;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 
@@ -98,6 +100,15 @@ builder.Services
     .WithMetrics(metrics => metrics.AddAspNetCoreInstrumentation());
 
 var app = builder.Build();
+
+// One-instance staging only: initialize a new Render database before serving.
+// Production migrations remain an explicit, separately reviewed release operation.
+if (app.Environment.IsStaging() && builder.Configuration.GetValue<bool>("Database:AutoMigrate"))
+{
+    await using var migrationScope = app.Services.CreateAsyncScope();
+    var db = migrationScope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
+    await db.Database.MigrateAsync();
+}
 
 app.UseExceptionHandler();
 app.UseCharkhooneApiSecurityHeaders();
