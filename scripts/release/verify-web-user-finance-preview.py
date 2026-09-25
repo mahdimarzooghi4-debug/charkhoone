@@ -10,12 +10,13 @@ from decimal import Decimal, ROUND_HALF_UP
 ROOT = Path(__file__).resolve().parents[2]
 PAGES = ROOT / "apps/web/src/app/user"
 CALCULATOR = (PAGES / "calculator/page.tsx").read_text(encoding="utf-8")
+ENGINE = (ROOT / "apps/web/src/lib/sharedFinanceCalculator.ts").read_text(encoding="utf-8")
 
 def demand(condition: bool, message: str) -> None:
     if not condition:
         raise SystemExit("ERROR: " + message)
 
-demand('const MONTHLY_RENT_TO_FULL_DEPOSIT_RATIO = 0.03;' in CALCULATOR,
+demand('Math.round(rent / 0.03)' in ENGINE and 'calculateFinancing({ cashDeposit: deposit, monthlyRent: rent' in CALCULATOR,
        "calculator monthly rent-to-deposit conversion changed")
 demand('const DEMO_EXTERNAL_SUBGRADE = "C3";' in CALCULATOR and
        'C1: 40, C2: 40, C3: 30,' in CALCULATOR,
