@@ -49,18 +49,25 @@ jobs:
           CI: "1"
         run: npx expo prebuild --platform android --clean --non-interactive
 
-      - name: Build installable Android APK
+      - name: Build compact arm64 demo APK
+        env:
+          EXPO_PUBLIC_CHARKHOONE_DEMO_APK: "1"
         run: |
           set -euo pipefail
           cd android
-          ./gradlew assembleDebug --no-daemon
+          ./gradlew assembleRelease --no-daemon \
+            -PreactNativeArchitectures=arm64-v8a \
+            -Pandroid.enableMinifyInReleaseBuilds=true \
+            -Pandroid.enableShrinkResourcesInReleaseBuilds=true
 
       - name: Prepare downloadable APK
         run: |
           set -euo pipefail
           mkdir -p ../../artifacts/android
-          cp android/app/build/outputs/apk/debug/app-debug.apk ../../artifacts/android/charkhoone-android.apk
+          cp android/app/build/outputs/apk/release/app-release.apk ../../artifacts/android/charkhoone-android.apk
           test -s ../../artifacts/android/charkhoone-android.apk
+          echo "APK size: $(du -h ../../artifacts/android/charkhoone-android.apk | cut -f1)"
+          unzip -l ../../artifacts/android/charkhoone-android.apk | grep -E 'lib/(arm64-v8a|armeabi-v7a|x86|x86_64)/libreactnative.so' || true
           sha256sum ../../artifacts/android/charkhoone-android.apk | tee ../../artifacts/android/charkhoone-android.apk.sha256
 
       - name: Upload APK as workflow artifact
@@ -90,12 +97,12 @@ jobs:
             gh release upload "$TAG" "$APK_PATH" "$SHA_PATH" --clobber
             gh release edit "$TAG" \
               --title "چارخونه Android" \
-              --notes "نسخه قابل نصب مستقیم اندروید چارخونه. Build: $GITHUB_SHA" \
+              --notes "نسخه نمایشی کم‌حجم اندروید (arm64). داده‌ها نمونه‌اند؛ ورود واقعی و API فعال نیستند. Build: $GITHUB_SHA" \
               --prerelease
           else
             gh release create "$TAG" "$APK_PATH" "$SHA_PATH" \
               --target "$GITHUB_SHA" \
               --title "چارخونه Android" \
-              --notes "نسخه قابل نصب مستقیم اندروید چارخونه. Build: $GITHUB_SHA" \
+              --notes "نسخه نمایشی کم‌حجم اندروید (arm64). داده‌ها نمونه‌اند؛ ورود واقعی و API فعال نیستند. Build: $GITHUB_SHA" \
               --prerelease
           fi
