@@ -111,7 +111,7 @@ function OwnerFooterNav({ active }: { active: OwnerNavTab }) {
     const selected = active === tab;
     return <Pressable key={tab} accessibilityRole="button" accessibilityLabel={label}
       accessibilityState={{ selected }} onPress={() => router.push(`/preview/${route}`)} style={styles.navItem}>
-      <View pointerEvents="none"><FigmaSvg uri={selected ? activeIcon : inactive} width={24} height={24} /></View>
+      <View pointerEvents="none"><FigmaSvg uri={selected ? activeIcon : inactive} width={24} height={24} tintColor={selected ? colors.accent : undefined} /></View>
       <OwnerText style={[styles.navLabel, selected && styles.navSelected]}>{label}</OwnerText>
     </Pressable>;
   })}</View>;

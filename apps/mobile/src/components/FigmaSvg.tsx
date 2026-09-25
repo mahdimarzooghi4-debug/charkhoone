@@ -4,6 +4,7 @@ type FigmaSvgProps = {
   uri: string;
   width: number | string;
   height: number | string;
+  tintColor?: string;
 };
 
 const SVG_DATA_PREFIX = "data:image/svg+xml;utf8,";
@@ -13,9 +14,12 @@ const SVG_DATA_PREFIX = "data:image/svg+xml;utf8,";
  * data URIs. Render those bytes with SvgXml on iOS/Android/Web without fetch.
  * SvgUri remains solely for existing, not-yet-vendored working-branch assets.
  */
-export function FigmaSvg({ uri, width, height }: FigmaSvgProps) {
+export function FigmaSvg({ uri, width, height, tintColor }: FigmaSvgProps) {
   if (uri.startsWith(SVG_DATA_PREFIX)) {
-    return <SvgXml xml={decodeURIComponent(uri.slice(SVG_DATA_PREFIX.length))} width={width} height={height} />;
+    const xml = decodeURIComponent(uri.slice(SVG_DATA_PREFIX.length));
+    // Only explicitly tinted icons are recolored; keep transparent paths intact.
+    const colored = tintColor ? xml.replace(/(stroke|fill)="(?!none|transparent|url\()[^"]+"/g, `$1="${tintColor}"`) : xml;
+    return <SvgXml xml={colored} width={width} height={height} />;
   }
   return <SvgUri uri={uri} width={width} height={height} />;
 }

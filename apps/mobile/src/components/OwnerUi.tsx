@@ -72,7 +72,7 @@ export function OwnerBottomNav() {
     <View style={styles.nav}>
       {items.map((item) => (
         <Pressable key={item.label} style={styles.navItem} onPress={item.onPress} accessibilityRole="button">
-          <FigmaSvg uri={item.icon} width={24} height={24} />
+          <FigmaSvg uri={item.icon} width={24} height={24} tintColor={item.active ? colors.accent : undefined} />
           <Text style={[styles.navLabel, item.active && styles.navLabelActive]}>{item.label}</Text>
         </Pressable>
       ))}

@@ -163,7 +163,7 @@ function BottomNav({ active }: { active: "home" | "payments" | "contracts" | "pr
   ] as const;
   return <View style={styles.bottomNav}>{items.map(([label, to, icon]) => {
     const selected = active === to;
-    return <Pressable key={to} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected }} onPress={() => router.push(`/preview/${to}`)} style={styles.bottomItem}><View pointerEvents="none"><FigmaSvg uri={selected && to === "home" ? figmaAssets.homeActive : icon} width={24} height={24} /></View><Text style={[styles.bottomLabel, selected && styles.bottomLabelActive]}>{label}</Text></Pressable>;
+    return <Pressable key={to} accessibilityRole="button" accessibilityLabel={label} accessibilityState={{ selected }} onPress={() => router.push(`/preview/${to}`)} style={styles.bottomItem}><View pointerEvents="none"><FigmaSvg uri={selected && to === "home" ? figmaAssets.homeActive : icon} width={24} height={24} tintColor={selected ? colors.accent : undefined} /></View><Text style={[styles.bottomLabel, selected && styles.bottomLabelActive]}>{label}</Text></Pressable>;
   })}</View>;
 }
 
