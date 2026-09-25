@@ -8,7 +8,7 @@ import { MobileNotifications } from "@/components/MobileNotifications";
 import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts, radii } from "@/theme";
 
-function NavItem({ icon, label, active, onPress }: { icon: string; label: string; active?: boolean; onPress?: () => void }) {
+function NavItem({ icon, label, active, onPress }: { icon: string; label: string; active?: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={styles.navItem}>
       <FigmaSvg uri={icon} width={24} height={24} tintColor={active ? colors.accent : undefined} />
@@ -71,7 +71,7 @@ export default function ProfileScreen() {
       </ScrollView>
 
       <View style={styles.bottomNav}>
-        <NavItem icon={figmaAssets.profileUser} label="حساب من" active />
+        <NavItem icon={figmaAssets.profileUser} label="حساب من" active onPress={() => router.replace("/(shared)/profile")} />
         <NavItem icon={figmaAssets.profileFileText} label="قراردادها" onPress={() => router.push("/(shared)/contracts")} />
         <NavItem icon={figmaAssets.profileCreditCard} label="دریافت و پرداخت" onPress={() => router.push("/(tenant)/payments")} />
         <NavItem icon={figmaAssets.profileHome} label="خانه" onPress={() => router.push("/(tenant)/home")} />

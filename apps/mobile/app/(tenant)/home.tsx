@@ -23,7 +23,7 @@ function SummaryCard({ title, value, note }: { title: string; value: string; not
   );
 }
 
-function Shortcut({ icon, label, onPress }: { icon: string; label: string; onPress?: () => void }) {
+function Shortcut({ icon, label, onPress }: { icon: string; label: string; onPress: () => void }) {
   return (
     <Pressable style={styles.shortcut} onPress={onPress}>
       <View style={styles.shortcutIconWrap}><FigmaSvg uri={icon} width={20} height={20} /></View>
@@ -32,7 +32,7 @@ function Shortcut({ icon, label, onPress }: { icon: string; label: string; onPre
   );
 }
 
-function BottomItem({ icon, label, active, onPress }: { icon: string; label: string; active?: boolean; onPress?: () => void }) {
+function BottomItem({ icon, label, active, onPress }: { icon: string; label: string; active?: boolean; onPress: () => void }) {
   return (
     <Pressable style={styles.bottomItem} onPress={onPress}>
       <FigmaSvg uri={icon} width={24} height={24} tintColor={active ? colors.accent : undefined} />
@@ -188,7 +188,7 @@ export default function TenantHomeScreen() {
           ) : null}
           <Shortcut icon={figmaAssets.wallet} label="دریافت و پرداخت" onPress={() => router.push("/(tenant)/payments")} />
           <Shortcut icon={figmaAssets.file} label="قراردادها" onPress={() => router.push("/(shared)/contracts")} />
-          <Shortcut icon={figmaAssets.home} label="خانه" />
+          <Shortcut icon={figmaAssets.home} label="خانه" onPress={() => router.replace("/(tenant)/home")} />
         </View>
 
         <View style={styles.notice}>
@@ -203,7 +203,7 @@ export default function TenantHomeScreen() {
         <BottomItem icon={figmaAssets.user} label="حساب من" onPress={() => router.push("/(shared)/profile")} />
         <BottomItem icon={figmaAssets.fileText} label="قراردادها" onPress={() => router.push("/(shared)/contracts")} />
         <BottomItem icon={figmaAssets.creditCard} label="دریافت و پرداخت" onPress={() => router.push("/(tenant)/payments")} />
-        <BottomItem icon={figmaAssets.homeActive} label="خانه" active />
+        <BottomItem icon={figmaAssets.homeActive} label="خانه" active onPress={() => router.replace("/(tenant)/home")} />
       </View>
     </SafeAreaView>
   );
