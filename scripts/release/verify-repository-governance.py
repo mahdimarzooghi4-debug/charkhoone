@@ -67,10 +67,14 @@ for workflow in sorted(WORKFLOWS_DIR.glob("*.yml")):
     workflow_texts[relative] = text
 
     require("pull_request_target:" not in text, f"{relative}: pull_request_target is prohibited")
-    require(
-        not re.search(r"^\s+[A-Za-z0-9_-]+:\s*write\s*$", text, flags=re.MULTILINE),
-        f"{relative}: write-scoped workflow permission is prohibited by the current governance baseline",
-    )
+    write_scopes = re.findall(r"^\s+[A-Za-z0-9_-]+:\s*write\s*$", text, flags=re.MULTILINE)
+    if relative == ".github/workflows/android-apk-release.yml":
+        require("permissions:\n  contents: read" in text and "    permissions:\n      contents: write" in text
+                and "    branches: [main]" in text and "  pull_request:" not in text
+                and write_scopes == ["      contents: write"],
+                "Android APK publishing must scope write access to its main-branch release job")
+    else:
+        require(not write_scopes, f"{relative}: write-scoped workflow permission is prohibited by the current governance baseline")
 
     for match in re.finditer(r"^\s*-?\s*uses:\s*([^\s#]+)", text, flags=re.MULTILINE):
         ref = match.group(1)
