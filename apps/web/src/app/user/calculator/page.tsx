@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import styles from "./page.module.css";
 import { UserPanelSidebar } from "@/components/user/UserPanelSidebar";
-import { calculateFinancing } from "@/lib/sharedFinanceCalculator";
+import { calculateFinancing, financingGaugeProgress } from "@/lib/sharedFinanceCalculator";
 
 // Preview only: use the backend's contractual 3% rent-to-full-deposit
 // equivalence BEFORE applying the external credit sub-grade percentage.
@@ -115,7 +115,7 @@ export default function CalculatorPage() {
   const rentDifference = monthlyInterest === null ? null : rent - monthlyInterest;
   const belowRent = rentDifference !== null && rentDifference > 0;
   const financingMillion = Math.round(selectedFinancing / 1_000_000).toLocaleString("fa-IR");
-  const gaugeFill = financingPercent;
+  const gaugeFill = financingGaugeProgress(selectedFinancing, MAX_DEPOSIT, MAX_RENT);
   const calculationDetails = [
     ["رهن نقدی قرارداد", money(deposit)],
     ["اجاره ماهانه قرارداد", money(rent)],
@@ -138,8 +138,10 @@ export default function CalculatorPage() {
             <div className={styles.cardHeader} data-node-id="150:599"><h2 data-node-id="150:600">برآورد شرایط تأمین مالی</h2><p data-node-id="150:601">ابتدا اجاره با نسبت ۳٪ به رهن تبدیل و با رهن نقدی جمع می‌شود؛ سپس نسبت رتبه اعتباری اعمال می‌شود.</p></div>
             <div className={styles.gaugeArea} data-node-id="150:602">
               <div className={styles.gauge} data-node-id="150:603" role="img" aria-label={"مبلغ تأمین مالی انتخابی: " + money(selectedFinancing)}>
-                <div className={styles.gaugeTrack} />
-                <div className={styles.gaugeFill} style={{ clipPath: "inset(0 " + (100 - gaugeFill) + "% 0 0)" }} />
+                <svg className={styles.gaugeArc} viewBox="0 0 240 120" aria-hidden="true">
+                  <path d="M 220 110 A 100 100 0 0 0 20 110" fill="none" stroke="var(--ch-color-border)" strokeWidth="17" />
+                  <path d="M 220 110 A 100 100 0 0 0 20 110" fill="none" stroke="var(--ch-color-primary)" strokeWidth="17" strokeDasharray={`${gaugeFill * Math.PI * 100} ${Math.PI * 100}`} />
+                </svg>
                 <div className={styles.gaugeText}><strong data-node-id="150:607">{financingMillion} میلیون</strong><span data-node-id="150:608">تومان تأمین مالی (نمونه)</span></div>
               </div>
               <div className={styles.gaugeLimits} data-node-id="150:609"><span>{money(maxFinancing)} (۵۵٪ رهن معادل)</span><span>{money(minFinancing)} (۳۰٪ رهن معادل)</span></div>
