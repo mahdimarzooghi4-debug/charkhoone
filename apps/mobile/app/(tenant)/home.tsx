@@ -34,7 +34,7 @@ function Shortcut({ icon, label, onPress }: { icon: string; label: string; onPre
 function BottomItem({ icon, label, active, onPress }: { icon: string; label: string; active?: boolean; onPress?: () => void }) {
   return (
     <Pressable style={styles.bottomItem} onPress={onPress}>
-      <FigmaSvg uri={icon} width={24} height={24} />
+      <FigmaSvg uri={icon} width={24} height={24} tintColor={active ? colors.accent : undefined} />
       <Text style={[styles.bottomLabel, active && styles.bottomLabelActive]}>{label}</Text>
     </Pressable>
   );

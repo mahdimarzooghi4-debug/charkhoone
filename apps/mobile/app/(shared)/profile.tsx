@@ -9,7 +9,7 @@ import { colors, fonts, radii } from "@/theme";
 function NavItem({ icon, label, active, onPress }: { icon: string; label: string; active?: boolean; onPress?: () => void }) {
   return (
     <Pressable onPress={onPress} style={styles.navItem}>
-      <FigmaSvg uri={icon} width={24} height={24} />
+      <FigmaSvg uri={icon} width={24} height={24} tintColor={active ? colors.accent : undefined} />
       <Text style={[styles.navLabel, active && styles.navActive]}>{label}</Text>
     </Pressable>
   );
