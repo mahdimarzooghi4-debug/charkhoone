@@ -9,6 +9,7 @@ import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts } from "@/theme";
 import { formatMockNumber } from "./mockTenantData";
 import { useMockPreview, type MockOwnerSettlement } from "./MockPreviewProvider";
+import { MockAccountEditor } from "./MockAccountEditor";
 
 // Purely local design-review screens; NEVER reuse the authenticated owner routes
 // while they are gated pending authoritative backend/contract/payment integration.
@@ -133,7 +134,7 @@ function SettlementOption({ method, selected, title, children, onSelect }: {
 }
 
 export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
-  const { financialModel, ownerSettlement, setOwnerSettlement } = useMockPreview();
+  const { financialModel, ownerSettlement, setOwnerSettlement, displayName } = useMockPreview();
   const [consent, setConsent] = useState(false);
   const ownerMethod = ownerSettlement === "monthly" ? "دریافت ماهانه" : "تجمیع دریافتی در صندوق";
   let body: ReactNode;
@@ -300,7 +301,7 @@ export function MockOwnerScreen({ screen }: { screen: OwnerMockScreen }) {
       activeNav = "profile";
       body = <>
         <OwnerHeader title="حساب مالک" back="owner-active" />
-        <OwnerCard title="پروفایل نمایشی"><OwnerRow label="نقش" value="مالک" /><OwnerRow label="نام" value="محمد رضایی (MOCK)" /><OwnerRow label="کد ملی" value="۰۰۲•••••۴۵۶" /></OwnerCard>
+        <OwnerCard title="پروفایل نمایشی"><MockAccountEditor /><OwnerRow label="نقش" value="مالک" /><OwnerRow label="نام" value={displayName} /><OwnerRow label="کد ملی" value="۰۰۲•••••۴۵۶" /></OwnerCard>
         <OwnerNotice>فیگمای Owner Mobile صفحهٔ حساب مجزای مالک ندارد؛ این یک مسیر بازگشت ساده است و اطلاعات هویتی واقعی استفاده نمی‌شود.</OwnerNotice>
         <OwnerAction label="قرارداد مالک" to="owner-active" />
         <OwnerAction label="انتخاب نقش" to="contract-lookup" outline />

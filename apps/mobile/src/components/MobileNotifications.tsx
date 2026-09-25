@@ -6,7 +6,7 @@ import { FigmaSvg } from "@/components/FigmaSvg";
 import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts } from "@/theme";
 
-type Notice = { id: string; title: string; detail: string; date: string };
+export type Notice = { id: string; title: string; detail: string; date: string };
 
 export function noticesFromBootstrap(data: MobileBootstrapResponse | null): Notice[] {
   if (!data) return [];
@@ -34,11 +34,12 @@ async function saveSeen(key: string, ids: string[]) {
   } catch { /* Read state is optional when device storage is unavailable. */ }
 }
 
-export function MobileNotifications({ data, preview = false }: { data: MobileBootstrapResponse | null; preview?: boolean }) {
+export function MobileNotifications({ data, preview = false, previewNotices = [], previewSeen = [], onPreviewRead }: { data: MobileBootstrapResponse | null; preview?: boolean; previewNotices?: Notice[]; previewSeen?: string[]; onPreviewRead?: (ids: string[]) => void }) {
   const [open, setOpen] = useState(false);
   const [seen, setSeen] = useState<string[] | null>(null);
   const key = `charkhoone.mobile.notices.${data?.userId ?? "anonymous"}`;
-  const notices = useMemo(() => noticesFromBootstrap(data), [data]);
+  const realNotices = useMemo(() => noticesFromBootstrap(data), [data]);
+  const notices = preview ? previewNotices : realNotices;
 
   useEffect(() => {
     let active = true;
@@ -48,8 +49,9 @@ export function MobileNotifications({ data, preview = false }: { data: MobileBoo
     return () => { active = false; };
   }, [data?.userId, key, preview]);
 
-  const unread = seen === null ? 0 : notices.filter(item => !seen.includes(item.id)).length;
+  const unread = preview ? notices.filter(item => !previewSeen.includes(item.id)).length : seen === null ? 0 : notices.filter(item => !seen.includes(item.id)).length;
   const markRead = () => {
+    if (preview) { onPreviewRead?.([...new Set([...previewSeen, ...notices.map(item => item.id)])]); return; }
     if (!data || seen === null) return;
     const ids = [...new Set([...notices.map(item => item.id), ...seen])];
     setSeen(ids);
@@ -65,10 +67,10 @@ export function MobileNotifications({ data, preview = false }: { data: MobileBoo
       <View style={styles.overlay}><View style={styles.sheet}>
         <View style={styles.heading}><Pressable accessibilityRole="button" accessibilityLabel="بستن اعلان‌ها" onPress={() => setOpen(false)}><Text style={styles.close}>✕</Text></Pressable><Text style={styles.title}>اعلان‌ها</Text></View>
         <ScrollView contentContainerStyle={styles.list}>
-          {preview ? <Text style={styles.empty}>این پیش‌نمایش به حساب واقعی وصل نیست و اعلان واقعی ندارد.</Text>
-            : !data ? <Text style={styles.empty}>در حال دریافت وضعیت حساب...</Text>
+          {preview && <Text style={styles.hint}>اعلان‌های نمونه؛ هیچ پیام واقعی یا اعلان فوری ارسال نشده است.</Text>}
+          {!preview && !data ? <Text style={styles.empty}>در حال دریافت وضعیت حساب...</Text>
             : notices.length === 0 ? <Text style={styles.empty}>اعلانی برای این حساب ثبت نشده است.</Text>
-            : notices.map(item => <View key={item.id} style={styles.item}><Text style={styles.itemTitle}>{item.title}</Text><Text style={styles.detail}>{item.detail}</Text><Text style={styles.date}>{new Date(item.date).toLocaleString("fa-IR")}</Text></View>)}
+            : notices.map(item => <View key={item.id} style={styles.item}><Text style={styles.itemTitle}>{item.title}</Text><Text style={styles.detail}>{item.detail}</Text><Text style={styles.date}>{preview ? item.date : new Date(item.date).toLocaleString("fa-IR")}</Text></View>)}
         </ScrollView>
         {unread > 0 && <Pressable accessibilityRole="button" onPress={markRead} style={styles.readButton}><Text style={styles.readText}>علامت‌گذاری همه به‌عنوان خوانده‌شده</Text></Pressable>}
         {!preview && <Text style={styles.hint}>این فهرست از وضعیت فعلی درخواست، قرارداد و پرداخت حساب شما ساخته می‌شود. اعلان فوری و پوش هنوز فعال نیست.</Text>}
