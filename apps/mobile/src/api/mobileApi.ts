@@ -105,6 +105,8 @@ type ApiRequest = <T>(path: string, init?: RequestInit) => Promise<T>;
 
 export type MobileAccount = { preferredName: string | null; avatarDataUrl: string | null };
 
+export const activateMobileAccount = (request: ApiRequest) => request<void>("/api/v1/mobile/account/activate", { method: "POST" });
+
 export const getMobileAccount = (request: ApiRequest) => request<MobileAccount>("/api/v1/mobile/account");
 export const updateMobileAccountName = (request: ApiRequest, preferredName: string) => request<MobileAccount>("/api/v1/mobile/account/name", {
   method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ preferredName }),

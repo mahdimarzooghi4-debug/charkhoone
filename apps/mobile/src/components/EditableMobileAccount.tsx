@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useMobileAuth } from "@/auth/MobileAuthProvider";
-import { getMobileAccount, removeMobileAccountPhoto, updateMobileAccountName, updateMobileAccountPhoto, type MobileAccount } from "@/api/mobileApi";
+import { activateMobileAccount, getMobileAccount, removeMobileAccountPhoto, updateMobileAccountName, updateMobileAccountPhoto, type MobileAccount } from "@/api/mobileApi";
 import { colors, fonts, radii } from "@/theme";
 
 export function EditableMobileAccount() {
@@ -15,7 +15,7 @@ export function EditableMobileAccount() {
   useEffect(() => {
     if (status !== "authenticated") return;
     let active = true;
-    getMobileAccount(apiRequest).then(value => {
+    activateMobileAccount(apiRequest).then(() => getMobileAccount(apiRequest)).then(value => {
       if (active) { setAccount(value); setName(value.preferredName ?? ""); }
     }).catch(() => { if (active) setMessage("دریافت حساب انجام نشد. بعداً دوباره وارد صفحه شوید."); });
     return () => { active = false; };

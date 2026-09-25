@@ -1,0 +1,34 @@
+# Isolated staging API for real mobile account/notification QA.
+# Existing web and MOCK static-preview services remain separately managed.
+databases:
+  - name: charkhoone-staging-db
+    databaseName: charkhoone_staging
+    region: frankfurt
+    plan: free
+
+services:
+  - type: web
+    name: charkhoone-staging-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    branch: main
+    dockerfilePath: ./src/Charkhoone.Api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health/ready
+    autoDeployTrigger: off
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Staging
+      - key: ConnectionStrings__Postgres
+        fromDatabase:
+          name: charkhoone-staging-db
+          property: connectionString
+      - key: Database__AutoMigrate
+        value: "true"
+      - key: RabbitMq__Enabled
+        value: "false"
+      - key: Authentication__Authority
+        sync: false
+      - key: Authentication__Audience
+        sync: false

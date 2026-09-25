@@ -7,6 +7,7 @@ import { MobileNotifications } from "@/components/MobileNotifications";
 import { figmaAssets } from "@/figmaAssets";
 import { useMobileAuth } from "@/auth/MobileAuthProvider";
 import {
+  activateMobileAccount,
   formatRial,
   getMobileBootstrap,
   type MobileBootstrapResponse,
@@ -65,7 +66,8 @@ export default function TenantHomeScreen() {
     if (status !== "authenticated") return;
 
     let active = true;
-    getMobileBootstrap(apiRequest)
+    activateMobileAccount(apiRequest)
+      .then(() => getMobileBootstrap(apiRequest))
       .then((value) => {
         if (!active) return;
         setBootstrap(value);

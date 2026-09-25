@@ -10,6 +10,7 @@ public static class MobileAccountEndpoints
     public static RouteGroupBuilder MapMobileAccountEndpoints(this RouteGroupBuilder api)
     {
         var account = api.MapGroup("/mobile/account").RequireAuthorization();
+        account.MapPost("/activate", ActivateAsync);
         account.MapGet("", GetAsync);
         account.MapPut("/name", UpdateNameAsync);
         account.MapPut("/photo", UpdatePhotoAsync);
@@ -21,6 +22,18 @@ public static class MobileAccountEndpoints
     {
         var subject = principal.FindFirst("sub")?.Value?.Trim();
         return string.IsNullOrWhiteSpace(subject) ? null : await lookup.FindInternalUserIdAsync(subject, ct);
+    }
+
+    private static async Task<IResult> ActivateAsync(ClaimsPrincipal principal, CharkhooneDbContext db, CancellationToken ct)
+    {
+        var subject = principal.FindFirst("sub")?.Value?.Trim();
+        if (string.IsNullOrWhiteSpace(subject) || subject.Length > 256)
+            return Results.Unauthorized();
+        // Unique OIDC subject makes simultaneous first-login requests idempotent.
+        await db.Database.ExecuteSqlInterpolatedAsync(
+            $"INSERT INTO users (\"Id\", \"OidcSubject\", \"CreatedAtUtc\") VALUES ({Guid.NewGuid()}, {subject}, {DateTimeOffset.UtcNow}) ON CONFLICT (\"OidcSubject\") DO NOTHING",
+            ct);
+        return Results.NoContent();
     }
 
     private static async Task<IResult> GetAsync(ClaimsPrincipal principal, IUserIdentityLookup lookup, CharkhooneDbContext db, CancellationToken ct)

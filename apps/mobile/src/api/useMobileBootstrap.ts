@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useMobileAuth } from "@/auth/MobileAuthProvider";
 import {
+  activateMobileAccount,
   getMobileBootstrap,
   type MobileBootstrapResponse,
 } from "@/api/mobileApi";
@@ -19,7 +20,8 @@ export function useMobileBootstrap() {
     }
 
     let active = true;
-    getMobileBootstrap(apiRequest)
+    activateMobileAccount(apiRequest)
+      .then(() => getMobileBootstrap(apiRequest))
       .then((value) => {
         if (!active) return;
         setData(value);
