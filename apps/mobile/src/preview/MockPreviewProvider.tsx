@@ -6,6 +6,12 @@ export type MockOwnerSettlement = "monthly" | "fund";
 
 type MockPreviewState = {
   hasLoan: boolean;
+  displayName: string;
+  setDisplayName: (name: string) => void;
+  photoUri: string | null;
+  setPhotoUri: (uri: string | null) => void;
+  previewSeen: string[];
+  setPreviewSeen: (ids: string[]) => void;
   setHasLoan: (value: boolean) => void;
   financingPlan: MockFinancingPlan;
   membership: MockMembership;
@@ -28,6 +34,9 @@ const PreviewContext = createContext<MockPreviewState | null>(null);
 
 export function MockPreviewProvider({ children }: PropsWithChildren) {
   const [hasLoan, setHasLoan] = useState(false);
+  const [displayName, setDisplayName] = useState("کاربر پیش‌نمایش");
+  const [photoUri, setPhotoUri] = useState<string | null>(null);
+  const [previewSeen, setPreviewSeen] = useState<string[]>([]);
   const [financingPlan, setFinancingPlan] = useState<MockFinancingPlan>("عمومی");
   const [membership, setMembership] = useState<MockMembership>("۱ بار استفاده");
   const [contractRole, setContractRole] = useState<MockContractRole>("Tenant");
@@ -38,7 +47,7 @@ export function MockPreviewProvider({ children }: PropsWithChildren) {
   const parsedRate = bankRateInput.trim() === "" ? null : Number(bankRateInput);
   const bankAnnualRate = parsedRate !== null && Number.isFinite(parsedRate) && parsedRate >= 0 && parsedRate <= 100 ? parsedRate : null;
   const financialModel = useMemo(() => calculateMockFinancialModel(cashDeposit, monthlyRent, bankAnnualRate), [cashDeposit, monthlyRent, bankAnnualRate]);
-  const value = useMemo(() => ({ hasLoan, setHasLoan, financingPlan, membership, contractRole, setContractRole, ownerSettlement, setOwnerSettlement, setFinancingPlan, setMembership, bankRateInput, setBankRateInput, cashDeposit, monthlyRent, setCashDeposit, setMonthlyRent, financialModel }), [hasLoan, financingPlan, membership, contractRole, ownerSettlement, bankRateInput, cashDeposit, monthlyRent, financialModel]);
+  const value = useMemo(() => ({ hasLoan, setHasLoan, displayName, setDisplayName, photoUri, setPhotoUri, previewSeen, setPreviewSeen, financingPlan, membership, contractRole, setContractRole, ownerSettlement, setOwnerSettlement, setFinancingPlan, setMembership, bankRateInput, setBankRateInput, cashDeposit, monthlyRent, setCashDeposit, setMonthlyRent, financialModel }), [hasLoan, displayName, photoUri, previewSeen, financingPlan, membership, contractRole, ownerSettlement, bankRateInput, cashDeposit, monthlyRent, financialModel]);
   return <PreviewContext.Provider value={value}>{children}</PreviewContext.Provider>;
 }
 

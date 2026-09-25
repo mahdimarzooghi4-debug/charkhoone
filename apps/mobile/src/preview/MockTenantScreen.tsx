@@ -7,6 +7,7 @@ import Svg, { Path } from "react-native-svg";
 import { financingGaugeProgress } from "../../../web/src/lib/sharedFinanceCalculator";
 import { MOCK_CASH_DEPOSIT_MAX, MOCK_MONTHLY_RENT_MAX } from "./mockTenantData";
 import { MobileNotifications } from "@/components/MobileNotifications";
+import { MockAccountEditor } from "./MockAccountEditor";
 import { BrandLogo } from "@/components/BrandLogo";
 import { figmaAssets } from "@/figmaAssets";
 import { mockDisclaimer, parseMockAmount, type MockFinancingPlan, type MockMembership } from "./mockTenantData";
@@ -186,7 +187,9 @@ function ScreenTitle({ title, back = "home" }: { title: string; back?: string })
 }
 
 export function MockTenantScreen({ screen }: Props) {
-  const { hasLoan, financingPlan, membership, contractRole, setContractRole, setFinancingPlan, setMembership, cashDeposit, monthlyRent, financialModel: mockFinancialModel } = useMockPreview();
+  const { hasLoan, displayName, previewSeen, setPreviewSeen, financingPlan, membership, contractRole, setContractRole, setFinancingPlan, setMembership, cashDeposit, monthlyRent, financialModel: mockFinancialModel } = useMockPreview();
+  const sampleNotices = [{ id: "welcome", title: "به چارخونه خوش آمدید (نمونه)", detail: "پیش‌نمایش آمادهٔ بررسی است. برای شروع، ماشین حساب را باز کنید.", date: "نمونه" }, ...(hasLoan ? [{ id: "loan-sample", title: "درخواست تأمین مالی نمونه", detail: "نمایش وضعیت وام در این صفحه فقط برای بررسی رابط کاربری است.", date: "نمونه" }] : [])];
+  const notifications = <MobileNotifications data={null} preview previewNotices={sampleNotices} previewSeen={previewSeen} onPreviewRead={setPreviewSeen} />;
   const gaugeProgress = financingGaugeProgress(Math.round((cashDeposit + Math.round(monthlyRent / 0.03)) * 0.30), MOCK_CASH_DEPOSIT_MAX, MOCK_MONTHLY_RENT_MAX);
   const [trackingCode, setTrackingCode] = useState("۱۲۳۴۵۶۷۸۹۰۱۲");
   const [trackingError, setTrackingError] = useState(false);
@@ -454,11 +457,11 @@ export function MockTenantScreen({ screen }: Props) {
     </>; break;
     case "profile": body = <>
       <Text style={styles.dashboardTitle}>حساب من</Text>
-<View style={styles.profileTop}><View style={styles.avatar}><Text style={styles.avatarText}>ع ر</Text></View><Text style={styles.profileName}>کاربر پیش‌نمایش</Text><Text style={styles.profileCaption}>حساب آزمایشی چارخونه • اطلاعات واقعی بارگذاری نشده</Text></View>
-<View style={styles.card}><Text style={styles.profileSectionTitle}>اطلاعات حساب</Text><Row label="نام و نام خانوادگی" value="کاربر نمونه" /><Row label="کد ملی" value="••••••••••" /><Text style={styles.note}>مشخصات صرفاً نمونه‌اند؛ اطلاعات هویتی استعلام نشده است.</Text></View>
+<View style={styles.profileTop}><MockAccountEditor /><Text style={styles.profileName}>{displayName}</Text><Text style={styles.profileCaption}>حساب آزمایشی چارخونه • اطلاعات واقعی بارگذاری نشده</Text></View>
+<View style={styles.card}><Text style={styles.profileSectionTitle}>اطلاعات حساب</Text><Row label="نام و نام خانوادگی" value={displayName} /><Row label="کد ملی" value="••••••••••" /><Text style={styles.note}>مشخصات صرفاً نمونه‌اند؛ اطلاعات هویتی استعلام نشده است.</Text></View>
 <View style={styles.card}><Text style={styles.profileSectionTitle}>عضویت چارخونه</Text><Row label="وضعیت" value="انتخاب نمایشی" /><Row label="طرح نمونه" value={membership} /><Row label="مبلغ تأمین مالی C3" value={mockFinancialModel.financing} /><Button label="مشاهده عضویت" to="membership" tone="outline" /></View>
 <View style={styles.card}><Row label="شماره موبایل" value="وارد نشده" /><Row label="شماره شبا" value="ثبت نشده" /><Text style={styles.note}>شماره واقعی و اطلاعات بانکی در پیش‌نمایش جمع‌آوری نمی‌شود.</Text></View>
-<View style={styles.card}><Text style={styles.profileSectionTitle}>اعلان‌ها</Text><MobileNotifications data={null} preview /><Text style={styles.note}>زنگوله را بزنید تا وضعیت اعلان‌های این پیش‌نمایش را ببینید.</Text></View>
+<View style={styles.card}><Text style={styles.profileSectionTitle}>اعلان‌ها</Text>{notifications}<Text style={styles.note}>زنگوله را بزنید تا اعلان‌های نمونه را ببینید.</Text></View>
 <View style={styles.card}><Text style={styles.profileSectionTitle}>قوانین و شرایط استفاده</Text><Text style={styles.body}>حریم خصوصی</Text><Text style={styles.note}>گزینه‌های قانونی در این پیش‌نمایش صفحه عملیاتی ندارند.</Text></View>
 <Text style={styles.profileFooter}>خروج از حساب در نسخه نمایشی غیرفعال است</Text>
     </>; break;
@@ -533,8 +536,8 @@ export function MockTenantScreen({ screen }: Props) {
     default: body = <>
       <View style={styles.homeLogo}><BrandLogo /></View>
       <View style={styles.homeHeader}>
-        <MobileNotifications data={null} preview />
-        <View style={styles.homeGreeting}><Text style={styles.homeGreetingTitle}>سلام، کاربر پیش‌نمایش</Text><Text style={styles.homeGreetingCaption}>به چارخونه خوش آمدید • MOCK</Text></View>
+        {notifications}
+        <View style={styles.homeGreeting}><Text style={styles.homeGreetingTitle}>سلام، {displayName}</Text><Text style={styles.homeGreetingCaption}>به چارخونه خوش آمدید • MOCK</Text></View>
       </View>
       <View style={styles.homeGrid}>
         {showLoanPreview ? <>
