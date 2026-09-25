@@ -27,6 +27,7 @@ def require(condition: bool, message: str) -> None:
 screen = read("apps/mobile/src/preview/MockTenantScreen.tsx")
 calculator = read("apps/mobile/src/preview/MockTenantCalculatorScreen.tsx")
 data = read("apps/mobile/src/preview/mockTenantData.ts")
+shared_calculator = read("apps/web/src/lib/sharedFinanceCalculator.ts")
 provider = read("apps/mobile/src/preview/MockPreviewProvider.tsx")
 root = read("apps/mobile/app/_layout.tsx")
 index = read("apps/mobile/app/index.tsx")
@@ -80,21 +81,19 @@ for name in ("payment-terminated", "preview-index"):
     require(target.is_file(), f"missing fallback /preview/{name}")
 require('screen="home"' in route_home, "home needs explicit Figma 61:28 route")
 require('MockTenantCalculatorScreen' in route_calculator, "calculator must use Figma 65:55")
-# A single continuous slider rail: base/fill share vertical center and left
-# origin, with the thumb centered on the same rail. Old right-origin fill
-# left a visible gap between progress and the thumb at 25% deposit.
+# A single continuous RTL slider rail with fill and thumb sharing right origin.
 for token in (
     'sliderTrack: { position: "relative", height: 38',
     'sliderBase: { position: "absolute", top: 17, left: 0, right: 0',
-    'sliderFill: { position: "absolute", top: 17, left: 0',
+    'sliderFill: { position: "absolute", top: 17, right: 0',
     'sliderThumb: { position: "absolute", top: 10',
     'style={[styles.sliderFill, { width: percentage }]}',
-    'style={[styles.sliderThumb, { left: `${progress * 100}%` as `${number}%` }]}',
+    'style={[styles.sliderThumb, { right: `${progress * 100}%` as `${number}%` }]}',
     'onResponderMove={event => moveTo(event.nativeEvent.locationX)}',
 ):
     require(token in calculator, f"continuous editable calculator slider regression: {token}")
-require('sliderFill: { position: "absolute", top: 17, left: 0, height: 4, backgroundColor: colors.primary' in calculator,
-    "calculator progress fill must start from left zero, not from right")
+require('sliderFill: { position: "absolute", top: 17, right: 0, height: 4, backgroundColor: colors.primary' in calculator,
+    "calculator progress fill must start from right zero")
 
 require('screen="calculator-result"' in route_result, "result must map to Figma 71:43")
 
@@ -133,7 +132,7 @@ for token in (
     'case "connected"', 'case "settlement-preference"', 'case "final-confirmation"',
     'case "active"', 'case "receive-pay"', 'case "terminated"',
     'ownerAssets.settlementRadioSelected', 'onSelect={setOwnerSettlement}',
-    'Math.round(monthlyRent * 0.005)', 'const net = monthlyRent - fee',
+    'financialModel.ownerGrossReceipt', 'financialModel.ownerNetReceiptExample',
     'financialModel.financing', 'financialModel.monthlyRent',
     'consent', 'to="owner-final-confirmation"', 'to="owner-receive-pay"',
     'to="owner-terminated"', 'تجمیع دریافتی در صندوق',
@@ -213,20 +212,22 @@ require('"/(auth)/login"' in index, "real auth entry must remain the default")
 require('EXPO_PUBLIC_CHARKHOONE_MOCK_PREVIEW: "1"' in launch, "preview launch must opt in explicitly")
 require(package["scripts"].get("preview:web") == "node ./scripts/start-preview-web.cjs", "single-command local web preview missing")
 
-for n in ("۵۰۰٬۰۰۰٬۰۰۰", "۲۰٬۰۰۰٬۰۰۰", "۱٬۱۶۶٬۶۶۶٬۶۶۷", "۳۵۰٬۰۰۰٬۰۰۰", "۸۱۶٬۶۶۶٬۶۶۷", "۶٬۷۰۸٬۳۳۳", "۲۳٪"):
-    require(n in data, f"C3 default value changed: {n}")
 for token in (
-    "calculateMockFinancialModel", "Math.round(deposit + rent / 0.03)",
-    "Math.round(fullDeposit * 0.3)", "Math.round(financing * 0.23 / 12)",
+    "calculateMockFinancialModel", "calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: 30, bankAnnualRate })",
     "MOCK_CASH_DEPOSIT_MAX", "MOCK_MONTHLY_RENT_MAX",
 ):
     require(token in data, f"shared approved financial formula missing: {token}")
+for token in ("Math.round(rent / 0.03)", "Math.round(fullDeposit * financingPercent / 100)",
+              "Math.round(financing * bankAnnualRate / 100 / 12)", "financingGaugeProgress"):
+    require(token in shared_calculator, f"shared finance engine missing: {token}")
+require("useState(500_000_000)" in provider and "useState(20_000_000)" in provider and 'useState("23")' in provider,
+        "C3 default inputs changed")
 for token in ("cashDeposit", "monthlyRent", "setCashDeposit", "setMonthlyRent", "financialModel", "setFinancingPlan", "setMembership"):
     require(token in provider, f"MOCK state continuity missing: {token}")
 # Visual-structure regression: guard Figma's distinct screen hierarchies; this does
 # not replace a human screenshot comparison on iPhone 16 at 393x852.
 for token in (
-    'figmaAssets.gauge', 'resultGaugeSection', 'resultGridRow', 'ResultMetricCard',
+    'financingGaugeProgress', 'resultGaugeSection', 'resultGridRow', 'ResultMetricCard',
     'resultBenefit', 'resultActions', 'FinancingPlanCard', 'planCardSelected',
     'planBadgeSelected', 'planActions', 'StatusHero', 'ProgressStepper',
     'figmaAssets.reviewStepDone', 'figmaAssets.reviewStepCurrent',

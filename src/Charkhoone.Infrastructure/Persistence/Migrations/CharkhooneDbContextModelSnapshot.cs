@@ -1424,6 +1424,10 @@ namespace Charkhoone.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Charkhoone.Infrastructure.Persistence.Models.UserRow", b =>
                 {
+                    b.Property<string>("AvatarDataUrl")
+                        .HasMaxLength(720000)
+                        .HasColumnType("character varying(720000)");
+
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
@@ -1435,6 +1439,10 @@ namespace Charkhoone.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
+
+                    b.Property<string>("PreferredName")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
 
                     b.HasKey("Id");
 

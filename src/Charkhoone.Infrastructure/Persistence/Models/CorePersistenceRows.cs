@@ -9,6 +9,8 @@ public sealed class UserRow
 {
     public Guid Id { get; set; }
     public string OidcSubject { get; set; } = string.Empty;
+    public string? PreferredName { get; set; }
+    public string? AvatarDataUrl { get; set; }
     public DateTimeOffset CreatedAtUtc { get; set; }
 }
 

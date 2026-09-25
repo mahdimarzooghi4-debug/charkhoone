@@ -783,7 +783,8 @@ require('"use client";' in calculator_page and
         'useState(EXAMPLE_DEPOSIT)' in calculator_page and
         'useState(EXAMPLE_RENT)' in calculator_page and
         'const EXAMPLE_RENT = 20_000_000;' in calculator_page and
-        'const MONTHLY_RENT_TO_FULL_DEPOSIT_RATIO = 0.03;' in calculator_page and
+        'calculateFinancing' in calculator_page and
+        'financingGaugeProgress(selectedFinancing, MAX_DEPOSIT, MAX_RENT)' in calculator_page and
         'type="range"' in calculator_page and
         'type="text"' in calculator_page and
         'inputMode="numeric"' in calculator_page and
@@ -803,12 +804,9 @@ require('"use client";' in calculator_page and
         'const SAMPLE_BANK_ANNUAL_RATE = "23";' in calculator_page and
         'useState(SAMPLE_BANK_ANNUAL_RATE)' in calculator_page and
         'نتیجه استعلام واقعی نیست' in calculator_page and
-        'const rentEquivalentDeposit = Math.round(rent / MONTHLY_RENT_TO_FULL_DEPOSIT_RATIO);' in calculator_page and
-        'const fullDepositEquivalent = deposit + rentEquivalentDeposit;' in calculator_page and
-        'const minFinancing = Math.round(fullDepositEquivalent * MIN_FINANCING_PERCENT / 100);' in calculator_page and
-        'const maxFinancing = Math.round(fullDepositEquivalent * MAX_FINANCING_PERCENT / 100);' in calculator_page and
-        'const selectedFinancing = Math.round(fullDepositEquivalent * financingPercent / 100);' in calculator_page and
-        'const contribution = fullDepositEquivalent - selectedFinancing;' in calculator_page and
+        'fullDeposit: fullDepositEquivalent, financing: selectedFinancing, contribution, monthlyInterest' in calculator_page and
+        'const minFinancing = calculateFinancing(' in calculator_page and
+        'const maxFinancing = calculateFinancing(' in calculator_page and
         '<div className={styles.contributionSummary} aria-label="آورده مستأجر از رهن کامل معادل">' in calculator_page and
         'آورده مستأجر از رهن کامل معادل (نمونه)' in calculator_page and
         '<strong>{money(contribution)}</strong>' in calculator_page and
@@ -824,7 +822,7 @@ require('"use client";' in calculator_page and
         '<div className={styles.metricsGrid}' not in calculator_page and
         'metrics.map(([label, value, highlight])' not in calculator_page and
         '.calculationDetails > summary:focus-visible' in calculator_css and
-        'const monthlyInterest = rateValid && bankAnnualRate !== null ? Math.round(selectedFinancing * bankAnnualRate / 100 / 12) : null;' in calculator_page and
+        'bankAnnualRate: rateValid ? bankAnnualRate : null' in calculator_page and
         'سود ماهانه بدون اصل وام محاسبه شده است' in calculator_page and
         'مقایسه پرداختی ماهانه مستأجر با اجاره' in calculator_page and
         '<span>پرداختی ماهانه مستأجر:</span>' in calculator_page and

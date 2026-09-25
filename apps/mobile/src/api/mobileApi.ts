@@ -103,6 +103,17 @@ export type MobileBootstrapResponse = {
 
 type ApiRequest = <T>(path: string, init?: RequestInit) => Promise<T>;
 
+export type MobileAccount = { preferredName: string | null; avatarDataUrl: string | null };
+
+export const getMobileAccount = (request: ApiRequest) => request<MobileAccount>("/api/v1/mobile/account");
+export const updateMobileAccountName = (request: ApiRequest, preferredName: string) => request<MobileAccount>("/api/v1/mobile/account/name", {
+  method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ preferredName }),
+});
+export const updateMobileAccountPhoto = (request: ApiRequest, dataUrl: string) => request<MobileAccount>("/api/v1/mobile/account/photo", {
+  method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ dataUrl }),
+});
+export const removeMobileAccountPhoto = (request: ApiRequest) => request<MobileAccount>("/api/v1/mobile/account/photo", { method: "DELETE" });
+
 export function getMobileBootstrap(apiRequest: ApiRequest) {
   return apiRequest<MobileBootstrapResponse>("/api/v1/mobile/bootstrap");
 }

@@ -12,5 +12,7 @@ public sealed class UserRowConfiguration : IEntityTypeConfiguration<UserRow>
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.OidcSubject).IsUnique();
         builder.Property(x => x.OidcSubject).HasMaxLength(256).IsRequired();
+        builder.Property(x => x.PreferredName).HasMaxLength(120);
+        builder.Property(x => x.AvatarDataUrl).HasMaxLength(720_000);
     }
 }

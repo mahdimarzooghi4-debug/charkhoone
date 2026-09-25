@@ -148,6 +148,7 @@ api.MapGet("", () => Results.Ok(new
 api.MapCreditApplicationEndpoints();
 api.MapPaymentEndpoints();
 api.MapMobileBootstrapEndpoints();
+api.MapMobileAccountEndpoints();
 api.MapContractEndpoints();
 api.MapPilotOperationsEndpoints();
 

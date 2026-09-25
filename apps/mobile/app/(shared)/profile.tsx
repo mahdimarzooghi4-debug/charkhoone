@@ -3,11 +3,12 @@ import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "rea
 import { useRouter } from "expo-router";
 import { useMobileBootstrap } from "@/api/useMobileBootstrap";
 import { FigmaSvg } from "@/components/FigmaSvg";
+import { EditableMobileAccount } from "@/components/EditableMobileAccount";
 import { MobileNotifications } from "@/components/MobileNotifications";
 import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts, radii } from "@/theme";
 
-function NavItem({ icon, label, active, onPress }: { icon: string; label: string; active?: boolean; onPress?: () => void }) {
+function NavItem({ icon, label, active, onPress }: { icon: string; label: string; active?: boolean; onPress: () => void }) {
   return (
     <Pressable onPress={onPress} style={styles.navItem}>
       <FigmaSvg uri={icon} width={24} height={24} tintColor={active ? colors.accent : undefined} />
@@ -53,10 +54,11 @@ export default function ProfileScreen() {
             </>
           ) : null}
           <Text style={styles.note}>
-            نام، شماره موبایل، کد ملی، سقف عضویت یا شماره شبا در bootstrap فعلی وجود ندارد؛ بنابراین این صفحه آن‌ها را حدس یا جعل نمی‌کند.
+            شماره موبایل، کد ملی، سقف عضویت یا شماره شبا در bootstrap فعلی وجود ندارد؛ بنابراین این صفحه آن‌ها را حدس یا جعل نمی‌کند.
           </Text>
         </View>
 
+        <EditableMobileAccount />
         <View style={styles.card}>
           <Text style={styles.cardTitle}>اعلان‌های حساب</Text>
           <MobileNotifications data={data} />
@@ -69,7 +71,7 @@ export default function ProfileScreen() {
       </ScrollView>
 
       <View style={styles.bottomNav}>
-        <NavItem icon={figmaAssets.profileUser} label="حساب من" active />
+        <NavItem icon={figmaAssets.profileUser} label="حساب من" active onPress={() => router.replace("/(shared)/profile")} />
         <NavItem icon={figmaAssets.profileFileText} label="قراردادها" onPress={() => router.push("/(shared)/contracts")} />
         <NavItem icon={figmaAssets.profileCreditCard} label="دریافت و پرداخت" onPress={() => router.push("/(tenant)/payments")} />
         <NavItem icon={figmaAssets.profileHome} label="خانه" onPress={() => router.push("/(tenant)/home")} />
