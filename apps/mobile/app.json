@@ -15,10 +15,29 @@
       "typedRoutes": false
     },
     "android": {
-      "package": "ir.charkhoone.app"
+      "package": "ir.charkhoone.app",
+      "icon": "./assets/charkhoone-app-icon.png",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/charkhoone-app-icon.png",
+        "backgroundColor": "#0D3B36"
+      }
     },
     "web": {
-      "output": "static"
+      "output": "static",
+      "favicon": "./assets/charkhoone-app-icon.png",
+      "name": "چارخونه",
+      "shortName": "چارخونه",
+      "lang": "fa",
+      "dir": "rtl",
+      "display": "standalone",
+      "startUrl": "/",
+      "themeColor": "#0D3B36",
+      "backgroundColor": "#0D3B36",
+      "orientation": "portrait"
+    },
+    "icon": "./assets/charkhoone-app-icon.png",
+    "ios": {
+      "icon": "./assets/charkhoone-app-icon.png"
     }
   }
 }
