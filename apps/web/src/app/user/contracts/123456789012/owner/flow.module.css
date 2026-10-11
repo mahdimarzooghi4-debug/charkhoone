@@ -306,7 +306,7 @@
   outline: 3px solid rgb(13 59 54 / 35%);
   outline-offset: 3px;
 }
-.ownerSettlementChoice .optionHeader { direction: rtl; }
+.ownerSettlementChoice .optionHeader { direction: ltr; }
 .ownerSettlementChoice .selectionCheck,
 .ownerSettlementChoice .selectionUnselected {
   width: 20px;
