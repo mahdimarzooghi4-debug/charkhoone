@@ -119,7 +119,16 @@ function createPaddedIcon(source, background) {
       const sourceX = Math.min(source.width - 1, Math.floor(x * source.width / targetSize));
       const sourceIndex = (sourceY * source.width + sourceX) * 4;
       const targetIndex = ((inset + y) * ICON_SIZE + inset + x) * 4;
-      source.pixels.copy(canvas, targetIndex, sourceIndex, sourceIndex + 4);
+      if (background) {
+        const alpha = source.pixels[sourceIndex + 3] / 255;
+        const inverseAlpha = 1 - alpha;
+        canvas[targetIndex] = Math.round(source.pixels[sourceIndex] * alpha + background[0] * inverseAlpha);
+        canvas[targetIndex + 1] = Math.round(source.pixels[sourceIndex + 1] * alpha + background[1] * inverseAlpha);
+        canvas[targetIndex + 2] = Math.round(source.pixels[sourceIndex + 2] * alpha + background[2] * inverseAlpha);
+        canvas[targetIndex + 3] = 255;
+      } else {
+        source.pixels.copy(canvas, targetIndex, sourceIndex, sourceIndex + 4);
+      }
     }
   }
 
