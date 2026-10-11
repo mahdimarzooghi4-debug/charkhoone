@@ -154,7 +154,7 @@ for token in (
     'uri={selected ? activeIcon : inactive}',
     'figmaAssets.profileUser', 'figmaAssets.contractsFileText',
     'figmaAssets.paymentsCreditCard', 'figmaAssets.homeActive',
-    'height: 80, backgroundColor: colors.page',
+    'height: 84, backgroundColor: colors.page',
     'navSelected: { color: colors.accent',
     'flexDirection: "row-reverse", gap: 8',
     'function OwnerText(', 'function OwnerRow(',
