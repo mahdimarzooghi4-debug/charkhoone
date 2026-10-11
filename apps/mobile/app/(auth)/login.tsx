@@ -56,8 +56,12 @@ export default function LoginScreen() {
         {submitting || status === "loading" ? "در حال آماده‌سازی..." : "ادامه با OIDC"}
       </AppButton>
       <View style={styles.gap20} />
+      <AppButton variant="outline" onPress={() => router.replace("/preview/home")}>
+        ورود به پیش‌نمایش نمایشی
+      </AppButton>
+      <View style={styles.gap20} />
       <Text style={styles.note}>
-        هیچ client secret، شماره موبایل نمونه یا OTP ساختگی داخل اپ نگه‌داری نمی‌شود.
+        پیش‌نمایش از داده‌های MOCK استفاده می‌کند و ورود واقعی یا ثبت اطلاعات انجام نمی‌دهد. هیچ client secret، شماره موبایل نمونه یا OTP ساختگی داخل اپ نگه‌داری نمی‌شود.
       </Text>
     </AuthScaffold>
   );
