@@ -322,3 +322,10 @@
   background: #fff;
 }
 .ownerSettlementChoice .optionSelected .optionTitle strong { color: var(--ch-color-primary); }
+
+/* Keep the settlement option labels aligned to the right edge of their cards. */
+.ownerSettlementChoice .optionTitle {
+  flex: 1;
+  justify-content: flex-start;
+  text-align: right;
+}
