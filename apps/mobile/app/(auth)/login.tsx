@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Linking, StyleSheet, Text, View } from "react-native";
-import { useRouter } from "expo-router";
+import { StyleSheet, Text, View } from "react-native";
+import { Link, useRouter } from "expo-router";
 import { AppButton } from "@/components/AppButton";
 import { AuthScaffold } from "@/components/AuthScaffold";
 import { useMobileAuth } from "@/auth/MobileAuthProvider";
@@ -58,13 +58,14 @@ export default function LoginScreen() {
         {submitting || status === "loading" ? "در حال آماده‌سازی..." : "ادامه با OIDC"}
       </AppButton>
       <View style={styles.gap20} />
-      <AppButton
-        variant="primary"
-        accessibilityLabel="دانلود اپلیکیشن اندروید چارخونه، نسخه نمایشی"
-        onPress={() => { void Linking.openURL(ANDROID_APK_DOWNLOAD_URL); }}
-      >
-        دانلود اپلیکیشن اندروید (نسخه نمایشی)
-      </AppButton>
+      <Link href={ANDROID_APK_DOWNLOAD_URL} asChild>
+        <AppButton
+          variant="primary"
+          accessibilityLabel="دانلود اپلیکیشن اندروید چارخونه، نسخه نمایشی"
+        >
+          دانلود اپلیکیشن اندروید (نسخه نمایشی)
+        </AppButton>
+      </Link>
       <View style={styles.gap20} />
       <AppButton variant="outline" onPress={() => router.replace("/preview/home")}>
         ورود به پیش‌نمایش نمایشی
