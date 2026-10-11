@@ -1,0 +1,19 @@
+{
+  "name": "چارخونه",
+  "short_name": "چارخونه",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0D3B36",
+  "background_color": "#0D3B36",
+  "icons": [
+    {
+      "src": "/charkhoone-icon.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ]
+}
