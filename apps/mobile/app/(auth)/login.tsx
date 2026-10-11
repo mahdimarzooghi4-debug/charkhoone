@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Linking, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { AppButton } from "@/components/AppButton";
 import { AuthScaffold } from "@/components/AuthScaffold";
 import { useMobileAuth } from "@/auth/MobileAuthProvider";
 import { colors, fonts, radii } from "@/theme";
+
+const ANDROID_APK_DOWNLOAD_URL = "https://github.com/mahdimarzooghi4-debug/charkhoone/releases/download/android-latest/charkhoone-android.apk";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -54,6 +56,14 @@ export default function LoginScreen() {
         onPress={beginSignIn}
       >
         {submitting || status === "loading" ? "در حال آماده‌سازی..." : "ادامه با OIDC"}
+      </AppButton>
+      <View style={styles.gap20} />
+      <AppButton
+        variant="primary"
+        accessibilityLabel="دانلود اپلیکیشن اندروید چارخونه، نسخه نمایشی"
+        onPress={() => { void Linking.openURL(ANDROID_APK_DOWNLOAD_URL); }}
+      >
+        دانلود اپلیکیشن اندروید (نسخه نمایشی)
       </AppButton>
       <View style={styles.gap20} />
       <AppButton variant="outline" onPress={() => router.replace("/preview/home")}>
