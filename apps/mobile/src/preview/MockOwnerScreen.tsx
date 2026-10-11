@@ -371,8 +371,8 @@ const styles = StyleSheet.create({
   summaryTile: { backgroundColor: colors.surface, borderRadius: 12, flex: 1, minWidth: 0, padding: 12, gap: 8 },
   summaryCaption: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, ...rtl },
   summaryAmount: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 13, ...rtl },
-  nav: { height: 80, backgroundColor: colors.page, borderTopWidth: 1, borderTopColor: colors.border, flexDirection: "row", paddingHorizontal: 16, paddingVertical: 8, gap: 2 },
-  navItem: { flex: 1, minHeight: 48, alignItems: "center", justifyContent: "center", gap: 4 },
-  navLabel: { color: colors.muted, fontFamily: fonts.regular, fontSize: 11, textAlign: "center", writingDirection: "rtl" },
-  navSelected: { color: colors.accent, fontFamily: fonts.medium },
+  nav: { height: 84, backgroundColor: colors.page, borderTopWidth: 1, borderTopColor: colors.border, flexDirection: "row", paddingHorizontal: 12, paddingVertical: 8, gap: 2 },
+  navItem: { flex: 1, minHeight: 60, alignItems: "center", justifyContent: "center", gap: 4 },
+  navLabel: { minHeight: 16, color: "#4B5563", fontFamily: fonts.medium, fontSize: 12, lineHeight: 16, includeFontPadding: false, textAlign: "center", writingDirection: "rtl", flexShrink: 0 },
+  navSelected: { color: colors.accent, fontFamily: fonts.semibold },
 });
