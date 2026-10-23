@@ -97,7 +97,7 @@ public sealed class PhoneNationalMatchIntegrationTests(CharkhooneApiFactory fact
             Assert.Equal(1, fake.CallCount);
             Assert.True(await service.IsVerifiedForPhoneAsync(userId, "09121234567"));
             Assert.True(await service.IsVerifiedForPairAsync(userId, "09121234567", "0071234561"));
-            Assert.False(await service.IsVerifiedForPairAsync(userId, "09121234567", "0071234562"));
+            Assert.False(await service.IsVerifiedForPairAsync(userId, "09121234567", "0071234578"));
             Assert.False(await service.IsVerifiedForPairAsync(userId, "09129998877", "0071234561"));
             Assert.False(await service.IsVerifiedForPhoneAsync(userId, "09129998877"));
         }
