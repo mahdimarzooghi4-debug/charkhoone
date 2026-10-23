@@ -49,7 +49,7 @@ public static class MobileAccountEndpoints
             verified,
             status = verified ? "Verified" : "Unverified",
             requiresVerifiedPhone = phone is null,
-            paidInquiryPerformed = false,
+            initiatedNewInquiry = false,
         });
     }
 
