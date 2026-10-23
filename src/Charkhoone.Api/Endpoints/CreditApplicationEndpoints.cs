@@ -339,6 +339,55 @@ public static class CreditApplicationEndpoints
         };
     }
 
+
+    private sealed record KhodnevisLookupRequest(string? NationalId, bool Confirm);
+
+    private static async Task<IResult> ReconcileVerifiedKhodnevisAsync(
+        Guid id,
+        KhodnevisLookupRequest request,
+        ClaimsPrincipal principal,
+        IUserIdentityLookup userIdentityLookup,
+        IPhoneNationalMatchService phoneNationalMatches,
+        IPropertyContractRegistrationService registrations,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        var identity = await ResolveUserAsync(principal, userIdentityLookup, cancellationToken);
+        if (identity.Error is not null) return identity.Error;
+
+        var nationalId = request.NationalId?.Trim();
+        if (!request.Confirm || !EfPhoneNationalMatchService.ValidNationalId(nationalId))
+            return Results.BadRequest(new { code = "explicit_khodnevis_identity_confirmation_required" });
+
+        var verifiedPhone = principal.FindFirst("phone_number")?.Value;
+        if (!string.Equals(principal.FindFirst("phone_number_verified")?.Value,
+                "true", StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrWhiteSpace(verifiedPhone)
+            || !await phoneNationalMatches.IsVerifiedForPairAsync(
+                identity.UserId!.Value, verifiedPhone, nationalId!, cancellationToken))
+        {
+            return Results.Conflict(new { code = "khodnevis_national_phone_match_required" });
+        }
+
+        // Exact national ID must match previously attested evidence for this user's
+        // current verified mobile before any configured contract source is called.
+        var result = await registrations.ReconcileAsync(
+            id, identity.UserId!.Value, timeProvider.GetUtcNow(), cancellationToken, nationalId);
+        return result.Outcome switch
+        {
+            ReconcilePropertyContractOutcome.Registered
+                or ReconcilePropertyContractOutcome.AlreadyRegistered
+                or ReconcilePropertyContractOutcome.NeedsDocuments
+                or ReconcilePropertyContractOutcome.Indeterminate
+                => Results.Ok(ToResponse(result)),
+            ReconcilePropertyContractOutcome.NotFound
+                => Results.NotFound(new { code = "credit_application_not_found" }),
+            ReconcilePropertyContractOutcome.Conflict
+                => Results.Conflict(new { code = "property_contract_conflict" }),
+            _ => Results.Conflict(new { code = "property_contract_invalid_state" }),
+        };
+    }
+
     private static async Task<IResult> ReconcilePropertyContractAsync(
         Guid id,
         ClaimsPrincipal principal,
