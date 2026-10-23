@@ -118,7 +118,7 @@ export function MockTenantCalculatorScreen() {
           </Pressable>
           <Modal visible={gradeDropdownOpen} transparent animationType="fade" onRequestClose={() => setGradeDropdownOpen(false)}>
             <View style={styles.gradeOverlay}>
-              <Pressable accessibilityRole="button" accessibilityLabel="بستن فهرست رتبه اعتباری" style={StyleSheet.absoluteFillObject} onPress={() => setGradeDropdownOpen(false)} />
+              <Pressable accessibilityRole="button" accessibilityLabel="بستن فهرست رتبه اعتباری" style={StyleSheet.absoluteFill} onPress={() => setGradeDropdownOpen(false)} />
               <View style={styles.gradeSheet}>
                 <Text style={styles.gradeSheetTitle}>انتخاب رتبه اعتباری خوداظهاری</Text>
                 <Text style={styles.gradeSheetHint}>۱۵ رتبه قابل انتخاب؛ هیچ استعلام رسمی انجام نمی‌شود.</Text>
