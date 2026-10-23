@@ -75,7 +75,7 @@ public sealed class EfPhoneNationalMatchService(
         // Fail closed unless a real provider explicitly implements exact-key
         // duplicate-charge prevention. There is no fake or local "matched" mode.
         var key = GetHmacKey();
-        if (key is null || !adapter.GuaranteesProviderIdempotency || adapter.Provider == "unconfigured")
+        if (key is null)
             return new(PhoneNationalMatchProcessStatus.NotConfigured, false);
 
         var phoneDigest = Digest(key, mobile);
@@ -91,6 +91,11 @@ public sealed class EfPhoneNationalMatchService(
             x.AggregateType == AggregateType && x.AggregateId == userId
             && x.Action == Action && x.Reason.StartsWith(proofPrefix), cancellationToken);
         if (existing) return new(PhoneNationalMatchProcessStatus.AlreadyVerified, true);
+
+        // Reuse previously attested exact-pair evidence even if the provider is
+        // temporarily disconnected. New paid inquiries still fail closed.
+        if (!adapter.GuaranteesProviderIdempotency || adapter.Provider == "unconfigured")
+            return new(PhoneNationalMatchProcessStatus.NotConfigured, false);
 
         // Exact input is stable across retries and can be reconciled by the
         // external provider without a new paid request. This call is not enabled
