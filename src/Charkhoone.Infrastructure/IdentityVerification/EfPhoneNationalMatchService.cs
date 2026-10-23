@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Charkhoone.Application.IdentityVerification;
@@ -24,7 +25,8 @@ public sealed class UnavailablePhoneNationalMatchAdapter : IPhoneNationalMatchAd
 public sealed class EfPhoneNationalMatchService(
     CharkhooneDbContext db,
     IPhoneNationalMatchAdapter adapter,
-    IConfiguration configuration) : IPhoneNationalMatchService
+    IConfiguration configuration,
+    TimeProvider timeProvider) : IPhoneNationalMatchService
 {
     private const string Action = "phone_national_match_verified_v1";
     private const string AggregateType = "User";
@@ -57,11 +59,15 @@ public sealed class EfPhoneNationalMatchService(
     {
         var mobile = NormalizeMobile(verifiedMobile);
         var key = GetHmacKey();
-        if (userId == Guid.Empty || mobile is null || key is null) return false;
+        var validFor = GetEvidenceValidity();
+        if (userId == Guid.Empty || mobile is null || key is null || validFor is null) return false;
+        var now = timeProvider.GetUtcNow();
+        var cutoff = now - validFor.Value;
         var prefix = "phone:" + Digest(key, mobile) + ";";
         return await db.AuditEvents.AsNoTracking().AnyAsync(x =>
             x.AggregateType == AggregateType && x.AggregateId == userId
-            && x.Action == Action && x.Reason.StartsWith(prefix), cancellationToken);
+            && x.Action == Action && x.Reason.StartsWith(prefix)
+            && x.OccurredAtUtc >= cutoff && x.OccurredAtUtc <= now, cancellationToken);
     }
 
     public async Task<PhoneNationalMatchResult> VerifyAsync(
@@ -75,8 +81,11 @@ public sealed class EfPhoneNationalMatchService(
         // Fail closed unless a real provider explicitly implements exact-key
         // duplicate-charge prevention. There is no fake or local "matched" mode.
         var key = GetHmacKey();
-        if (key is null)
+        var validFor = GetEvidenceValidity();
+        if (key is null || validFor is null)
             return new(PhoneNationalMatchProcessStatus.NotConfigured, false);
+        var now = timeProvider.GetUtcNow();
+        var cutoff = now - validFor.Value;
 
         var phoneDigest = Digest(key, mobile);
         var nationalDigest = Digest(key, nationalId);
@@ -89,7 +98,8 @@ public sealed class EfPhoneNationalMatchService(
 
         var existing = await db.AuditEvents.AsNoTracking().AnyAsync(x =>
             x.AggregateType == AggregateType && x.AggregateId == userId
-            && x.Action == Action && x.Reason.StartsWith(proofPrefix), cancellationToken);
+            && x.Action == Action && x.Reason.StartsWith(proofPrefix)
+            && x.OccurredAtUtc >= cutoff && x.OccurredAtUtc <= now, cancellationToken);
         if (existing) return new(PhoneNationalMatchProcessStatus.AlreadyVerified, true);
 
         // Reuse previously attested exact-pair evidence even if the provider is
@@ -126,6 +136,15 @@ public sealed class EfPhoneNationalMatchService(
         await db.SaveChangesAsync(cancellationToken);
         await tx.CommitAsync(cancellationToken);
         return new(PhoneNationalMatchProcessStatus.Verified, true);
+    }
+
+    private TimeSpan? GetEvidenceValidity()
+    {
+        // Explicit provider/business approval required. No invented expiry threshold.
+        var text = configuration["IdentityMatch:EvidenceValidFor"];
+        return TimeSpan.TryParse(text, CultureInfo.InvariantCulture, out var duration)
+            && duration > TimeSpan.Zero
+            ? duration : null;
     }
 
     private byte[]? GetHmacKey()
