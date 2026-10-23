@@ -105,6 +105,18 @@ type ApiRequest = <T>(path: string, init?: RequestInit) => Promise<T>;
 
 export type MobileAccount = { preferredName: string | null; avatarDataUrl: string | null };
 
+export type PhoneNationalIdentityStatus = {
+  verified: boolean;
+  status: "Verified" | "Unverified";
+  requiresVerifiedPhone: boolean;
+  paidInquiryPerformed: boolean;
+};
+
+// Read-only: never starts a provider request or incurs an inquiry charge.
+export const getPhoneNationalIdentityStatus = (request: ApiRequest) =>
+  request<PhoneNationalIdentityStatus>("/api/v1/mobile/account/identity-status");
+
+
 export const activateMobileAccount = (request: ApiRequest) => request<void>("/api/v1/mobile/account/activate", { method: "POST" });
 
 export const getMobileAccount = (request: ApiRequest) => request<MobileAccount>("/api/v1/mobile/account");
