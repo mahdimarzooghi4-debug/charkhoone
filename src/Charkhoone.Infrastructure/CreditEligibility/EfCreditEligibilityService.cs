@@ -30,6 +30,16 @@ public sealed class EfCreditEligibilityService(
             throw new ArgumentException("Applicant user id is required.", nameof(applicantUserId));
         }
 
+        // Paid adapters require a separately approved durable single-flight/billing
+        // integration. Reject before issuing any network request or incurring cost.
+        // Preview/unavailable development adapters retain their existing behavior.
+        if (adapter is IChargeableCreditGradeAdapter)
+        {
+            return new EvaluateCreditEligibilityResult(
+                EvaluateCreditEligibilityOutcome.InvalidState,
+                null);
+        }
+
         CreditEligibilityAssessmentRow assessment;
 
         await using (var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken))
@@ -106,16 +116,6 @@ public sealed class EfCreditEligibilityService(
 
             await dbContext.SaveChangesAsync(cancellationToken);
             await transaction.CommitAsync(cancellationToken);
-        }
-
-        // Paid adapters require a separately approved durable single-flight/billing
-        // integration. Reject before issuing any network request or incurring cost.
-        // Preview/unavailable development adapters retain their existing behavior.
-        if (adapter is IChargeableCreditGradeAdapter)
-        {
-            return new EvaluateCreditEligibilityResult(
-                EvaluateCreditEligibilityOutcome.InvalidState,
-                null);
         }
 
         var response = await adapter.CheckAsync(
