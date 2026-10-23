@@ -26,7 +26,7 @@ public sealed class FinancialRulesTests
         var fullDeposit = FullDepositCalculator.Calculate(cashDepositRial, monthlyRentRial);
 
         Assert.Equal(11_000_000_000m, fullDeposit);
-        Assert.Equal(3_300_000_000m, CreditAllocationCalculator.CalculateMaximumLoan(fullDeposit, "C3"));
+        Assert.Equal(4_400_000_000m, CreditAllocationCalculator.CalculateMaximumLoan(fullDeposit, "C3"));
         Assert.Equal(6_050_000_000m, CreditAllocationCalculator.CalculateMaximumLoan(fullDeposit, "A1"));
     }
 
@@ -41,7 +41,7 @@ public sealed class FinancialRulesTests
         var fullDepositRial = FullDepositCalculator.Calculate(cashDepositRial, monthlyRentRial);
 
         Assert.Equal(11_666_666_666m, fullDepositRial);
-        Assert.Equal(3_499_999_999m,
+        Assert.Equal(4_666_666_666m,
             CreditAllocationCalculator.CalculateMaximumLoan(fullDepositRial, "C3"));
     }
 
@@ -63,7 +63,7 @@ public sealed class FinancialRulesTests
     [InlineData("B2", "0.45")]
     [InlineData("C1", "0.40")]
     [InlineData("C2", "0.40")]
-    [InlineData("C3", "0.30")]
+    [InlineData("C3", "0.40")]
     [InlineData("D1", "0.35")]
     [InlineData("E2", "0.30")]
     public void CreditGrade_UsesApprovedGroupRatio(string subGrade, string expectedRatio)
@@ -73,10 +73,10 @@ public sealed class FinancialRulesTests
     }
 
     [Fact]
-    public void C3_HasThirtyPercentFinancing_AndNeverFallsBackToCGroupFortyPercent()
+    public void C3_HasFortyPercentFinancing_LikeOtherCSubGrades()
     {
-        Assert.Equal(0.30m, CreditGradePolicy.GetLoanRatio("C3"));
-        Assert.Equal(150_000_000m, CreditAllocationCalculator.CalculateMaximumLoan(500_000_000m, "C3"));
+        Assert.Equal(0.40m, CreditGradePolicy.GetLoanRatio("C3"));
+        Assert.Equal(200_000_000m, CreditAllocationCalculator.CalculateMaximumLoan(500_000_000m, "C3"));
         Assert.Equal(0.40m, CreditGradePolicy.GetLoanRatio("C2"));
     }
 
