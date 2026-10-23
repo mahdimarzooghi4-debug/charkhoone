@@ -19,5 +19,7 @@
 
 ## Implementation status
 - Manual grade calculators: UI preview only, no external inquiries.
-- Protected paid-inquiry authorization, post-inquiry reconfirmation, cost ledger, and real bank dispatch: **not implemented** in this draft. These are separate backend/API/integration work items with tests and staging gates.
+- Authenticated plan-bound consent recording is now implemented through `POST /api/v1/credit-applications/{id}/paid-credit-inquiry/consent` with body `{"confirm":true,"planId":"<UUID>","planVersion":"<selected version>"}`. It is ownership-checked, locked per application, idempotent for exact plan and actor, and recorded as an audit event. This action does **not** call a provider or debit membership.
+- Chargeable provider adapters explicitly implement `IChargeableCreditGradeAdapter`; these are **fail-closed before any provider call or assessment persistence**, even after consent, until an authoritative idempotent/single-flight provider contract and billing verification are available.
+- Post-inquiry reconfirmation, actual charge reconciliation/cost journal, and real bank dispatch: **not implemented**. These require external provider details and authoritative membership/ledger contracts; do not infer successful payment or turn on a chargeable adapter.
 - Do not present mock UI or internal APIs as real paid eligibility or payment functionality.
