@@ -15,7 +15,8 @@ public sealed record ExternalPropertyContractEvidenceRequest(
     Guid CreditApplicationId,
     Guid ApplicantUserId,
     Guid BankLoanPlanId,
-    string BankLoanPlanVersion);
+    string BankLoanPlanVersion,
+    string? VerifiedNationalId = null);
 
 public sealed record ExternalPropertyContractEvidenceResponse(
     ExternalPropertyContractEvidenceStatus Status,
@@ -39,7 +40,8 @@ public interface IExternalPropertyContractEvidenceAdapter
 
     Task<ExternalPropertyContractEvidenceResponse> CheckAsync(
         ExternalPropertyContractEvidenceRequest request,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        string? verifiedNationalId = null);
 }
 
 public enum ReconcilePropertyContractOutcome
