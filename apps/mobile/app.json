@@ -19,7 +19,7 @@
       "icon": "./assets/charkhoone-app-icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/charkhoone-adaptive-icon-foreground.png",
-        "backgroundColor": "#0D3B36"
+        "backgroundColor": "#FFFFFF"
       }
     },
     "web": {
