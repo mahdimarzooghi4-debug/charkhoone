@@ -40,7 +40,7 @@ export default function OtpResendPage() {
           <p className={styles.successText} data-node-id="168:281">کد جدید ارسال شد.</p>
 
           <div className={styles.action} data-node-id="168:275" data-name="Action Wrapper">
-            <Link href="/identity-verification" className={`ch-button ${styles.submit}`} data-node-id="168:276">تأیید و ورود</Link>
+            <Link href="/login" className={`ch-button ${styles.submit}`} data-node-id="168:276">بازگشت به ورود</Link>
           </div>
 
           <Link className={styles.changeMobile} href="/login" data-node-id="168:277">تغییر شماره موبایل</Link>
