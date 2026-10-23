@@ -109,7 +109,7 @@ export type PhoneNationalIdentityStatus = {
   verified: boolean;
   status: "Verified" | "Unverified";
   requiresVerifiedPhone: boolean;
-  paidInquiryPerformed: boolean;
+  initiatedNewInquiry: boolean;
 };
 
 // Read-only: never starts a provider request or incurs an inquiry charge.
