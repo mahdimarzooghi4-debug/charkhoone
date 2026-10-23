@@ -36,6 +36,11 @@ package = json.loads(read("apps/mobile/package.json"))
 dynamic = read("apps/mobile/app/preview/[screen].tsx")
 preview_layout = read("apps/mobile/app/preview/_layout.tsx")
 route_home = read("apps/mobile/app/preview/home.tsx")
+preview_index = read("apps/mobile/app/preview/index.tsx")
+preview_login = read("apps/mobile/app/preview/login.tsx")
+preview_otp = read("apps/mobile/app/preview/otp.tsx")
+preview_auth = read("apps/mobile/src/preview/MockPreviewAuthScreen.tsx")
+android_icon_config = json.loads(read("apps/mobile/app.json"))
 route_calculator = read("apps/mobile/app/preview/calculator.tsx")
 route_result = read("apps/mobile/app/preview/calculator-result.tsx")
 
@@ -202,12 +207,44 @@ require('router.push("/preview/contract-lookup")' in screen, "MOCK inquiry must 
 require('href="/preview/calculator"' in screen, "home orange CTA must open Figma 65:55")
 require('href="/preview/calculator-result"' in calculator, "Figma 65:55 CTA must open Figma 71:43")
 
-require('return <Redirect href="/preview/home" />;' in dynamic, "unknown /preview/undefined must redirect to the real home route")
+require('return <Redirect href="/preview/login" />;' in dynamic, "unknown preview link must go to login")
+require('return <Redirect href="/preview/login" />;' in preview_index, "preview index must show login before home")
+require('return <MockPreviewAuthScreen step="login" />;' in preview_login, "preview login route is missing")
+require('return <MockPreviewAuthScreen step="otp" />;' in preview_otp, "preview OTP route is missing")
+require("PreviewAuthGate" in preview_layout and "previewSignedIn" in preview_layout and
+        'pathname === "/preview/login"' in preview_layout and
+        'pathname === "/preview/otp"' in preview_layout and
+        'return <Redirect href="/preview/login" />' in preview_layout,
+        "all unauthenticated preview deep links must display login")
+require('router.push("/preview/otp")' in preview_auth and
+        'router.replace("/preview/home")' in preview_auth and
+        "enterPreview();" in preview_auth and "no SMS" in preview_auth,
+        "login -> OTP -> explicitly mock entry flow missing")
+require('useState(false)' in provider and "previewSignedIn" in provider and
+        'useState("")' in provider, "preview auth state must be ephemeral and default signed out")
+require(android_icon_config["expo"]["android"]["adaptiveIcon"]["backgroundColor"] == "#FFFFFF",
+        "Android adaptive launcher icon must have a white background")
+require('gradeDropdownOpen' in calculator and '<Modal visible={gradeDropdownOpen}' in calculator and
+        'Object.entries(MOCK_CREDIT_GRADE_RATIOS).map(([grade, ratio])' in calculator and
+        'accessibilityState={{ selected: selfReportedGrade === grade }}' in calculator and
+        'setSelfReportedGrade(grade); setGradeDropdownOpen(false)' in calculator and
+        'gradeRow:' not in calculator and 'gradeOption:' not in calculator,
+        "credit grades must be a single accessible dropdown with 15 choices, not tiles")
+expected_grades = {f"{letter}{index}": percent for letter, percent in
+                   [("A", 55), ("B", 45), ("C", 40), ("D", 35), ("E", 30)]
+                   for index in (1, 2, 3)}
+parsed_grades = {grade: int(ratio) for grade, ratio in
+                 re.findall(r"\b([A-E][1-3]):\s*(\d+)", data)}
+require(parsed_grades == expected_grades, "all fifteen grade-to-ratio mappings must remain unchanged")
+
 require('MockPreviewProvider' in preview_layout, "MOCK financial state must survive page transitions")
 for token in ('useSegments', 'segments[0] === "preview"', 'if (segments[0] === "preview") return navigator'):
     require(token in root, f"preview must bypass OIDC runtime provider: {token}")
 require('EXPO_PUBLIC_CHARKHOONE_MOCK_PREVIEW === "1"' in index, "dev-only explicit preview flag missing")
-require('Platform.OS === "web"' in index and '__DEV__' in index, "native and production root must keep real OIDC")
+require('Platform.OS === "web"' in index and
+        'EXPO_PUBLIC_CHARKHOONE_DEMO_APK === "1"' in index and
+        'previewWeb || demoApk ? "/preview/login" : "/(auth)/login"' in index,
+        "only explicitly opted-in preview/web-demo APK may bypass real OIDC and must start at login")
 require('"/(auth)/login"' in index, "real auth entry must remain the default")
 require('EXPO_PUBLIC_CHARKHOONE_MOCK_PREVIEW: "1"' in launch, "preview launch must opt in explicitly")
 require(package["scripts"].get("preview:web") == "node ./scripts/start-preview-web.cjs", "single-command local web preview missing")
