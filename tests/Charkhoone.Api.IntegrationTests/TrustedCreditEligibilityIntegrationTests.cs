@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Charkhoone.Application.Contracts;
 using Charkhoone.Application.CreditEligibility;
@@ -23,6 +24,43 @@ public sealed class TrustedCreditEligibilityIntegrationTests(CharkhooneApiFactor
     public Task InitializeAsync() => _factory.MigrateAsync();
 
     public Task DisposeAsync() => Task.CompletedTask;
+
+    [Fact]
+    public async Task PaidInquiryConsent_RequiresExplicitApplicantAndExactPlan_AndIsIdempotent()
+    {
+        var seeded = await SeedTrustedApplicationAsync(DateTimeOffset.UtcNow);
+        Guid planId;
+        await using (var db = CreateDbContext())
+        {
+            planId = (await db.CreditApplications.AsNoTracking().SingleAsync(x => x.Id == seeded.ApplicationId)).BankLoanPlanId!.Value;
+        }
+
+        var path = $"/api/v1/credit-applications/{seeded.ApplicationId:D}/paid-credit-inquiry/consent";
+        using var client = _factory.CreateAuthenticatedClient(seeded.ApplicantSubject);
+        using var noConsent = await client.PostAsJsonAsync(path, new { confirm = false, planId, planVersion = "public-v1" });
+        Assert.Equal(HttpStatusCode.BadRequest, noConsent.StatusCode);
+
+        using var wrongPlan = await client.PostAsJsonAsync(path, new { confirm = true, planId = Guid.NewGuid(), planVersion = "public-v1" });
+        Assert.Equal(HttpStatusCode.Conflict, wrongPlan.StatusCode);
+
+        using var success = await client.PostAsJsonAsync(path, new { confirm = true, planId, planVersion = "public-v1" });
+        Assert.Equal(HttpStatusCode.OK, success.StatusCode);
+        using var repeated = await client.PostAsJsonAsync(path, new { confirm = true, planId, planVersion = "public-v1" });
+        Assert.Equal(HttpStatusCode.OK, repeated.StatusCode);
+
+        await using var db2 = CreateDbContext();
+        Assert.Equal(1, await db2.AuditEvents.CountAsync(x =>
+            x.AggregateId == seeded.ApplicationId
+            && x.Action == "paid_credit_inquiry_consent_v1"));
+
+        var outsiderId = Guid.NewGuid();
+        var outsiderSubject = $"paid-inquiry-outsider-{outsiderId:D}";
+        db2.Users.Add(new UserRow { Id = outsiderId, OidcSubject = outsiderSubject, CreatedAtUtc = seeded.Now });
+        await db2.SaveChangesAsync();
+        using var outsider = _factory.CreateAuthenticatedClient(outsiderSubject);
+        using var denied = await outsider.PostAsJsonAsync(path, new { confirm = true, planId, planVersion = "public-v1" });
+        Assert.Equal(HttpStatusCode.NotFound, denied.StatusCode);
+    }
 
     [Fact]
     public async Task TrustedSnapshotAmount_DrivesEligibility_AndReplayDoesNotCallProviderAgain()
