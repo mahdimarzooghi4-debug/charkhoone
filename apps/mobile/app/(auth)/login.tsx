@@ -67,7 +67,7 @@ export default function LoginScreen() {
         </AppButton>
       </Link>
       <View style={styles.gap20} />
-      <AppButton variant="outline" onPress={() => router.replace("/preview/home")}>
+      <AppButton variant="outline" onPress={() => router.replace("/preview/login")}>
         ورود به پیش‌نمایش نمایشی
       </AppButton>
       <View style={styles.gap20} />

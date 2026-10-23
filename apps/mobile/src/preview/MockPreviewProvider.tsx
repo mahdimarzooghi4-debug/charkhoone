@@ -5,6 +5,11 @@ export type MockContractRole = "Tenant" | "Owner";
 export type MockOwnerSettlement = "monthly" | "fund";
 
 type MockPreviewState = {
+  previewSignedIn: boolean;
+  enterPreview: () => void;
+  exitPreview: () => void;
+  demoMobile: string;
+  setDemoMobile: (value: string) => void;
   hasLoan: boolean;
   displayName: string;
   setDisplayName: (name: string) => void;
@@ -35,6 +40,10 @@ type MockPreviewState = {
 const PreviewContext = createContext<MockPreviewState | null>(null);
 
 export function MockPreviewProvider({ children }: PropsWithChildren) {
+  const [previewSignedIn, setPreviewSignedIn] = useState(false);
+  const [demoMobile, setDemoMobile] = useState(""); // ephemeral user-entered demo text; no SMS or identity check
+  const enterPreview = () => setPreviewSignedIn(true);
+  const exitPreview = () => setPreviewSignedIn(false);
   const [hasLoan, setHasLoan] = useState(false);
   const [displayName, setDisplayName] = useState("کاربر پیش‌نمایش");
   const [photoUri, setPhotoUri] = useState<string | null>(null);
@@ -50,7 +59,7 @@ export function MockPreviewProvider({ children }: PropsWithChildren) {
   const parsedRate = bankRateInput.trim() === "" ? null : Number(bankRateInput);
   const bankAnnualRate = parsedRate !== null && Number.isFinite(parsedRate) && parsedRate >= 0 && parsedRate <= 100 ? parsedRate : null;
   const financialModel = useMemo(() => calculateMockFinancialModel(cashDeposit, monthlyRent, bankAnnualRate, selfReportedGrade), [cashDeposit, monthlyRent, bankAnnualRate, selfReportedGrade]);
-  const value = useMemo(() => ({ hasLoan, setHasLoan, displayName, setDisplayName, photoUri, setPhotoUri, previewSeen, setPreviewSeen, financingPlan, membership, contractRole, setContractRole, ownerSettlement, setOwnerSettlement, setFinancingPlan, setMembership, selfReportedGrade, setSelfReportedGrade, bankRateInput, setBankRateInput, cashDeposit, monthlyRent, setCashDeposit, setMonthlyRent, financialModel }), [hasLoan, displayName, photoUri, previewSeen, financingPlan, membership, contractRole, ownerSettlement, selfReportedGrade, bankRateInput, cashDeposit, monthlyRent, financialModel]);
+  const value = useMemo(() => ({ previewSignedIn, enterPreview, exitPreview, demoMobile, setDemoMobile, hasLoan, setHasLoan, displayName, setDisplayName, photoUri, setPhotoUri, previewSeen, setPreviewSeen, financingPlan, membership, contractRole, setContractRole, ownerSettlement, setOwnerSettlement, setFinancingPlan, setMembership, selfReportedGrade, setSelfReportedGrade, bankRateInput, setBankRateInput, cashDeposit, monthlyRent, setCashDeposit, setMonthlyRent, financialModel }), [previewSignedIn, demoMobile, hasLoan, displayName, photoUri, previewSeen, financingPlan, membership, contractRole, ownerSettlement, selfReportedGrade, bankRateInput, cashDeposit, monthlyRent, financialModel]);
   return <PreviewContext.Provider value={value}>{children}</PreviewContext.Provider>;
 }
 
