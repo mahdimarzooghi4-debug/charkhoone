@@ -1,6 +1,6 @@
 import { Link, useRouter } from "expo-router";
 import { useState } from "react";
-import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Modal, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { BrandLogo } from "@/components/BrandLogo";
 import { FigmaSvg } from "@/components/FigmaSvg";
 import { figmaAssets } from "@/figmaAssets";
@@ -87,6 +87,7 @@ function PreviewAmount({ label, value, maximum, step, limit, onChange }: {
 
 export function MockTenantCalculatorScreen() {
   const router = useRouter();
+  const [gradeDropdownOpen, setGradeDropdownOpen] = useState(false);
   const { selfReportedGrade, setSelfReportedGrade, cashDeposit, monthlyRent, bankRateInput, setBankRateInput, setCashDeposit, setMonthlyRent, financialModel } = useMockPreview();
   return (
     <SafeAreaView style={styles.safe}>
@@ -105,7 +106,43 @@ export function MockTenantCalculatorScreen() {
         </View>
         <View style={styles.card}>
           <Text style={styles.amountLabel}>رتبه اعتباری خوداظهاری (تأییدنشده)</Text>
-          <View style={styles.gradeRow}>{Object.keys(MOCK_CREDIT_GRADE_RATIOS).map(grade => <Pressable key={grade} accessibilityRole="button" accessibilityLabel={`انتخاب رتبه ${grade}`} accessibilityState={{ selected: selfReportedGrade === grade }} onPress={() => setSelfReportedGrade(grade)} style={[styles.gradeOption, selfReportedGrade === grade && styles.gradeSelected]}><Text style={styles.gradeText}>{grade}</Text></Pressable>)}</View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={"رتبه اعتباری انتخاب‌شده " + selfReportedGrade + "، بازکردن فهرست کشویی"}
+            accessibilityState={{ expanded: gradeDropdownOpen }}
+            onPress={() => setGradeDropdownOpen(true)}
+            style={styles.gradeDropdown}
+          >
+            <Text style={styles.gradeArrow}>⌄</Text>
+            <Text style={styles.gradeDropdownValue}>{selfReportedGrade} — {MOCK_CREDIT_GRADE_RATIOS[selfReportedGrade]}٪</Text>
+          </Pressable>
+          <Modal visible={gradeDropdownOpen} transparent animationType="fade" onRequestClose={() => setGradeDropdownOpen(false)}>
+            <View style={styles.gradeOverlay}>
+              <Pressable accessibilityRole="button" accessibilityLabel="بستن فهرست رتبه اعتباری" style={StyleSheet.absoluteFillObject} onPress={() => setGradeDropdownOpen(false)} />
+              <View style={styles.gradeSheet}>
+                <Text style={styles.gradeSheetTitle}>انتخاب رتبه اعتباری خوداظهاری</Text>
+                <Text style={styles.gradeSheetHint}>۱۵ رتبه قابل انتخاب؛ هیچ استعلام رسمی انجام نمی‌شود.</Text>
+                <ScrollView style={styles.gradeOptionsScroll} showsVerticalScrollIndicator={true}>
+                  {Object.entries(MOCK_CREDIT_GRADE_RATIOS).map(([grade, ratio]) => (
+                    <Pressable
+                      key={grade}
+                      accessibilityRole="radio"
+                      accessibilityLabel={"رتبه " + grade + " با سقف " + ratio + " درصد"}
+                      accessibilityState={{ selected: selfReportedGrade === grade }}
+                      onPress={() => { setSelfReportedGrade(grade); setGradeDropdownOpen(false); }}
+                      style={[styles.gradeItem, selfReportedGrade === grade && styles.gradeSelected]}
+                    >
+                      <Text style={[styles.gradeItemText, selfReportedGrade === grade && styles.gradeSelectedText]}>{selfReportedGrade === grade ? "✓" : ""}</Text>
+                      <Text style={styles.gradeItemText}>{grade} — {ratio}٪</Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+                <Pressable accessibilityRole="button" style={styles.gradeClose} onPress={() => setGradeDropdownOpen(false)}>
+                  <Text style={styles.gradeCloseText}>بستن فهرست</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
           <Text style={styles.estimateCaption}>درصد تأمین مالی رتبه انتخابی: {financialModel.financingPercent}٪. این انتخاب فقط برای برآورد رایگان است؛ هیچ استعلام اعتباری انجام نمی‌شود.</Text>
           <Text style={styles.amountLabel}>نرخ سود سالانه اسمی بانک (نمونه: ۲۳٪)</Text>
           <TextInput accessibilityLabel="نرخ سود سالانه اسمی بانک" keyboardType="decimal-pad" value={bankRateInput.replace(/[0-9]/g, digit => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]).replace(".", "٫")} onChangeText={value => {
@@ -164,10 +201,20 @@ const styles = StyleSheet.create({
   adjustButton: { flex: 1, minHeight: 42, borderRadius: 8, backgroundColor: colors.page, alignItems: "center", justifyContent: "center" },
   adjustText: { color: colors.primary, fontFamily: fonts.medium, fontSize: 12, textAlign: "center" },
   divider: { height: 1, backgroundColor: colors.border },
-  gradeRow: { flexDirection: "row", flexWrap: "wrap", gap: 7, justifyContent: "flex-end" },
-  gradeOption: { minWidth: 49, paddingVertical: 10, paddingHorizontal: 9, borderWidth: 1, borderColor: colors.border, borderRadius: 8, alignItems: "center" },
-  gradeSelected: { backgroundColor: colors.page, borderColor: colors.primary },
-  gradeText: { color: colors.primary, fontFamily: fonts.medium, fontSize: 13 },
+  gradeDropdown: { minHeight: 50, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md, paddingHorizontal: 16, flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: colors.surface },
+  gradeDropdownValue: { color: colors.primary, fontFamily: fonts.semibold, fontSize: 16 },
+  gradeArrow: { color: colors.primary, fontFamily: fonts.bold, fontSize: 24 },
+  gradeOverlay: { flex: 1, justifyContent: "center", backgroundColor: "rgba(0, 0, 0, 0.4)", padding: 20 },
+  gradeSheet: { backgroundColor: colors.surface, maxHeight: "85%", borderRadius: radii.lg, padding: 20, gap: 12 },
+  gradeSheetTitle: { color: colors.text, fontFamily: fonts.semibold, fontSize: 17, textAlign: "right" },
+  gradeSheetHint: { color: colors.muted, fontFamily: fonts.regular, fontSize: 12, textAlign: "right" },
+  gradeOptionsScroll: { flexGrow: 0, maxHeight: 460 },
+  gradeItem: { minHeight: 45, paddingHorizontal: 16, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderBottomWidth: 1, borderBottomColor: colors.border },
+  gradeSelected: { backgroundColor: colors.infoSoft },
+  gradeItemText: { color: colors.primary, fontFamily: fonts.medium, fontSize: 15 },
+  gradeSelectedText: { color: colors.primary, fontFamily: fonts.bold },
+  gradeClose: { alignSelf: "center", minHeight: 42, justifyContent: "center", paddingHorizontal: 16 },
+  gradeCloseText: { color: colors.primary, fontFamily: fonts.medium, fontSize: 14 },
   rateInput: { width: "100%", borderWidth: 1, borderColor: colors.border, borderRadius: 8, minHeight: 44, paddingHorizontal: 12, color: colors.primary, fontFamily: fonts.medium, fontSize: 16, ...rtl },
   rateError: { color: "#B91C1C", fontFamily: fonts.medium, fontSize: 12, ...rtl },
   estimate: { borderRadius: radii.md, borderColor: colors.border, borderWidth: 1, backgroundColor: colors.surface, padding: 14, gap: 6, alignItems: "flex-end" },
