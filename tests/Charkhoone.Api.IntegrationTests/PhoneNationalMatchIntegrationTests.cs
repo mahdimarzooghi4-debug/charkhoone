@@ -97,12 +97,16 @@ public sealed class PhoneNationalMatchIntegrationTests(CharkhooneApiFactory fact
                 .SingleAsync(x => x.AggregateId == userId && x.Action == "phone_national_match_verified_v1");
             Assert.DoesNotContain("0071234561", evidence.Reason, StringComparison.Ordinal);
             Assert.DoesNotContain("09121234567", evidence.Reason, StringComparison.Ordinal);
-            evidence.OccurredAtUtc = DateTimeOffset.UtcNow.AddHours(-2);
-            db.AuditEvents.Update(evidence);
-            await db.SaveChangesAsync();
-            var service = new EfPhoneNationalMatchService(db, fake, cfg, TimeProvider.System);
+            // Advance only the clock: audit history stays immutable.
+            var service = new EfPhoneNationalMatchService(db, fake, cfg,
+                new FixedUtcClock(DateTimeOffset.UtcNow.AddHours(2)));
             Assert.False(await service.IsVerifiedForPhoneAsync(userId, "09121234567"));
         }
+    }
+
+    private sealed class FixedUtcClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
     }
 
     private sealed record IdentityView(bool Verified, bool RequiresVerifiedPhone);
