@@ -213,14 +213,14 @@ require('EXPO_PUBLIC_CHARKHOONE_MOCK_PREVIEW: "1"' in launch, "preview launch mu
 require(package["scripts"].get("preview:web") == "node ./scripts/start-preview-web.cjs", "single-command local web preview missing")
 
 for token in (
-    "calculateMockFinancialModel", "calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: 30, bankAnnualRate })",
+    "calculateMockFinancialModel", "calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: MOCK_CREDIT_GRADE_RATIOS[selfReportedGrade] ?? 40, bankAnnualRate })",
     "MOCK_CASH_DEPOSIT_MAX", "MOCK_MONTHLY_RENT_MAX",
 ):
     require(token in data, f"shared approved financial formula missing: {token}")
 for token in ("Math.round(rent / 0.03)", "Math.round(fullDeposit * financingPercent / 100)",
               "Math.round(financing * bankAnnualRate / 100 / 12)", "financingGaugeProgress"):
     require(token in shared_calculator, f"shared finance engine missing: {token}")
-require("useState(500_000_000)" in provider and "useState(20_000_000)" in provider and 'useState("23")' in provider,
+require("useState(500_000_000)" in provider and "useState(20_000_000)" in provider and 'useState("23")' in provider and 'useState("C3")' in provider,
         "C3 default inputs changed")
 for token in ("cashDeposit", "monthlyRent", "setCashDeposit", "setMonthlyRent", "financialModel", "setFinancingPlan", "setMembership"):
     require(token in provider, f"MOCK state continuity missing: {token}")
@@ -240,7 +240,7 @@ require('actions = <View style={styles.planActions}>' in screen, "financing-plan
 require('!actions && screen !== "contract-lookup"' in screen, "avoid showing the tenant bottom bar on Figma result/financing screens")
 
 require('financialModel: mockFinancialModel' in screen, "home/results/plans/contract/payments must use edited values")
-for token in ("onResponderMove", "TextInput", "setCashDeposit", "setMonthlyRent", "financialModel.monthlyInterest"):
+for token in ("onResponderMove", "TextInput", "setCashDeposit", "setMonthlyRent", "financialModel.monthlyInterest", "setSelfReportedGrade", "خوداظهاری (تأییدنشده)"):
     require(token in calculator, f"editable Figma calculator missing: {token}")
 require("۱۸٬۵۰۰٬۰۰۰" not in calculator and "۴۵۰٬۰۰۰٬۰۰۰" not in calculator, "old Figma numbers must not override C3")
 require("۱۸٬۵۰۰٬۰۰۰" not in screen and "۴۵۰٬۰۰۰٬۰۰۰" not in screen, "old Figma numbers must not override walkthrough")
