@@ -108,6 +108,16 @@ public sealed class EfCreditEligibilityService(
             await transaction.CommitAsync(cancellationToken);
         }
 
+        // Paid adapters require a separately approved durable single-flight/billing
+        // integration. Reject before issuing any network request or incurring cost.
+        // Preview/unavailable development adapters retain their existing behavior.
+        if (adapter is IChargeableCreditGradeAdapter)
+        {
+            return new EvaluateCreditEligibilityResult(
+                EvaluateCreditEligibilityOutcome.InvalidState,
+                null);
+        }
+
         var response = await adapter.CheckAsync(
             new ExternalCreditGradeRequest(
                 assessment.Id,
