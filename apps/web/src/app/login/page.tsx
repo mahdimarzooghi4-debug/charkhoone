@@ -37,7 +37,7 @@ export default function LoginPage() {
 
           <div className={styles.headers} data-node-id="163:184" data-name="Card Headers">
             <h2 data-node-id="163:185">به چارخونه خوش آمدید</h2>
-            <p data-node-id="163:186">برای ورود به حساب کاربری، شماره موبایل خود را وارد کنید.</p>
+            <p data-node-id="163:186">این صفحه پیش‌نمایش طراحی ورود است؛ فعلاً پیامک واقعی ارسال نمی‌کند. ورود امن نسخه موبایل از طریق OIDC انجام می‌شود.</p>
           </div>
 
           <form
@@ -60,7 +60,7 @@ export default function LoginPage() {
 
             <div className={styles.action} data-node-id="163:188" data-name="Action Wrapper">
               <Button type="submit" className={styles.submit} data-node-id="163:189">
-                دریافت کد تأیید
+                مشاهده پیش‌نمایش کد تأیید
               </Button>
             </div>
           </form>
