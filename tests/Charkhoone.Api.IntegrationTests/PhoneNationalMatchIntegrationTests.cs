@@ -76,11 +76,12 @@ public sealed class PhoneNationalMatchIntegrationTests(CharkhooneApiFactory fact
         var cfg = new ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string, string?> {
                 ["IdentityMatch:HmacKey"] = "test-only-not-a-production-secret-32-bytes",
+                ["IdentityMatch:EvidenceValidFor"] = "01:00:00",
             }).Build();
         await using (var scope = factory.Services.CreateAsyncScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<CharkhooneDbContext>();
-            var service = new EfPhoneNationalMatchService(db, fake, cfg);
+            var service = new EfPhoneNationalMatchService(db, fake, cfg, TimeProvider.System);
             Assert.Equal(PhoneNationalMatchProcessStatus.Verified,
                 (await service.VerifyAsync(userId, "09121234567", "0071234561", DateTimeOffset.UtcNow)).Status);
             Assert.Equal(PhoneNationalMatchProcessStatus.AlreadyVerified,
@@ -96,6 +97,11 @@ public sealed class PhoneNationalMatchIntegrationTests(CharkhooneApiFactory fact
                 .SingleAsync(x => x.AggregateId == userId && x.Action == "phone_national_match_verified_v1");
             Assert.DoesNotContain("0071234561", evidence.Reason, StringComparison.Ordinal);
             Assert.DoesNotContain("09121234567", evidence.Reason, StringComparison.Ordinal);
+            evidence.OccurredAtUtc = DateTimeOffset.UtcNow.AddHours(-2);
+            db.AuditEvents.Update(evidence);
+            await db.SaveChangesAsync();
+            var service = new EfPhoneNationalMatchService(db, fake, cfg, TimeProvider.System);
+            Assert.False(await service.IsVerifiedForPhoneAsync(userId, "09121234567"));
         }
     }
 
