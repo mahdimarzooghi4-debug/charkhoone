@@ -50,6 +50,8 @@ export default function LoginPage() {
             <TextField
               id="mobile"
               name="mobile"
+              disabled
+              aria-describedby="mock-login-warning"
               label="شماره موبایل"
               type="tel"
               inputMode="numeric"
