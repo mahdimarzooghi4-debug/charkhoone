@@ -25,10 +25,10 @@ Owner and tenant use one shared mobile application. Shared authentication, ident
 ### Shared entry flow
 
 - `41:8` — Login / Mobile Number
-- `39:26` — OTP Verification
+- `39:26` — OTP Verification → account entry with no national-ID step
 - `47:10` — OTP Verification / Error
-- `48:14` — Identity Verification
-- `39:66` — Identity Verification / Error
+- `48:14` — Khodnevis / Ownership Match — only before first external contract lookup, never during login
+- `39:66` — Khodnevis / Ownership Match — mismatch
 - `79:41` — Contract / Tracking Code
 - `66:382` — Contract Lookup Result / role selection
 
