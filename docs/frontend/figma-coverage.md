@@ -32,10 +32,10 @@ Page: `05 - User Web App` (`144:14`). This is one unified User Web application; 
 - `Web App / OTP Verification / Error` (`168:45`) → `/otp-verification/error`
 - `Web App / OTP Verification / Loading` (`168:215`) → `/otp-verification/loading`
 - `Web App / OTP Verification / Resend Available` (`168:248`) → `/otp-verification/resend`
-- `Web App / Identity Verification` (`167:211`) → `/identity-verification`
-- `Web App / Identity Verification / Invalid Format` (`170:51`) → `/identity-verification/invalid-format`
-- `Web App / Identity Verification / Mismatch` (`170:79`) → `/identity-verification/mismatch`
-- `Web App / Identity Verification / Loading` (`170:107`) → `/identity-verification/loading`
+- `Web App / Khodnevis / Ownership Match` (`167:211`) → `/user/contracts/register/identity-verification` (preview-only until provider connected; no national ID at login)
+- `Web App / Khodnevis / Ownership Match / Invalid National ID` (`170:51`) → legacy preview scenario
+- `Web App / Khodnevis / Ownership Match / Mismatch` (`170:79`) → legacy preview scenario
+- `Web App / Khodnevis / Ownership Match / Loading` (`170:107`) → legacy preview scenario
 
 OTP digits, countdowns, error/loading/resend messages, masked mobile and national ID are Figma fixture states only. No OTP or identity-validation service is connected yet.
 
