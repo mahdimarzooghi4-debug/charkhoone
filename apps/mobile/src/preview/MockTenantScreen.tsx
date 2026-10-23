@@ -37,7 +37,7 @@ function ResultMetricCard({ label, value, accent = false }: { label: string; val
 }
 
 function FinancingPlanCard({
-  type, selected, title, badge, financing, contribution, interest, onSelect,
+  type, selected, title, badge, financing, contribution, interest, selfReportedGrade, financingPercent, onSelect,
 }: {
   type: MockFinancingPlan;
   selected: boolean;
@@ -46,6 +46,8 @@ function FinancingPlanCard({
   financing: string;
   contribution: string;
   interest: string;
+  selfReportedGrade: string;
+  financingPercent: number;
   onSelect: (plan: MockFinancingPlan) => void;
 }) {
   return (
@@ -61,8 +63,8 @@ function FinancingPlanCard({
         <View style={[styles.planBadge, selected && styles.planBadgeSelected]}><Text style={styles.planBadgeText}>{badge}</Text></View>
         <Text style={styles.planTitle}>{title}</Text>
       </View>
-      <Text style={styles.planSample}>رتبه خوداظهاری {mockFinancialModel.selfReportedGrade} • استعلام بانک انجام نشده</Text>
-      <View style={styles.planData}><Text style={styles.planDataValue}>{financing}</Text><Text style={styles.planDataLabel}>مبلغ قابل تأمین ({mockFinancialModel.financingPercent}٪)</Text></View>
+      <Text style={styles.planSample}>رتبه خوداظهاری {selfReportedGrade} • استعلام بانک انجام نشده</Text>
+      <View style={styles.planData}><Text style={styles.planDataValue}>{financing}</Text><Text style={styles.planDataLabel}>مبلغ قابل تأمین ({financingPercent}٪)</Text></View>
       <View style={styles.planDivider} />
       <View style={styles.planData}><Text style={styles.planDataValue}>{contribution}</Text><Text style={styles.planDataLabel}>آورده موردنیاز</Text></View>
       <View style={styles.planDivider} />
@@ -366,14 +368,14 @@ export function MockTenantScreen({ screen }: Props) {
         <FinancingPlanCard
           type="ویژهٔ نمونه" selected={financingPlan === "ویژهٔ نمونه"}
           badge="طرح ویژه" title="طرح ویژه کارکنان سازمان" onSelect={setFinancingPlan}
-          financing={mockFinancialModel.financing} contribution={mockFinancialModel.contribution} interest={mockFinancialModel.monthlyInterest}
+          financing={mockFinancialModel.financing} contribution={mockFinancialModel.contribution} interest={mockFinancialModel.monthlyInterest} selfReportedGrade={mockFinancialModel.selfReportedGrade} financingPercent={mockFinancialModel.financingPercent}
         />
         <View style={styles.planHighlight}><Text style={styles.planHighlightText}>ویژگی‌های اختصاصی طرح ویژه و تخفیف بانکی هنوز تأیید نشده‌اند؛ محاسبات فعلاً در هر دو طرح یکسان هستند.</Text></View>
         <Text style={styles.planOther}>سایر طرح‌های قابل استفاده</Text>
         <FinancingPlanCard
           type="عمومی" selected={financingPlan === "عمومی"}
           badge="طرح عمومی" title="طرح عمومی تأمین مسکن" onSelect={setFinancingPlan}
-          financing={mockFinancialModel.financing} contribution={mockFinancialModel.contribution} interest={mockFinancialModel.monthlyInterest}
+          financing={mockFinancialModel.financing} contribution={mockFinancialModel.contribution} interest={mockFinancialModel.monthlyInterest} selfReportedGrade={mockFinancialModel.selfReportedGrade} financingPercent={mockFinancialModel.financingPercent}
         />
         <Text style={styles.planFinePrint}>این ارقام پیش‌نمایش MOCK هستند. نرخ اسمی نمونه {mockFinancialModel.annualRate}، پرداخت فقط سود و اصل مطابق قرارداد احتمالی بانک است. طرح تأمین مالی مستقل از نوع عضویت می‌ماند.</Text>
       </>;
