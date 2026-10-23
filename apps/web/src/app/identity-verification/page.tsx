@@ -64,12 +64,14 @@ export default function IdentityVerificationPage() {
               <TextField
                 id="national-id"
                 name="nationalId"
+                disabled
+                aria-describedby="identity-preview-message"
                 label="کد ملی"
                 type="text"
                 inputMode="numeric"
                 autoComplete="off"
                 maxLength={10}
-                placeholder="۰۰۱۲۳۴۵۶۷۸"
+                placeholder="ورود اطلاعات پس از اتصال استعلام معتبر فعال می‌شود"
                 className={styles.nationalIdInput}
               />
             </div>
@@ -87,6 +89,7 @@ export default function IdentityVerificationPage() {
               استعلام هویت هنوز فعال نیست
             </button>
           </div>
+        <p id="identity-preview-message">در این پیش‌نمایش کد ملی جمع‌آوری یا ارسال نمی‌شود؛ استعلام فقط در نسخه عملیاتی، پس از تأیید شما انجام خواهد شد.</p>
         </section>
       </div>
     </main>
