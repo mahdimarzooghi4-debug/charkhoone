@@ -12,7 +12,7 @@ const assets = {
   account: "https://www.figma.com/api/mcp/asset/b3358fec-4bcc-4949-825e-6236a1d55ee9.svg",
 } as const;
 const closeIcon = "https://www.figma.com/api/mcp/asset/6e31e94b-d2b5-4f65-8653-bc25c92cf4a5.svg";
-const verificationDigits = ["۴", "۸", "۲", "۱", "۶"];
+const verificationDigits = ["•", "•", "•", "•", "•"];
 
 export default function ChangeMobileOtpPage() {
   return (
@@ -23,13 +23,13 @@ export default function ChangeMobileOtpPage() {
           <h1>تأیید شماره جدید</h1>
         </header>
         <div className={styles.modalBody}>
-          <p>کد ارسال‌شده به شماره ۰۹۱۲•••••۴۵ را وارد کنید.</p>
+          <p>در این پیش‌نمایش کد واقعی ارسال نشده و تغییر شماره انجام نمی‌شود.</p>
           <div className={styles.otpRow} dir="ltr">{verificationDigits.map((digit, index) => <span key={index} className={`${styles.otpDigit} ${index === 0 ? styles.otpDigitActive : ""}`}>{digit}</span>)}</div>
           <span className={styles.timer}>ارسال مجدد تا ۰۰:۵۹</span>
           <div className={styles.divider} />
         </div>
         <div className={styles.actions}>
-          <Link href="/user/account" className={styles.primaryAction}>تأیید و تغییر شماره</Link>
+          <span className={styles.primaryAction} aria-disabled="true">تغییر شماره غیرفعال است</span>
           <div className={styles.secondaryLinks}><Link href="/user/account/change-mobile">ویرایش شماره</Link><Link href="/user/account" className={styles.cancel}>انصراف</Link></div>
         </div>
       </section>
