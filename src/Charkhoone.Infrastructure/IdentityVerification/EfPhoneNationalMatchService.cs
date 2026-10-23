@@ -70,6 +70,27 @@ public sealed class EfPhoneNationalMatchService(
             && x.OccurredAtUtc >= cutoff && x.OccurredAtUtc <= now, cancellationToken);
     }
 
+    public async Task<bool> IsVerifiedForPairAsync(
+        Guid userId, string verifiedMobile, string nationalId,
+        CancellationToken cancellationToken = default)
+    {
+        var mobile = NormalizeMobile(verifiedMobile);
+        var key = GetHmacKey();
+        var validFor = GetEvidenceValidity();
+        if (userId == Guid.Empty || mobile is null || !ValidNationalId(nationalId)
+            || key is null || validFor is null) return false;
+
+        var now = timeProvider.GetUtcNow();
+        var cutoff = now - validFor.Value;
+        var prefix = "phone:" + Digest(key, mobile)
+            + ";national:" + Digest(key, nationalId) + ";";
+        return await db.AuditEvents.AsNoTracking().AnyAsync(x =>
+            x.AggregateType == AggregateType && x.AggregateId == userId
+            && x.Action == Action && x.Reason.StartsWith(prefix)
+            && x.OccurredAtUtc >= cutoff && x.OccurredAtUtc <= now,
+            cancellationToken);
+    }
+
     public async Task<PhoneNationalMatchResult> VerifyAsync(
         Guid userId, string verifiedMobile, string nationalId, DateTimeOffset occurredAtUtc,
         CancellationToken cancellationToken = default)
