@@ -5,7 +5,7 @@ import { BrandLogo } from "@/components/BrandLogo";
 import { FigmaSvg } from "@/components/FigmaSvg";
 import { figmaAssets } from "@/figmaAssets";
 import { colors, fonts, radii } from "@/theme";
-import { clampMockAmount, formatMockNumber, parseMockAmount, MOCK_CASH_DEPOSIT_MAX, MOCK_CASH_DEPOSIT_STEP, MOCK_MONTHLY_RENT_MAX, MOCK_MONTHLY_RENT_STEP } from "./mockTenantData";
+import { clampMockAmount, formatMockNumber, parseMockAmount, MOCK_CASH_DEPOSIT_MAX, MOCK_CASH_DEPOSIT_STEP, MOCK_MONTHLY_RENT_MAX, MOCK_MONTHLY_RENT_STEP, MOCK_CREDIT_GRADE_RATIOS } from "./mockTenantData";
 import { useMockPreview } from "./MockPreviewProvider";
 
 /**
@@ -87,7 +87,7 @@ function PreviewAmount({ label, value, maximum, step, limit, onChange }: {
 
 export function MockTenantCalculatorScreen() {
   const router = useRouter();
-  const { cashDeposit, monthlyRent, bankRateInput, setBankRateInput, setCashDeposit, setMonthlyRent, financialModel } = useMockPreview();
+  const { selfReportedGrade, setSelfReportedGrade, cashDeposit, monthlyRent, bankRateInput, setBankRateInput, setCashDeposit, setMonthlyRent, financialModel } = useMockPreview();
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.brand}><BrandLogo /></View>
@@ -104,8 +104,9 @@ export function MockTenantCalculatorScreen() {
           <PreviewAmount label="اجاره ماهانه" value={monthlyRent} maximum={MOCK_MONTHLY_RENT_MAX} step={MOCK_MONTHLY_RENT_STEP} limit="۵۰ میلیون" onChange={setMonthlyRent} />
         </View>
         <View style={styles.card}>
-          <Text style={styles.amountLabel}>سناریوی نمونه اعتبارسنجی: رتبه C3</Text>
-          <Text style={styles.estimateCaption}>درصد تأمین مالی این نمونه: ۳۰٪ رهن کامل معادل قرارداد. رتبه واقعی تنها از سامانه بیرونی دریافت می‌شود و در این پیش‌نمایش قابل انتخاب نیست.</Text>
+          <Text style={styles.amountLabel}>رتبه اعتباری خوداظهاری (تأییدنشده)</Text>
+          <View style={styles.gradeRow}>{Object.keys(MOCK_CREDIT_GRADE_RATIOS).map(grade => <Pressable key={grade} accessibilityRole="button" accessibilityLabel={`انتخاب رتبه ${grade}`} accessibilityState={{ selected: selfReportedGrade === grade }} onPress={() => setSelfReportedGrade(grade)} style={[styles.gradeOption, selfReportedGrade === grade && styles.gradeSelected]}><Text style={styles.gradeText}>{grade}</Text></Pressable>)}</View>
+          <Text style={styles.estimateCaption}>درصد تأمین مالی رتبه انتخابی: {financialModel.financingPercent}٪. این انتخاب فقط برای برآورد رایگان است؛ هیچ استعلام اعتباری انجام نمی‌شود.</Text>
           <Text style={styles.amountLabel}>نرخ سود سالانه اسمی بانک (نمونه: ۲۳٪)</Text>
           <TextInput accessibilityLabel="نرخ سود سالانه اسمی بانک" keyboardType="decimal-pad" value={bankRateInput.replace(/[0-9]/g, digit => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]).replace(".", "٫")} onChangeText={value => {
             const normalized = value.replace(/[۰-۹]/g, digit => String(digit.charCodeAt(0) - 1776)).replace(/[٠-٩]/g, digit => String(digit.charCodeAt(0) - 1632)).replace("٫", ".");
@@ -117,7 +118,7 @@ export function MockTenantCalculatorScreen() {
         <View style={styles.estimate}>
           <Text style={styles.estimateTitle}>پرداخت ماهانه تقریبی شما (فقط سود)</Text>
           <Text style={styles.estimateValue}>{financialModel.monthlyInterest}</Text>
-          <Text style={styles.estimateCaption}>برآورد C3 با نرخ اسمی سالانه {financialModel.annualRate}؛ بازپرداخت اصل، مطابق قرارداد نهایی بانک خواهد بود.</Text>
+          <Text style={styles.estimateCaption}>برآورد خوداظهاری {selfReportedGrade} با نرخ اسمی سالانه {financialModel.annualRate}؛ بازپرداخت اصل، مطابق قرارداد نهایی بانک خواهد بود.</Text>
         </View>
         <View style={styles.estimate}>
           <Text style={styles.estimateTitle}>خالص دریافتی ماهانه مالک (نمونه)</Text>
@@ -163,6 +164,10 @@ const styles = StyleSheet.create({
   adjustButton: { flex: 1, minHeight: 42, borderRadius: 8, backgroundColor: colors.page, alignItems: "center", justifyContent: "center" },
   adjustText: { color: colors.primary, fontFamily: fonts.medium, fontSize: 12, textAlign: "center" },
   divider: { height: 1, backgroundColor: colors.border },
+  gradeRow: { flexDirection: "row", flexWrap: "wrap", gap: 7, justifyContent: "flex-end" },
+  gradeOption: { minWidth: 49, paddingVertical: 10, paddingHorizontal: 9, borderWidth: 1, borderColor: colors.border, borderRadius: 8, alignItems: "center" },
+  gradeSelected: { backgroundColor: colors.page, borderColor: colors.primary },
+  gradeText: { color: colors.primary, fontFamily: fonts.medium, fontSize: 13 },
   rateInput: { width: "100%", borderWidth: 1, borderColor: colors.border, borderRadius: 8, minHeight: 44, paddingHorizontal: 12, color: colors.primary, fontFamily: fonts.medium, fontSize: 16, ...rtl },
   rateError: { color: "#B91C1C", fontFamily: fonts.medium, fontSize: 12, ...rtl },
   estimate: { borderRadius: radii.md, borderColor: colors.border, borderWidth: 1, backgroundColor: colors.surface, padding: 14, gap: 6, alignItems: "flex-end" },
