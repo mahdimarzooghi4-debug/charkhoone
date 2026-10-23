@@ -4,6 +4,7 @@ using Charkhoone.Application.BankFunding;
 using Charkhoone.Application.Contracts;
 using Charkhoone.Application.CreditApplications;
 using Charkhoone.Application.CreditEligibility;
+using Charkhoone.Application.IdentityVerification;
 using Charkhoone.Domain.CreditApplications;
 using Charkhoone.Infrastructure.Persistence;
 using Charkhoone.Infrastructure.Persistence.Models;
@@ -127,6 +128,8 @@ public static class CreditApplicationEndpoints
         ClaimsPrincipal principal,
         IUserIdentityLookup userIdentityLookup,
         ICreditApplicationService creditApplications,
+        IPhoneNationalMatchService phoneNationalMatches,
+        IHostEnvironment environment,
         TimeProvider timeProvider,
         CancellationToken cancellationToken)
     {
@@ -134,6 +137,30 @@ public static class CreditApplicationEndpoints
         if (identity.Error is not null)
         {
             return identity.Error;
+        }
+
+        // Draft creation and the free calculator require no paid identity inquiry.
+        // A binding financing submission outside local Development must have a
+        // previously attested ownership match for this account and the current
+        // *OIDC-verified* mobile number. Never accept phone from the request body.
+        if (!environment.IsDevelopment())
+        {
+            var claimVerified = string.Equals(
+                principal.FindFirst("phone_number_verified")?.Value,
+                "true", StringComparison.OrdinalIgnoreCase);
+            var currentPhone = principal.FindFirst("phone_number")?.Value;
+            if (!claimVerified || string.IsNullOrWhiteSpace(currentPhone) ||
+                !await phoneNationalMatches.IsVerifiedForPhoneAsync(
+                    identity.UserId!.Value, currentPhone, cancellationToken))
+            {
+                return Results.Problem(
+                    statusCode: StatusCodes.Status409Conflict,
+                    title: "National ID and mobile ownership must be verified before financing submission.",
+                    extensions: new Dictionary<string, object?>
+                    {
+                        ["code"] = "phone_national_identity_match_required",
+                    });
+            }
         }
 
         var result = await creditApplications.SubmitAsync(
