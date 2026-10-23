@@ -218,7 +218,7 @@ require("PreviewAuthGate" in preview_layout and "previewSignedIn" in preview_lay
         "all unauthenticated preview deep links must display login")
 require('router.push("/preview/otp")' in preview_auth and
         'router.replace("/preview/home")' in preview_auth and
-        "enterPreview();" in preview_auth and "no SMS" in preview_auth,
+        "enterPreview();" in preview_auth and "No SMS is sent" in preview_auth,
         "login -> OTP -> explicitly mock entry flow missing")
 require('useState(false)' in provider and "previewSignedIn" in provider and
         'useState("")' in provider, "preview auth state must be ephemeral and default signed out")
