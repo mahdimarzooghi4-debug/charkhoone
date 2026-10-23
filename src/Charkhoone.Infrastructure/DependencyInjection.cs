@@ -92,6 +92,8 @@ public static class DependencyInjection
         services.AddScoped<ICreditApplicationService, EfCreditApplicationService>();
         services.AddScoped<IBankLoanPlanReadService, EfBankLoanPlanReadService>();
         services.AddScoped<ICreditApplicationIdentityService, EfCreditApplicationIdentityService>();
+        services.AddScoped<IPhoneNationalMatchService, EfPhoneNationalMatchService>();
+        services.AddSingleton<IPhoneNationalMatchAdapter, UnavailablePhoneNationalMatchAdapter>();
         services.AddScoped<ICreditEligibilityService, EfCreditEligibilityService>();
         services.AddScoped<IBankFundingService, EfBankFundingService>();
         services.AddScoped<ITenantContributionFundingService, EfTenantContributionFundingService>();
