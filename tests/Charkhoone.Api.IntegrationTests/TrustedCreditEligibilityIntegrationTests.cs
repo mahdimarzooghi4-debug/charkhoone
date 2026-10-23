@@ -26,6 +26,20 @@ public sealed class TrustedCreditEligibilityIntegrationTests(CharkhooneApiFactor
     public Task DisposeAsync() => Task.CompletedTask;
 
     [Fact]
+    public async Task ChargeableAdapter_FailsClosed_BeforeProviderCallOrAssessmentCreation()
+    {
+        var seeded = await SeedTrustedApplicationAsync(DateTimeOffset.UtcNow);
+        var adapter = new ChargeableRecordingCreditGradeAdapter();
+        await using var db = CreateDbContext();
+        var service = new EfCreditEligibilityService(db, adapter);
+        var result = await service.EvaluateAsync(seeded.ApplicationId, seeded.ApplicantId, seeded.Now);
+
+        Assert.Equal(EvaluateCreditEligibilityOutcome.InvalidState, result.Outcome);
+        Assert.Equal(0, adapter.CallCount);
+        Assert.False(await db.CreditEligibilityAssessments.AnyAsync(x => x.CreditApplicationId == seeded.ApplicationId));
+    }
+
+    [Fact]
     public async Task PaidInquiryConsent_RequiresExplicitApplicantAndExactPlan_AndIsIdempotent()
     {
         var seeded = await SeedTrustedApplicationAsync(DateTimeOffset.UtcNow);
@@ -377,6 +391,18 @@ public sealed class TrustedCreditEligibilityIntegrationTests(CharkhooneApiFactor
         Guid ContractId,
         string ApplicantSubject,
         DateTimeOffset Now);
+
+    private sealed class ChargeableRecordingCreditGradeAdapter : IChargeableCreditGradeAdapter
+    {
+        public string Provider => "chargeable-test-provider";
+        public int CallCount { get; private set; }
+        public Task<ExternalCreditGradeResponse> CheckAsync(
+            ExternalCreditGradeRequest request, CancellationToken cancellationToken = default)
+        {
+            CallCount++;
+            throw new InvalidOperationException("Chargeable adapter must never be invoked before safe dispatch is ready.");
+        }
+    }
 
     private sealed class RecordingCreditGradeAdapter(ExternalCreditGradeResponse response)
         : IExternalCreditGradeAdapter
