@@ -40,8 +40,7 @@ public interface IExternalPropertyContractEvidenceAdapter
 
     Task<ExternalPropertyContractEvidenceResponse> CheckAsync(
         ExternalPropertyContractEvidenceRequest request,
-        CancellationToken cancellationToken = default,
-        string? verifiedNationalId = null);
+        CancellationToken cancellationToken = default);
 }
 
 public enum ReconcilePropertyContractOutcome
@@ -79,5 +78,6 @@ public interface IPropertyContractRegistrationService
         Guid applicationId,
         Guid applicantUserId,
         DateTimeOffset occurredAtUtc,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        string? verifiedNationalId = null);
 }
