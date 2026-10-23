@@ -4,6 +4,10 @@ using Charkhoone.Application.BankFunding;
 using Charkhoone.Application.Contracts;
 using Charkhoone.Application.CreditApplications;
 using Charkhoone.Application.CreditEligibility;
+using Charkhoone.Domain.CreditApplications;
+using Charkhoone.Infrastructure.Persistence;
+using Charkhoone.Infrastructure.Persistence.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Charkhoone.Api.Endpoints;
 
@@ -62,6 +66,15 @@ public static class CreditApplicationEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
+
+        api.MapPost("/credit-applications/{id:guid}/paid-credit-inquiry/consent", RecordPaidInquiryConsentAsync)
+            .RequireAuthorization()
+            .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)
+            .WithName("RecordPaidCreditInquiryConsent")
+            .Produces(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         api.MapPost("/credit-applications/{id:guid}/credit-eligibility/reconcile", ReconcileCreditEligibilityAsync)
             .RequireAuthorization()
@@ -343,6 +356,59 @@ public static class CreditApplicationEndpoints
                     }),
             _ => throw new InvalidOperationException("Unsupported property-contract reconciliation outcome."),
         };
+    }
+
+    private sealed record PaidInquiryConsentRequest(bool Confirm, Guid PlanId, string PlanVersion);
+
+    private static async Task<IResult> RecordPaidInquiryConsentAsync(
+        Guid id,
+        PaidInquiryConsentRequest request,
+        ClaimsPrincipal principal,
+        IUserIdentityLookup userIdentityLookup,
+        CharkhooneDbContext dbContext,
+        TimeProvider timeProvider,
+        CancellationToken cancellationToken)
+    {
+        var identity = await ResolveUserAsync(principal, userIdentityLookup, cancellationToken);
+        if (identity.Error is not null) return identity.Error;
+        if (!request.Confirm || request.PlanId == Guid.Empty || string.IsNullOrWhiteSpace(request.PlanVersion))
+            return Results.BadRequest(new { code = "explicit_paid_inquiry_consent_required" });
+
+        await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
+        var application = await dbContext.CreditApplications
+            .FromSqlInterpolated($"SELECT * FROM credit_applications WHERE \"Id\" = {id} AND \"ApplicantUserId\" = {identity.UserId!.Value} FOR UPDATE")
+            .SingleOrDefaultAsync(cancellationToken);
+
+        if (application is null) return Results.NotFound();
+        if (application.Status is not (CreditApplicationStatus.ExternalChecksPending or CreditApplicationStatus.ExternalCheckIndeterminate)
+            || application.BankLoanPlanId != request.PlanId
+            || !string.Equals(application.BankLoanPlanVersion, request.PlanVersion.Trim(), StringComparison.Ordinal))
+            return Results.Conflict(new { code = "paid_inquiry_plan_or_state_conflict" });
+
+        var actor = identity.UserId!.Value.ToString("D");
+        var reason = $"plan:{request.PlanId:D}:version:{request.PlanVersion.Trim()}";
+        var existing = await dbContext.AuditEvents.AnyAsync(x =>
+            x.AggregateType == "CreditApplication" && x.AggregateId == id
+            && x.Action == "paid_credit_inquiry_consent_v1"
+            && x.ActorId == actor && x.Reason == reason, cancellationToken);
+
+        if (!existing)
+        {
+            dbContext.AuditEvents.Add(new AuditEventRow
+            {
+                Id = Guid.NewGuid(),
+                AggregateType = "CreditApplication", AggregateId = id,
+                ActorId = actor, Action = "paid_credit_inquiry_consent_v1",
+                Reason = reason, OccurredAtUtc = timeProvider.GetUtcNow(),
+            });
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        await transaction.CommitAsync(cancellationToken);
+        return Results.Ok(new
+        {
+            confirmed = true, applicationId = id, planId = request.PlanId,
+            planVersion = request.PlanVersion.Trim(), inquiryPerformed = false, chargeIncurred = false,
+        });
     }
 
     private static async Task<IResult> ReconcileCreditEligibilityAsync(
