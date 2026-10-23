@@ -41,7 +41,7 @@ const PreviewContext = createContext<MockPreviewState | null>(null);
 
 export function MockPreviewProvider({ children }: PropsWithChildren) {
   const [previewSignedIn, setPreviewSignedIn] = useState(false);
-  const [demoMobile, setDemoMobile] = useState("09121234567"); // local fixture; no SMS or identity check
+  const [demoMobile, setDemoMobile] = useState(""); // ephemeral user-entered demo text; no SMS or identity check
   const enterPreview = () => setPreviewSignedIn(true);
   const exitPreview = () => setPreviewSignedIn(false);
   const [hasLoan, setHasLoan] = useState(false);
