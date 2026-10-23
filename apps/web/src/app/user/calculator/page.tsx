@@ -9,7 +9,7 @@ import { calculateFinancing, financingGaugeProgress } from "@/lib/sharedFinanceC
 // Preview only: use the backend's contractual 3% rent-to-full-deposit
 // equivalence BEFORE applying the external credit sub-grade percentage.
 // A real tenant's grade and bank decision must come from trusted services.
-// C3 is a conspicuously labeled MOCK response only (C1/C2/C3 = 40%).
+// Manual self-reported grade is preview-only and never a trusted credit decision.
 const EXAMPLE_DEPOSIT = 500_000_000;
 const EXAMPLE_RENT = 20_000_000;
 const MIN_FINANCING_PERCENT = 30;
@@ -17,7 +17,7 @@ const MAX_FINANCING_PERCENT = 55;
 const MAX_DEPOSIT = 1_000_000_000;
 const MAX_RENT = 50_000_000;
 const SAMPLE_BANK_ANNUAL_RATE = "23";
-const DEMO_EXTERNAL_SUBGRADE = "C3";
+const INITIAL_SELF_REPORTED_SUBGRADE = "C3";
 const FINANCING_BY_SUBGRADE: Readonly<Record<string, number>> = {
   A1: 55, A2: 55, A3: 55,
   B1: 45, B2: 45, B3: 45,
@@ -25,7 +25,7 @@ const FINANCING_BY_SUBGRADE: Readonly<Record<string, number>> = {
   D1: 35, D2: 35, D3: 35,
   E1: 30, E2: 30, E3: 30,
 };
-const SAMPLE_FINANCING_PERCENT = FINANCING_BY_SUBGRADE[DEMO_EXTERNAL_SUBGRADE];
+const CREDIT_SUBGRADES = Object.keys(FINANCING_BY_SUBGRADE);
 const money = (value: number) => Math.round(value).toLocaleString("fa-IR") + " تومان";
 const formatMoneyInput = (value: number) => Math.round(value).toLocaleString("fa-IR");
 const digitsFa = (value: string) => value.replace(/[0-9]/g, (digit) => "۰۱۲۳۴۵۶۷۸۹"[Number(digit)]);
@@ -100,8 +100,9 @@ function AmountSlider({
 
 export default function CalculatorPage() {
   const [deposit, setDeposit] = useState(EXAMPLE_DEPOSIT);
+  const [selfReportedGrade, setSelfReportedGrade] = useState(INITIAL_SELF_REPORTED_SUBGRADE);
   const [rent, setRent] = useState(EXAMPLE_RENT);
-  const financingPercent = SAMPLE_FINANCING_PERCENT;
+  const financingPercent = FINANCING_BY_SUBGRADE[selfReportedGrade];
   const [bankRateInput, setBankRateInput] = useState(SAMPLE_BANK_ANNUAL_RATE);
   const bankAnnualRate = bankRateInput.trim() === "" ? null : Number(bankRateInput);
   const rateValid = bankAnnualRate !== null && Number.isFinite(bankAnnualRate) && bankAnnualRate >= 0 && bankAnnualRate <= 100;
@@ -123,7 +124,7 @@ export default function CalculatorPage() {
     ["رهن کامل معادل قرارداد", money(fullDepositEquivalent)],
     ["حداقل تأمین مالی (۳۰٪ رهن معادل)", money(minFinancing)],
     ["حداکثر تأمین مالی (۵۵٪ رهن معادل)", money(maxFinancing)],
-    ["مبلغ تأمین مالی براساس رتبه نمونه " + DEMO_EXTERNAL_SUBGRADE, money(selectedFinancing)],
+    ["مبلغ تأمین مالی براساس رتبه نمونه " + selfReportedGrade, money(selectedFinancing)],
     ["آورده مستأجر از رهن کامل معادل (نمونه)", money(contribution)],
   ] as const;
 
@@ -189,17 +190,21 @@ export default function CalculatorPage() {
                 رهن کامل معادل = رهن نقدی + (اجاره ماهانه ÷ ۰٫۰۳). درصد تأمین مالی براساس رتبه اعتباری روی کل رهن معادل اعمال می‌شود. در مدل فعلی، مانده رهن کامل معادل پس از کسر وام، آورده مستأجر است.
               </p>
             </details>
-            <p className={styles.disclaimer} data-node-id="150:643">C3 و نرخ ۲۳٪ صرفاً نمونه‌اند؛ رتبه واقعی و نرخ قطعی از سامانه بیرونی و بانک دریافت می‌شوند. سود ماهانه بدون اصل وام محاسبه شده است؛ شرایط بازپرداخت اصل باید در قرارداد بانک تعیین شود. هیچ درخواست یا پرداختی ثبت نمی‌شود.</p>
+            <p className={styles.disclaimer} data-node-id="150:643">رتبه انتخاب‌شده خوداظهاری و نرخ ۲۳٪ صرفاً نمونه‌اند؛ رتبه واقعی و نرخ قطعی از سامانه بیرونی و بانک دریافت می‌شوند. سود ماهانه بدون اصل وام محاسبه شده است؛ شرایط بازپرداخت اصل باید در قرارداد بانک تعیین شود. هیچ درخواست یا پرداختی ثبت نمی‌شود.</p>
           </section>
 
           <section className={styles.inputsCard} data-node-id="150:644">
             <div className={styles.cardHeader} data-node-id="150:645"><h2 data-node-id="150:646">اطلاعات قرارداد</h2><p data-node-id="150:647">مبالغ تقریبی قرارداد موردنظر را وارد کنید.</p></div>
             <AmountSlider label="مبلغ رهن" amount={deposit} setAmount={setDeposit} minLabel="۰ میلیون تومان" maxLabel="۱ میلیارد تومان" max={MAX_DEPOSIT} step={1_000_000} />
             <AmountSlider label="اجاره ماهانه" amount={rent} setAmount={setRent} minLabel="بدون اجاره" maxLabel="۵۰ میلیون تومان" max={MAX_RENT} step={500_000} />
-            <div className={styles.financingChoice} aria-label="نتیجه نمونه اعتبارسنجی">
-              <strong>سناریوی نمونه اعتبارسنجی: رتبه {DEMO_EXTERNAL_SUBGRADE}</strong>
+            <div className={styles.financingChoice} aria-label="رتبه اعتباری خوداظهاری">
+              <strong>رتبه اعتباری خوداظهاری (تأییدنشده)</strong>
+              <label htmlFor="self-reported-grade">رتبه اعلامی شما</label>
+              <select id="self-reported-grade" aria-label="انتخاب دستی رتبه اعتباری" value={selfReportedGrade} onChange={event => setSelfReportedGrade(event.target.value)} style={{ width: "100%", minHeight: 44, borderRadius: 8, padding: 8, background: "white", color: "#123d34" }}>
+                {CREDIT_SUBGRADES.map(grade => <option key={grade} value={grade}>{grade}</option>)}
+              </select>
               <p>درصد تأمین مالی این نمونه: {digitsFa(String(financingPercent))}٪ رهن کامل معادل قرارداد</p>
-              <small>رتبه واقعی مستأجر فقط از سامانه بیرونی استعلام می‌شود. این رتبه C3 نتیجه استعلام واقعی نیست و قابل انتخاب توسط کاربر نیست.</small>
+              <small>این رتبه فقط برای برآورد رایگان انتخاب می‌شود. هیچ استعلام اعتباری انجام نمی‌شود و رتبه رسمی پس از ثبت درخواست و تأیید شما به‌صورت جداگانه بررسی خواهد شد.</small>
               <small>جزئیات نسبت‌ها و تبدیل اجاره به رهن را در «جزئیات محاسبه وام» ببینید.</small>
             </div>
             <label className={styles.bankRateField} htmlFor="bank-annual-rate">
@@ -222,6 +227,7 @@ export default function CalculatorPage() {
             </label>
             <div className={styles.divider} />
             <section className={styles.estimate} data-node-id="150:671"><span data-node-id="150:672">پرداختی ماهانه مستأجر</span><strong data-node-id="150:673">{monthlyInterest === null ? "نرخ سود بانک را وارد کنید" : money(monthlyInterest)}</strong><small data-node-id="150:674">اصل وام در این پرداخت ماهانه محاسبه نشده است؛ نرخ و نحوه محاسبه باید توسط بانک تأیید شود.</small></section>
+            <small>صفحه طرح‌های بعدی فعلاً پیش‌نمایش مستقل است و انتخاب رتبه دستی شما درخواست واقعی بانک ایجاد نمی‌کند.</small>
             <Link href="/user/contracts/register/plans" className={styles.planLink}>مشاهده طرح‌های تأمین مالی (نمونه)</Link>
           </section>
         </div>

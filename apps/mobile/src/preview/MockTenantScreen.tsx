@@ -37,7 +37,7 @@ function ResultMetricCard({ label, value, accent = false }: { label: string; val
 }
 
 function FinancingPlanCard({
-  type, selected, title, badge, financing, contribution, interest, onSelect,
+  type, selected, title, badge, financing, contribution, interest, selfReportedGrade, financingPercent, onSelect,
 }: {
   type: MockFinancingPlan;
   selected: boolean;
@@ -46,6 +46,8 @@ function FinancingPlanCard({
   financing: string;
   contribution: string;
   interest: string;
+  selfReportedGrade: string;
+  financingPercent: number;
   onSelect: (plan: MockFinancingPlan) => void;
 }) {
   return (
@@ -61,8 +63,8 @@ function FinancingPlanCard({
         <View style={[styles.planBadge, selected && styles.planBadgeSelected]}><Text style={styles.planBadgeText}>{badge}</Text></View>
         <Text style={styles.planTitle}>{title}</Text>
       </View>
-      <Text style={styles.planSample}>نمونهٔ C3 • استعلام بانک انجام نشده</Text>
-      <View style={styles.planData}><Text style={styles.planDataValue}>{financing}</Text><Text style={styles.planDataLabel}>مبلغ قابل تأمین (۳۰٪)</Text></View>
+      <Text style={styles.planSample}>رتبه خوداظهاری {selfReportedGrade} • استعلام بانک انجام نشده</Text>
+      <View style={styles.planData}><Text style={styles.planDataValue}>{financing}</Text><Text style={styles.planDataLabel}>مبلغ قابل تأمین ({financingPercent}٪)</Text></View>
       <View style={styles.planDivider} />
       <View style={styles.planData}><Text style={styles.planDataValue}>{contribution}</Text><Text style={styles.planDataLabel}>آورده موردنیاز</Text></View>
       <View style={styles.planDivider} />
@@ -200,7 +202,7 @@ export function MockTenantScreen({ screen }: Props) {
   ["ودیعهٔ نقدی", mockFinancialModel.cashDeposit],
   ["اجارهٔ ماهانه", mockFinancialModel.monthlyRent],
   ["معادل ودیعهٔ کامل", mockFinancialModel.fullDeposit],
-  ["تأمین مالی ۳۰٪", mockFinancialModel.financing],
+  [`تأمین مالی خوداظهاری ${mockFinancialModel.financingPercent}٪`, mockFinancialModel.financing],
   ["آوردهٔ مستأجر", mockFinancialModel.contribution],
 ] as const;
 
@@ -211,7 +213,7 @@ export function MockTenantScreen({ screen }: Props) {
   let body: ReactNode;
   let actions: ReactNode = null;
   switch (screen) {
-    case "calculator": body = <><ScreenTitle title="ماشین‌حساب مستأجر" /><View style={styles.card}><Text style={styles.cardTitle}>مدل نمونه C۳</Text><Text style={styles.body}>ضریب تبدیل اجاره به رهن: {mockFinancialModel.conversionRate}</Text>{financeRows.slice(0, 3).map(([label, value]) => <Row key={label} label={label} value={value} />)}<Text style={styles.note}>دریافتی مالک از اجاره قرارداد مستقل از سود بانکی مستأجر است؛ بازده صندوق در این برآورد محاسبه نمی‌شود.</Text></View><Button label="مشاهدهٔ نتیجهٔ نمونه" to="calculator-result" /></>; break;
+    case "calculator": body = <><ScreenTitle title="ماشین‌حساب مستأجر" /><View style={styles.card}><Text style={styles.cardTitle}>مدل خوداظهاری {mockFinancialModel.selfReportedGrade}</Text><Text style={styles.body}>ضریب تبدیل اجاره به رهن: {mockFinancialModel.conversionRate}</Text>{financeRows.slice(0, 3).map(([label, value]) => <Row key={label} label={label} value={value} />)}<Text style={styles.note}>دریافتی مالک از اجاره قرارداد مستقل از سود بانکی مستأجر است؛ بازده صندوق در این برآورد محاسبه نمی‌شود.</Text></View><Button label="مشاهدهٔ نتیجهٔ نمونه" to="calculator-result" /></>; break;
     case "calculator-result": {
       body = <>
         <ScreenTitle title="نتیجه محاسبه" back="calculator" />
@@ -226,7 +228,7 @@ export function MockTenantScreen({ screen }: Props) {
         </View>
         <View style={styles.resultGrid}>
           <View style={styles.resultGridRow}>
-            <ResultMetricCard label="مبلغ قابل تأمین (C3)" value={mockFinancialModel.financing} />
+            <ResultMetricCard label={`مبلغ قابل تأمین (${mockFinancialModel.selfReportedGrade} خوداظهاری)`} value={mockFinancialModel.financing} />
             <ResultMetricCard label="معادل ودیعه کامل" value={mockFinancialModel.fullDeposit} />
           </View>
           <View style={styles.resultGridRow}>
@@ -259,7 +261,7 @@ export function MockTenantScreen({ screen }: Props) {
             <Row label="رهن کامل معادل قرارداد" value={mockFinancialModel.fullDeposit} />
             <Row label="حداقل تأمین مالی (۳۰٪)" value={mockFinancialModel.minimumFinancing} />
             <Row label="حداکثر تأمین مالی (۵۵٪)" value={mockFinancialModel.maximumFinancing} />
-            <Row label="تأمین مالی براساس رتبه نمونه C3" value={mockFinancialModel.financing} />
+            <Row label={`تأمین مالی براساس رتبه خوداظهاری ${mockFinancialModel.selfReportedGrade}`} value={mockFinancialModel.financing} />
             <Row label="آورده مستأجر از رهن کامل معادل" value={mockFinancialModel.contribution} />
             <Text style={styles.note}>رهن کامل معادل = رهن نقدی + (اجاره ماهانه ÷ ۰٫۰۳). سپس درصد رتبه اعتباری روی کل رهن معادل اعمال می‌شود.</Text>
           </View>
@@ -272,7 +274,7 @@ export function MockTenantScreen({ screen }: Props) {
               <Text style={styles.resultBenefitNoticeText}>مقایسه صرفه‌جویی فیگما صرفاً یک مثال طراحی است و مبنای قراردادی ندارد؛ تا روشن شدن شرایط بانک، عدد ساختگی مزیت نمایش داده نمی‌شود.</Text>
             </View>
           </View>
-          <Text style={styles.resultFinePrint}>C3 و نرخ پیش‌فرض ۲۳٪ فقط نمونه‌اند؛ رتبه واقعی و نرخ قطعی از سامانه بیرونی و بانک دریافت می‌شوند. پرداخت ماهانه فقط سود است؛ بازپرداخت اصل تابع قرارداد نهایی بانک است. هیچ درخواست یا پرداختی ثبت نمی‌شود.</Text>
+          <Text style={styles.resultFinePrint}>رتبه انتخابی خوداظهاری و نرخ پیش‌فرض ۲۳٪ فقط نمونه‌اند؛ رتبه واقعی و نرخ قطعی از سامانه بیرونی و بانک دریافت می‌شوند. پرداخت ماهانه فقط سود است؛ بازپرداخت اصل تابع قرارداد نهایی بانک است. هیچ درخواست یا پرداختی ثبت نمی‌شود.</Text>
         </View>
       </>;
       actions = <View style={styles.resultActions}>
@@ -361,19 +363,19 @@ export function MockTenantScreen({ screen }: Props) {
         <ScreenTitle title="انتخاب طرح تأمین مالی" back="contract-lookup" />
         <View style={styles.planIntro}>
           <Text style={styles.planIntroHeading}>طرح‌های قابل استفاده برای شما</Text>
-          <Text style={styles.planIntroText}>بر اساس مدل C3 این قرارداد، دو طرح نمونه زیر برای مرور طراحی قابل انتخاب‌اند؛ احراز شرایط بانکی انجام نشده است.</Text>
+          <Text style={styles.planIntroText}>بر اساس رتبه خوداظهاری انتخاب‌شده، دو طرح نمونه زیر برای مرور طراحی قابل انتخاب‌اند؛ احراز شرایط بانکی انجام نشده است.</Text>
         </View>
         <FinancingPlanCard
           type="ویژهٔ نمونه" selected={financingPlan === "ویژهٔ نمونه"}
           badge="طرح ویژه" title="طرح ویژه کارکنان سازمان" onSelect={setFinancingPlan}
-          financing={mockFinancialModel.financing} contribution={mockFinancialModel.contribution} interest={mockFinancialModel.monthlyInterest}
+          financing={mockFinancialModel.financing} contribution={mockFinancialModel.contribution} interest={mockFinancialModel.monthlyInterest} selfReportedGrade={mockFinancialModel.selfReportedGrade} financingPercent={mockFinancialModel.financingPercent}
         />
         <View style={styles.planHighlight}><Text style={styles.planHighlightText}>ویژگی‌های اختصاصی طرح ویژه و تخفیف بانکی هنوز تأیید نشده‌اند؛ محاسبات فعلاً در هر دو طرح یکسان هستند.</Text></View>
         <Text style={styles.planOther}>سایر طرح‌های قابل استفاده</Text>
         <FinancingPlanCard
           type="عمومی" selected={financingPlan === "عمومی"}
           badge="طرح عمومی" title="طرح عمومی تأمین مسکن" onSelect={setFinancingPlan}
-          financing={mockFinancialModel.financing} contribution={mockFinancialModel.contribution} interest={mockFinancialModel.monthlyInterest}
+          financing={mockFinancialModel.financing} contribution={mockFinancialModel.contribution} interest={mockFinancialModel.monthlyInterest} selfReportedGrade={mockFinancialModel.selfReportedGrade} financingPercent={mockFinancialModel.financingPercent}
         />
         <Text style={styles.planFinePrint}>این ارقام پیش‌نمایش MOCK هستند. نرخ اسمی نمونه {mockFinancialModel.annualRate}، پرداخت فقط سود و اصل مطابق قرارداد احتمالی بانک است. طرح تأمین مالی مستقل از نوع عضویت می‌ماند.</Text>
       </>;
@@ -384,8 +386,8 @@ export function MockTenantScreen({ screen }: Props) {
       <ScreenTitle title="تأیید درخواست" back="financing-plans" />
 <Text style={styles.planIntroHeading}>جزئیات درخواست خود را بررسی کنید</Text>
 <Text style={styles.figmaIntro}>پیش از ارسال نمونه، اطلاعات قرارداد و شرایط طرح انتخاب‌شده را بررسی کنید.</Text>
-<View style={styles.card}><Text style={styles.cardTitle}>طرح انتخاب‌شده</Text><View style={styles.membershipBadge}><Text style={styles.membershipBadgeText}>نمونهٔ C3</Text></View><Row label="طرح" value={financingPlan} /><Text style={styles.note}>بانک یا تخفیف ویژه‌ای برای این نمونه تعیین نشده؛ تأیید بانکی رخ نداده است.</Text></View>
-<View style={styles.card}><Text style={styles.cardTitle}>خلاصه مالی طرح</Text><Row label="مبلغ قابل تأمین (۳۰٪)" value={mockFinancialModel.financing} /><Row label="آورده موردنیاز" value={mockFinancialModel.contribution} /><Row label="نرخ اسمی سالانه نمونه" value={mockFinancialModel.annualRate} /><Row label="پرداخت ماهانه تأمین مالی (فقط سود)" value={mockFinancialModel.monthlyInterest} /><Row label="اجاره ماهانه قرارداد (مستقل)" value={mockFinancialModel.monthlyRent} /></View>
+<View style={styles.card}><Text style={styles.cardTitle}>طرح انتخاب‌شده</Text><View style={styles.membershipBadge}><Text style={styles.membershipBadgeText}>خوداظهاری {mockFinancialModel.selfReportedGrade}</Text></View><Row label="طرح" value={financingPlan} /><Text style={styles.note}>بانک یا تخفیف ویژه‌ای برای این نمونه تعیین نشده؛ تأیید بانکی رخ نداده است.</Text></View>
+<View style={styles.card}><Text style={styles.cardTitle}>خلاصه مالی طرح</Text><Row label={`مبلغ قابل تأمین (${mockFinancialModel.financingPercent}٪)`} value={mockFinancialModel.financing} /><Row label="آورده موردنیاز" value={mockFinancialModel.contribution} /><Row label="نرخ اسمی سالانه نمونه" value={mockFinancialModel.annualRate} /><Row label="پرداخت ماهانه تأمین مالی (فقط سود)" value={mockFinancialModel.monthlyInterest} /><Row label="اجاره ماهانه قرارداد (مستقل)" value={mockFinancialModel.monthlyRent} /></View>
 <View style={styles.card}><Text style={styles.cardTitle}>قرارداد مرتبط</Text><Row label="کد رهگیری نمونه" value="۱۲۳۴۵۶۷۸۹۰۱۲" /><Row label="تاریخ شروع" value="۱۵ مهر ۱۴۰۵" /><Row label="تاریخ پایان" value="۱۵ مهر ۱۴۰۶" /><Text style={styles.note}>تهران، سعادت‌آباد، خیابان نمونه، پلاک ۲۴ (MOCK)</Text></View>
 <View style={styles.statusTextCard}><Text style={styles.cardTitle}>پس از ارسال درخواست</Text><Text style={styles.body}>بررسی اطلاعات و اعتبار ← تصمیم بانک ← اعلام نتیجه در چارخونه. فقط شبیه‌سازی مراحل است.</Text></View>
 <Button label="ارسال درخواست نمونه برای بررسی" to="review" tone="light" />
@@ -438,7 +440,7 @@ export function MockTenantScreen({ screen }: Props) {
       <ScreenTitle title="وضعیت درخواست" back="membership-success" />
 <StatusHero title="پرداخت آورده" description={`عضویت نمونه ${membership} انتخاب شده است؛ برای ادامه، آورده قرارداد را در سناریوی MOCK بررسی کنید.`} badge="در انتظار پرداخت نمونه" icon={figmaAssets.contributionCheck} />
 <View style={styles.accentOutlineCard}><Text style={styles.cardTitle}>آورده شما</Text><Text style={styles.accentedAmount}>{mockFinancialModel.contribution}</Text><Row label="وضعیت" value="در انتظار پرداخت نمایشی" /><Text style={styles.note}>بدون درگاه پرداخت، تراکنش یا سررسید واقعی.</Text></View>
-<View style={styles.card}><Text style={styles.cardTitle}>شرایط تأمین مالی C3</Text><Row label="تأمین مالی" value={mockFinancialModel.financing} /><Row label="آورده موردنیاز" value={mockFinancialModel.contribution} /><Row label="پرداخت ماهانه فقط سود" value={mockFinancialModel.monthlyInterest} /><Row label="نرخ اسمی" value={mockFinancialModel.annualRate} /></View>
+<View style={styles.card}><Text style={styles.cardTitle}>شرایط تأمین مالی {mockFinancialModel.selfReportedGrade} (خوداظهاری)</Text><Row label="تأمین مالی" value={mockFinancialModel.financing} /><Row label="آورده موردنیاز" value={mockFinancialModel.contribution} /><Row label="پرداخت ماهانه فقط سود" value={mockFinancialModel.monthlyInterest} /><Row label="نرخ اسمی" value={mockFinancialModel.annualRate} /></View>
 <ProgressStepper labels={["ثبت درخواست","بررسی اطلاعات","عضویت","پرداخت آورده","تأیید نهایی"]} done={3} current={3} />
 <View style={styles.statusTextCard}><Text style={styles.body}>پس از پرداخت آورده در مسیر عملیاتی، تأیید نهایی طرفین قرارداد لازم خواهد بود.</Text></View>
 <Button label="نمایش نتیجه پرداخت نمونه آورده" to="contribution-success" tone="light" />
@@ -459,7 +461,7 @@ export function MockTenantScreen({ screen }: Props) {
       <Text style={styles.dashboardTitle}>حساب من</Text>
 <View style={styles.profileTop}><MockAccountEditor /><Text style={styles.profileName}>{displayName}</Text><Text style={styles.profileCaption}>حساب آزمایشی چارخونه • اطلاعات واقعی بارگذاری نشده</Text></View>
 <View style={styles.card}><Text style={styles.profileSectionTitle}>اطلاعات حساب</Text><Row label="نام و نام خانوادگی" value={displayName} /><Row label="کد ملی" value="••••••••••" /><Text style={styles.note}>مشخصات صرفاً نمونه‌اند؛ اطلاعات هویتی استعلام نشده است.</Text></View>
-<View style={styles.card}><Text style={styles.profileSectionTitle}>عضویت چارخونه</Text><Row label="وضعیت" value="انتخاب نمایشی" /><Row label="طرح نمونه" value={membership} /><Row label="مبلغ تأمین مالی C3" value={mockFinancialModel.financing} /><Button label="مشاهده عضویت" to="membership" tone="outline" /></View>
+<View style={styles.card}><Text style={styles.profileSectionTitle}>عضویت چارخونه</Text><Row label="وضعیت" value="انتخاب نمایشی" /><Row label="طرح نمونه" value={membership} /><Row label={`مبلغ تأمین مالی ${mockFinancialModel.selfReportedGrade} (خوداظهاری)`} value={mockFinancialModel.financing} /><Button label="مشاهده عضویت" to="membership" tone="outline" /></View>
 <View style={styles.card}><Row label="شماره موبایل" value="وارد نشده" /><Row label="شماره شبا" value="ثبت نشده" /><Text style={styles.note}>شماره واقعی و اطلاعات بانکی در پیش‌نمایش جمع‌آوری نمی‌شود.</Text></View>
 <View style={styles.card}><Text style={styles.profileSectionTitle}>اعلان‌ها</Text>{notifications}<Text style={styles.note}>زنگوله را بزنید تا اعلان‌های نمونه را ببینید.</Text></View>
 <View style={styles.card}><Text style={styles.profileSectionTitle}>قوانین و شرایط استفاده</Text><Text style={styles.body}>حریم خصوصی</Text><Text style={styles.note}>گزینه‌های قانونی در این پیش‌نمایش صفحه عملیاتی ندارند.</Text></View>
@@ -542,8 +544,8 @@ export function MockTenantScreen({ screen }: Props) {
       <View style={styles.homeGrid}>
         {showLoanPreview ? <>
           <View style={styles.homeSummaryRow}>
-            <PreviewSummaryCard label="میزان قابل تأمین" value={mockFinancialModel.financing} caption="سناریوی نمونه C3 • نه تأیید بانک" />
-            <PreviewSummaryCard label="اعتبار شما" value="رتبه C3 (نمونه)" caption="استعلام اعتبار واقعی انجام نشده" />
+            <PreviewSummaryCard label="میزان قابل تأمین" value={mockFinancialModel.financing} caption={`سناریوی خوداظهاری ${mockFinancialModel.selfReportedGrade} • نه تأیید بانک`} />
+            <PreviewSummaryCard label="اعتبار شما" value={`رتبه ${mockFinancialModel.selfReportedGrade} (خوداظهاری)`} caption="استعلام اعتبار واقعی انجام نشده" />
           </View>
           <View style={styles.homeSummaryRow}>
             <PreviewSummaryCard label="وضعیت قرارداد" value="قرارداد نمونه" caption="هیچ قرارداد خودنویسی ثبت نشده" />

@@ -6,6 +6,12 @@ export const mockDisclaimer = "این یک پیش‌نمایش MOCK است. هی
 
 // The public calculator is still MOCK, but its controls calculate instead of
 // merely imitating a slider. Keep the C3 example above as the default fixture.
+export const MOCK_CREDIT_GRADE_RATIOS: Readonly<Record<string, number>> = {
+  A1: 55, A2: 55, A3: 55, B1: 45, B2: 45, B3: 45,
+  C1: 40, C2: 40, C3: 40, D1: 35, D2: 35, D3: 35,
+  E1: 30, E2: 30, E3: 30,
+};
+
 export const MOCK_CASH_DEPOSIT_MAX = 1_000_000_000;
 export const MOCK_MONTHLY_RENT_MAX = 50_000_000;
 export const MOCK_CASH_DEPOSIT_STEP = 1_000_000;
@@ -28,10 +34,10 @@ export function parseMockAmount(input: string): number {
   return Number(ascii || "0");
 }
 
-export function calculateMockFinancialModel(cashDeposit: number, monthlyRent: number, bankAnnualRate: number | null = 23) {
+export function calculateMockFinancialModel(cashDeposit: number, monthlyRent: number, bankAnnualRate: number | null = 23, selfReportedGrade = "C3") {
   const deposit = clampMockAmount(cashDeposit, MOCK_CASH_DEPOSIT_MAX);
   const rent = clampMockAmount(monthlyRent, MOCK_MONTHLY_RENT_MAX);
-  const result = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: 30, bankAnnualRate });
+  const result = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: MOCK_CREDIT_GRADE_RATIOS[selfReportedGrade] ?? 40, bankAnnualRate });
   const minimum = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: 30 }).financing;
   const maximum = calculateFinancing({ cashDeposit: deposit, monthlyRent: rent, financingPercent: 55 }).financing;
   const rentDifference = result.monthlyInterest === null ? null : rent - result.monthlyInterest;
@@ -46,6 +52,8 @@ export function calculateMockFinancialModel(cashDeposit: number, monthlyRent: nu
     minimumFinancing: toman(minimum),
     maximumFinancing: toman(maximum),
     financing: toman(result.financing),
+    selfReportedGrade,
+    financingPercent: MOCK_CREDIT_GRADE_RATIOS[selfReportedGrade] ?? 40,
     contribution: toman(result.contribution),
     annualRate: bankAnnualRate === null ? "وارد نشده" : `${new Intl.NumberFormat("fa-IR", { maximumFractionDigits: 2 }).format(bankAnnualRate)}٪`,
     monthlyInterest: result.monthlyInterest === null ? "نرخ سود بانک را وارد کنید" : toman(result.monthlyInterest),

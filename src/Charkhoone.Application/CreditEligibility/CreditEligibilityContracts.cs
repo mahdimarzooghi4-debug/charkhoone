@@ -24,6 +24,11 @@ public interface IExternalCreditGradeAdapter
         CancellationToken cancellationToken = default);
 }
 
+// Implemented only by real providers that can incur a charge.
+public interface IChargeableCreditGradeAdapter : IExternalCreditGradeAdapter
+{
+}
+
 public enum EvaluateCreditEligibilityOutcome
 {
     Applied,
