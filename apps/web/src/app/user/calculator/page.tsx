@@ -227,6 +227,7 @@ export default function CalculatorPage() {
             </label>
             <div className={styles.divider} />
             <section className={styles.estimate} data-node-id="150:671"><span data-node-id="150:672">پرداختی ماهانه مستأجر</span><strong data-node-id="150:673">{monthlyInterest === null ? "نرخ سود بانک را وارد کنید" : money(monthlyInterest)}</strong><small data-node-id="150:674">اصل وام در این پرداخت ماهانه محاسبه نشده است؛ نرخ و نحوه محاسبه باید توسط بانک تأیید شود.</small></section>
+            <small>صفحه طرح‌های بعدی فعلاً پیش‌نمایش مستقل است و انتخاب رتبه دستی شما درخواست واقعی بانک ایجاد نمی‌کند.</small>
             <Link href="/user/contracts/register/plans" className={styles.planLink}>مشاهده طرح‌های تأمین مالی (نمونه)</Link>
           </section>
         </div>
