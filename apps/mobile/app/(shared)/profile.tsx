@@ -1,4 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useMobileAuth } from "@/auth/MobileAuthProvider";
+import { getPhoneNationalIdentityStatus, type PhoneNationalIdentityStatus } from "@/api/mobileApi";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useMobileBootstrap } from "@/api/useMobileBootstrap";
@@ -20,12 +22,24 @@ function NavItem({ icon, label, active, onPress }: { icon: string; label: string
 export default function ProfileScreen() {
   const router = useRouter();
   const { status, data, error, loading } = useMobileBootstrap();
+  const { apiRequest } = useMobileAuth();
+  const [identity, setIdentity] = useState<PhoneNationalIdentityStatus | null>(null);
+  const [identityUnavailable, setIdentityUnavailable] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated" || status === "config-error") {
       router.replace("/(auth)/login");
     }
   }, [router, status]);
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    let active = true;
+    getPhoneNationalIdentityStatus(apiRequest)
+      .then(result => { if (active) { setIdentity(result); setIdentityUnavailable(false); } })
+      .catch(() => { if (active) { setIdentity(null); setIdentityUnavailable(true); } });
+    return () => { active = false; };
+  }, [status, apiRequest]);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -56,6 +70,19 @@ export default function ProfileScreen() {
           <Text style={styles.note}>
             شماره موبایل، کد ملی، سقف عضویت یا شماره شبا در bootstrap فعلی وجود ندارد؛ بنابراین این صفحه آن‌ها را حدس یا جعل نمی‌کند.
           </Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>تطبیق مالکیت موبایل و کد ملی</Text>
+          <Text style={styles.value}>
+            {identityUnavailable ? "وضعیت از سرویس قابل دریافت نیست" : identity?.verified
+              ? "تأیید شده توسط ارائه‌دهنده معتبر"
+              : identity ? "هنوز تأیید نشده" : "در حال بررسی وضعیت..."}
+          </Text>
+          {identity?.requiresVerifiedPhone ? (
+            <Text style={styles.note}>تأیید شماره توسط ارائه‌دهنده ورود برای استعلام مالکیت ضروری است.</Text>
+          ) : null}
+          <Text style={styles.note}>این نمایش فقط وضعیت ذخیره‌شده را می‌خواند؛ استعلام پولی جدیدی انجام نمی‌دهد. پیش از اقدامات مالی و قراردادی باید تطبیق واقعی تأیید شود.</Text>
         </View>
 
         <EditableMobileAccount />

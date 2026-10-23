@@ -86,8 +86,15 @@ internal sealed class IntegrationTestAuthenticationHandler(
             return Task.FromResult(AuthenticateResult.NoResult());
         }
 
+        var claims = new List<Claim> { new("sub", subject) };
+        // Test-only identity-provider phone claims; these HTTP headers never exist
+        // as an authentication source in the Production JWT bearer handler.
+        if (Request.Headers.TryGetValue("X-Test-Phone", out var phone))
+            claims.Add(new Claim("phone_number", phone.ToString()));
+        if (Request.Headers.TryGetValue("X-Test-Phone-Verified", out var phoneVerified))
+            claims.Add(new Claim("phone_number_verified", phoneVerified.ToString()));
         var identity = new ClaimsIdentity(
-            [new Claim("sub", subject)],
+            claims,
             CharkhooneApiFactory.TestAuthenticationScheme);
         var principal = new ClaimsPrincipal(identity);
         var ticket = new AuthenticationTicket(

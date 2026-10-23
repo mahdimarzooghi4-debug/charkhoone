@@ -23,12 +23,12 @@ export default function ChangeMobileStep1Page() {
           <h1 data-node-id="175:316">تغییر شماره موبایل</h1>
         </header>
         <div className={styles.modalBody} data-node-id="175:317">
-          <p data-node-id="175:318">شماره موبایل جدید خود را وارد کنید. کد تأیید به این شماره ارسال خواهد شد.</p>
+          <p data-node-id="175:318">این صفحه پیش‌نمایش است. تغییر واقعی شماره نیازمند احراز مجدد و تطبیق مالکیت شماره جدید است؛ در اینجا پیامک ارسال نمی‌شود.</p>
           <div className={styles.currentMobile} data-node-id="175:319"><span data-node-id="175:320">شماره فعلی</span><strong data-node-id="175:321">۰۹۱۲•••••۶۷</strong></div>
           <div className={styles.divider} />
         </div>
         <div className={styles.actions} data-node-id="175:323">
-          <Link href="/user/account/change-mobile/otp" className={styles.primaryAction} data-node-id="175:325">دریافت کد تأیید</Link>
+          <span className={styles.primaryAction} data-node-id="175:325" aria-disabled="true">تغییر شماره در پیش‌نمایش غیرفعال است</span>
           <Link href="/user/account" className={styles.cancelAction} data-node-id="175:328">انصراف</Link>
         </div>
       </section>

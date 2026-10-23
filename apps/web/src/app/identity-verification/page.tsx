@@ -38,7 +38,7 @@ export default function IdentityVerificationPage() {
 
           <div className={styles.headers} data-node-id="167:220" data-name="Card Headers">
             <h2 data-node-id="167:221">تأیید هویت</h2>
-            <p data-node-id="167:222">برای تکمیل حساب کاربری، کد ملی خود را وارد کنید.</p>
+            <p data-node-id="167:222">برای تأیید مالکیت موبایل، کد ملی باید از طریق سرویس معتبر با شماره تأییدشده تطبیق داده شود. این صفحه در حال حاضر فقط نمایشی است.</p>
           </div>
 
           <div
@@ -51,10 +51,10 @@ export default function IdentityVerificationPage() {
             </p>
             <div className={styles.verifiedRow} data-node-id="167:225" data-name="Frame">
               <bdi dir="ltr" className={styles.mobileValue} data-node-id="167:227">
-                ۰۹۱۲•••••۶۷
+                شماره از نشست احراز هویت معتبر دریافت می‌شود
               </bdi>
               <span className={styles.verifiedBadge} data-node-id="167:241" data-name="Verified Badge">
-                <span data-node-id="167:240">تأیید شده</span>
+                <span data-node-id="167:240">هنوز تأیید نشده</span>
               </span>
             </div>
           </div>
@@ -64,26 +64,32 @@ export default function IdentityVerificationPage() {
               <TextField
                 id="national-id"
                 name="nationalId"
+                disabled
+                aria-describedby="identity-preview-message"
                 label="کد ملی"
                 type="text"
                 inputMode="numeric"
                 autoComplete="off"
                 maxLength={10}
-                placeholder="۰۰۱۲۳۴۵۶۷۸"
+                placeholder="ورود اطلاعات پس از اتصال استعلام معتبر فعال می‌شود"
                 className={styles.nationalIdInput}
               />
             </div>
           </div>
 
           <div className={styles.action} data-node-id="167:234" data-name="Action Wrapper">
-            <Link
-              href="/user/home"
+            <button
+              type="button"
               className={`ch-button ${styles.submit}`}
               data-node-id="167:235"
+              disabled
+              aria-disabled="true"
+              title="استعلام واقعی کد ملی و موبایل هنوز به ارائه‌دهنده متصل نشده است"
             >
-              تأیید هویت
-            </Link>
+              استعلام هویت هنوز فعال نیست
+            </button>
           </div>
+        <p id="identity-preview-message">در این پیش‌نمایش کد ملی جمع‌آوری یا ارسال نمی‌شود؛ استعلام فقط در نسخه عملیاتی، پس از تأیید شما انجام خواهد شد.</p>
         </section>
       </div>
     </main>

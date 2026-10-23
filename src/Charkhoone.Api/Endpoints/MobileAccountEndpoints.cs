@@ -1,5 +1,7 @@
 using System.Security.Claims;
 using Charkhoone.Application.CreditApplications;
+using Charkhoone.Application.IdentityVerification;
+using Charkhoone.Api.Security;
 using Charkhoone.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,11 +13,87 @@ public static class MobileAccountEndpoints
     {
         var account = api.MapGroup("/mobile/account").RequireAuthorization();
         account.MapPost("/activate", ActivateAsync);
+        account.MapGet("/identity-status", GetIdentityStatusAsync);
+        account.MapPost("/identity/verify", VerifyPhoneNationalMatchAsync)
+            .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation);
+
         account.MapGet("", GetAsync);
         account.MapPut("/name", UpdateNameAsync);
         account.MapPut("/photo", UpdatePhotoAsync);
         account.MapDelete("/photo", DeletePhotoAsync);
         return api;
+    }
+
+    public sealed record VerifyPhoneNationalRequest(string? NationalId, bool Confirm);
+
+    // Identity evidence requires a claim from a trusted OIDC issuer, not a
+    // user-entered phone or an unverified OTP screen.
+    private static string? VerifiedPhone(ClaimsPrincipal principal) =>
+        string.Equals(principal.FindFirst("phone_number_verified")?.Value, "true",
+            StringComparison.OrdinalIgnoreCase)
+            ? principal.FindFirst("phone_number")?.Value : null;
+
+    private static async Task<IResult> GetIdentityStatusAsync(
+        ClaimsPrincipal principal,
+        IUserIdentityLookup lookup,
+        IPhoneNationalMatchService matches,
+        CancellationToken ct)
+    {
+        var userId = await UserIdAsync(principal, lookup, ct);
+        if (userId is null) return Results.Forbid();
+        var phone = VerifiedPhone(principal);
+        var verified = phone is not null &&
+            await matches.IsVerifiedForPhoneAsync(userId.Value, phone, ct);
+        return Results.Ok(new
+        {
+            verified,
+            status = verified ? "Verified" : "Unverified",
+            requiresVerifiedPhone = phone is null,
+            initiatedNewInquiry = false,
+        });
+    }
+
+    private static async Task<IResult> VerifyPhoneNationalMatchAsync(
+        VerifyPhoneNationalRequest request,
+        ClaimsPrincipal principal,
+        IUserIdentityLookup lookup,
+        IPhoneNationalMatchService matches,
+        TimeProvider clock,
+        CancellationToken ct)
+    {
+        if (!request.Confirm || string.IsNullOrWhiteSpace(request.NationalId))
+            return Results.BadRequest(new { code = "explicit_identity_match_confirmation_required" });
+        var userId = await UserIdAsync(principal, lookup, ct);
+        if (userId is null) return Results.Forbid();
+
+        var phone = VerifiedPhone(principal);
+        if (phone is null)
+            return Results.Problem(statusCode: StatusCodes.Status409Conflict,
+                title: "Trusted OIDC phone verification is required.",
+                extensions: new Dictionary<string, object?> { ["code"] = "verified_oidc_phone_required" });
+
+        var result = await matches.VerifyAsync(
+            userId.Value, phone, request.NationalId, clock.GetUtcNow(), ct);
+        return result.Status switch
+        {
+            PhoneNationalMatchProcessStatus.Verified
+                or PhoneNationalMatchProcessStatus.AlreadyVerified
+                => Results.Ok(new { verified = true, status = result.Status.ToString() }),
+            PhoneNationalMatchProcessStatus.InvalidInput
+                => Results.BadRequest(new { code = "invalid_identity_match_input" }),
+            PhoneNationalMatchProcessStatus.UserNotFound => Results.Forbid(),
+            PhoneNationalMatchProcessStatus.Mismatch
+                => Results.Problem(statusCode: StatusCodes.Status409Conflict,
+                    title: "Mobile and national identification did not match.",
+                    extensions: new Dictionary<string, object?> { ["code"] = "identity_match_mismatch" }),
+            PhoneNationalMatchProcessStatus.NotConfigured
+                => Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable,
+                    title: "Authoritative phone ownership verification is unavailable.",
+                    extensions: new Dictionary<string, object?> { ["code"] = "identity_match_provider_unconfigured" }),
+            _ => Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable,
+                title: "Phone ownership verification could not be completed.",
+                extensions: new Dictionary<string, object?> { ["code"] = "identity_match_indeterminate" }),
+        };
     }
 
     private static async Task<Guid?> UserIdAsync(ClaimsPrincipal principal, IUserIdentityLookup lookup, CancellationToken ct)
