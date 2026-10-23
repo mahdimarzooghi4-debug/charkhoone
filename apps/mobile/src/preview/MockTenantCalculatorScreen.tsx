@@ -10,8 +10,8 @@ import { useMockPreview } from "./MockPreviewProvider";
 
 /**
  * Figma "Calculator / Manual Estimate" (65:55) for the isolated tenant MOCK.
- * The Figma figure of 18.5m is a stale visual fixture; C3-approved interest-only
- * amount starts at 6,708,333 toman. Local inputs calculate without bank calls.
+ * The Figma figure of 18.5m is a stale visual fixture. The default unverified
+ * C3 preview now uses the approved 40% ratio; no bank calls occur.
  */
 function PreviewAmount({ label, value, maximum, step, limit, onChange }: {
   label: string;
