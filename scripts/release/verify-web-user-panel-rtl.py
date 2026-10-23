@@ -798,12 +798,13 @@ require('"use client";' in calculator_page and
         'digitsFa(bankRateInput)' in calculator_page and
         'parseMoneyInput(input.value, max)' in calculator_page and
         'normalizeDigits(event.target.value)' in calculator_page and
-        'const DEMO_EXTERNAL_SUBGRADE = "C3";' in calculator_page and
-        'C1: 40, C2: 40, C3: 30' in calculator_page and
-        'const financingPercent = SAMPLE_FINANCING_PERCENT;' in calculator_page and
+        'const INITIAL_SELF_REPORTED_SUBGRADE = "C3";' in calculator_page and
+        'C1: 40, C2: 40, C3: 40' in calculator_page and
+        'const financingPercent = FINANCING_BY_SUBGRADE[selfReportedGrade];' in calculator_page and
+        'onChange={event => setSelfReportedGrade(event.target.value)}' in calculator_page and
         'const SAMPLE_BANK_ANNUAL_RATE = "23";' in calculator_page and
         'useState(SAMPLE_BANK_ANNUAL_RATE)' in calculator_page and
-        'نتیجه استعلام واقعی نیست' in calculator_page and
+        'هیچ استعلام اعتباری انجام نمی‌شود' in calculator_page and
         'fullDeposit: fullDepositEquivalent, financing: selectedFinancing, contribution, monthlyInterest' in calculator_page and
         'const minFinancing = calculateFinancing(' in calculator_page and
         'const maxFinancing = calculateFinancing(' in calculator_page and
