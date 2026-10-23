@@ -240,7 +240,12 @@ require(parsed_grades == expected_grades, "all fifteen grade-to-ratio mappings m
 require('MockPreviewProvider' in preview_layout, "MOCK financial state must survive page transitions")
 for token in ('useSegments', 'segments[0] === "preview"', 'if (segments[0] === "preview") return navigator'):
     require(token in root, f"preview must bypass OIDC runtime provider: {token}")
-require('EXPO_PUBLIC_CHARKHOONE_MOCK_PREVIEW === "1"' in index, "dev-only explicit preview flag missing")
+require('EXPO_PUBLIC_CHARKHOONE_MOCK_PREVIEW === "1"' in index, "explicit preview flag missing")
+require('const previewBundle =' in root and
+        'EXPO_PUBLIC_CHARKHOONE_MOCK_PREVIEW === "1"' in root and
+        'EXPO_PUBLIC_CHARKHOONE_DEMO_APK === "1"' in root and
+        'if (previewBundle) return navigator;' in root,
+        "opted-in demo bundles must not mount real OIDC provider at root entry")
 require('Platform.OS === "web"' in index and
         'EXPO_PUBLIC_CHARKHOONE_DEMO_APK === "1"' in index and
         'previewWeb || demoApk ? "/preview/login" : "/(auth)/login"' in index,
