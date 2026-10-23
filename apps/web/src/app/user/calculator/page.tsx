@@ -9,7 +9,7 @@ import { calculateFinancing, financingGaugeProgress } from "@/lib/sharedFinanceC
 // Preview only: use the backend's contractual 3% rent-to-full-deposit
 // equivalence BEFORE applying the external credit sub-grade percentage.
 // A real tenant's grade and bank decision must come from trusted services.
-// C3 is a conspicuously labeled MOCK response only (C1/C2 = 40%; C3 = 30%).
+// C3 is a conspicuously labeled MOCK response only (C1/C2/C3 = 40%).
 const EXAMPLE_DEPOSIT = 500_000_000;
 const EXAMPLE_RENT = 20_000_000;
 const MIN_FINANCING_PERCENT = 30;
@@ -21,7 +21,7 @@ const DEMO_EXTERNAL_SUBGRADE = "C3";
 const FINANCING_BY_SUBGRADE: Readonly<Record<string, number>> = {
   A1: 55, A2: 55, A3: 55,
   B1: 45, B2: 45, B3: 45,
-  C1: 40, C2: 40, C3: 30,
+  C1: 40, C2: 40, C3: 40,
   D1: 35, D2: 35, D3: 35,
   E1: 30, E2: 30, E3: 30,
 };
