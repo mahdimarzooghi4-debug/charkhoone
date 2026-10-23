@@ -4,6 +4,7 @@ using Charkhoone.Application.BankFunding;
 using Charkhoone.Application.Contracts;
 using Charkhoone.Application.CreditApplications;
 using Charkhoone.Application.CreditEligibility;
+using Charkhoone.Infrastructure.IdentityVerification;
 using Charkhoone.Application.IdentityVerification;
 using Charkhoone.Domain.CreditApplications;
 using Charkhoone.Infrastructure.Persistence;
@@ -56,6 +57,14 @@ public static class CreditApplicationEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status429TooManyRequests);
+
+        api.MapPost("/credit-applications/{id:guid}/khodnevis/reconcile", ReconcileVerifiedKhodnevisAsync)
+            .RequireAuthorization()
+            .RequireRateLimiting(ApiRateLimitPolicies.SensitiveMutation)
+            .WithName("ReconcileVerifiedKhodnevis")
+            .Produces<PropertyContractRegistrationResponse>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         api.MapPost("/credit-applications/{id:guid}/property-contract/reconcile", ReconcilePropertyContractAsync)
             .RequireAuthorization()
@@ -335,6 +344,7 @@ public static class CreditApplicationEndpoints
         ClaimsPrincipal principal,
         IUserIdentityLookup userIdentityLookup,
         IPropertyContractRegistrationService registrations,
+        IHostEnvironment environment,
         TimeProvider timeProvider,
         CancellationToken cancellationToken)
     {
@@ -343,6 +353,11 @@ public static class CreditApplicationEndpoints
         {
             return identity.Error;
         }
+
+        // The old bodyless endpoint cannot prove an exact national-ID/phone pair.
+        // Only retain it for isolated local Development fixtures.
+        if (!environment.IsDevelopment())
+            return Results.Conflict(new { code = "khodnevis_national_phone_match_required" });
 
         var result = await registrations.ReconcileAsync(
             id,
