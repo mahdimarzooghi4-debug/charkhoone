@@ -2,7 +2,7 @@
 """Guard demo financing figures against drifting away from the web calculator.
 
 This does NOT validate a bank product, return guarantee, or external grade result.
-It validates only the static C3/23% user-panel scenario until trusted integrations exist.
+It checks the manual calculator separately from frozen illustrative downstream plan fixtures.
 """
 from pathlib import Path
 from decimal import Decimal, ROUND_HALF_UP
@@ -18,12 +18,15 @@ def demand(condition: bool, message: str) -> None:
 
 demand('Math.round(rent / 0.03)' in ENGINE and 'calculateFinancing({ cashDeposit: deposit, monthlyRent: rent' in CALCULATOR,
        "calculator monthly rent-to-deposit conversion changed")
-demand('const DEMO_EXTERNAL_SUBGRADE = "C3";' in CALCULATOR and
-       'C1: 40, C2: 40, C3: 30,' in CALCULATOR,
-       "calculator mock grade and finance percentage changed")
+demand('const INITIAL_SELF_REPORTED_SUBGRADE = "C3";' in CALCULATOR and
+       'C1: 40, C2: 40, C3: 40,' in CALCULATOR and
+       'onChange={event => setSelfReportedGrade(event.target.value)}' in CALCULATOR and
+       'خوداظهاری (تأییدنشده)' in CALCULATOR,
+       "calculator manual grade must use approved C3 ratio and remain unverified")
 demand('const SAMPLE_BANK_ANNUAL_RATE = "23";' in CALCULATOR,
        "calculator sample nominal bank rate changed")
 
+# Downstream plan pages remain legacy static MOCK samples, not official C3 selections.
 deposit = Decimal(500_000_000)
 rent = Decimal(20_000_000)
 full = deposit + (rent / Decimal("0.03")).quantize(0, rounding=ROUND_HALF_UP)
