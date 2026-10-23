@@ -26,7 +26,8 @@ public sealed class EfPropertyContractRegistrationService(
         Guid applicationId,
         Guid applicantUserId,
         DateTimeOffset occurredAtUtc,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? verifiedNationalId = null)
     {
         if (applicationId == Guid.Empty)
         {
@@ -159,7 +160,8 @@ public sealed class EfPropertyContractRegistrationService(
                 applicationId,
                 applicantUserId,
                 planId,
-                planVersion),
+                planVersion,
+                verifiedNationalId),
             cancellationToken);
 
         if (response.Status == ExternalPropertyContractEvidenceStatus.Indeterminate)

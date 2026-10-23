@@ -50,6 +50,12 @@ public interface IPhoneNationalMatchService
     Task<bool> IsVerifiedForPhoneAsync(
         Guid userId, string verifiedMobile, CancellationToken cancellationToken = default);
 
+    // Only the exact national ID + OIDC-verified phone pair may authorize
+    // a Khodnevis lookup; checking this proof never triggers a new inquiry.
+    Task<bool> IsVerifiedForPairAsync(
+        Guid userId, string verifiedMobile, string nationalId,
+        CancellationToken cancellationToken = default);
+
     Task<PhoneNationalMatchResult> VerifyAsync(
         Guid userId, string verifiedMobile, string nationalId, DateTimeOffset occurredAtUtc,
         CancellationToken cancellationToken = default);

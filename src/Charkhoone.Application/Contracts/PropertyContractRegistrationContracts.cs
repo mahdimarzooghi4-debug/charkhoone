@@ -15,7 +15,8 @@ public sealed record ExternalPropertyContractEvidenceRequest(
     Guid CreditApplicationId,
     Guid ApplicantUserId,
     Guid BankLoanPlanId,
-    string BankLoanPlanVersion);
+    string BankLoanPlanVersion,
+    string? VerifiedNationalId = null);
 
 public sealed record ExternalPropertyContractEvidenceResponse(
     ExternalPropertyContractEvidenceStatus Status,
@@ -77,5 +78,6 @@ public interface IPropertyContractRegistrationService
         Guid applicationId,
         Guid applicantUserId,
         DateTimeOffset occurredAtUtc,
-        CancellationToken cancellationToken = default);
+        CancellationToken cancellationToken = default,
+        string? verifiedNationalId = null);
 }

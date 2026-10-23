@@ -13,7 +13,7 @@ export default function RegisterTrackingCodePage() {
           <div className={styles.headerRight} data-node-id="150:712"><h1 data-node-id="150:713">ثبت کد رهگیری</h1><p data-node-id="150:714">سلام، علی رضایی</p></div>
         </header>
 
-        <section className={styles.pageHeader} data-node-id="150:715"><p data-node-id="150:716">قراردادها / ثبت قرارداد</p><h2 data-node-id="150:717">ثبت کد رهگیری قرارداد</h2><p data-node-id="150:718">کد رهگیری قرارداد ثبت‌شده در خودنویس را وارد کنید.</p></section>
+        <section className={styles.pageHeader} data-node-id="150:715"><p data-node-id="150:716">قراردادها / ثبت قرارداد</p><h2 data-node-id="150:717">ثبت کد رهگیری قرارداد</h2><p data-node-id="150:718">کد رهگیری را برای پیش‌نمایش وارد کنید. برای استعلام رسمی، ابتدا تطبیق کد ملی و موبایل لازم است.</p></section>
 
         <div className={styles.columns} data-node-id="150:719">
           <aside className={styles.infoPanel} data-node-id="150:720"><h2 data-node-id="150:721">کد رهگیری را از کجا پیدا کنم؟</h2><div className={styles.divider} /><p data-node-id="150:723">پس از ثبت نهایی قرارداد در سامانه خودنویس، کد رهگیری برای قرارداد صادر می‌شود. این کد معمولاً یک شماره ۱۲ رقمی است.</p><p data-node-id="150:724">اطلاعات قرارداد پس از استعلام به‌صورت خواندنی نمایش داده می‌شود و نیازی به ورود دستی اطلاعات ملک و طرفین نیست.</p></aside>
@@ -21,6 +21,12 @@ export default function RegisterTrackingCodePage() {
           <section className={styles.primaryCard} data-node-id="150:725">
             <div className={styles.cardHeader} data-node-id="150:726"><h2 data-node-id="150:727">کد رهگیری قرارداد</h2><p data-node-id="150:728">در این پیش‌نمایش فقط کد نمونه پشتیبانی می‌شود؛ استعلام رسمی خودنویس انجام نمی‌شود.</p></div>
             <div className={styles.divider} />
+            <p style={{ margin: "12px 0", textAlign: "right", lineHeight: 1.9 }}>
+              کد ملی در ورود دریافت نمی‌شود؛ فقط هنگام اولین استعلام واقعی خودنویس، پس از تأیید شما و تطبیق با شماره موبایل بررسی خواهد شد.
+            </p>
+            <p style={{ textAlign: "right" }}>
+              <Link href="/user/contracts/register/identity-verification">مشاهده مرحله تطبیق قبل از استعلام خودنویس (پیش‌نمایش)</Link>
+            </p>
             <TrackingCodePreviewForm />
             <div className={styles.actions} data-node-id="150:731"><Link href="/user/contracts" className={styles.backLink} data-node-id="150:735">بازگشت به قراردادها</Link></div>
           </section>

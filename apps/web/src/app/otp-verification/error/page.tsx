@@ -41,7 +41,7 @@ export default function OtpErrorPage() {
           </div>
 
           <div className={styles.action} data-node-id="168:72" data-name="Action Wrapper">
-            <Link href="/identity-verification" className={`ch-button ${styles.submit}`} data-node-id="168:73">تأیید و ورود</Link>
+            <Link href="/login" className={`ch-button ${styles.submit}`} data-node-id="168:73">بازگشت به ورود</Link>
           </div>
 
           <Link className={styles.changeMobile} href="/login" data-node-id="168:74">تغییر شماره موبایل</Link>

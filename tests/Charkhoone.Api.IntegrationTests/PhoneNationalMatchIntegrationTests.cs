@@ -52,6 +52,14 @@ public sealed class PhoneNationalMatchIntegrationTests(CharkhooneApiFactory fact
         var after = await client.GetFromJsonAsync<IdentityView>("/api/v1/mobile/account/identity-status");
         Assert.False(after!.Verified);
 
+        var khodnevis = "/api/v1/credit-applications/" + Guid.NewGuid().ToString("D") + "/khodnevis/reconcile";
+        Assert.Equal(HttpStatusCode.BadRequest,
+            (await client.PostAsJsonAsync(khodnevis,
+                new { nationalId = "0071234561", confirm = false })).StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict,
+            (await client.PostAsJsonAsync(khodnevis,
+                new { nationalId = "0071234561", confirm = true })).StatusCode);
+
         using var unverified = factory.CreateAuthenticatedClient(subject);
         unverified.DefaultRequestHeaders.Add("X-Test-Phone", "09121234567");
         Assert.Equal(HttpStatusCode.Conflict,
@@ -88,6 +96,9 @@ public sealed class PhoneNationalMatchIntegrationTests(CharkhooneApiFactory fact
                 (await service.VerifyAsync(userId, "+989121234567", "0071234561", DateTimeOffset.UtcNow)).Status);
             Assert.Equal(1, fake.CallCount);
             Assert.True(await service.IsVerifiedForPhoneAsync(userId, "09121234567"));
+            Assert.True(await service.IsVerifiedForPairAsync(userId, "09121234567", "0071234561"));
+            Assert.False(await service.IsVerifiedForPairAsync(userId, "09121234567", "0071234578"));
+            Assert.False(await service.IsVerifiedForPairAsync(userId, "09129998877", "0071234561"));
             Assert.False(await service.IsVerifiedForPhoneAsync(userId, "09129998877"));
         }
         await using (var scope = factory.Services.CreateAsyncScope())
