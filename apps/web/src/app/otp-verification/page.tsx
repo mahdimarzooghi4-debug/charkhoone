@@ -5,11 +5,11 @@ import styles from "./page.module.css";
 const otpLogo = "/brand/login-card.png";
 
 const otpDigits = [
-  { boxId: "167:190", textId: "167:191", value: "۴" },
-  { boxId: "167:192", textId: "167:193", value: "۸" },
-  { boxId: "167:194", textId: "167:195", value: "۲" },
-  { boxId: "167:196", textId: "167:197", value: "۱" },
-  { boxId: "167:198", textId: "167:199", value: "۶" },
+  { boxId: "167:190", textId: "167:191", value: "•" },
+  { boxId: "167:192", textId: "167:193", value: "•" },
+  { boxId: "167:194", textId: "167:195", value: "•" },
+  { boxId: "167:196", textId: "167:197", value: "•" },
+  { boxId: "167:198", textId: "167:199", value: "•" },
 ];
 
 export default function OtpVerificationPage() {
@@ -46,7 +46,7 @@ export default function OtpVerificationPage() {
 
           <div className={styles.headers} data-node-id="167:185" data-name="Card Headers">
             <h2 data-node-id="167:186">کد تأیید را وارد کنید</h2>
-            <p data-node-id="167:187">کد ارسال‌شده به شماره ۰۹۱۲•••••۶۷ را وارد کنید.</p>
+            <p data-node-id="167:187">این صفحه فقط پیش‌نمایش طراحی است؛ هیچ پیامک یا کد واقعی ارسال نشده است.</p>
           </div>
 
           <div className={styles.otpSection} data-node-id="167:188" data-name="OTP Input Section">
@@ -74,17 +74,15 @@ export default function OtpVerificationPage() {
             <strong data-node-id="167:202">ارسال مجدد تا ۰۰:۵۹</strong>
           </div>
 
-          <form
+          <div
             className={styles.action}
-            action="/identity-verification"
-            method="get"
             data-node-id="167:203"
             data-name="Action Wrapper"
           >
-            <Button type="submit" className={styles.submit} data-node-id="167:204">
-              تأیید و ورود
+            <Button type="button" disabled className={styles.submit} data-node-id="167:204">
+              ورود واقعی هنوز فعال نیست
             </Button>
-          </form>
+          </div>
 
           <Link
             href="/login"
