@@ -56,6 +56,16 @@
   font-size: 14px;
 }
 
+.demoNotice {
+  padding: 12px 16px;
+  color: var(--ch-color-primary);
+  font-size: 13px;
+  font-weight: 500;
+  background: #e6f4e6;
+  border: 1px solid rgb(13 59 54 / 16%);
+  border-radius: 12px;
+}
+
 .overviewGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

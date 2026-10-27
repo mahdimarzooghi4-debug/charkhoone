@@ -34,6 +34,9 @@ export default function UserHomePage() {
     <main className={styles.page} data-node-id="144:154" data-name="Web App / Home">
       <section className={styles.mainContent} data-node-id="144:155" data-name="Main Content">
         <header className={styles.headerBar} data-node-id="144:156"><div className={styles.headerText} data-node-id="144:159"><h1 data-node-id="144:160">خانه</h1><p data-node-id="144:161">سلام، علی رضایی</p></div></header>
+        <aside className={styles.demoNotice} role="note">
+          حالت دمو فعال است؛ اطلاعات این پنل نمونه‌اند و عملیات واقعی انجام نمی‌شود.
+        </aside>
         <section className={styles.overviewGrid} data-node-id="144:162">
           <article className={styles.overviewCard} data-node-id="144:163"><p className={styles.cardLabel}>قراردادهای فعال</p><strong className={styles.primaryValue}>۲ قرارداد</strong><p className={styles.cardHint}>۱ قرارداد به‌عنوان مستأجر، ۱ قرارداد به‌عنوان مالک</p></article>
           <article className={styles.overviewCard} data-node-id="144:167"><div className={styles.cardTopRow}><Badge tone="orange">پرداخت</Badge><p className={styles.cardLabel}>پرداخت بعدی</p></div><strong className={styles.accentValue}>۶٬۷۰۸٬۳۳۳ تومان</strong><p className={styles.cardHint}>سررسید: ۱۵ آبان ۱۴۰۵</p></article>

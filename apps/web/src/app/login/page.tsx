@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { TextField } from "@/components/ui/TextField";
 import styles from "./page.module.css";
@@ -37,7 +38,7 @@ export default function LoginPage() {
 
           <div className={styles.headers} data-node-id="163:184" data-name="Card Headers">
             <h2 data-node-id="163:185">به چارخونه خوش آمدید</h2>
-            <p data-node-id="163:186">ورود فقط با موبایل انجام می‌شود؛ کد ملی تنها هنگام درخواست استعلام قرارداد از خودنویس لازم است. این صفحه پیش‌نمایش است و پیامک واقعی ارسال نمی‌کند.</p>
+            <p data-node-id="163:186">ورود واقعی با موبایل انجام می‌شود و این صفحه پیامک واقعی نمی‌فرستد. برای دیدن پنل مستأجر، ورود نمایشی را انتخاب کنید.</p>
           </div>
 
           <form
@@ -66,6 +67,10 @@ export default function LoginPage() {
               </Button>
             </div>
           </form>
+
+          <Link href="/user/home?demo=tenant" className={styles.demoEntry}>
+            ورود نمایشی به پنل مستأجر
+          </Link>
 
           <div className={styles.divider} data-node-id="163:192" data-name="Divider Wrapper" />
 

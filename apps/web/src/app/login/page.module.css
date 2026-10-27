@@ -4,7 +4,8 @@
   align-items: center;
   justify-content: center;
   padding-inline: 120px;
-  background: var(--ch-color-primary);
+  background: var(--ch-color-primary, #0d3b36);
+  background-color: var(--ch-color-primary, #0d3b36);
 }
 
 .split {
@@ -166,6 +167,36 @@
 
 .submit:focus-visible {
   outline-color: rgb(255 138 0 / 35%);
+}
+
+.demoEntry {
+  width: 100%;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 20px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  background: var(--ch-color-primary, #0d3b36);
+  border-radius: 12px;
+  transition: filter 120ms ease, transform 120ms ease;
+}
+
+.demoEntry:hover {
+  filter: brightness(1.08);
+}
+
+.demoEntry:active {
+  transform: translateY(1px);
+}
+
+.demoEntry:focus-visible {
+  outline: 3px solid rgb(13 59 54 / 24%);
+  outline-offset: 2px;
 }
 
 .divider {
