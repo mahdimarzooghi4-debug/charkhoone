@@ -238,6 +238,32 @@ require("const ICON_SCALE = 0.56;" in mobile_icon_config,
 require('safe: { flex: 1, backgroundColor: colors.primary }' in preview_auth and
         'page: { flexGrow: 1, backgroundColor: colors.primary' in preview_auth,
         "the first MOCK mobile login screen must use the Charkhoone brand green background")
+# Approved individual Figma nodes, not a white-card approximation of the board.
+# Figma 41:8: 350px hero, dark green page, edge-aligned title and input,
+# pale 48px action, footer pinned via a flex spacer.
+# Figma 39:26: same hero, number/edit row, five 48x56 digit slots.
+for token in (
+    '<BrandLogo variant="hero" />',
+    '<LegalText />',
+    'paddingHorizontal: 20, paddingTop: 60, paddingBottom: 40',
+    'otpLogoSpacer: { height: 24',
+    'titleGroup: { width: "100%", gap: 12',
+    'fontSize: 20, lineHeight: 28',
+    'fontSize: 16, lineHeight: 26',
+    'mobileInput: { width: "100%", height: 48, backgroundColor: colors.surface',
+    'digitBox: { height: 56, width: 48',
+    'cta: { width: "100%", height: 48, borderRadius: radii.md, backgroundColor: colors.page',
+    'ورود یا ثبت نام',
+    'دریافت کد تأیید',
+    'کد تأیید موبایل را وارد کنید؛ کد ملی هنگام استعلام خودنویس دریافت می‌شود.',
+    'تأیید و ادامه',
+    'پیش‌نمایش: هیچ پیامکی ارسال یا بررسی نمی‌شود.',
+):
+    require(token in preview_auth, f"Figma login 41:8 / OTP 39:26 visual regression: {token}")
+require('styles.card' not in preview_auth and 'styles.brand' not in preview_auth,
+        "Figma login/OTP must not be enclosed in the old white preview card/banner")
+require('No SMS is sent' in preview_auth and 'enterPreview();' in preview_auth,
+        "Figma styling must preserve isolated and explicit MOCK-only entry")
 require('gradeDropdownOpen' in calculator and '<Modal visible={gradeDropdownOpen}' in calculator and
         'Object.entries(MOCK_CREDIT_GRADE_RATIOS).map(([grade, ratio])' in calculator and
         'accessibilityState={{ selected: selfReportedGrade === grade }}' in calculator and
