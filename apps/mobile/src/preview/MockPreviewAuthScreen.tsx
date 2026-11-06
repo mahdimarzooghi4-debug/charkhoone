@@ -99,8 +99,8 @@ export function MockPreviewAuthScreen({ step }: { step: "login" | "otp" }) {
 
 const rtl = { textAlign: "right" as const, writingDirection: "rtl" as const };
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.page },
-  page: { flexGrow: 1, paddingHorizontal: 20, paddingVertical: 24, gap: 24 },
+  safe: { flex: 1, backgroundColor: colors.primary },
+  page: { flexGrow: 1, backgroundColor: colors.primary, paddingHorizontal: 20, paddingVertical: 24, gap: 24 },
   brand: { backgroundColor: colors.surface, alignItems: "flex-end", alignSelf: "stretch", borderRadius: radii.md, paddingHorizontal: 12, minHeight: 66, justifyContent: "center" },
   card: { backgroundColor: colors.surface, borderRadius: radii.lg, borderColor: colors.border, borderWidth: 1, padding: 24, gap: 16 },
   eyebrow: { color: colors.primary, fontFamily: fonts.medium, fontSize: 12, ...rtl },
