@@ -34,6 +34,17 @@ jobs:
         run: npm ci --no-audit --no-fund
       - name: Typecheck
         run: npm run typecheck
+      - name: Generate native Android project to verify splash drawable
+        env:
+          CI: "1"
+        run: npx expo prebuild --platform android --clean --non-interactive
+      - name: Verify native Android splash drawable
+        run: |
+          set -euo pipefail
+          resource="$(find android/app/src/main/res -type f -name 'splashscreen_logo*' -print -quit)"
+          test -n "$resource" || { echo "Missing native splashscreen_logo drawable" >&2; exit 1; }
+          test -s "$resource"
+          echo "Generated Android splash drawable: $resource"
       - name: Export Android production bundle
         env:
           CI: "1"
