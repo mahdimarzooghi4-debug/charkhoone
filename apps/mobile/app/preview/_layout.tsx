@@ -4,7 +4,7 @@ import { MockPreviewProvider, useMockPreview } from "@/preview/MockPreviewProvid
 function PreviewAuthGate() {
   const pathname = usePathname();
   const { previewSignedIn, demoMobile } = useMockPreview();
-  const entry = pathname === "/preview/login" || pathname === "/preview/otp";
+  const entry = pathname === "/preview/login" || pathname === "/preview/otp" || pathname.startsWith("/preview/legal/");
   // An OTP deep link must also pass through the mobile-entry screen.
   if (pathname === "/preview/otp" && !/^09[0-9]{9}$/.test(demoMobile))
     return <Redirect href="/preview/login" />;

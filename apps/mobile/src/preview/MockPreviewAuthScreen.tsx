@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { BrandLogo } from "@/components/BrandLogo";
 import { LegalText } from "@/components/LegalText";
@@ -30,8 +30,18 @@ export function MockPreviewAuthScreen({ step }: { step: "login" | "otp" }) {
   const { demoMobile, setDemoMobile, enterPreview } = useMockPreview();
   const [error, setError] = useState("");
   const [otpDigits, setOtpDigits] = useState("");
+  const [otpError, setOtpError] = useState(false);
+  const [resendSeconds, setResendSeconds] = useState(45);
   const otpInput = useRef<TextInput>(null);
   const otp = step === "otp";
+
+  useEffect(() => {
+    if (!otp) return;
+    const timer = setInterval(() => {
+      setResendSeconds(value => Math.max(0, value - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [otp]);
 
   const next = () => {
     if (!mobilePattern.test(demoMobile)) {
@@ -43,7 +53,12 @@ export function MockPreviewAuthScreen({ step }: { step: "login" | "otp" }) {
   };
 
   const enter = () => {
-    // Deliberate demo-only entry. Typed sample digits never authorize a user.
+    if (otpDigits.length !== 5) {
+      setOtpError(true);
+      otpInput.current?.focus();
+      return;
+    }
+    // Five sample digits only complete the MOCK walkthrough; they never authenticate a user.
     enterPreview();
     router.replace("/preview/home");
   };
@@ -57,7 +72,7 @@ export function MockPreviewAuthScreen({ step }: { step: "login" | "otp" }) {
           <Text style={styles.title}>{otp ? "کد تأیید" : "ورود یا ثبت نام"}</Text>
           <Text style={styles.description}>
             {otp
-              ? "کد تأیید موبایل را وارد کنید؛ کد ملی هنگام استعلام خودنویس دریافت می‌شود."
+              ? (otpError ? "کد ارسال‌شده به شماره موبایل خود را وارد کنید." : "کد تأیید موبایل را وارد کنید؛ کد ملی هنگام استعلام خودنویس دریافت می‌شود.")
               : "برای ورود فقط شماره موبایل و کد تأیید لازم است."}
           </Text>
         </View>
@@ -88,18 +103,19 @@ export function MockPreviewAuthScreen({ step }: { step: "login" | "otp" }) {
                 autoComplete="off"
                 maxLength={5}
                 value={otpDigits}
-                onChangeText={value => setOtpDigits(normalizeDigits(value).slice(0, 5))}
+                onChangeText={value => { setOtpDigits(normalizeDigits(value).slice(0, 5)); setOtpError(false); }}
                 style={styles.otpCapture}
                 caretHidden
               />
             </View>
-            <Text style={styles.previewNote}>پیش‌نمایش: هیچ پیامکی ارسال یا بررسی نمی‌شود.</Text>
+            {otpError ? <Text accessibilityRole="alert" style={styles.otpError}>کد واردشده صحیح نیست. لطفاً دوباره تلاش کنید.</Text> : null}
             <View style={styles.gap32} />
-            <Pressable accessibilityRole="button" accessibilityHint="ادامه به محیط MOCK بدون تأیید هویت" onPress={enter} style={styles.cta}>
+            <Pressable accessibilityRole="button" accessibilityHint="ادامه به محیط MOCK؛ پنج رقم فقط برای تکمیل پیش‌نمایش است و احراز هویت نیست" onPress={enter} style={styles.cta}>
               <Text style={styles.ctaText}>تأیید و ادامه</Text>
             </Pressable>
             <View style={styles.gap20} />
-            <Text style={styles.countdown}>ارسال مجدد کد در نسخه نمایشی غیرفعال است</Text>
+            <Text style={styles.countdown}>{resendSeconds > 0 ? `ارسال مجدد کد تا ${persianDigits(`۰۰:${String(resendSeconds).padStart(2, "0")}`)}` : "ارسال مجدد کد در نسخه نمایشی غیرفعال است"}</Text>
+            <Text style={styles.previewNote}>پیش‌نمایش: هیچ پیامکی ارسال یا بررسی نمی‌شود.</Text>
           </>
         ) : (
           <>
@@ -158,7 +174,8 @@ const styles = StyleSheet.create({
   digitBox: { height: 56, width: 48, borderWidth: 1, borderColor: colors.border, borderRadius: radii.md, backgroundColor: colors.surface, alignItems: "center", justifyContent: "center" },
   digitText: { color: colors.text, fontFamily: fonts.semibold, fontSize: 20 },
   otpCapture: { position: "absolute", height: 56, width: 288, opacity: 0.01, color: "transparent", textAlign: "center" },
-  previewNote: { width: "100%", paddingTop: 12, color: colors.border, fontFamily: fonts.regular, fontSize: 11, lineHeight: 18, textAlign: "center", writingDirection: "rtl" },
+  otpError: { width: "100%", color: "#FF383C", fontFamily: fonts.regular, fontSize: 12, lineHeight: 18, textAlign: "right", writingDirection: "rtl" },
+  previewNote: { width: "100%", paddingTop: 8, color: colors.border, fontFamily: fonts.regular, fontSize: 10, lineHeight: 16, textAlign: "center", writingDirection: "rtl" },
   cta: { width: "100%", height: 48, borderRadius: radii.md, backgroundColor: colors.page, paddingHorizontal: 24, alignItems: "center", justifyContent: "center" },
   ctaText: { color: colors.primary, fontFamily: fonts.medium, textAlign: "center", fontSize: 14, writingDirection: "rtl" },
   countdown: { width: "100%", color: colors.border, fontFamily: fonts.regular, fontSize: 12, textAlign: "center", writingDirection: "rtl" },
