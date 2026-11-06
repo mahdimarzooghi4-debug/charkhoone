@@ -72,7 +72,7 @@ export function MockPreviewAuthScreen({ step }: { step: "login" | "otp" }) {
           <Text style={styles.title}>{otp ? "کد تأیید" : "ورود یا ثبت نام"}</Text>
           <Text style={styles.description}>
             {otp
-              ? "کد ارسال‌شده به شماره موبایل خود را وارد کنید."
+              ? (otpError ? "کد ارسال‌شده به شماره موبایل خود را وارد کنید." : "کد تأیید موبایل را وارد کنید؛ کد ملی هنگام استعلام خودنویس دریافت می‌شود.")
               : "برای ورود فقط شماره موبایل و کد تأیید لازم است."}
           </Text>
         </View>
