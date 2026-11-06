@@ -9,7 +9,13 @@
     "newArchEnabled": true,
     "plugins": [
       "expo-router",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0D3B36"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false

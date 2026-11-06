@@ -3,7 +3,7 @@ const path = require("node:path");
 const { deflateSync, inflateSync } = require("node:zlib");
 
 const ICON_SIZE = 256;
-const ICON_SCALE = 0.60;
+const ICON_SCALE = 0.56;
 const BRAND_BACKGROUND = [13, 59, 54, 255];
 
 function paethPredictor(left, up, upLeft) {

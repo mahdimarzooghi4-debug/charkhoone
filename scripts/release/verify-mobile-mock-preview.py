@@ -41,6 +41,7 @@ preview_login = read("apps/mobile/app/preview/login.tsx")
 preview_otp = read("apps/mobile/app/preview/otp.tsx")
 preview_auth = read("apps/mobile/src/preview/MockPreviewAuthScreen.tsx")
 android_icon_config = json.loads(read("apps/mobile/app.json"))
+mobile_icon_config = read("apps/mobile/app.config.js")
 route_calculator = read("apps/mobile/app/preview/calculator.tsx")
 route_result = read("apps/mobile/app/preview/calculator-result.tsx")
 
@@ -224,6 +225,15 @@ require('useState(false)' in provider and "previewSignedIn" in provider and
         'useState("")' in provider, "preview auth state must be ephemeral and default signed out")
 require(android_icon_config["expo"]["android"]["adaptiveIcon"]["backgroundColor"] == "#FFFFFF",
         "Android adaptive launcher icon must have a white background")
+splash_plugin = next((plugin for plugin in android_icon_config["expo"]["plugins"]
+                      if isinstance(plugin, list) and plugin[0] == "expo-splash-screen"), None)
+require(splash_plugin is not None and splash_plugin[1].get("backgroundColor") == "#0D3B36",
+        "native launch splash must use the Charkhoone brand green")
+require("const ICON_SCALE = 0.56;" in mobile_icon_config,
+        "launcher icon artwork must use the slightly smaller approved scale")
+require('safe: { flex: 1, backgroundColor: colors.primary }' in preview_auth and
+        'page: { flexGrow: 1, backgroundColor: colors.primary' in preview_auth,
+        "the first MOCK mobile login screen must use the Charkhoone brand green background")
 require('gradeDropdownOpen' in calculator and '<Modal visible={gradeDropdownOpen}' in calculator and
         'Object.entries(MOCK_CREDIT_GRADE_RATIOS).map(([grade, ratio])' in calculator and
         'accessibilityState={{ selected: selfReportedGrade === grade }}' in calculator and
