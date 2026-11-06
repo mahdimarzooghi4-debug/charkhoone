@@ -32,7 +32,7 @@ export default function RootLayout() {
 
   // The MOCK walkthrough is intentionally isolated from OIDC/API runtime.
   // All real routes remain wrapped in MobileAuthProvider below.
-  if (segments[0] === "preview") return navigator;
+  if (segments[0] === "preview" || segments[0] === "legal") return navigator;
   // The opted-in demo entry must not initialize real OIDC even on "/".
   const previewBundle =
     (Platform.OS === "web" && process.env.EXPO_PUBLIC_CHARKHOONE_MOCK_PREVIEW === "1") ||

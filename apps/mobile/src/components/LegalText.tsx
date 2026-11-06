@@ -1,10 +1,31 @@
+import { useRouter } from "expo-router";
 import { StyleSheet, Text } from "react-native";
 import { colors, fonts } from "@/theme";
 
 export function LegalText() {
+  const router = useRouter();
+
   return (
     <Text style={styles.base}>
-      با ادامه، <Text style={styles.link}>قوانین استفاده</Text> و <Text style={styles.link}>حریم خصوصی</Text> چارخونه را می‌پذیرید
+      با ادامه،{" "}
+      <Text
+        accessibilityRole="link"
+        accessibilityLabel="مطالعه قوانین استفاده چارخونه"
+        onPress={() => router.push("/legal/terms")}
+        style={styles.link}
+      >
+        قوانین استفاده
+      </Text>
+      {" و "}
+      <Text
+        accessibilityRole="link"
+        accessibilityLabel="مطالعه حریم خصوصی چارخونه"
+        onPress={() => router.push("/legal/privacy")}
+        style={styles.link}
+      >
+        حریم خصوصی
+      </Text>
+      {" چارخونه را می‌پذیرید"}
     </Text>
   );
 }
