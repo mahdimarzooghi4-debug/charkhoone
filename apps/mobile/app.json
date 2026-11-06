@@ -13,7 +13,9 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#0D3B36"
+          "backgroundColor": "#0D3B36",
+          "image": "./assets/charkhoone-adaptive-icon-foreground.png",
+          "imageWidth": 160
         }
       ]
     ],
