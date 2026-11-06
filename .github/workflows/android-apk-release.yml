@@ -49,6 +49,14 @@ jobs:
           CI: "1"
         run: npx expo prebuild --platform android --clean --non-interactive
 
+      - name: Verify Android splash drawable exists before Gradle build
+        run: |
+          set -euo pipefail
+          resource="$(find android/app/src/main/res -type f -name 'splashscreen_logo*' -print -quit)"
+          test -n "$resource" || { echo "Missing generated Android splashscreen_logo drawable" >&2; exit 1; }
+          test -s "$resource"
+          echo "Verified Android splash drawable: $resource"
+
       - name: Build compact arm64 demo APK
         env:
           EXPO_PUBLIC_CHARKHOONE_DEMO_APK: "1"

@@ -229,6 +229,10 @@ splash_plugin = next((plugin for plugin in android_icon_config["expo"]["plugins"
                       if isinstance(plugin, list) and plugin[0] == "expo-splash-screen"), None)
 require(splash_plugin is not None and splash_plugin[1].get("backgroundColor") == "#0D3B36",
         "native launch splash must use the Charkhoone brand green")
+require(splash_plugin is not None and
+        splash_plugin[1].get("image") == "./assets/charkhoone-adaptive-icon-foreground.png" and
+        splash_plugin[1].get("imageWidth") == 160,
+        "native Android splash must generate a foreground drawable for AAPT linking")
 require("const ICON_SCALE = 0.56;" in mobile_icon_config,
         "launcher icon artwork must use the slightly smaller approved scale")
 require('safe: { flex: 1, backgroundColor: colors.primary }' in preview_auth and
